@@ -164,7 +164,9 @@ const transactionValueFormatter = (cell: TabulatorCell<any, number>) => {
   const formatter_to_acct = formatterForAccount(row.to_account);
   if (row.from_value === row.to_value) {
     const color = row.to_account === ReferenceAccount ? "green" : "red";
-    return `<span color="${color}">${formatter_to_acct(row.to_value)}</span>`;
+    return `<span style="color: ${color}">${formatter_to_acct(
+      row.to_value
+    )}</span>`;
   }
   const formatter_from_acct = formatterForAccount(row.from_account);
   return (
