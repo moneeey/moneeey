@@ -108,7 +108,7 @@ const Transactions: ITransaction[] = [
     to_account: Accounts[0].account_uuid,
     from_value: 3200,
     to_value: 3200,
-    memo: "Bonus #tax",
+    memo: "Bonus #tax #cool",
   },
   {
     transaction_uuid: generateUuid(),
@@ -117,7 +117,7 @@ const Transactions: ITransaction[] = [
     to_account: Accounts[3].account_uuid,
     from_value: 12.11,
     to_value: 12.11,
-    memo: "",
+    memo: "##2313322",
   },
   {
     transaction_uuid: generateUuid(),
@@ -184,6 +184,13 @@ const accountValueFormatter = (
 };
 
 const memoValueFormatter = (cell: TabulatorCell<ITransaction, string>) => {
+  const from_acct = findAccountByUuid(cell.getData().from_account);
+  const to_acct = findAccountByUuid(cell.getData().to_account);
+  const memo = cell.getValue() || "isolatedModules";
+  const memo_tags = [...memo.matchAll(/[^#](#\w+)/g)].map((m) =>
+    m[1].replace("#", "")
+  );
+  console.log(memo_tags);
   const tags: string[] = [];
   const addTags = (color: string, newTags: string[]) =>
     newTags.forEach((t: string) =>
@@ -191,13 +198,6 @@ const memoValueFormatter = (cell: TabulatorCell<ITransaction, string>) => {
         `<span style="color: ${color}; text-style: italic">#${t} </span>`
       )
     );
-  const from_acct = findAccountByUuid(cell.getData().from_account);
-  const to_acct = findAccountByUuid(cell.getData().to_account);
-  const memo_tags_matchs = cell.getValue().matchAll(/(#\w+)/g);
-  const memo_tags = [];
-  for (const match in memo_tags_matchs) {
-    memo_tags.push(match[1]);
-  }
   addTags("#88FF88", memo_tags);
   addTags("#880088", from_acct.tags);
   addTags("#8888FF", to_acct.tags);
