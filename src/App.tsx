@@ -188,19 +188,19 @@ const memoValueFormatter = (cell: TabulatorCell<ITransaction, string>) => {
   const addTags = (color: string, newTags: string[]) =>
     newTags.forEach((t: string) =>
       tags.push(
-        `<span style="color: ${color}; text-style: italic">${t} </span>`
+        `<span style="color: ${color}; text-style: italic">#${t} </span>`
       )
     );
   const from_acct = findAccountByUuid(cell.getData().from_account);
-  const to_acct = findAccountByUuid(cell.getData().from_account);
+  const to_acct = findAccountByUuid(cell.getData().to_account);
   const memo_tags_matchs = cell.getValue().matchAll(/(#\w+)/g);
   const memo_tags = [];
   for (const match in memo_tags_matchs) {
     memo_tags.push(match[1]);
   }
-  addTags("grey", memo_tags);
-  addTags("green", from_acct.tags);
-  addTags("purple", to_acct.tags);
+  addTags("#88FF88", memo_tags);
+  addTags("#880088", from_acct.tags);
+  addTags("#8888FF", to_acct.tags);
   return `${cell.getValue()} <i>${tags.join(" ")}</i>`;
 };
 
