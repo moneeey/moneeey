@@ -159,7 +159,9 @@ const formatterForAccount = (account_uuid: TAccountUUID) => {
   return currency.format;
 };
 
-const transactionValueFormatter = (cell: TabulatorCell<any, number>) => {
+const transactionValueFormatter = (
+  cell: TabulatorCell<ITransaction, number>
+) => {
   const row = cell.getData();
   const formatter_to_acct = formatterForAccount(row.to_account);
   if (row.from_value === row.to_value) {
@@ -174,9 +176,32 @@ const transactionValueFormatter = (cell: TabulatorCell<any, number>) => {
   );
 };
 
-const accountValueFormatter = (cell: TabulatorCell<any, TAccountUUID>) => {
+const accountValueFormatter = (
+  cell: TabulatorCell<ITransaction, TAccountUUID>
+) => {
   const account = findAccountByUuid(cell.getValue());
   return `<b>${account.name}</b> <i>${account.tags.map((t) => " #" + t)}</i>`;
+};
+
+const memoValueFormatter = (cell: TabulatorCell<ITransaction, string>) => {
+  const tags: string[] = [];
+  const addTags = (color: string, newTags: string[]) =>
+    newTags.forEach((t: string) =>
+      tags.push(
+        `<span style="color: ${color}; text-style: italic">${t} </span>`
+      )
+    );
+  const from_acct = findAccountByUuid(cell.getData().from_account);
+  const to_acct = findAccountByUuid(cell.getData().from_account);
+  const memo_tags_matchs = cell.getValue().matchAll(/(#\w+)/g);
+  const memo_tags = [];
+  for (const match in memo_tags_matchs) {
+    memo_tags.push(match[1]);
+  }
+  addTags("grey", memo_tags);
+  addTags("green", from_acct.tags);
+  addTags("purple", to_acct.tags);
+  return `${cell.getValue()} <i>${tags.join(" ")}</i>`;
 };
 
 const columns = [
@@ -184,13 +209,13 @@ const columns = [
   {
     title: "From",
     field: "from_account",
-    width: 250,
+    width: 300,
     formatter: accountValueFormatter,
   },
   {
     title: "To",
     field: "to_account",
-    width: 250,
+    width: 300,
     formatter: accountValueFormatter,
   },
   {
@@ -199,7 +224,7 @@ const columns = [
     width: 250,
     formatter: transactionValueFormatter,
   },
-  { title: "Memo", field: "memo" },
+  { title: "Memo", field: "memo", formatter: memoValueFormatter },
 ];
 
 function App() {
