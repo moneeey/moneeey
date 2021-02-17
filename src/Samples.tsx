@@ -1,0 +1,119 @@
+import { AccountType } from "./Account";
+import { EntityType, generateUuid } from "./Entity";
+import { ITransaction } from "./Transaction";
+
+export const SampleCurrencies = [
+  {
+    entity_type: EntityType.CURRENCY,
+    currency_uuid: generateUuid(),
+    name: "Brazillian Real",
+    short: "BRL",
+    prefix: "R$ ",
+    suffix: "",
+    tags: [],
+  },
+  {
+    entity_type: EntityType.CURRENCY,
+    currency_uuid: generateUuid(),
+    name: "Bitcoin",
+    short: "BTC",
+    prefix: "",
+    suffix: " BTC",
+    tags: [],
+  },
+];
+
+export const SampleAccounts = [
+  {
+    entity_type: EntityType.ACCOUNT,
+    account_uuid: generateUuid(),
+    name: "MoneeeyBank",
+    currency_uuid: SampleCurrencies[0].currency_uuid,
+    created: "2020-02-15",
+    type: AccountType.CHECKING,
+    tags: [],
+  },
+  {
+    entity_type: EntityType.ACCOUNT,
+    account_uuid: generateUuid(),
+    name: "MyEmployee",
+    currency_uuid: SampleCurrencies[0].currency_uuid,
+    created: "2020-02-15",
+    type: AccountType.PAYEE,
+    tags: ["tax"],
+  },
+  {
+    entity_type: EntityType.ACCOUNT,
+    account_uuid: generateUuid(),
+    name: "SuperGroceriesMarket",
+    currency_uuid: SampleCurrencies[0].currency_uuid,
+    created: "2020-02-15",
+    type: AccountType.PAYEE,
+    tags: ["groceries"],
+  },
+  {
+    entity_type: EntityType.ACCOUNT,
+    account_uuid: generateUuid(),
+    name: "CoffeShop",
+    currency_uuid: SampleCurrencies[0].currency_uuid,
+    created: "2020-02-15",
+    type: AccountType.PAYEE,
+    tags: ["health", "tax"],
+  },
+  {
+    entity_type: EntityType.ACCOUNT,
+    account_uuid: generateUuid(),
+    name: "BTC-Wallet",
+    currency_uuid: SampleCurrencies[1].currency_uuid,
+    created: "2020-02-20",
+    type: AccountType.CHECKING,
+    tags: ["crypto"],
+  },
+];
+
+export const SampleTransactions: ITransaction[] = [
+  {
+    entity_type: EntityType.TRANSACTION,
+    transaction_uuid: generateUuid(),
+    date: "2020-02-15",
+    from_account: SampleAccounts[1].account_uuid,
+    to_account: SampleAccounts[0].account_uuid,
+    from_value: 3600,
+    to_value: 3600,
+    memo: "",
+    tags: [],
+  },
+  {
+    entity_type: EntityType.TRANSACTION,
+    transaction_uuid: generateUuid(),
+    date: "2020-02-15",
+    from_account: SampleAccounts[1].account_uuid,
+    to_account: SampleAccounts[0].account_uuid,
+    from_value: 3200,
+    to_value: 3200,
+    memo: "Bonus #tax #cool",
+    tags: ["tax", "cool"],
+  },
+  {
+    entity_type: EntityType.TRANSACTION,
+    transaction_uuid: generateUuid(),
+    date: "2020-02-18",
+    from_account: SampleAccounts[0].account_uuid,
+    to_account: SampleAccounts[3].account_uuid,
+    from_value: 12.11,
+    to_value: 12.11,
+    memo: "##2313322",
+    tags: [],
+  },
+  {
+    entity_type: EntityType.TRANSACTION,
+    transaction_uuid: generateUuid(),
+    date: "2020-02-20",
+    from_account: SampleAccounts[0].account_uuid,
+    to_account: SampleAccounts[4].account_uuid,
+    from_value: 2000,
+    to_value: 0.005381138,
+    memo: "",
+    tags: [],
+  },
+];

@@ -20,6 +20,7 @@ export interface IAccount extends IBaseEntity {
 export class AccountStore {
   accountsByUuid: { [account_uuid: string]: IAccount } = {};
   accountsList: IAccount[] = [];
+  referenceAccount: TAccountUUID = "";
 
   add(account: IAccount) {
     this.accountsByUuid = {
@@ -39,5 +40,13 @@ export class AccountStore {
 
   findUuidByName(name: string) {
     return this.findByName(name).account_uuid;
+  }
+
+  setReferenceAccount(account: IAccount) {
+    this.referenceAccount = account.account_uuid;
+  }
+
+  get getReferenceAccountUuid() {
+    return this.referenceAccount;
   }
 }
