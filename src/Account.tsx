@@ -16,3 +16,28 @@ export interface IAccount extends IBaseEntity {
   created: TDate;
   type: AccountType;
 }
+
+export class AccountStore {
+  accountsByUuid: { [account_uuid: string]: IAccount } = {};
+  accountsList: IAccount[] = [];
+
+  add(account: IAccount) {
+    this.accountsByUuid = {
+      ...this.accountsByUuid,
+      [account.account_uuid]: account,
+    };
+    this.accountsList = [...this.accountsList, account];
+  }
+
+  findByUuid(account_uuid: TAccountUUID) {
+    return this.accountsByUuid[account_uuid];
+  }
+
+  findByName(name: string) {
+    return this.accountsList.filter((acct) => acct.name === name)[0];
+  }
+
+  findUuidByName(name: string) {
+    return this.findByName(name).account_uuid;
+  }
+}

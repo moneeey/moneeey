@@ -1,14 +1,15 @@
 import React from "react";
-import "react-tabulator/lib/styles.css";
-import "react-tabulator/lib/css/bulma/tabulator_bulma.css";
-import { ReactTabulator } from "react-tabulator";
 import "./App.css";
+import "antd/dist/antd.css";
 import { EntityType, generateUuid, TMonetary } from "./Entity";
-import { TAccountUUID, IAccount, AccountType } from "./Account";
+import { TAccountUUID, AccountType, AccountStore } from "./Account";
 import { ITransaction } from "./Transaction";
 import { CurrencyStore } from "./Currency";
+import { Table, Tag } from "antd";
 
 const currencyStore = new CurrencyStore();
+const accountStore = new AccountStore();
+
 currencyStore.add({
   entity_type: EntityType.CURRENCY,
   currency_uuid: generateUuid(),
@@ -28,7 +29,7 @@ currencyStore.add({
   tags: [],
 });
 
-const Accounts: IAccount[] = [
+const Accounts = [
   {
     entity_type: EntityType.ACCOUNT,
     account_uuid: generateUuid(),
@@ -75,7 +76,12 @@ const Accounts: IAccount[] = [
     tags: ["crypto"],
   },
 ];
+Accounts.forEach((a) => accountStore.add(a));
 const ReferenceAccount = Accounts[0].account_uuid;
+const HighlightTag = React.createContext({
+  tag: "",
+  setTag: (tag: string) => {},
+});
 
 const Transactions: ITransaction[] = [
   {
@@ -124,35 +130,19 @@ const Transactions: ITransaction[] = [
   },
 ];
 
-interface TabulatorCell<CellRow, CellValue> {
-  getValue(): CellValue;
-  getData(): CellRow;
-}
-
-const findAccountByUuid = (account_uuid: TAccountUUID): IAccount => {
-  const accounts = Accounts.filter((v) => v.account_uuid === account_uuid);
-  if (accounts.length !== 1) {
-    throw new Error("Account not found with uuid: " + account_uuid);
-  }
-  return accounts[0];
-};
-
 const formatterForAccount = (account_uuid: TAccountUUID) => {
-  const account = findAccountByUuid(account_uuid);
-  const currency_uuid = account.currency_uuid;
-  return (value: TMonetary) => currencyStore.formatByUuid(currency_uuid, value);
+  const account = accountStore.findByUuid(account_uuid);
+  return (value: TMonetary) =>
+    currencyStore.formatByUuid(account.currency_uuid, value);
 };
 
-const transactionValueFormatter = (
-  cell: TabulatorCell<ITransaction, number>
-) => {
-  const row = cell.getData();
+const transactionValueFormatter = (_value: string, row: ITransaction) => {
   const formatter_to_acct = formatterForAccount(row.to_account);
   if (row.from_value === row.to_value) {
     const color = row.to_account === ReferenceAccount ? "green" : "red";
-    return `<span style="color: ${color}">${formatter_to_acct(
-      row.to_value
-    )}</span>`;
+    return (
+      <span style={{ color: color }}>{formatter_to_acct(row.to_value)}</span>
+    );
   }
   const formatter_from_acct = formatterForAccount(row.from_account);
   return (
@@ -160,66 +150,90 @@ const transactionValueFormatter = (
   );
 };
 
-const accountValueFormatter = (
-  cell: TabulatorCell<ITransaction, TAccountUUID>
-) => {
-  const account = findAccountByUuid(cell.getValue());
-  return `<b>${account.name}</b> <i>${account.tags.map((t) => " #" + t)}</i>`;
+const TagsRenderer = (color: string, newTags: string[]) => {
+  const highlighting = React.useContext(HighlightTag);
+  return (
+    <span>
+      {newTags.map((t: string) => (
+        <Tag
+          key={t}
+          color={highlighting.tag === t ? "#FF88FF" : color}
+          onMouseOver={() => highlighting.setTag(t)}
+          onMouseOut={() => highlighting.setTag("")}
+        >
+          #{t}
+        </Tag>
+      ))}
+    </span>
+  );
 };
 
-const memoValueFormatter = (cell: TabulatorCell<ITransaction, string>) => {
-  const from_acct = findAccountByUuid(cell.getData().from_account);
-  const to_acct = findAccountByUuid(cell.getData().to_account);
-  const memo = cell.getValue() || "isolatedModules";
+const renderMemoTags = (tags: string[]) => TagsRenderer("#FF8888", tags);
+const renderFromTags = (tags: string[]) => TagsRenderer("#880088", tags);
+const renderToTags = (tags: string[]) => TagsRenderer("#8888ff", tags);
+
+const accountValueFormatter = (renderTags: any) => (
+  value: string,
+  _row: ITransaction
+) => {
+  const account = accountStore.findByUuid(value);
+  return (
+    <span>
+      <b>{account.name}</b> {renderTags(account.tags)}
+    </span>
+  );
+};
+
+const toAccountValueFormatter = accountValueFormatter(renderToTags);
+const fromAccountValueFormatter = accountValueFormatter(renderFromTags);
+
+const memoValueFormatter = (value: string, row: ITransaction) => {
+  const from_acct = accountStore.findByUuid(row.from_account);
+  const to_acct = accountStore.findByUuid(row.to_account);
+  const memo = value || "";
   const memo_tags = [...memo.matchAll(/[^#](#\w+)/g)].map((m) =>
     m[1].replace("#", "")
   );
-  console.log(memo_tags);
-  const tags: string[] = [];
-  const addTags = (color: string, origin: string, newTags: string[]) =>
-    newTags.forEach((t: string) =>
-      tags.push(
-        `<span style="color: ${color}; text-style: italic" alt="${origin}">#${t} </span>`
-      )
-    );
-  addTags("#FF8888", "Memo tag", memo_tags);
-  addTags("#880088", "From Account tag", from_acct.tags);
-  addTags("#8888FF", "To Account tag", to_acct.tags);
-  return `${cell.getValue().replace("##", "#")} <i>${tags.join(" ")}</i>`;
+  return (
+    <span>
+      {memo.replace("##", "#")}
+      {renderMemoTags(memo_tags)}
+      {renderFromTags(from_acct.tags)}
+      {renderToTags(to_acct.tags)}
+    </span>
+  );
 };
 
 const columns = [
-  { title: "Date", field: "date", width: 150 },
+  { title: "Date", dataIndex: "date", width: 150 },
   {
     title: "From",
-    field: "from_account",
+    dataIndex: "from_account",
     width: 300,
-    formatter: accountValueFormatter,
+    render: fromAccountValueFormatter,
   },
   {
     title: "To",
-    field: "to_account",
+    dataIndex: "to_account",
     width: 300,
-    formatter: accountValueFormatter,
+    render: toAccountValueFormatter,
   },
   {
     title: "Value",
-    field: "to_value",
+    dataIndex: "to_value",
     width: 250,
-    formatter: transactionValueFormatter,
+    render: transactionValueFormatter,
   },
-  { title: "Memo", field: "memo", formatter: memoValueFormatter },
+  { title: "Memo", dataIndex: "memo", render: memoValueFormatter },
 ];
 
 function App(): React.ReactElement {
+  const [tag, setTag] = React.useState("");
   return (
     <div className="App">
-      <ReactTabulator
-        data={Transactions}
-        columns={columns}
-        tooltips={true}
-        layout={"fitData"}
-      />
+      <HighlightTag.Provider value={{ tag, setTag }}>
+        <Table columns={columns} dataSource={Transactions} />
+      </HighlightTag.Provider>
     </div>
   );
 }

@@ -28,7 +28,7 @@ export class CurrencyStore {
 
   findByName(name: string) {
     return this.currenciesList.filter(
-      (c) => c.short === name || c.name == name
+      (c) => c.short === name || c.name === name
     )[0];
   }
 
