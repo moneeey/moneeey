@@ -2,88 +2,74 @@ import React from "react";
 import "react-tabulator/lib/styles.css";
 import "react-tabulator/lib/css/bulma/tabulator_bulma.css";
 import { ReactTabulator } from "react-tabulator";
-import { v4 as uuidv4 } from "uuid";
 import "./App.css";
+import { EntityType, generateUuid, TMonetary } from "./Entity";
+import { TAccountUUID, IAccount, AccountType } from "./Account";
+import { ITransaction } from "./Transaction";
+import { CurrencyStore } from "./Currency";
 
-const generateUuid = () => uuidv4();
-
-const Currencies: {
-  [_index: string]: { format: (value: number) => string };
-} = {
-  BRL: {
-    format: (value: number) => "R$ " + value,
-  },
-  BTC: {
-    format: (value: number) => value + " BTC",
-  },
-};
-
-enum AccountType {
-  CHECKING = "CHECKING",
-  CREDIT_CARD = "CREDIT_CARD",
-  PAYEE = "PAYEE",
-}
-
-type TMonetary = number;
-type TAccountUUID = string;
-type TTransactionUUID = string;
-type TDate = string;
-
-interface IAccount {
-  account_uuid: TAccountUUID;
-  name: string;
-  currency: string;
-  created: TDate;
-  type: AccountType;
-  tags: string[];
-}
-interface ITransaction {
-  transaction_uuid: TTransactionUUID;
-  date: TDate;
-  from_account: TAccountUUID;
-  to_account: TAccountUUID;
-  from_value: TMonetary;
-  to_value: TMonetary;
-  memo: string;
-}
+const currencyStore = new CurrencyStore();
+currencyStore.add({
+  entity_type: EntityType.CURRENCY,
+  currency_uuid: generateUuid(),
+  name: "Brazillian Real",
+  short: "BRL",
+  prefix: "R$ ",
+  suffix: "",
+  tags: [],
+});
+currencyStore.add({
+  entity_type: EntityType.CURRENCY,
+  currency_uuid: generateUuid(),
+  name: "Bitcoin",
+  short: "BTC",
+  prefix: "",
+  suffix: " BTC",
+  tags: [],
+});
 
 const Accounts: IAccount[] = [
   {
+    entity_type: EntityType.ACCOUNT,
     account_uuid: generateUuid(),
     name: "MoneeeyBank",
-    currency: "BRL",
+    currency_uuid: currencyStore.findUuidByName("BRL"),
     created: "2020-02-15",
     type: AccountType.CHECKING,
     tags: [],
   },
   {
+    entity_type: EntityType.ACCOUNT,
     account_uuid: generateUuid(),
     name: "MyEmployee",
-    currency: "BRL",
+    currency_uuid: currencyStore.findUuidByName("BRL"),
     created: "2020-02-15",
     type: AccountType.PAYEE,
     tags: ["tax"],
   },
   {
+    entity_type: EntityType.ACCOUNT,
     account_uuid: generateUuid(),
     name: "SuperGroceriesMarket",
-    currency: "BRL",
+    currency_uuid: currencyStore.findUuidByName("BRL"),
     created: "2020-02-15",
     type: AccountType.PAYEE,
     tags: ["groceries"],
   },
   {
+    entity_type: EntityType.ACCOUNT,
     account_uuid: generateUuid(),
     name: "CoffeShop",
-    currency: "BRL",
+    currency_uuid: currencyStore.findUuidByName("BRL"),
     created: "2020-02-15",
     type: AccountType.PAYEE,
     tags: ["health", "tax"],
   },
   {
+    entity_type: EntityType.ACCOUNT,
     account_uuid: generateUuid(),
     name: "BTC-Wallet",
-    currency: "BTC",
+    currency_uuid: currencyStore.findUuidByName("BTC"),
     created: "2020-02-20",
     type: AccountType.CHECKING,
     tags: ["crypto"],
@@ -93,6 +79,7 @@ const ReferenceAccount = Accounts[0].account_uuid;
 
 const Transactions: ITransaction[] = [
   {
+    entity_type: EntityType.TRANSACTION,
     transaction_uuid: generateUuid(),
     date: "2020-02-15",
     from_account: Accounts[1].account_uuid,
@@ -100,8 +87,10 @@ const Transactions: ITransaction[] = [
     from_value: 3600,
     to_value: 3600,
     memo: "",
+    tags: [],
   },
   {
+    entity_type: EntityType.TRANSACTION,
     transaction_uuid: generateUuid(),
     date: "2020-02-15",
     from_account: Accounts[1].account_uuid,
@@ -109,8 +98,10 @@ const Transactions: ITransaction[] = [
     from_value: 3200,
     to_value: 3200,
     memo: "Bonus #tax #cool",
+    tags: ["tax", "cool"],
   },
   {
+    entity_type: EntityType.TRANSACTION,
     transaction_uuid: generateUuid(),
     date: "2020-02-18",
     from_account: Accounts[0].account_uuid,
@@ -118,8 +109,10 @@ const Transactions: ITransaction[] = [
     from_value: 12.11,
     to_value: 12.11,
     memo: "##2313322",
+    tags: [],
   },
   {
+    entity_type: EntityType.TRANSACTION,
     transaction_uuid: generateUuid(),
     date: "2020-02-20",
     from_account: Accounts[0].account_uuid,
@@ -127,6 +120,7 @@ const Transactions: ITransaction[] = [
     from_value: 2000,
     to_value: 0.005381138,
     memo: "",
+    tags: [],
   },
 ];
 
@@ -145,18 +139,8 @@ const findAccountByUuid = (account_uuid: TAccountUUID): IAccount => {
 
 const formatterForAccount = (account_uuid: TAccountUUID) => {
   const account = findAccountByUuid(account_uuid);
-  const currency_id = account.currency;
-  const currency = Currencies[currency_id];
-  if (!currency) {
-    console.warn(
-      "No currency found for account uuid " +
-        account_uuid +
-        " currency: " +
-        currency_id
-    );
-    return () => "ERROR";
-  }
-  return currency.format;
+  const currency_uuid = account.currency_uuid;
+  return (value: TMonetary) => currencyStore.formatByUuid(currency_uuid, value);
 };
 
 const transactionValueFormatter = (
@@ -192,16 +176,16 @@ const memoValueFormatter = (cell: TabulatorCell<ITransaction, string>) => {
   );
   console.log(memo_tags);
   const tags: string[] = [];
-  const addTags = (color: string, newTags: string[]) =>
+  const addTags = (color: string, origin: string, newTags: string[]) =>
     newTags.forEach((t: string) =>
       tags.push(
-        `<span style="color: ${color}; text-style: italic">#${t} </span>`
+        `<span style="color: ${color}; text-style: italic" alt="${origin}">#${t} </span>`
       )
     );
-  addTags("#88FF88", memo_tags);
-  addTags("#880088", from_acct.tags);
-  addTags("#8888FF", to_acct.tags);
-  return `${cell.getValue()} <i>${tags.join(" ")}</i>`;
+  addTags("#FF8888", "Memo tag", memo_tags);
+  addTags("#880088", "From Account tag", from_acct.tags);
+  addTags("#8888FF", "To Account tag", to_acct.tags);
+  return `${cell.getValue().replace("##", "#")} <i>${tags.join(" ")}</i>`;
 };
 
 const columns = [
@@ -227,7 +211,7 @@ const columns = [
   { title: "Memo", field: "memo", formatter: memoValueFormatter },
 ];
 
-function App() {
+function App(): React.ReactElement {
   return (
     <div className="App">
       <ReactTabulator
