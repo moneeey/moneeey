@@ -11,11 +11,11 @@ export default class MoneeeyStore {
   currencies: CurrencyStore = new CurrencyStore();
 }
 
-export function useStore(): MoneeeyStore {
+export function useMoneeeyStore(): MoneeeyStore {
   return React.useContext(MoneeeyContext);
 }
 
-export function MoneeeyProvider({ value, children }: any) {
+export function MoneeeyStoreProvider({ value, children }: any) {
   return (
     <MoneeeyContext.Provider value={value}>{children}</MoneeeyContext.Provider>
   );

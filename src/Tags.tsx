@@ -1,10 +1,10 @@
 import { Tag } from "antd";
 import React from "react";
-import { useStore } from "./MoneeeyStore";
+import { useMoneeeyStore } from "./MoneeeyStore";
 import { NavigationArea } from "./Navigation";
 
 const TagColors: { [_group: string]: string } = {
-  highlight: "#ff88ff",
+  highlight: "#999911",
   memo: "#777777",
   from: "#880088",
   to: "#8888ff",
@@ -25,7 +25,7 @@ interface IStyledTagsProp extends ITagsProp {
 
 function TagsRenderer({ color, tags }: IStyledTagsProp) {
   const { tag, setTag } = React.useContext(HighlightTagContext);
-  const moneeeyStore = useStore();
+  const moneeeyStore = useMoneeeyStore();
   return (
     <span>
       {tags.map((t: string) => (

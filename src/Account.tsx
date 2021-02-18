@@ -28,6 +28,9 @@ export class AccountStore {
       [account.account_uuid]: account,
     };
     this.accountsList = [...this.accountsList, account];
+    if (this.referenceAccount === "") {
+      this.referenceAccount = account.account_uuid;
+    }
   }
 
   findByUuid(account_uuid: TAccountUUID) {

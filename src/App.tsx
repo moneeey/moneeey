@@ -4,8 +4,8 @@ import "antd/dist/antd.css";
 import { TMonetary } from "./Entity";
 import { TAccountUUID } from "./Account";
 import { ITransaction } from "./Transaction";
-import { Table } from "antd";
-import MoneeeyStore, { MoneeeyProvider } from "./MoneeeyStore";
+import { Button, Table } from "antd";
+import MoneeeyStore, { MoneeeyStoreProvider } from "./MoneeeyStore";
 import {
   SampleAccounts,
   SampleCurrencies,
@@ -17,6 +17,7 @@ import {
   TagsToAcct,
   TagsHighlightProvider,
 } from "./Tags";
+import NavigationStore, { NavigationArea } from "./Navigation";
 
 const moneeeyStore = new MoneeeyStore();
 const currencyStore = moneeeyStore.currencies;
@@ -54,9 +55,9 @@ const accountValueFormatter = (TagsComponent: any) => (
 ) => {
   const account = accountStore.findByUuid(value);
   return (
-    <span>
+    <>
       <b>{account.name}</b> <TagsComponent tags={account.tags} />
-    </span>
+    </>
   );
 };
 
@@ -71,12 +72,12 @@ const memoValueFormatter = (value: string, row: ITransaction) => {
     m[1].replace("#", "")
   );
   return (
-    <span>
+    <>
       {memo.replace("##", "#")}
       <TagsMemo tags={memo_tags} />
       <TagsFromAcct tags={from_acct.tags} />
       <TagsToAcct tags={to_acct.tags} />
-    </span>
+    </>
   );
 };
 
@@ -105,14 +106,27 @@ const columns = [
 
 function App(): React.ReactElement {
   const [moneeeyStore] = React.useState(new MoneeeyStore());
+  const [navigating, setNavigating] = React.useState(
+    moneeeyStore.navigation.full_path
+  );
+  moneeeyStore.navigation.addObserver((navigation: NavigationStore) => {
+    setNavigating(navigation.full_path);
+  });
   return (
     <div className="App">
-      <MoneeeyProvider value={moneeeyStore}>
-        {moneeeyStore.navigation.area + " " + moneeeyStore.navigation.detail}
+      <MoneeeyStoreProvider value={moneeeyStore}>
         <TagsHighlightProvider>
+          <Button
+            onClick={() =>
+              moneeeyStore.navigation.navigate(NavigationArea.Home)
+            }
+          >
+            Home
+          </Button>{" "}
+          {navigating}
           <Table columns={columns} dataSource={SampleTransactions} />
         </TagsHighlightProvider>
-      </MoneeeyProvider>
+      </MoneeeyStoreProvider>
     </div>
   );
 }
