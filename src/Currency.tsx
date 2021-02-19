@@ -3,7 +3,7 @@ import MappedStore from "./MappedStore";
 
 export type TCurrencyUUID = string;
 
-export interface Currency extends IBaseEntity {
+export interface ICurrency extends IBaseEntity {
   currency_uuid: TCurrencyUUID;
   name: string;
   short: string;
@@ -11,7 +11,7 @@ export interface Currency extends IBaseEntity {
   prefix: string;
 }
 
-export class CurrencyStore extends MappedStore<Currency> {
+export class CurrencyStore extends MappedStore<ICurrency> {
   constructor() {
     super((c) => c.currency_uuid);
   }
@@ -24,7 +24,7 @@ export class CurrencyStore extends MappedStore<Currency> {
     return this.findByName(name).currency_uuid;
   }
 
-  format(currency: Currency, value: TMonetary) {
+  format(currency: ICurrency, value: TMonetary) {
     return currency.prefix + value.toLocaleString() + currency.suffix;
   }
 
