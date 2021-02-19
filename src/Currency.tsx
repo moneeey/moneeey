@@ -1,4 +1,5 @@
 import { IBaseEntity, TMonetary } from "./Entity";
+import MappedStore from "./MappedStore";
 
 export type TCurrencyUUID = string;
 
@@ -10,26 +11,13 @@ export interface Currency extends IBaseEntity {
   prefix: string;
 }
 
-export class CurrencyStore {
-  currenciesByUuid: { [currency_uuid: string]: Currency } = {};
-  currenciesList: Currency[] = [];
-
-  add(currency: Currency) {
-    this.currenciesByUuid = {
-      ...this.currenciesByUuid,
-      [currency.currency_uuid]: currency,
-    };
-    this.currenciesList = [...this.currenciesList, currency];
-  }
-
-  findByUuid(currency_uuid: TCurrencyUUID) {
-    return this.currenciesByUuid[currency_uuid];
+export class CurrencyStore extends MappedStore<Currency> {
+  constructor() {
+    super((c) => c.currency_uuid);
   }
 
   findByName(name: string) {
-    return this.currenciesList.filter(
-      (c) => c.short === name || c.name === name
-    )[0];
+    return this.all().filter((c) => c.short === name || c.name === name)[0];
   }
 
   findUuidByName(name: string) {
@@ -41,6 +29,6 @@ export class CurrencyStore {
   }
 
   formatByUuid(currency_uuid: TCurrencyUUID, value: TMonetary) {
-    return this.format(this.findByUuid(currency_uuid), value);
+    return this.format(this.byUuid(currency_uuid), value);
   }
 }

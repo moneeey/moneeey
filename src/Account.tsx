@@ -1,5 +1,6 @@
 import { TCurrencyUUID } from "./Currency";
 import { IBaseEntity, TDate } from "./Entity";
+import MappedStore from "./MappedStore";
 
 export type TAccountUUID = string;
 
@@ -17,28 +18,20 @@ export interface IAccount extends IBaseEntity {
   type: AccountType;
 }
 
-export class AccountStore {
-  accountsByUuid: { [account_uuid: string]: IAccount } = {};
-  accountsList: IAccount[] = [];
+export class AccountStore extends MappedStore<IAccount> {
   referenceAccount: TAccountUUID = "";
 
-  add(account: IAccount) {
-    this.accountsByUuid = {
-      ...this.accountsByUuid,
-      [account.account_uuid]: account,
-    };
-    this.accountsList = [...this.accountsList, account];
-    if (this.referenceAccount === "") {
-      this.referenceAccount = account.account_uuid;
-    }
+  constructor() {
+    super((a) => a.account_uuid);
   }
 
-  findByUuid(account_uuid: TAccountUUID) {
-    return this.accountsByUuid[account_uuid];
+  add(account: IAccount) {
+    super.add(account);
+    if (!this.referenceAccount) this.referenceAccount = account.account_uuid;
   }
 
   findByName(name: string) {
-    return this.accountsList.filter((acct) => acct.name === name)[0];
+    return this.all().filter((acct) => acct.name === name)[0];
   }
 
   findUuidByName(name: string) {
@@ -51,5 +44,10 @@ export class AccountStore {
 
   get getReferenceAccountUuid() {
     return this.referenceAccount;
+  }
+
+  get referenceAccountName() {
+    if (this.referenceAccount) return this.byUuid(this.referenceAccount).name;
+    return "";
   }
 }

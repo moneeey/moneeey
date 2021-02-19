@@ -1,19 +1,18 @@
 import React from "react";
-import "./App.css";
-import "antd/dist/antd.css";
 import { TMonetary } from "./Entity";
 import { TAccountUUID } from "./Account";
 import { ITransaction } from "./Transaction";
-import { Table } from "antd";
+import { Button, Space, Table } from "antd";
 import MoneeeyStore from "./MoneeeyStore";
 import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
+import { DeleteOutlined } from "@ant-design/icons";
 
 const transactionValueFormatter = (moneeeyStore: MoneeeyStore) => (
   _value: string,
   row: ITransaction
 ) => {
   const formatterForAccount = (account_uuid: TAccountUUID) => {
-    const account = moneeeyStore.accounts.findByUuid(account_uuid);
+    const account = moneeeyStore.accounts.byUuid(account_uuid);
     return (value: TMonetary) =>
       moneeeyStore.currencies.formatByUuid(account.currency_uuid, value);
   };
@@ -40,7 +39,7 @@ const accountValueFormatter = (
   TagsComponent: any,
   moneeeyStore: MoneeeyStore
 ) => (value: string, _row: ITransaction) => {
-  const account = moneeeyStore.accounts.findByUuid(value);
+  const account = moneeeyStore.accounts.byUuid(value);
   return (
     <>
       <b>{account.name}</b> <TagsComponent tags={account.tags} />
@@ -53,12 +52,51 @@ const toAccountValueFormatter = (m: MoneeeyStore) =>
 const fromAccountValueFormatter = (m: MoneeeyStore) =>
   accountValueFormatter(TagsFromAcct, m);
 
+function TransactionRowControls({
+  row,
+  moneeeyStore,
+}: {
+  row: ITransaction;
+  moneeeyStore: MoneeeyStore;
+}) {
+  const [deleting, setDeleting] = React.useState(false);
+  const [deletingTimeout, setDeletingTimeout] = React.useState(null as any);
+  return (
+    <div className="transactionRowControls">
+      {!deleting ? (
+        <Button shape="circle">
+          <DeleteOutlined
+            onClick={() => {
+              const timeout = setTimeout(() => setDeleting(false), 5000);
+              setDeletingTimeout(() => clearTimeout(timeout));
+              setDeleting(true);
+            }}
+          />
+        </Button>
+      ) : (
+        <Space>
+          <Button danger shape="circle">
+            <DeleteOutlined
+              onClick={() => {
+                if (deletingTimeout) deletingTimeout();
+                moneeeyStore.transactions.remove(row);
+                setDeleting(false);
+              }}
+            />
+          </Button>
+          <Button onClick={() => setDeleting(false)}>Cancel</Button>
+        </Space>
+      )}
+    </div>
+  );
+}
+
 const memoValueFormatter = (moneeeyStore: MoneeeyStore) => (
   value: string,
   row: ITransaction
 ) => {
-  const from_acct = moneeeyStore.accounts.findByUuid(row.from_account);
-  const to_acct = moneeeyStore.accounts.findByUuid(row.to_account);
+  const from_acct = moneeeyStore.accounts.byUuid(row.from_account);
+  const to_acct = moneeeyStore.accounts.byUuid(row.to_account);
   const memo = (value || "") + " ";
   const memo_tags = [...memo.matchAll(/[^#](#\w+)/g)].map((m) =>
     m[1].replace("#", "")
@@ -69,6 +107,7 @@ const memoValueFormatter = (moneeeyStore: MoneeeyStore) => (
       <TagsMemo tags={memo_tags} />
       <TagsFromAcct tags={from_acct.tags} />
       <TagsToAcct tags={to_acct.tags} />
+      <TransactionRowControls row={row} moneeeyStore={moneeeyStore} />
     </>
   );
 };
@@ -100,7 +139,7 @@ const buildColumns = (moneeeyStore: MoneeeyStore) => [
   },
 ];
 
-export default function Ledger({
+export default function TransactionTable({
   moneeeyStore,
   transactions,
 }: {
@@ -108,6 +147,10 @@ export default function Ledger({
   transactions: ITransaction[];
 }): React.ReactElement {
   return (
-    <Table columns={buildColumns(moneeeyStore)} dataSource={transactions} />
+    <Table
+      columns={buildColumns(moneeeyStore)}
+      dataSource={transactions}
+      pagination={false}
+    />
   );
 }

@@ -4,10 +4,10 @@ import { useMoneeeyStore } from "./MoneeeyStore";
 import { NavigationArea } from "./Navigation";
 
 const TagColors: { [_group: string]: string } = {
-  highlight: "#999911",
-  memo: "#777777",
-  from: "#880088",
-  to: "#8888ff",
+  highlight: "lightsalmon",
+  memo: "goldenrod",
+  from: "mediumturquoise",
+  to: "geekblue",
 };
 
 const HighlightTagContext = React.createContext({
