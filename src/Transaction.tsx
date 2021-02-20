@@ -1,4 +1,4 @@
-import { AccountStore, TAccountUUID } from "./Account";
+import { AccountStore, IAccount, TAccountUUID } from "./Account";
 import { IBaseEntity, TDate, TMonetary } from "./Entity";
 import MappedStore from "./MappedStore";
 
@@ -19,15 +19,28 @@ export class TransactionStore extends MappedStore<ITransaction> {
     super((t) => t.transaction_uuid);
   }
 
-  viewAll() {
-    return [...this.all()];
+  all() {
+    return super
+      .all()
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+
+  viewAllWithAccount(account: TAccountUUID) {
+    return [...this.all()].filter((row) => {
+      return row.from_account === account || row.to_account === account;
+    });
   }
 
   viewAllWithTag(tag: string, accountsStore: AccountStore) {
     return [...this.all()].filter((row) => {
-      const from_acct = accountsStore.byUuid(row.from_account);
-      const to_acct = accountsStore.byUuid(row.to_account);
-      const all_tags = [...from_acct.tags, ...to_acct.tags, ...row.tags];
+      const getAccountTags = (account: TAccountUUID) => {
+        const acct = accountsStore.byUuid(account);
+        if (acct) return acct.tags;
+        return [];
+      };
+      const from_acct = getAccountTags(row.from_account);
+      const to_acct = getAccountTags(row.to_account);
+      const all_tags = [...from_acct, ...to_acct, ...row.tags];
       return all_tags.indexOf(tag) >= 0;
     });
   }

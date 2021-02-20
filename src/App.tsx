@@ -1,7 +1,7 @@
 import React from "react";
 import "./App.css";
 import "antd/dist/antd.css";
-import { Button } from "antd";
+import { Button, Space } from "antd";
 import MoneeeyStore, { MoneeeyStoreProvider } from "./MoneeeyStore";
 import {
   SampleAccounts,
@@ -20,7 +20,9 @@ const ReferenceAccountTransactions = ({
 }) => {
   const getTransactions = () => {
     if (moneeeyStore.navigation.area === NavigationArea.Home) {
-      return moneeeyStore.transactions.viewAll();
+      return moneeeyStore.transactions.viewAllWithAccount(
+        moneeeyStore.accounts.referenceAccount
+      );
     } else if (moneeeyStore.navigation.area === NavigationArea.Tag) {
       return moneeeyStore.transactions.viewAllWithTag(
         moneeeyStore.navigation.detail,
@@ -66,15 +68,30 @@ function App(): React.ReactElement {
           <Observe subject={moneeeyStore.navigation}>
             {(_changedNav) => (
               <>
-                <Button onClick={addSamples}>Add Samples</Button>
-                <Button
-                  onClick={() =>
-                    moneeeyStore.navigation.navigate(NavigationArea.Home)
-                  }
-                >
-                  Ref: {moneeeyStore.accounts.referenceAccountName}
-                </Button>
+                <Space>
+                  {moneeeyStore.navigation.area === NavigationArea.Tag && (
+                    <Button
+                      onClick={() =>
+                        moneeeyStore.navigation.navigate(NavigationArea.Home)
+                      }
+                    >
+                      {moneeeyStore.accounts.referenceAccountName} Home
+                    </Button>
+                  )}
+                  {moneeeyStore.accounts.allNonPayees().map((acct) => (
+                    <Button
+                      key={acct.account_uuid}
+                      onClick={() => {
+                        moneeeyStore.accounts.setReferenceAccount(acct);
+                        moneeeyStore.navigation.navigate(NavigationArea.Home);
+                      }}
+                    >
+                      {acct.name}
+                    </Button>
+                  ))}
+                </Space>
                 <ReferenceAccountTransactions moneeeyStore={moneeeyStore} />
+                <Button onClick={addSamples}>Add Samples</Button>
               </>
             )}
           </Observe>

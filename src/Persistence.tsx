@@ -1,6 +1,6 @@
 import PouchDB from "pouchdb";
 import { EntityType, IBaseEntity } from "./Entity";
-import MappedStore, { MappedStoreObservable } from "./MappedStore";
+import MappedStore from "./MappedStore";
 
 export default class PersistenceStore {
   db: PouchDB.Database;
@@ -23,16 +23,21 @@ export default class PersistenceStore {
             ...((docs.rows.map((d) => d.doc) as unknown[]) as any[]),
           ];
           resolve(this.entries);
-        });
+        })
+        .catch(this.handleError);
     });
   }
 
   async persist(item: any) {
-    return this.db.put(item);
+    return this.db.put(item).catch(this.handleError);
   }
 
   async fetch(id: string) {
-    return this.db.get(id);
+    return this.db.get(id).catch(this.handleError);
+  }
+
+  handleError(err: any) {
+    alert(err);
   }
 
   retrieve(type: EntityType) {

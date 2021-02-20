@@ -32,6 +32,14 @@ export class AccountStore extends MappedStore<IAccount> {
     }
   }
 
+  allPayees() {
+    return this.all().filter((acct) => acct.type === AccountType.PAYEE);
+  }
+
+  allNonPayees() {
+    return this.all().filter((acct) => acct.type !== AccountType.PAYEE);
+  }
+
   findByName(name: string) {
     return this.all().filter((acct) => acct.name === name)[0];
   }

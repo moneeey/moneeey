@@ -1,5 +1,6 @@
 import React from "react";
 
+const OBSERVE_UPDATE_DEBOUNCE = 20;
 export type Observer<T> = (value: T) => void;
 
 export default class Observable<T> {
@@ -33,7 +34,7 @@ export function Observe<T>({
       setTimer(
         setTimeout(() => {
           setValue(newValue);
-        }, 50)
+        }, OBSERVE_UPDATE_DEBOUNCE)
       );
     };
     subject.addObserver(observing);
