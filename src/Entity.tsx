@@ -12,7 +12,13 @@ export enum EntityType {
   CURRENCY = "CURRENCY",
 }
 
-export interface IBaseEntity {
+export interface IBaseCouchEntity {
+  _id?: string;
+  _rev?: string;
+  _deleted?: boolean;
+}
+
+export interface IBaseEntity extends IBaseCouchEntity {
   entity_type: EntityType;
   tags: string[];
 }

@@ -7,51 +7,6 @@ import MoneeeyStore from "./MoneeeyStore";
 import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
 import { DeleteOutlined } from "@ant-design/icons";
 
-const transactionValueFormatter = (moneeeyStore: MoneeeyStore) => (
-  _value: string,
-  row: ITransaction
-) => {
-  const formatterForAccount = (account_uuid: TAccountUUID) => {
-    const account = moneeeyStore.accounts.byUuid(account_uuid);
-    return (value: TMonetary) =>
-      moneeeyStore.currencies.formatByUuid(account.currency_uuid, value);
-  };
-
-  const formatter_to_acct = formatterForAccount(row.to_account);
-  if (row.from_value === row.to_value) {
-    const color =
-      row.to_account === moneeeyStore.accounts.getReferenceAccountUuid
-        ? "green"
-        : "red";
-    return (
-      <span style={{ color: color }}>{formatter_to_acct(row.to_value)}</span>
-    );
-  }
-  const formatter_from_acct = formatterForAccount(row.from_account);
-  return (
-    formatter_from_acct(row.from_value) +
-    " -> " +
-    formatter_to_acct(row.to_value)
-  );
-};
-
-const accountValueFormatter = (
-  TagsComponent: any,
-  moneeeyStore: MoneeeyStore
-) => (value: string, _row: ITransaction) => {
-  const account = moneeeyStore.accounts.byUuid(value);
-  return (
-    <>
-      <b>{account.name}</b> <TagsComponent tags={account.tags} />
-    </>
-  );
-};
-
-const toAccountValueFormatter = (m: MoneeeyStore) =>
-  accountValueFormatter(TagsToAcct, m);
-const fromAccountValueFormatter = (m: MoneeeyStore) =>
-  accountValueFormatter(TagsFromAcct, m);
-
 function TransactionRowControls({
   row,
   moneeeyStore,
@@ -91,51 +46,103 @@ function TransactionRowControls({
   );
 }
 
-const memoValueFormatter = (moneeeyStore: MoneeeyStore) => (
-  value: string,
-  row: ITransaction
-) => {
-  const from_acct = moneeeyStore.accounts.byUuid(row.from_account);
-  const to_acct = moneeeyStore.accounts.byUuid(row.to_account);
-  const memo = (value || "") + " ";
-  const memo_tags = [...memo.matchAll(/[^#](#\w+)/g)].map((m) =>
-    m[1].replace("#", "")
-  );
+const accountValueFormatter = (
+  TagsComponent: any,
+  moneeeyStore: MoneeeyStore
+) => (value: string, _row: ITransaction) => {
+  const account = moneeeyStore.accounts.byUuid(value);
+  if (!account) return;
   return (
     <>
-      {memo.replace("##", "#")}
-      <TagsMemo tags={memo_tags} />
-      <TagsFromAcct tags={from_acct.tags} />
-      <TagsToAcct tags={to_acct.tags} />
-      <TransactionRowControls row={row} moneeeyStore={moneeeyStore} />
+      <b>{account.name}</b> <TagsComponent tags={account.tags} />
     </>
   );
 };
 
 const buildColumns = (moneeeyStore: MoneeeyStore) => [
-  { title: "Date", dataIndex: "date", width: 150 },
+  {
+    title: "Date",
+    dataIndex: "date",
+    width: 150,
+  },
   {
     title: "From",
     dataIndex: "from_account",
     width: 300,
-    render: fromAccountValueFormatter(moneeeyStore),
+    render: accountValueFormatter(TagsFromAcct, moneeeyStore),
   },
   {
     title: "To",
     dataIndex: "to_account",
     width: 300,
-    render: toAccountValueFormatter(moneeeyStore),
+    render: accountValueFormatter(TagsToAcct, moneeeyStore),
+  },
+  {
+    title: "Memo",
+    dataIndex: "memo",
+    render: (value: string, row: ITransaction) => {
+      const from_acct = moneeeyStore.accounts.byUuid(row.from_account);
+      const to_acct = moneeeyStore.accounts.byUuid(row.to_account);
+      if (!from_acct || !to_acct) return;
+      const memo = (value || "") + " ";
+      const memo_tags = [...memo.matchAll(/[^#](#\w+)/g)].map((m) =>
+        m[1].replace("#", "")
+      );
+      return (
+        <>
+          {memo.replace("##", "#")}
+          <TagsMemo tags={memo_tags} />
+          <TagsFromAcct tags={from_acct.tags} />
+          <TagsToAcct tags={to_acct.tags} />
+        </>
+      );
+    },
   },
   {
     title: "Value",
     dataIndex: "to_value",
     width: 250,
-    render: transactionValueFormatter(moneeeyStore),
-  },
-  {
-    title: "Memo",
-    dataIndex: "memo",
-    render: memoValueFormatter(moneeeyStore),
+    render: (_value: string, row: ITransaction) => {
+      const formatterForAccount = (account_uuid: TAccountUUID) => {
+        return (value: TMonetary) => {
+          const acct = moneeeyStore.accounts.byUuid(account_uuid);
+          if (acct) {
+            return moneeeyStore.currencies.formatByUuid(
+              acct.currency_uuid,
+              value
+            );
+          } else {
+            return value;
+          }
+        };
+      };
+
+      let value;
+      const formatter_to_acct = formatterForAccount(row.to_account);
+      if (row.from_value === row.to_value) {
+        const color =
+          row.to_account === moneeeyStore.accounts.getReferenceAccountUuid
+            ? "green"
+            : "red";
+        value = (
+          <span style={{ color: color }}>
+            {formatter_to_acct(row.to_value)}
+          </span>
+        );
+      } else {
+        const formatter_from_acct = formatterForAccount(row.from_account);
+        value =
+          formatter_from_acct(row.from_value) +
+          " -> " +
+          formatter_to_acct(row.to_value);
+      }
+      return (
+        <>
+          {value}
+          <TransactionRowControls moneeeyStore={moneeeyStore} row={row} />
+        </>
+      );
+    },
   },
 ];
 

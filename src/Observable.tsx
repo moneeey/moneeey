@@ -1,3 +1,5 @@
+import React from "react";
+
 export type Observer<T> = (value: T) => void;
 
 export default class Observable<T> {
@@ -7,7 +9,37 @@ export default class Observable<T> {
     this.observers.push(observer);
   }
 
+  removeObserver(observer: Observer<T>) {
+    this.observers = this.observers.filter((o) => o !== observer);
+  }
+
   dispatch(value: T) {
     this.observers.forEach((fn: Observer<T>) => fn(value));
   }
+}
+
+export function Observe<T>({
+  subject,
+  children,
+}: {
+  children: (value: T) => React.ReactElement;
+  subject: Observable<T>;
+}) {
+  const [value, setValue] = React.useState((null as unknown) as T);
+  const [timer, setTimer] = React.useState(null as any);
+  React.useEffect(() => {
+    const observing = (newValue: T) => {
+      clearTimeout(timer);
+      setTimer(
+        setTimeout(() => {
+          setValue(newValue);
+        }, 50)
+      );
+    };
+    subject.addObserver(observing);
+    return () => {
+      subject.removeObserver(observing);
+    };
+  }, [subject, value, setValue, timer]);
+  return children(value);
 }

@@ -27,7 +27,9 @@ export class AccountStore extends MappedStore<IAccount> {
 
   add(account: IAccount) {
     super.add(account);
-    if (!this.referenceAccount) this.referenceAccount = account.account_uuid;
+    if (!this.referenceAccount && account.type === AccountType.CHECKING) {
+      this.referenceAccount = account.account_uuid;
+    }
   }
 
   findByName(name: string) {
@@ -47,7 +49,10 @@ export class AccountStore extends MappedStore<IAccount> {
   }
 
   get referenceAccountName() {
-    if (this.referenceAccount) return this.byUuid(this.referenceAccount).name;
+    if (this.referenceAccount) {
+      const refByUuid = this.byUuid(this.referenceAccount);
+      return (refByUuid && refByUuid.name) || "";
+    }
     return "";
   }
 }
