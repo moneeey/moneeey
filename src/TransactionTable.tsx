@@ -68,13 +68,13 @@ const buildColumns = (moneeeyStore: MoneeeyStore) => [
   {
     title: "From",
     dataIndex: "from_account",
-    width: 300,
+    width: 360,
     render: accountValueFormatter(TagsFromAcct, moneeeyStore),
   },
   {
     title: "To",
     dataIndex: "to_account",
-    width: 300,
+    width: 360,
     render: accountValueFormatter(TagsToAcct, moneeeyStore),
   },
   {

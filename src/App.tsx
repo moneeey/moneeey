@@ -12,6 +12,7 @@ import { TagsHighlightProvider } from "./Tags";
 import { NavigationArea } from "./Navigation";
 import TransactionTable from "./TransactionTable";
 import { Observe } from "./Observable";
+import { AccountType } from "./Account";
 
 const ReferenceAccountTransactions = ({
   moneeeyStore,
@@ -21,7 +22,7 @@ const ReferenceAccountTransactions = ({
   const getTransactions = () => {
     if (moneeeyStore.navigation.area === NavigationArea.Home) {
       return moneeeyStore.transactions.viewAllWithAccount(
-        moneeeyStore.accounts.referenceAccount
+        moneeeyStore.navigation.referenceAccount
       );
     } else if (moneeeyStore.navigation.area === NavigationArea.Tag) {
       return moneeeyStore.transactions.viewAllWithTag(
@@ -65,35 +66,58 @@ function App(): React.ReactElement {
     <div className="App">
       <MoneeeyStoreProvider value={moneeeyStore}>
         <TagsHighlightProvider>
-          <Observe subject={moneeeyStore.navigation}>
-            {(_changedNav) => (
-              <>
-                <Space>
-                  {moneeeyStore.navigation.area === NavigationArea.Tag && (
-                    <Button
-                      onClick={() =>
-                        moneeeyStore.navigation.navigate(NavigationArea.Home)
-                      }
-                    >
-                      {moneeeyStore.accounts.referenceAccountName} Home
-                    </Button>
+          <Observe subject={moneeeyStore.accounts}>
+            {(changedAcct) => {
+              if (changedAcct) {
+                const { updated } = changedAcct;
+                if (
+                  !moneeeyStore.navigation.referenceAccount &&
+                  updated &&
+                  updated.type === AccountType.CHECKING
+                ) {
+                  moneeeyStore.navigation.setReferenceAccount(updated);
+                }
+              }
+              return (
+                <Observe subject={moneeeyStore.navigation}>
+                  {(_changedNav) => (
+                    <>
+                      <Space>
+                        {moneeeyStore.navigation.area ===
+                          NavigationArea.Tag && (
+                          <Button
+                            onClick={() =>
+                              moneeeyStore.navigation.navigate(
+                                NavigationArea.Home
+                              )
+                            }
+                          >
+                            Home
+                          </Button>
+                        )}
+                        {moneeeyStore.accounts.allNonPayees().map((acct) => (
+                          <Button
+                            key={acct.account_uuid}
+                            onClick={() => {
+                              moneeeyStore.navigation.setReferenceAccount(acct);
+                              moneeeyStore.navigation.navigate(
+                                NavigationArea.Home
+                              );
+                            }}
+                          >
+                            {acct.name}
+                          </Button>
+                        ))}
+                      </Space>
+                      <ReferenceAccountTransactions
+                        moneeeyStore={moneeeyStore}
+                      />
+                      <Button onClick={addSamples}>Add Samples</Button>
+                    </>
                   )}
-                  {moneeeyStore.accounts.allNonPayees().map((acct) => (
-                    <Button
-                      key={acct.account_uuid}
-                      onClick={() => {
-                        moneeeyStore.accounts.setReferenceAccount(acct);
-                        moneeeyStore.navigation.navigate(NavigationArea.Home);
-                      }}
-                    >
-                      {acct.name}
-                    </Button>
-                  ))}
-                </Space>
-                <ReferenceAccountTransactions moneeeyStore={moneeeyStore} />
-                <Button onClick={addSamples}>Add Samples</Button>
-              </>
-            )}
+                </Observe>
+              );
+            }}
           </Observe>
         </TagsHighlightProvider>
       </MoneeeyStoreProvider>
