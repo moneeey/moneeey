@@ -1,3 +1,4 @@
+import { isValid } from "date-fns";
 import { TAccountUUID } from "./Account";
 import { formatDateAs, TDate } from "./Entity";
 import Observable from "./Observable";
@@ -21,7 +22,7 @@ export default class NavigationStore extends Observable<NavigationStore> {
   navigate(area: NavigationArea, detail: string = "") {
     this.area = area;
     this.detail = detail;
-    if (area === NavigationArea.AccountTransactions && detail != "") {
+    if (area === NavigationArea.AccountTransactions && detail !== "") {
       this.referenceAccount = detail;
     }
     this.dispatch(this);
@@ -32,6 +33,10 @@ export default class NavigationStore extends Observable<NavigationStore> {
   }
 
   formatDate(date: TDate) {
-    return formatDateAs(date, this.dateFormat);
+    if (isValid(date)) {
+      return formatDateAs(date, this.dateFormat);
+    } else {
+      return date;
+    }
   }
 }

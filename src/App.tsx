@@ -17,7 +17,7 @@ function App(): React.ReactElement {
       case NavigationArea.Dashboard:
         return <Dashboard />;
       case NavigationArea.Reports:
-        return <span>Something amazing will be here</span>;
+        return <Reports />;
       case NavigationArea.Payees:
       case NavigationArea.Accounts:
       case NavigationArea.Currencies:

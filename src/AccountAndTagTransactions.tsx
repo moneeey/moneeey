@@ -70,10 +70,7 @@ export default function AccountAndTagTransactions({
                   </Breadcrumb.Item>
                 )}
               </Breadcrumb>
-              <TransactionTable
-                moneeeyStore={moneeeyStore}
-                transactions={getTransactions()}
-              />
+              <TransactionTable transactions={getTransactions()} />
             </>
           )}
         </Observe>

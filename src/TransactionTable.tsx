@@ -3,7 +3,7 @@ import { compareDates, TMonetary } from "./Entity";
 import { TAccountUUID } from "./Account";
 import { ITransaction } from "./Transaction";
 import { Button, Table, Popconfirm } from "antd";
-import MoneeeyStore from "./MoneeeyStore";
+import MoneeeyStore, { useMoneeeyStore } from "./MoneeeyStore";
 import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
 import { DeleteOutlined } from "@ant-design/icons";
 
@@ -87,7 +87,7 @@ const buildColumns = (moneeeyStore: MoneeeyStore) => [
   {
     title: "Value",
     dataIndex: "to_value",
-    width: 250,
+    width: 320,
     sorter: (a: ITransaction, b: ITransaction) => a.to_value - b.to_value,
     render: (_value: string, row: ITransaction) => {
       const formatterForAccount = (account_uuid: TAccountUUID) => {
@@ -134,12 +134,11 @@ const buildColumns = (moneeeyStore: MoneeeyStore) => [
 ];
 
 export default function TransactionTable({
-  moneeeyStore,
   transactions,
 }: {
-  moneeeyStore: MoneeeyStore;
   transactions: ITransaction[];
 }): React.ReactElement {
+  const moneeeyStore = useMoneeeyStore();
   return (
     <Table
       columns={buildColumns(moneeeyStore)}

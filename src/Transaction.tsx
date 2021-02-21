@@ -24,8 +24,14 @@ export class TransactionStore extends MappedStore<ITransaction> {
   }
 
   viewAllWithAccount(account: TAccountUUID) {
+    return this.viewAllWithAccounts([account]);
+  }
+
+  viewAllWithAccounts(accounts: TAccountUUID[]) {
     return [...this.all()].filter((row) => {
-      return row.from_account === account || row.to_account === account;
+      return (
+        accounts.includes(row.from_account) || accounts.includes(row.to_account)
+      );
     });
   }
 

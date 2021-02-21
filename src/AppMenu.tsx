@@ -56,7 +56,11 @@ export default function AppMenu({
           <b>Edit Accounts</b>
         </Menu.Item>
       </Menu.SubMenu>
-      <Menu.Item key="reports" icon={<AreaChartOutlined />}>
+      <Menu.Item
+        key="reports"
+        icon={<AreaChartOutlined />}
+        onClick={() => navigation.navigate(NavigationArea.Reports)}
+      >
         Reports
       </Menu.Item>
       <Menu.SubMenu key="Settings" icon={<SettingOutlined />} title="Settings">

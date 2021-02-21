@@ -2,6 +2,7 @@ import { Button } from "antd";
 import React from "react";
 import { compareDates } from "./Entity";
 import { useMoneeeyStore } from "./MoneeeyStore";
+import { MoneyGrowthReport } from "./Reports";
 import {
   SampleCurrencies,
   SampleAccounts,
@@ -24,9 +25,9 @@ export default function Dashboard() {
 
   return (
     <div>
+      <MoneyGrowthReport />
       <b>Recent Transactions</b>
       <TransactionTable
-        moneeeyStore={moneeeyStore}
         transactions={moneeeyStore.transactions
           .all()
           .sort((a, b) => compareDates(a.updated || "", b.updated || ""))

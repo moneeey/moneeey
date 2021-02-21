@@ -9,6 +9,7 @@ export interface ICurrency extends IBaseEntity {
   short: string;
   suffix: string;
   prefix: string;
+  decimals: number;
 }
 
 export class CurrencyStore extends MappedStore<ICurrency> {
@@ -25,7 +26,14 @@ export class CurrencyStore extends MappedStore<ICurrency> {
   }
 
   format(currency: ICurrency, value: TMonetary) {
-    return currency.prefix + value.toLocaleString() + currency.suffix;
+    return (
+      currency.prefix +
+      value.toLocaleString(undefined, {
+        maximumFractionDigits: currency.decimals,
+        minimumFractionDigits: currency.decimals,
+      }) +
+      currency.suffix
+    );
   }
 
   formatByUuid(currency_uuid: TCurrencyUUID, value: TMonetary) {
