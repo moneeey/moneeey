@@ -8,6 +8,7 @@ import {
   DollarOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
+import { IAccount } from "./Account";
 
 export default function AppMenu({
   moneeeyStore,
@@ -15,6 +16,13 @@ export default function AppMenu({
   moneeeyStore: MoneeeyStore;
 }) {
   const { navigation, accounts } = moneeeyStore;
+  const getAccountCurrency = (account: IAccount) => {
+    const curr = moneeeyStore.currencies.byUuid(account.currency_uuid);
+    if (curr) {
+      return <b>{curr.short}</b>;
+    }
+    return <b>?</b>;
+  };
   return (
     <Menu mode="horizontal">
       <Menu.Item
@@ -24,24 +32,23 @@ export default function AppMenu({
       >
         Dashboard
       </Menu.Item>
-      <Menu.SubMenu
-        key="Transactions"
-        icon={<DollarOutlined />}
-        title="Transactions"
-      >
-        {accounts.allNonPayees().map((acct) => (
-          <Menu.Item
-            onClick={() =>
-              navigation.navigate(
-                NavigationArea.AccountTransactions,
-                acct.account_uuid
-              )
-            }
-            key={acct.account_uuid}
-          >
-            {acct.name}
-          </Menu.Item>
-        ))}
+      <Menu.SubMenu key="Accounts" icon={<DollarOutlined />} title="Accounts">
+        {accounts
+          .allNonPayees()
+          .sort((a, b) => a.currency_uuid.localeCompare(b.currency_uuid))
+          .map((acct) => (
+            <Menu.Item
+              onClick={() =>
+                navigation.navigate(
+                  NavigationArea.AccountTransactions,
+                  acct.account_uuid
+                )
+              }
+              key={acct.account_uuid}
+            >
+              {getAccountCurrency(acct)} {acct.name}
+            </Menu.Item>
+          ))}
         <Menu.Item
           key="accounts"
           onClick={() => navigation.navigate(NavigationArea.Accounts)}
