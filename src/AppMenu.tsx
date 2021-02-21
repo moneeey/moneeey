@@ -24,7 +24,7 @@ export default function AppMenu({
     return <b>?</b>;
   };
   return (
-    <Menu mode="horizontal">
+    <Menu mode="horizontal" triggerSubMenuAction="click">
       <Menu.Item
         key="dashboard"
         icon={<DashboardOutlined />}

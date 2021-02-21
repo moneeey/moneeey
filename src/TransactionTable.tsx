@@ -6,6 +6,7 @@ import { Button, Table, Popconfirm } from "antd";
 import MoneeeyStore, { useMoneeeyStore } from "./MoneeeyStore";
 import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
 import { DeleteOutlined } from "@ant-design/icons";
+import { NavigationArea } from "./Navigation";
 
 function TransactionRowControls({
   row,
@@ -36,7 +37,19 @@ const accountValueFormatter = (
   if (!account) return;
   return (
     <>
-      <b>{account.name}</b> <TagsComponent tags={account.tags} />
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          moneeeyStore.navigation.navigate(
+            NavigationArea.AccountTransactions,
+            account.account_uuid
+          );
+        }}
+      >
+        {account.name}
+      </a>{" "}
+      <TagsComponent tags={account.tags} />
     </>
   );
 };

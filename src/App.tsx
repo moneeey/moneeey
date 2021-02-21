@@ -8,6 +8,7 @@ import { Observe } from "./Observable";
 import AppMenu from "./AppMenu";
 import AccountAndTagTransactions from "./AccountAndTagTransactions";
 import Dashboard from "./Dashboard";
+import { Reports } from "./Reports";
 
 function App(): React.ReactElement {
   const [moneeeyStore] = React.useState(new MoneeeyStore());

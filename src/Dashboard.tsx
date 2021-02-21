@@ -20,7 +20,9 @@ export default function Dashboard() {
     if (moneeeyStore.accounts.all().length === 0) {
       SampleAccounts.forEach((a) => moneeeyStore.accounts.add(a));
     }
-    SampleTransactions.forEach((t) => moneeeyStore.transactions.add(t));
+    SampleTransactions.sort((a, b) =>
+      compareDates(a.date, b.date)
+    ).forEach((t) => moneeeyStore.transactions.add(t));
   };
 
   return (

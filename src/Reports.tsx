@@ -1,7 +1,13 @@
 import { Line } from "@ant-design/charts";
 import { DownOutlined } from "@ant-design/icons";
 import { Dropdown, Menu } from "antd";
-import { startOfDay, startOfMonth, startOfWeek, startOfYear } from "date-fns";
+import {
+  startOfDay,
+  startOfMonth,
+  startOfQuarter,
+  startOfWeek,
+  startOfYear,
+} from "date-fns";
 import React from "react";
 import { TAccountUUID } from "./Account";
 import {
@@ -17,6 +23,7 @@ const groupingFns: { [_p: string]: (_d: Date) => Date } = {
   Day: startOfDay,
   Week: startOfWeek,
   Month: startOfMonth,
+  Quarter: startOfQuarter,
   Year: startOfYear,
 };
 
@@ -109,6 +116,7 @@ export function MoneyGrowthReport() {
           yField: "balance",
           seriesField: "account_name",
           connectNulls: true,
+          smooth: true,
           point: {
             size: 5,
             shape: "diamond",
