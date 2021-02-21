@@ -28,19 +28,25 @@ function TagsRenderer({ color, tags }: IStyledTagsProp) {
   const moneeeyStore = useMoneeeyStore();
   return (
     <span>
-      {tags.map((t: string) => (
-        <Tag
-          key={t}
-          color={TagColors[tag === t ? "highlight" : color]}
-          onMouseOver={() => setTag(t)}
-          onMouseOut={() => setTag("")}
-          onClick={() =>
-            moneeeyStore.navigation.navigate(NavigationArea.TagTransactions, t)
-          }
-        >
-          #{t}
-        </Tag>
-      ))}
+      {tags.map((t: string) => {
+        return (
+          <Tag
+            key={t}
+            color={TagColors[tag === t ? "highlight" : color]}
+            onMouseOver={() => setTag(t)}
+            onMouseOut={() => setTag("")}
+            title={color}
+            onClick={() =>
+              moneeeyStore.navigation.navigate(
+                NavigationArea.TagTransactions,
+                t
+              )
+            }
+          >
+            #{t}
+          </Tag>
+        );
+      })}
     </span>
   );
 }
