@@ -64,7 +64,7 @@ export function DateGroupingSelector({
   );
 }
 
-export function MoneyGrowthReport() {
+export function BalanceGrowthReport() {
   const [period, setPeriod] = React.useState(PeriodGroup.Week);
   const moneeeyStore = useMoneeeyStore();
   const accounts = moneeeyStore.accounts.allNonPayees();
@@ -111,6 +111,7 @@ export function MoneyGrowthReport() {
 
   return (
     <>
+      <h2>Balance Growth</h2>
       <DateGroupingSelector setPeriod={setPeriod} period={period} />
       <Line
         {...{
@@ -133,7 +134,7 @@ export function MoneyGrowthReport() {
   );
 }
 
-export function TagExpenses() {
+export function TagExpensesReport() {
   const [period, setPeriod] = React.useState(PeriodGroup.Month);
   const moneeeyStore = useMoneeeyStore();
   const accounts = moneeeyStore.accounts.allNonPayees();
@@ -203,6 +204,7 @@ export function TagExpenses() {
 
   return (
     <>
+      <h2>Tag Expenses</h2>
       <DateGroupingSelector setPeriod={setPeriod} period={period} />
       <Column
         {...{
@@ -223,8 +225,8 @@ export function TagExpenses() {
 export function Reports() {
   return (
     <>
-      <MoneyGrowthReport />
-      <TagExpenses />
+      <BalanceGrowthReport />
+      <TagExpensesReport />
     </>
   );
 }

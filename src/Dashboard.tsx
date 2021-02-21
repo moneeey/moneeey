@@ -2,7 +2,7 @@ import { Button } from "antd";
 import React from "react";
 import { compareDates } from "./Date";
 import { useMoneeeyStore } from "./MoneeeyStore";
-import { MoneyGrowthReport } from "./Reports";
+import { BalanceGrowthReport } from "./Reports";
 import {
   SampleCurrencies,
   SampleAccounts,
@@ -27,7 +27,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <MoneyGrowthReport />
+      <BalanceGrowthReport />
       <b>Recent Transactions</b>
       <TransactionTable
         transactions={moneeeyStore.transactions

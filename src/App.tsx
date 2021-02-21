@@ -19,10 +19,12 @@ function App(): React.ReactElement {
         return <Dashboard />;
       case NavigationArea.Reports:
         return <Reports />;
+      case NavigationArea.Budgets:
+        return <b>WIP: Budgets</b>;
       case NavigationArea.Payees:
       case NavigationArea.Accounts:
       case NavigationArea.Currencies:
-        return <span>Generic Editor for {area}</span>;
+        return <span>WIP: Generic Editor for {area}</span>;
       case NavigationArea.AccountTransactions:
       case NavigationArea.TagTransactions:
         return (

@@ -10,6 +10,7 @@ export enum NavigationArea {
   Accounts = "Accounts",
   Payees = "Payees",
   Currencies = "Currencies",
+  Budgets = "Budgets",
   Reports = "Reports",
 }
 

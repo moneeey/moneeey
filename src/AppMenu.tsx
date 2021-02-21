@@ -6,6 +6,7 @@ import {
   AreaChartOutlined,
   DashboardOutlined,
   DollarOutlined,
+  MailOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
 import { IAccount } from "./Account";
@@ -56,6 +57,13 @@ export default function AppMenu({
           <b>Edit Accounts</b>
         </Menu.Item>
       </Menu.SubMenu>
+      <Menu.Item
+        key="budgets"
+        icon={<MailOutlined />}
+        onClick={() => navigation.navigate(NavigationArea.Budgets)}
+      >
+        Budgets
+      </Menu.Item>
       <Menu.Item
         key="reports"
         icon={<AreaChartOutlined />}
