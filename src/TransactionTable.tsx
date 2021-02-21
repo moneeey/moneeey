@@ -1,8 +1,8 @@
 import React from "react";
-import { TMonetary } from "./Entity";
+import { compareDates, TMonetary } from "./Entity";
 import { TAccountUUID } from "./Account";
 import { ITransaction } from "./Transaction";
-import { Button, Space, Table } from "antd";
+import { Button, Table, Popconfirm } from "antd";
 import MoneeeyStore from "./MoneeeyStore";
 import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
 import { DeleteOutlined } from "@ant-design/icons";
@@ -14,34 +14,16 @@ function TransactionRowControls({
   row: ITransaction;
   moneeeyStore: MoneeeyStore;
 }) {
-  const [deleting, setDeleting] = React.useState(false);
-  const [deletingTimeout, setDeletingTimeout] = React.useState(null as any);
   return (
     <div className="transactionRowControls">
-      {!deleting ? (
+      <Popconfirm
+        title="Delete?"
+        onConfirm={() => moneeeyStore.transactions.remove(row)}
+      >
         <Button shape="circle">
-          <DeleteOutlined
-            onClick={() => {
-              const timeout = setTimeout(() => setDeleting(false), 5000);
-              setDeletingTimeout(() => clearTimeout(timeout));
-              setDeleting(true);
-            }}
-          />
+          <DeleteOutlined />
         </Button>
-      ) : (
-        <Space>
-          <Button danger shape="circle">
-            <DeleteOutlined
-              onClick={() => {
-                if (deletingTimeout) deletingTimeout();
-                moneeeyStore.transactions.remove(row);
-                setDeleting(false);
-              }}
-            />
-          </Button>
-          <Button onClick={() => setDeleting(false)}>Cancel</Button>
-        </Space>
-      )}
+      </Popconfirm>
     </div>
   );
 }
@@ -64,18 +46,22 @@ const buildColumns = (moneeeyStore: MoneeeyStore) => [
     title: "Date",
     dataIndex: "date",
     width: 150,
+    render: (date: string) => moneeeyStore.navigation.formatDate(date),
+    sorter: (a: ITransaction, b: ITransaction) => compareDates(a.date, b.date),
   },
   {
     title: "From",
     dataIndex: "from_account",
     width: 360,
     render: accountValueFormatter(TagsFromAcct, moneeeyStore),
+    sorter: true,
   },
   {
     title: "To",
     dataIndex: "to_account",
     width: 360,
     render: accountValueFormatter(TagsToAcct, moneeeyStore),
+    sorter: true,
   },
   {
     title: "Memo",
@@ -102,6 +88,7 @@ const buildColumns = (moneeeyStore: MoneeeyStore) => [
     title: "Value",
     dataIndex: "to_value",
     width: 250,
+    sorter: (a: ITransaction, b: ITransaction) => a.to_value - b.to_value,
     render: (_value: string, row: ITransaction) => {
       const formatterForAccount = (account_uuid: TAccountUUID) => {
         return (value: TMonetary) => {

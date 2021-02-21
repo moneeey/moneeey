@@ -1,4 +1,4 @@
-import { IBaseEntity } from "./Entity";
+import { currentDateTime, IBaseEntity } from "./Entity";
 import Observable from "./Observable";
 
 type UUIDGetter<T> = (item: T) => string;
@@ -23,7 +23,11 @@ export default class MappedStore<T extends IBaseEntity> extends Observable<
   add(item: T) {
     const uuid = this.getUuid(item);
     this.itemUuids = [...this.itemUuids, uuid];
-    this.update({ ...item, _id: item.entity_type + "-" + uuid });
+    this.update({
+      ...item,
+      _id: item.entity_type + "-" + uuid,
+      created: currentDateTime(),
+    });
   }
 
   remove(item: T) {
@@ -36,7 +40,10 @@ export default class MappedStore<T extends IBaseEntity> extends Observable<
 
   update(item: T) {
     const uuid = this.getUuid(item);
-    this.itemsByUuid[uuid] = item;
+    this.itemsByUuid[uuid] = {
+      ...item,
+      updated: currentDateTime(),
+    };
     this._dispatch(item);
   }
 

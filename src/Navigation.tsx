@@ -1,4 +1,6 @@
+import { format } from "date-fns";
 import { TAccountUUID, IAccount } from "./Account";
+import { formatDateAs, TDate } from "./Entity";
 import Observable from "./Observable";
 
 export enum NavigationArea {
@@ -13,6 +15,7 @@ export default class NavigationStore extends Observable<NavigationStore> {
   area: NavigationArea = NavigationArea.Home;
   detail: string = "";
   referenceAccount: TAccountUUID = "";
+  dateFormat = "dd/MM/yyyy";
 
   navigate(area: NavigationArea, detail: string = "") {
     this.area = area;
@@ -30,5 +33,9 @@ export default class NavigationStore extends Observable<NavigationStore> {
 
   get getReferenceAccountUuid() {
     return this.referenceAccount;
+  }
+
+  formatDate(date: TDate) {
+    return formatDateAs(date, this.dateFormat);
   }
 }

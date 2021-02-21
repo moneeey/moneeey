@@ -1,5 +1,5 @@
-import { AccountStore, IAccount, TAccountUUID } from "./Account";
-import { IBaseEntity, TDate, TMonetary } from "./Entity";
+import { AccountStore, TAccountUUID } from "./Account";
+import { compareDates, IBaseEntity, TDate, TMonetary } from "./Entity";
 import MappedStore from "./MappedStore";
 
 export type TTransactionUUID = string;
@@ -20,9 +20,7 @@ export class TransactionStore extends MappedStore<ITransaction> {
   }
 
   all() {
-    return super
-      .all()
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return super.all().sort((a, b) => compareDates(a.date, b.date));
   }
 
   viewAllWithAccount(account: TAccountUUID) {
