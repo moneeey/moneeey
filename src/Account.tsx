@@ -1,5 +1,6 @@
 import { TCurrencyUUID } from "./Currency";
-import { IBaseEntity, TDate } from "./Entity";
+import { TDate } from "./Date";
+import { IBaseEntity } from "./Entity";
 import MappedStore from "./MappedStore";
 
 export type TAccountUUID = string;

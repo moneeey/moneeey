@@ -1,5 +1,5 @@
 import React from "react";
-import { compareDates, TMonetary } from "./Entity";
+import { TMonetary } from "./Entity";
 import { TAccountUUID } from "./Account";
 import { ITransaction } from "./Transaction";
 import { Button, Table, Popconfirm } from "antd";
@@ -7,6 +7,7 @@ import MoneeeyStore, { useMoneeeyStore } from "./MoneeeyStore";
 import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
 import { DeleteOutlined } from "@ant-design/icons";
 import { NavigationArea } from "./Navigation";
+import { compareDates } from "./Date";
 
 function TransactionRowControls({
   row,

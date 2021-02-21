@@ -1,4 +1,5 @@
-import { currentDateTime, IBaseEntity } from "./Entity";
+import { currentDateTime } from "./Date";
+import { IBaseEntity } from "./Entity";
 import Observable from "./Observable";
 
 type UUIDGetter<T> = (item: T) => string;

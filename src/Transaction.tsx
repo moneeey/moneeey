@@ -1,5 +1,6 @@
 import { AccountStore, TAccountUUID } from "./Account";
-import { compareDates, IBaseEntity, TDate, TMonetary } from "./Entity";
+import { TDate, compareDates } from "./Date";
+import { IBaseEntity, TMonetary } from "./Entity";
 import MappedStore from "./MappedStore";
 
 export type TTransactionUUID = string;
@@ -37,15 +38,22 @@ export class TransactionStore extends MappedStore<ITransaction> {
 
   viewAllWithTag(tag: string, accountsStore: AccountStore) {
     return [...this.all()].filter((row) => {
-      const getAccountTags = (account: TAccountUUID) => {
-        const acct = accountsStore.byUuid(account);
-        if (acct) return acct.tags;
-        return [];
-      };
-      const from_acct = getAccountTags(row.from_account);
-      const to_acct = getAccountTags(row.to_account);
-      const all_tags = [...from_acct, ...to_acct, ...row.tags];
+      const all_tags = this.getAllTransactionTags(row, accountsStore);
       return all_tags.indexOf(tag) >= 0;
     });
+  }
+
+  getAllTransactionTags(
+    transaction: ITransaction,
+    accountsStore: AccountStore
+  ) {
+    const getAccountTags = (account: TAccountUUID) => {
+      const acct = accountsStore.byUuid(account);
+      if (acct) return acct.tags;
+      return [];
+    };
+    const from_acct = getAccountTags(transaction.from_account);
+    const to_acct = getAccountTags(transaction.to_account);
+    return [...from_acct, ...to_acct, ...transaction.tags];
   }
 }

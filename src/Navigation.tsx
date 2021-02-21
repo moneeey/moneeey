@@ -1,6 +1,6 @@
 import { isValid } from "date-fns";
 import { TAccountUUID } from "./Account";
-import { formatDateAs, TDate } from "./Entity";
+import { formatDateAs, TDate } from "./Date";
 import Observable from "./Observable";
 
 export enum NavigationArea {
