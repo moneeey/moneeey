@@ -35,7 +35,7 @@ function TagsRenderer({ color, tags }: IStyledTagsProp) {
           onMouseOver={() => setTag(t)}
           onMouseOut={() => setTag("")}
           onClick={() =>
-            moneeeyStore.navigation.navigate(NavigationArea.Tag, t)
+            moneeeyStore.navigation.navigate(NavigationArea.TagTransactions, t)
           }
         >
           #{t}

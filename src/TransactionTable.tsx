@@ -108,7 +108,7 @@ const buildColumns = (moneeeyStore: MoneeeyStore) => [
       const formatter_to_acct = formatterForAccount(row.to_account);
       if (row.from_value === row.to_value) {
         const color =
-          row.to_account === moneeeyStore.accounts.getReferenceAccountUuid
+          row.to_account === moneeeyStore.navigation.referenceAccount
             ? "green"
             : "red";
         value = (

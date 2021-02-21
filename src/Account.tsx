@@ -19,17 +19,12 @@ export interface IAccount extends IBaseEntity {
 }
 
 export class AccountStore extends MappedStore<IAccount> {
-  referenceAccount: TAccountUUID = "";
-
   constructor() {
     super((a) => a.account_uuid);
   }
 
   add(account: IAccount) {
     super.add(account);
-    if (!this.referenceAccount && account.type === AccountType.CHECKING) {
-      this.referenceAccount = account.account_uuid;
-    }
   }
 
   allPayees() {
@@ -46,21 +41,5 @@ export class AccountStore extends MappedStore<IAccount> {
 
   findUuidByName(name: string) {
     return this.findByName(name).account_uuid;
-  }
-
-  setReferenceAccount(account: IAccount) {
-    this.referenceAccount = account.account_uuid;
-  }
-
-  get getReferenceAccountUuid() {
-    return this.referenceAccount;
-  }
-
-  get referenceAccountName() {
-    if (this.referenceAccount) {
-      const refByUuid = this.byUuid(this.referenceAccount);
-      return (refByUuid && refByUuid.name) || "";
-    }
-    return "";
   }
 }
