@@ -12,7 +12,7 @@ import { TagsHighlightProvider } from "./Tags";
 import { NavigationArea } from "./Navigation";
 import { Observe } from "./Observable";
 import AppMenu from "./AppMenu";
-import AccountTransactions from "./AccountTransactions";
+import AccountAndTagTransactions from "./AccountAndTagTransactions";
 
 function App(): React.ReactElement {
   const [moneeeyStore] = React.useState(new MoneeeyStore());
@@ -37,11 +37,11 @@ function App(): React.ReactElement {
       case NavigationArea.Accounts:
       case NavigationArea.Currencies:
         return <span>Generic Editor for {area}</span>;
-      case NavigationArea.Transactions:
+      case NavigationArea.AccountTransactions:
       case NavigationArea.TagTransactions:
         return (
           <>
-            <AccountTransactions moneeeyStore={moneeeyStore} />
+            <AccountAndTagTransactions moneeeyStore={moneeeyStore} />
             <Button onClick={addSamples}>Add Samples</Button>
           </>
         );

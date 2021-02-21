@@ -6,13 +6,13 @@ import TransactionTable from "./TransactionTable";
 import { Observe } from "./Observable";
 import { HomeOutlined } from "@ant-design/icons";
 
-export default function AccountTransactions({
+export default function AccountAndTagTransactions({
   moneeeyStore,
 }: {
   moneeeyStore: MoneeeyStore;
 }) {
   const getTransactions = () => {
-    if (moneeeyStore.navigation.area === NavigationArea.Transactions) {
+    if (moneeeyStore.navigation.area === NavigationArea.AccountTransactions) {
       return moneeeyStore.transactions.viewAllWithAccount(
         moneeeyStore.navigation.referenceAccount
       );
@@ -47,7 +47,8 @@ export default function AccountTransactions({
                 <Breadcrumb.Item
                   onClick={() =>
                     moneeeyStore.navigation.navigate(
-                      NavigationArea.Transactions
+                      NavigationArea.AccountTransactions,
+                      moneeeyStore.navigation.referenceAccount
                     )
                   }
                 >
@@ -61,7 +62,7 @@ export default function AccountTransactions({
                   <Breadcrumb.Item
                     onClick={() =>
                       moneeeyStore.navigation.navigate(
-                        NavigationArea.Transactions
+                        NavigationArea.TagTransactions
                       )
                     }
                   >

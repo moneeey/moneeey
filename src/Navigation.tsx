@@ -4,8 +4,8 @@ import Observable from "./Observable";
 
 export enum NavigationArea {
   Dashboard = "Dashboard",
-  Transactions = "Home",
-  TagTransactions = "Tag",
+  AccountTransactions = "AccountTransactions",
+  TagTransactions = "TagTransactions",
   Accounts = "Accounts",
   Payees = "Payees",
   Currencies = "Currencies",
@@ -21,7 +21,7 @@ export default class NavigationStore extends Observable<NavigationStore> {
   navigate(area: NavigationArea, detail: string = "") {
     this.area = area;
     this.detail = detail;
-    if (area === NavigationArea.Transactions && detail != "") {
+    if (area === NavigationArea.AccountTransactions && detail != "") {
       this.referenceAccount = detail;
     }
     this.dispatch(this);

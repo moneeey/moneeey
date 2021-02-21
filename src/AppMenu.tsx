@@ -33,7 +33,7 @@ export default function AppMenu({
           <Menu.Item
             onClick={() =>
               navigation.navigate(
-                NavigationArea.Transactions,
+                NavigationArea.AccountTransactions,
                 acct.account_uuid
               )
             }
