@@ -3,52 +3,24 @@ import "./App.css";
 import "antd/dist/antd.css";
 import MoneeeyStore, { MoneeeyStoreProvider } from "./MoneeeyStore";
 import { TagsHighlightProvider } from "./Tags";
-import { NavigationArea } from "./Navigation";
 import { Observe } from "./Observable";
 import AppMenu from "./AppMenu";
-import AccountAndTagTransactions from "./AccountAndTagTransactions";
-import Dashboard from "./Dashboard";
-import { Reports } from "./Reports";
+import { Home } from "./Routes";
+import { RouteRenderer } from "./RouteBase";
 
 function App(): React.ReactElement {
   const [moneeeyStore] = React.useState(new MoneeeyStore());
-
-  const renderAreaContent = (area: NavigationArea) => {
-    switch (area) {
-      case NavigationArea.Dashboard:
-        return <Dashboard />;
-      case NavigationArea.Reports:
-        return <Reports />;
-      case NavigationArea.Budgets:
-        return <b>WIP: Budgets</b>;
-      case NavigationArea.Payees:
-      case NavigationArea.Accounts:
-      case NavigationArea.Currencies:
-        return <span>WIP: Generic Editor for {area}</span>;
-      case NavigationArea.AccountTransactions:
-      case NavigationArea.TagTransactions:
-        return (
-          <>
-            <AccountAndTagTransactions moneeeyStore={moneeeyStore} />
-          </>
-        );
-    }
-  };
 
   return (
     <div className="App">
       <MoneeeyStoreProvider value={moneeeyStore}>
         <TagsHighlightProvider>
-          <Observe subject={moneeeyStore.navigation}>
-            {(_changedNav) => (
-              <>
-                <Observe subject={moneeeyStore.accounts}>
-                  {(_changedAcct) => <AppMenu moneeeyStore={moneeeyStore} />}
-                </Observe>
-                {renderAreaContent(moneeeyStore.navigation.area)}
-              </>
-            )}
-          </Observe>
+          <>
+            <Observe subject={moneeeyStore.accounts}>
+              {(_changedAcct) => <AppMenu moneeeyStore={moneeeyStore} />}
+            </Observe>
+            <RouteRenderer route={Home} app={{ moneeeyStore }}/>
+          </>
         </TagsHighlightProvider>
       </MoneeeyStoreProvider>
     </div>

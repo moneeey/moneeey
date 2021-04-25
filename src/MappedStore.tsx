@@ -36,7 +36,7 @@ export default class MappedStore<T extends IBaseEntity> extends Observable<
     delete this.itemsByUuid[uuid];
     this.itemUuids = this.itemUuids.filter((i) => i !== uuid);
     item._deleted = true;
-    this._dispatch(item);
+    this.dispatchItem(item);
   }
 
   update(item: T) {
@@ -45,15 +45,27 @@ export default class MappedStore<T extends IBaseEntity> extends Observable<
       ...item,
       updated: currentDateTime(),
     };
-    this._dispatch(item);
+    this.dispatchItem(item);
   }
 
-  private _dispatch(item: T) {
+  protected dispatchItem(item: T) {
     this.dispatch({ store: this, updated: item });
+  }
+
+  hasKey(uuid: string) {
+    return uuid in this.itemsByUuid;
   }
 
   byUuid(uuid: string) {
     return this.itemsByUuid[uuid];
+  }
+
+  byPredicate(predicate: (item: T) => boolean) {
+    return this
+      .itemUuids
+      .filter(uuid => this.hasKey(uuid))
+      .map(uuid => this.byUuid(uuid))
+      .filter(predicate);
   }
 
   all() {

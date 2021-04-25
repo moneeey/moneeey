@@ -1,5 +1,5 @@
 import PouchDB from "pouchdb";
-import { EntityType, IBaseEntity } from "./Entity";
+import {EntityType, IBaseEntity} from "./Entity";
 import MappedStore from "./MappedStore";
 
 export default class PersistenceStore {
@@ -45,7 +45,7 @@ export default class PersistenceStore {
   }
 
   monitorChanges(store: MappedStore<any>) {
-    store.addObserver(({ updated }) => {
+    store.addObserver(({updated}) => {
       this.persist(updated);
     });
   }

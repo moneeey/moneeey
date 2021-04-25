@@ -30,6 +30,7 @@ export default function Dashboard() {
       <BalanceGrowthReport />
       <b>Recent Transactions</b>
       <TransactionTable
+        referenceAccount={""}
         transactions={moneeeyStore.transactions
           .all()
           .sort((a, b) => compareDates(a.updated || "", b.updated || ""))

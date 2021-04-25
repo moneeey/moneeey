@@ -6,8 +6,8 @@ import { Button, Table, Popconfirm } from "antd";
 import MoneeeyStore, { useMoneeeyStore } from "./MoneeeyStore";
 import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
 import { DeleteOutlined } from "@ant-design/icons";
-import { NavigationArea } from "./Navigation";
 import { compareDates } from "./Date";
+import { Account } from "./Routes";
 
 function TransactionRowControls({
   row,
@@ -43,8 +43,7 @@ const accountValueFormatter = (
         onClick={(e) => {
           e.preventDefault();
           moneeeyStore.navigation.navigate(
-            NavigationArea.AccountTransactions,
-            account.account_uuid
+            Account.accountUrl(account)
           );
         }}
       >
@@ -55,7 +54,7 @@ const accountValueFormatter = (
   );
 };
 
-const buildColumns = (moneeeyStore: MoneeeyStore) => [
+const buildColumns = (moneeeyStore: MoneeeyStore, referenceAccount: TAccountUUID) => [
   {
     title: "Date",
     dataIndex: "date",
@@ -122,7 +121,7 @@ const buildColumns = (moneeeyStore: MoneeeyStore) => [
       const formatter_to_acct = formatterForAccount(row.to_account);
       if (row.from_value === row.to_value) {
         const color =
-          row.to_account === moneeeyStore.navigation.referenceAccount
+          row.to_account === referenceAccount
             ? "green"
             : "red";
         value = (
@@ -149,13 +148,15 @@ const buildColumns = (moneeeyStore: MoneeeyStore) => [
 
 export default function TransactionTable({
   transactions,
+  referenceAccount,
 }: {
   transactions: ITransaction[];
+  referenceAccount: TAccountUUID
 }): React.ReactElement {
   const moneeeyStore = useMoneeeyStore();
   return (
     <Table
-      columns={buildColumns(moneeeyStore)}
+      columns={buildColumns(moneeeyStore, referenceAccount)}
       dataSource={transactions}
       pagination={false}
     />

@@ -1,7 +1,6 @@
 import { Menu } from "antd";
 import React from "react";
 import MoneeeyStore from "./MoneeeyStore";
-import { NavigationArea } from "./Navigation";
 import {
   AreaChartOutlined,
   DashboardOutlined,
@@ -10,6 +9,7 @@ import {
   SettingOutlined,
 } from "@ant-design/icons";
 import { IAccount } from "./Account";
+import { Home, Account } from "./Routes";
 
 export default function AppMenu({
   moneeeyStore,
@@ -29,7 +29,7 @@ export default function AppMenu({
       <Menu.Item
         key="dashboard"
         icon={<DashboardOutlined />}
-        onClick={() => navigation.navigate(NavigationArea.Dashboard)}
+        onClick={() => navigation.navigate(Home.url())}
       >
         Dashboard
       </Menu.Item>
@@ -41,8 +41,7 @@ export default function AppMenu({
             <Menu.Item
               onClick={() =>
                 navigation.navigate(
-                  NavigationArea.AccountTransactions,
-                  acct.account_uuid
+                  Account.accountUrl(acct)
                 )
               }
               key={acct.account_uuid}
@@ -52,7 +51,7 @@ export default function AppMenu({
           ))}
         <Menu.Item
           key="accounts"
-          onClick={() => navigation.navigate(NavigationArea.Accounts)}
+          onClick={() => navigation.navigate(Home.url())}
         >
           <b>Edit Accounts</b>
         </Menu.Item>
@@ -60,33 +59,33 @@ export default function AppMenu({
       <Menu.Item
         key="budgets"
         icon={<MailOutlined />}
-        onClick={() => navigation.navigate(NavigationArea.Budgets)}
+        onClick={() => navigation.navigate(Home.url())}
       >
         Budgets
       </Menu.Item>
       <Menu.Item
         key="reports"
         icon={<AreaChartOutlined />}
-        onClick={() => navigation.navigate(NavigationArea.Reports)}
+        onClick={() => navigation.navigate(Home.url())}
       >
         Reports
       </Menu.Item>
       <Menu.SubMenu key="Settings" icon={<SettingOutlined />} title="Settings">
         <Menu.Item
           key="currencies"
-          onClick={() => navigation.navigate(NavigationArea.Currencies)}
+          onClick={() => navigation.navigate(Home.url())}
         >
           Edit Currencies
         </Menu.Item>
         <Menu.Item
           key="payees"
-          onClick={() => navigation.navigate(NavigationArea.Payees)}
+          onClick={() => navigation.navigate(Home.url())}
         >
           Edit Payees
         </Menu.Item>
         <Menu.Item
           key="accounts"
-          onClick={() => navigation.navigate(NavigationArea.Accounts)}
+          onClick={() => navigation.navigate(Home.url())}
         >
           Edit Accounts
         </Menu.Item>

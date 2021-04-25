@@ -215,7 +215,6 @@ export function TagExpensesReport() {
           xField: "date",
           yField: "balance",
           seriesField: "tag",
-          connectNulls: true,
         }}
       />
     </>
