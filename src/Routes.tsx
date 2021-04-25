@@ -1,13 +1,13 @@
 import React from "react";
 import { IAccount } from "./Account";
 import Dashboard from "./Dashboard";
-import _ from 'lodash';
 import { IAppParameters, IRouteParameters, Route } from "./RouteBase";
 import TransactionTable from "./TransactionTable";
+import { Reports } from "./Reports";
 
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////// Home
-class HomeRoute extends Route<IRouteParameters> {
+class HomeRouter extends Route<IRouteParameters> {
   constructor() {
     super('', undefined);
   }
@@ -17,7 +17,7 @@ class HomeRoute extends Route<IRouteParameters> {
   }
 }
 
-export const Home = new HomeRoute();
+export const HomeRoute = new HomeRouter();
 
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////// Account
@@ -25,10 +25,10 @@ interface IAccountRoute extends IRouteParameters {
   account_name: string;
 }
 
-class AccountRoute extends Route<IAccountRoute> {
-  constructor(parent: Route<IRouteParameters>) {
-    super('/accounts/:account_name', parent);
-    parent.addChild(this);
+class AccountRouter extends Route<IAccountRoute> {
+  constructor() {
+    super('/accounts/:account_name', HomeRoute);
+    this.parent?.addChild(this);
   }
 
   render(parameters: IAccountRoute, app: IAppParameters) {
@@ -50,7 +50,7 @@ class AccountRoute extends Route<IAccountRoute> {
   }
 }
 
-export const Account = new AccountRoute(Home);
+export const AccountRoute = new AccountRouter();
 
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////// Tags
@@ -58,10 +58,10 @@ interface ITagsRoute extends IRouteParameters {
   tag: string;
 }
 
-class TagsRoute extends Route<ITagsRoute> {
-  constructor(parent: Route<IRouteParameters>) {
-    super('/tags/:tag', parent);
-    parent.addChild(this);
+class TagsRouter extends Route<ITagsRoute> {
+  constructor() {
+    super('/tags/:tag', HomeRoute);
+    this.parent?.addChild(this);
   }
 
   render(parameters: ITagsRoute, app: IAppParameters) {
@@ -77,4 +77,22 @@ class TagsRoute extends Route<ITagsRoute> {
   }
 }
 
-export const Tags = new TagsRoute(Home);
+export const TagsRoute = new TagsRouter();
+
+/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////// Reports
+interface IReportsRoute extends IRouteParameters {
+}
+
+class ReportsRouter extends Route<IReportsRoute> {
+  constructor() {
+    super('/reports', HomeRoute);
+    this.parent?.addChild(this);
+  }
+
+  render(_parameters: IReportsRoute, _app: IAppParameters) {
+    return <Reports/>;
+  }
+}
+
+export const ReportsRoute = new ReportsRouter();

@@ -7,7 +7,7 @@ import MoneeeyStore, { useMoneeeyStore } from "./MoneeeyStore";
 import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
 import { DeleteOutlined } from "@ant-design/icons";
 import { compareDates } from "./Date";
-import { Account } from "./Routes";
+import { AccountRoute } from "./Routes";
 
 function TransactionRowControls({
   row,
@@ -38,17 +38,16 @@ const accountValueFormatter = (
   if (!account) return;
   return (
     <>
-      <a
-        href="#"
+      <Button type="link"
         onClick={(e) => {
           e.preventDefault();
           moneeeyStore.navigation.navigate(
-            Account.accountUrl(account)
+            AccountRoute.accountUrl(account)
           );
         }}
       >
         {account.name}
-      </a>{" "}
+      </Button>{" "}
       <TagsComponent tags={account.tags} />
     </>
   );

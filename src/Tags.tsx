@@ -1,7 +1,7 @@
 import { Tag } from "antd";
 import React from "react";
 import { useMoneeeyStore } from "./MoneeeyStore";
-import { Tags } from "./Routes";
+import { TagsRoute } from "./Routes";
 
 const TagColors: { [_group: string]: string } = {
   highlight: "lightsalmon",
@@ -37,7 +37,7 @@ function TagsRenderer({ color, tags }: IStyledTagsProp) {
             onMouseOut={() => setTag("")}
             title={color}
             onClick={() =>
-              moneeeyStore.navigation.navigate(Tags.tagsUrl(t))
+              moneeeyStore.navigation.navigate(TagsRoute.tagsUrl(t))
             }
           >
             #{t}

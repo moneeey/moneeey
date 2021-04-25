@@ -5,7 +5,7 @@ import MoneeeyStore, { MoneeeyStoreProvider } from "./MoneeeyStore";
 import { TagsHighlightProvider } from "./Tags";
 import { Observe } from "./Observable";
 import AppMenu from "./AppMenu";
-import { Home } from "./Routes";
+import { HomeRoute } from "./Routes";
 import { RouteRenderer } from "./RouteBase";
 
 function App(): React.ReactElement {
@@ -19,7 +19,7 @@ function App(): React.ReactElement {
             <Observe subject={moneeeyStore.accounts}>
               {(_changedAcct) => <AppMenu moneeeyStore={moneeeyStore} />}
             </Observe>
-            <RouteRenderer route={Home} app={{ moneeeyStore }}/>
+            <RouteRenderer route={HomeRoute} app={{ moneeeyStore }}/>
           </>
         </TagsHighlightProvider>
       </MoneeeyStoreProvider>

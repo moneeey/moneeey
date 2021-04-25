@@ -1,6 +1,6 @@
-import { Bar, Column, Line } from "@ant-design/charts";
+import { Column, Line } from "@ant-design/charts";
 import { DownOutlined } from "@ant-design/icons";
-import { Dropdown, Menu } from "antd";
+import { Button, Dropdown, Menu } from "antd";
 import {
   startOfDay,
   startOfMonth,
@@ -57,9 +57,9 @@ export function DateGroupingSelector({
       }
       trigger={["click"]}
     >
-      <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+      <Button type="link" className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
         {period} <DownOutlined />
-      </a>
+      </Button>
     </Dropdown>
   );
 }

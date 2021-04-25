@@ -2,7 +2,6 @@ import React from "react";
 import MoneeeyStore from "./MoneeeyStore";
 import * as ReactRouter from "react-router-dom";
 import _ from 'lodash';
-import { Observe } from "./Observable";
 
 export interface IAppParameters {
   moneeeyStore: MoneeeyStore;
