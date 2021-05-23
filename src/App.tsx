@@ -3,7 +3,6 @@ import "./App.css";
 import "antd/dist/antd.css";
 import MoneeeyStore, { MoneeeyStoreProvider } from "./MoneeeyStore";
 import { TagsHighlightProvider } from "./Tags";
-import { Observe } from "./Observable";
 import AppMenu from "./AppMenu";
 import { HomeRoute } from "./Routes";
 import { RouteRenderer } from "./RouteBase";
@@ -16,9 +15,7 @@ function App(): React.ReactElement {
       <MoneeeyStoreProvider value={moneeeyStore}>
         <TagsHighlightProvider>
           <>
-            <Observe subject={moneeeyStore.accounts}>
-              {(_changedAcct) => <AppMenu moneeeyStore={moneeeyStore} />}
-            </Observe>
+            <AppMenu />
             <RouteRenderer route={HomeRoute} app={{ moneeeyStore }}/>
           </>
         </TagsHighlightProvider>

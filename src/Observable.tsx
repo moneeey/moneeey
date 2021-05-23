@@ -19,28 +19,28 @@ export default class Observable<T> {
   }
 }
 
-export function Observe<T>({
-  subject,
+export function Observe({
+  subjects,
   children,
 }: {
-  children: (value: T) => React.ReactElement;
-  subject: Observable<T>;
+  children: (version: number) => React.ReactElement;
+  subjects: Observable<any>[];
 }) {
-  const [value, setValue] = React.useState((null as unknown) as T);
+  const [version, setVersion] = React.useState(0);
   const [timer, setTimer] = React.useState(null as any);
   React.useEffect(() => {
-    const observing = (newValue: T) => {
+    const observing = (_newValue: any) => {
       clearTimeout(timer);
       setTimer(
         setTimeout(() => {
-          setValue(newValue);
+          setVersion(version + 1);
         }, OBSERVE_UPDATE_DEBOUNCE)
       );
     };
-    subject.addObserver(observing);
+    subjects.forEach(subject => subject.addObserver(observing));
     return () => {
-      subject.removeObserver(observing);
+      subjects.forEach(subject => subject.removeObserver(observing));
     };
-  }, [subject, value, setValue, timer]);
-  return children(value);
+  }, [subjects, setVersion, version, timer]);
+  return children(version);
 }

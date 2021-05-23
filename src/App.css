@@ -5,3 +5,10 @@
 .transactionRowControls {
   float: right;
 }
+
+.transactionTable  .ant-table-thead > tr > th,
+.transactionTable  .ant-table-tbody > tr > td,
+.transactionTable  .ant-table tfoot > tr > th,
+.transactionTable  .ant-table tfoot > tr > td {
+  padding: 0.2px 0.2px !important;
+}

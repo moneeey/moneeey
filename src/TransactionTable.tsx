@@ -155,6 +155,7 @@ export default function TransactionTable({
   const moneeeyStore = useMoneeeyStore();
   return (
     <Table
+      className="transactionTable"
       columns={buildColumns(moneeeyStore, referenceAccount)}
       dataSource={transactions}
       pagination={false}
