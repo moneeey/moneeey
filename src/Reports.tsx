@@ -14,6 +14,7 @@ import { TDate, formatDate, parseDate, compareDates } from "./Date";
 import { TMonetary } from "./Entity";
 import { useMoneeeyStore } from "./MoneeeyStore";
 import { ITransaction } from "./Transaction";
+import _ from "lodash";
 
 enum PeriodGroup {
   Day = "Day",
@@ -134,73 +135,99 @@ export function BalanceGrowthReport() {
   );
 }
 
+async function asyncTimeout(fn: () => void, delay: number) {
+  return await new Promise(resolve => {
+    setTimeout(() => {
+      resolve(fn());
+    }, delay);
+  });
+}
+
+async function asyncProcess<T>(
+    values: T[],
+    fn: (chnk: T[], state: any) => void,
+    state: any = {},
+    chunkSize = 10,
+    chunkThrottle = 50,
+  ) {
+  const chunks = _.chunk(values, chunkSize);
+  while (chunks.length > 0) {
+    const chunk = chunks.shift();
+    await asyncTimeout(() => fn(chunk || [], state), chunkThrottle);
+  }
+  return state;
+}
+
 export function TagExpensesReport() {
   const [period, setPeriod] = React.useState(PeriodGroup.Month);
   const moneeeyStore = useMoneeeyStore();
-  const accounts = moneeeyStore.accounts.allNonPayees();
-  const account_names: { [_a: string]: string } = {};
-  accounts.forEach((a) => {
-    account_names[a.account_uuid] = a.name;
-  });
-  const transactions = moneeeyStore.transactions.viewAllWithAccounts(
-    accounts.map((a) => a.account_uuid)
-  );
-  const balances: { [_tag: string]: number } = {};
-  const data: Map<
-    string,
-    {
-      date: TDate;
-      balance: TMonetary;
-      tag: string;
-    }
-  > = new Map();
-  const addBalanceToData = (tag: string, value: TMonetary, date: TDate) => {
-    const group_date = dateToPeriod(period, date);
-    const group = group_date + tag;
-    if (!balances[group]) {
-      balances[group] = 0;
-    }
-    const balance = balances[group] + value;
-    balances[group] = balance;
-    data.set(group, {
-      date: group_date,
-      balance,
-      tag,
-    });
-  };
-  transactions.forEach((t) => {
-    const addTagsForAccount = (
-      account_uuid: TAccountUUID,
-      transaction: ITransaction,
-      value: number,
-      is_personal_account: boolean
-    ) => {
-      const account_tags = !is_personal_account
-        ? moneeeyStore.accounts.byUuid(account_uuid).tags
-        : [];
-      const tags = [...account_tags, ...transaction.tags];
-      const unique_tags = new Set(tags);
-      unique_tags.forEach((tag) =>
-        addBalanceToData(
+  const [rows, setRows] = React.useState([] as ITransaction[]);
+
+  React.useEffect(() => {
+    const process = (t: ITransaction, stt: any) => {
+      const addBalanceToData = (tag: string, value: TMonetary, date: TDate) => {
+        const group_date = dateToPeriod(period, date);
+        const group = group_date + tag;
+        const prev_balance = (stt.data.get(group) || {}).balance || 0;
+        const balance = prev_balance + value;
+        stt.data.set(group, {
+          date: group_date,
+          balance,
           tag,
-          is_personal_account ? -value : value,
-          transaction.date
-        )
+        });
+      };
+      const processTagsForTransaction = (
+        account_uuid: TAccountUUID,
+        transaction: ITransaction,
+        value: number,
+        is_personal_account: boolean
+      ) => {
+        const account_tags = !is_personal_account
+          ? moneeeyStore.accounts.accountTags(account_uuid)
+          : [];
+        const tags = [...account_tags, ...transaction.tags];
+        const unique_tags = new Set(tags);
+        unique_tags.forEach((tag) =>
+          addBalanceToData(
+            tag,
+            is_personal_account ? -value : value,
+            transaction.date
+          )
+        );
+      };
+      processTagsForTransaction(
+        t.from_account,
+        t,
+        t.from_value,
+        !!stt.account_names[t.from_account]
+      );
+      processTagsForTransaction(
+        t.to_account,
+        t,
+        t.to_value,
+        !!stt.account_names[t.to_account]
       );
     };
-    addTagsForAccount(
-      t.from_account,
-      t,
-      t.from_value,
-      !!account_names[t.from_account]
-    );
-    addTagsForAccount(
-      t.to_account,
-      t,
-      t.to_value,
-      !!account_names[t.to_account]
-    );
-  });
+    const account_names = _(moneeeyStore.accounts.allNonPayees())
+      .map(act => [act.account_uuid, act.name])
+      .fromPairs()
+      .value();
+    const transactions = moneeeyStore.transactions.viewAllWithAccounts(_.keys(account_names));
+    const data: Map<
+      string,
+      {
+        date: TDate;
+        balance: TMonetary;
+        tag: string;
+      }
+    > = new Map();
+    (async () => {
+      const processed = await asyncProcess(transactions, (chunk, stt) => {
+        chunk.forEach(t => process(t, stt));
+      }, { moneeeyStore, data, account_names }, 20, 5);
+      setRows([...processed.data.values()]);
+    })();
+  }, [moneeeyStore, period])
 
   return (
     <>
@@ -208,9 +235,7 @@ export function TagExpensesReport() {
       <DateGroupingSelector setPeriod={setPeriod} period={period} />
       <Column
         {...{
-          data: Array.from(data.values()).sort((a, b) =>
-            compareDates(a.date, b.date)
-          ),
+          data: moneeeyStore.transactions.sortTransactions(rows),
           height: 400,
           xField: "date",
           yField: "balance",

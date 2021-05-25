@@ -20,8 +20,12 @@ export class TransactionStore extends MappedStore<ITransaction> {
     super((t) => t.transaction_uuid);
   }
 
+  sortTransactions(transactions: ITransaction[]): ITransaction[] {
+    return transactions.sort((a, b) => compareDates(a.date, b.date));
+  }
+
   all() {
-    return super.all().sort((a, b) => compareDates(a.date, b.date));
+    return this.sortTransactions(super.all());
   }
 
   viewAllWithAccount(account: TAccountUUID) {
@@ -29,31 +33,23 @@ export class TransactionStore extends MappedStore<ITransaction> {
   }
 
   viewAllWithAccounts(accounts: TAccountUUID[]) {
-    return [...this.all()].filter((row) => {
-      return (
-        accounts.includes(row.from_account) || accounts.includes(row.to_account)
-      );
-    });
+    return this.sortTransactions(
+      this.byPredicate((row) => accounts.includes(row.from_account) || accounts.includes(row.to_account))
+    );
   }
 
   viewAllWithTag(tag: string, accountsStore: AccountStore) {
-    return [...this.all()].filter((row) => {
-      const all_tags = this.getAllTransactionTags(row, accountsStore);
-      return all_tags.indexOf(tag) >= 0;
-    });
+    return this.sortTransactions(
+      this.byPredicate((row) => this.getAllTransactionTags(row, accountsStore).indexOf(tag) >= 0)
+    );
   }
 
   getAllTransactionTags(
     transaction: ITransaction,
     accountsStore: AccountStore
   ) {
-    const getAccountTags = (account: TAccountUUID) => {
-      const acct = accountsStore.byUuid(account);
-      if (acct) return acct.tags;
-      return [];
-    };
-    const from_acct = getAccountTags(transaction.from_account);
-    const to_acct = getAccountTags(transaction.to_account);
+    const from_acct = accountsStore.accountTags(transaction.from_account);
+    const to_acct = accountsStore.accountTags(transaction.to_account);
     return [...from_acct, ...to_acct, ...transaction.tags];
   }
 }

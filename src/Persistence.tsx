@@ -31,8 +31,11 @@ export default class PersistenceStore extends Observable<PersistenceStore> {
     const database = 'accounts';
     const remote = `https://${username}:${password}@${host}/${database}`;
     const setStatus = (status: Status) => { this.status = status; this.dispatch(this); };
-    return new Promise((resolve, reject) => this.db.sync(remote, { live: true, retry: true })
-      .on('complete', () => resolve(setStatus(Status.ONLINE)))
+    return new Promise((resolve, reject) =>
+      this.db.sync(remote, { live: true, retry: true })
+      .on('change', (c) => { resolve(setStatus(Status.ONLINE)); console.log(c) })
+      .on('paused', () => { resolve(setStatus(Status.OFFLINE)) })
+      .on('denied', () => resolve(setStatus(Status.OFFLINE)))
       .on('error', () => reject(setStatus(Status.OFFLINE))));
   }
 
