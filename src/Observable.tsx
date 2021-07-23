@@ -1,21 +1,13 @@
 import React from "react";
-
-const OBSERVE_UPDATE_DEBOUNCE = 20;
-export type Observer<T> = (value: T) => void;
+import * as Bacon from "baconjs";
 
 export default class Observable<T> {
-  observers: Observer<T>[] = [];
+  bus = new Bacon.Bus<T>();
 
-  addObserver(observer: Observer<T>) {
-    this.observers.push(observer);
-  }
-
-  removeObserver(observer: Observer<T>) {
-    this.observers = this.observers.filter((o) => o !== observer);
-  }
+  get listen() { return this.bus; }
 
   dispatch(value: T) {
-    this.observers.forEach((fn: Observer<T>) => fn(value));
+    this.bus.push(value);
   }
 }
 
@@ -27,20 +19,9 @@ export function Observe({
   subjects: Observable<any>[];
 }) {
   const [version, setVersion] = React.useState(0);
-  const [timer, setTimer] = React.useState(null as any);
   React.useEffect(() => {
-    const observing = (_newValue: any) => {
-      clearTimeout(timer);
-      setTimer(
-        setTimeout(() => {
-          setVersion(version + 1);
-        }, OBSERVE_UPDATE_DEBOUNCE)
-      );
-    };
-    subjects.forEach(subject => subject.addObserver(observing));
-    return () => {
-      subjects.forEach(subject => subject.removeObserver(observing));
-    };
-  }, [subjects, setVersion, version, timer]);
+    Bacon.combineAsArray(...[subjects.map(s => s.listen)])
+      .onValue(_v => setVersion(v => v + 1))
+  }, [subjects, setVersion]);
   return children(version);
 }

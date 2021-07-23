@@ -67,8 +67,7 @@ export default class PersistenceStore extends Observable<PersistenceStore> {
   }
 
   monitorChanges(store: MappedStore<any>) {
-    store.addObserver(({updated}) => {
-      this.persist(updated);
-    });
+    store.listen
+      .onValue(o => this.persist(o))
   }
 }
