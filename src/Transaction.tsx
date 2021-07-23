@@ -33,8 +33,9 @@ export class TransactionStore extends MappedStore<ITransaction> {
   }
 
   viewAllWithAccounts(accounts: TAccountUUID[]) {
+    const accountSet = new Set(accounts);
     return this.sortTransactions(
-      this.byPredicate((row) => accounts.includes(row.from_account) || accounts.includes(row.to_account))
+      this.byPredicate((row) => accountSet.has(row.from_account) || accountSet.has(row.to_account))
     );
   }
 
@@ -42,6 +43,10 @@ export class TransactionStore extends MappedStore<ITransaction> {
     return this.sortTransactions(
       this.byPredicate((row) => this.getAllTransactionTags(row, accountsStore).indexOf(tag) >= 0)
     );
+  }
+
+  viewAllNonPayees(accountsStore: AccountStore) {
+    return this.viewAllWithAccounts(accountsStore.allNonPayees().map(act => act.account_uuid));
   }
 
   getAllTransactionTags(
