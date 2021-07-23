@@ -6,7 +6,7 @@ import { Button, Table, Popconfirm } from "antd";
 import MoneeeyStore, { useMoneeeyStore } from "./MoneeeyStore";
 import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
 import { DeleteOutlined } from "@ant-design/icons";
-import { compareDates } from "./Date";
+import { compareDates, formatDateAs } from "./Date";
 import { AccountRoute } from "./Routes";
 
 function TransactionRowControls({
@@ -58,7 +58,7 @@ const buildColumns = (moneeeyStore: MoneeeyStore, referenceAccount: TAccountUUID
     title: "Date",
     dataIndex: "date",
     width: 150,
-    render: (date: string) => moneeeyStore.navigation.formatDate(date),
+    render: (date: string) => formatDateAs(date, moneeeyStore.navigation.dateFormat),
     sorter: (a: ITransaction, b: ITransaction) => compareDates(a.date, b.date),
   },
   {

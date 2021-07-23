@@ -3,7 +3,6 @@ import "./App.css";
 import "antd/dist/antd.css";
 import MoneeeyStore, { MoneeeyStoreProvider } from "./MoneeeyStore";
 import { TagsHighlightProvider } from "./Tags";
-import AppMenu from "./AppMenu";
 import { HomeRoute } from "./Routes";
 import { RouteRenderer } from "./RouteBase";
 
@@ -14,10 +13,7 @@ function App(): React.ReactElement {
     <div className="App">
       <MoneeeyStoreProvider value={moneeeyStore}>
         <TagsHighlightProvider>
-          <>
-            <AppMenu />
-            <RouteRenderer route={HomeRoute} app={{ moneeeyStore }}/>
-          </>
+          <RouteRenderer route={HomeRoute} app={{ moneeeyStore }}/>
         </TagsHighlightProvider>
       </MoneeeyStoreProvider>
     </div>
