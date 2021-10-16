@@ -1,5 +1,5 @@
 import React from "react";
-import MoneeeyStore from "../shared/MoneeeyStore";
+import MoneeeyStore from "./shared/MoneeeyStore";
 
 const MoneeeyContext = React.createContext({} as MoneeeyStore);
 

@@ -2,17 +2,16 @@ import React from "react";
 import "./App.css";
 import "antd/dist/antd.css";
 import MoneeeyStore, { } from "./shared/MoneeeyStore";
-import { MoneeeyStoreProvider } from "./app/useMoneeeyStore";
+import { MoneeeyStoreProvider } from "./useMoneeeyStore";
 import { TagsHighlightProvider } from "./app/Tags";
-import { HomeRoute } from "./Routes";
+import { LandingRoute } from "./Routes";
 import RouteRenderer from "./app/RouteRenderer";
-import AppMenu from "./app/AppMenu";
 
 function Moneeey({ moneeeyStore }: { moneeeyStore: MoneeeyStore }) {
   return (
     <MoneeeyStoreProvider value={moneeeyStore}>
       <TagsHighlightProvider>
-        <RouteRenderer route={HomeRoute} app={{ moneeeyStore }} menu={<AppMenu />}/>
+        <RouteRenderer route={LandingRoute} app={{ moneeeyStore }} />
       </TagsHighlightProvider>
     </MoneeeyStoreProvider>
   )

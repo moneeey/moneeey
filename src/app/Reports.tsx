@@ -16,7 +16,7 @@ import MoneeeyStore from "../shared/MoneeeyStore";
 import { ITransaction } from "../shared/Transaction";
 import _ from "lodash";
 import Loading from "./Loading";
-import useMoneeeyStore from "./useMoneeeyStore";
+import useMoneeeyStore from "../useMoneeeyStore";
 
 async function asyncTimeout(fn: () => void, delay: number) {
   return await new Promise(resolve => {

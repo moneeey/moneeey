@@ -3,8 +3,22 @@ import { IAccount } from "./shared/Account";
 import Dashboard from "./app/Dashboard";
 import { IAppParameters, IRouteParameters, Route } from "./shared/Route";
 import TransactionTable from "./app/TransactionTable";
+import Landing from "./landing/Landing";
 import { Reports } from "./app/Reports";
 
+/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////// Home
+class LandingRouter extends Route<IRouteParameters> {
+  constructor() {
+    super('', undefined);
+  }
+
+  render(_parameters: IRouteParameters, _app: IAppParameters) {
+    return <Landing />;
+  }
+}
+
+export const LandingRoute = new LandingRouter();
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////// Home
 class HomeRouter extends Route<IRouteParameters> {

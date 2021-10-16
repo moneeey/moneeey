@@ -1,6 +1,6 @@
 import { Menu } from "antd";
 import React from "react";
-import useMoneeeyStore from "./useMoneeeyStore";
+import useMoneeeyStore from "../useMoneeeyStore";
 import {
   AreaChartOutlined,
   CheckCircleTwoTone,

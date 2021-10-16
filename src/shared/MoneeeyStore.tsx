@@ -4,6 +4,7 @@ import { EntityType } from "./Entity";
 import NavigationStore from "./Navigation";
 import PersistenceStore from "./Persistence";
 import { TransactionStore } from "./Transaction";
+import ManagementStore from "./Management";
 
 export default class MoneeeyStore {
   navigation = new NavigationStore();
@@ -11,6 +12,7 @@ export default class MoneeeyStore {
   transactions = new TransactionStore();
   currencies = new CurrencyStore();
   persistence = new PersistenceStore();
+  management = new ManagementStore();
 
   constructor() {
     this.persistence.load().then(() => {

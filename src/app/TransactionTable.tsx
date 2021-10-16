@@ -8,7 +8,7 @@ import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
 import { DeleteOutlined } from "@ant-design/icons";
 import { compareDates, formatDateAs } from "../shared/Date";
 import { AccountRoute } from "../Routes";
-import useMoneeeyStore from "./useMoneeeyStore";
+import useMoneeeyStore from "../useMoneeeyStore";
 
 function TransactionRowControls({
   row,

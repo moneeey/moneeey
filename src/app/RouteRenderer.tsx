@@ -11,11 +11,9 @@ interface IMappedRoute {
 export default function RouteRenderer<IParameters extends IRouteParameters>({
   route,
   app,
-  menu,
 }: {
   route: Route<IParameters>,
   app: IAppParameters,
-  menu: any,
 }) {
   const mapRoute = ({ route, path: parentPath }: IMappedRoute): IMappedRoute[] => {
     const path = parentPath + route.path;
@@ -40,7 +38,6 @@ export default function RouteRenderer<IParameters extends IRouteParameters>({
   }
   return (
     <ReactRouter.BrowserRouter>
-      {menu}
       <ReactRouter.Switch>
         {routes.map(route => (
           <ReactRouter.Route
