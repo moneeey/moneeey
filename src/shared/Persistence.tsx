@@ -7,7 +7,6 @@ export enum Status {
   ONLINE = 'Online',
   OFFLINE = 'Offline'
 }
-
 export default class PersistenceStore extends Observable<PersistenceStore> {
   db: PouchDB.Database;
   entries: IBaseEntity[] = [];
