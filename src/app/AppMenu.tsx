@@ -1,19 +1,19 @@
 import { Menu } from "antd";
 import React from "react";
-import { useMoneeeyStore } from "./MoneeeyStore";
+import useMoneeeyStore from "./useMoneeeyStore";
 import {
   AreaChartOutlined,
-    CheckCircleTwoTone,
+  CheckCircleTwoTone,
   DashboardOutlined,
   DollarOutlined,
   MailOutlined,
   SettingOutlined,
   WarningTwoTone,
 } from "@ant-design/icons";
-import { IAccount } from "./Account";
-import { HomeRoute, AccountRoute, ReportsRoute } from "./Routes";
-import { Observe } from "./Observable";
-import { Status } from "./Persistence";
+import { IAccount } from "../shared/Account";
+import { HomeRoute, AccountRoute, ReportsRoute } from "../Routes";
+import Observe from "./Observe";
+import { Status } from "../shared/Persistence";
 
 export default function AppMenu() {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore();
@@ -26,7 +26,7 @@ export default function AppMenu() {
   };
   return (
     <Observe subjects={[accounts, persistence]}>
-      {(_v) => (
+      {(_v: any) => (
       <Menu mode="horizontal" triggerSubMenuAction="click">
         <Menu.Item
           key="dashboard"

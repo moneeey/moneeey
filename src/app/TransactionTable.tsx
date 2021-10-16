@@ -1,13 +1,14 @@
 import React from "react";
-import { TMonetary } from "./Entity";
-import { TAccountUUID } from "./Account";
-import { ITransaction } from "./Transaction";
+import { TMonetary } from "../shared/Entity";
+import { TAccountUUID } from "../shared/Account";
+import { ITransaction } from "../shared/Transaction";
 import { Button, Table, Popconfirm } from "antd";
-import MoneeeyStore, { useMoneeeyStore } from "./MoneeeyStore";
+import MoneeeyStore from "../shared/MoneeeyStore";
 import { TagsMemo, TagsFromAcct, TagsToAcct } from "./Tags";
 import { DeleteOutlined } from "@ant-design/icons";
-import { compareDates, formatDateAs } from "./Date";
-import { AccountRoute } from "./Routes";
+import { compareDates, formatDateAs } from "../shared/Date";
+import { AccountRoute } from "../Routes";
+import useMoneeeyStore from "./useMoneeeyStore";
 
 function TransactionRowControls({
   row,

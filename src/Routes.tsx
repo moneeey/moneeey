@@ -1,9 +1,9 @@
 import React from "react";
-import { IAccount } from "./Account";
-import Dashboard from "./Dashboard";
-import { IAppParameters, IRouteParameters, Route } from "./RouteBase";
-import TransactionTable from "./TransactionTable";
-import { Reports } from "./Reports";
+import { IAccount } from "./shared/Account";
+import Dashboard from "./app/Dashboard";
+import { IAppParameters, IRouteParameters, Route } from "./shared/Route";
+import TransactionTable from "./app/TransactionTable";
+import { Reports } from "./app/Reports";
 
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////// Home

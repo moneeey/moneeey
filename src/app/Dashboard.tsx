@@ -1,7 +1,7 @@
 import { Button } from "antd";
 import React from "react";
-import { compareDates } from "./Date";
-import { useMoneeeyStore } from "./MoneeeyStore";
+import { compareDates } from "../shared/Date";
+import useMoneeeyStore from "./useMoneeeyStore";
 import { BalanceGrowthReport } from "./Reports";
 import {
   SampleCurrencies,

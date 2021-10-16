@@ -1,9 +1,9 @@
 import { addDays } from "date-fns";
-import { AccountType } from "./Account";
-import { ICurrency } from "./Currency";
-import { TDate, parseDate, formatDate } from "./Date";
-import { EntityType, generateUuid, randomRange } from "./Entity";
-import { ITransaction } from "./Transaction";
+import { AccountType } from "../shared/Account";
+import { ICurrency } from "../shared/Currency";
+import { TDate, parseDate, formatDate } from "../shared/Date";
+import { EntityType, generateUuid, randomRange } from "../shared/Entity";
+import { ITransaction } from "../shared/Transaction";
 
 export const SampleCurrencies: ICurrency[] = [
   {

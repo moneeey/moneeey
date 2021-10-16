@@ -1,23 +1,13 @@
 import React from "react";
+import Observable from "../shared/Observable";
 import * as Bacon from "baconjs";
 
-export default class Observable<T> {
-  bus = new Bacon.Bus<T>();
-
-  get listen() { return this.bus; }
-
-  dispatch(value: T) {
-    this.bus.push(value);
-  }
+interface IObserveProps {
+  subjects: Observable<any>[];
+  children: any;
 }
 
-export function Observe({
-  subjects,
-  children,
-}: {
-  children: (version: number) => React.ReactElement;
-  subjects: Observable<any>[];
-}) {
+export default function Observe({ children, subjects, }: IObserveProps) {
   const [version, setVersion] = React.useState(0);
   React.useEffect(() => {
     Bacon.combineAsArray(...[subjects.map(s => s.listen)])
