@@ -1,4 +1,4 @@
-import { Button, Input, Alert } from "antd";
+import { Button, Input, Alert, Space } from "antd";
 import React from "react";
 import Messages from "../shared/Messages";
 import useMoneeeyStore from "../useMoneeeyStore";
@@ -22,7 +22,7 @@ export default function Landing() {
   }
 
   return (
-    <section>
+    <section className="landing">
       <h1>Welcome to Moneeey!</h1>
       <p>Personal finance, budgeting, money freedom!</p>
       <h2>Goals</h2>
@@ -34,9 +34,11 @@ export default function Landing() {
         <li>Freedom to host own CouchDb</li>
         <li>Powered by PouchDB, CouchDB, React, BaconJS</li>
       </ul>
-      <Input type="text" placeholder="Email" value={email} onChange={({target: { value }}) => setEmail(value)}/>
-      <Button disabled={disabled} onClick={onRegisterOrLogin}>Create account / Login</Button>
-      {status}
+      <Space direction="vertical">
+        <Input type="text" placeholder="Email" value={email} onChange={({target: { value }}) => setEmail(value.toLowerCase())}/>
+        <Button disabled={disabled} onClick={onRegisterOrLogin}>Create account / Login</Button>
+        {status}
+      </Space>
     </section>
   );
 }

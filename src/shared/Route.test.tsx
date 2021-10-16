@@ -1,4 +1,4 @@
-import { Route, IRouteParameters } from './RouteBase';
+import { Route, IRouteParameters } from './Route';
 
 interface ITestRouteParameters extends IRouteParameters {
   hello: string;
