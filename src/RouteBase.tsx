@@ -2,7 +2,6 @@ import React from "react";
 import MoneeeyStore from "./MoneeeyStore";
 import * as ReactRouter from "react-router-dom";
 import _ from 'lodash';
-import AppMenu from "./AppMenu";
 
 export interface IAppParameters {
   moneeeyStore: MoneeeyStore;
@@ -67,10 +66,12 @@ interface IMappedRoute {
 
 export function RouteRenderer<IParameters extends IRouteParameters>({
   route,
-  app
+  app,
+  menu,
 }: {
   route: Route<IParameters>,
   app: IAppParameters
+  menu: any,
 }) {
   const mapRoute = ({ route, path: parentPath }: IMappedRoute): IMappedRoute[] => {
     const path = parentPath + route.path;
@@ -95,7 +96,7 @@ export function RouteRenderer<IParameters extends IRouteParameters>({
   }
   return (
     <ReactRouter.BrowserRouter>
-      <AppMenu />
+      {menu}
       <ReactRouter.Switch>
         {routes.map(route => (
           <ReactRouter.Route
