@@ -8,7 +8,7 @@ const AUTH_MAX_TIME = 2*60*60*1000
 
 interface IEntity {
     _id: string;
-    _rev: string;
+    _rev?: string;
 }
 
 interface IAuthDoc extends IEntity {
@@ -17,15 +17,27 @@ interface IAuthDoc extends IEntity {
 }
 
 interface IUserDoc extends IEntity {
+    created: number;
     database: {
+        name: string;
         user: string;
         password?: string;
     };
 }
 
 export default class Management {
-    connect(dbName?: string) {
-        return new PouchDB(process.env.COUCHDB_HOST + '/' + (dbName || process.env.COUCHDB_DATABASE), {
+    logger: Console;
+
+    constructor(logger?: any) {
+        this.logger = logger || console
+    }
+
+    connect_default_db() {
+        return this.connect('' + process.env.COUCHDB_DATABASE)
+    }
+
+    connect(dbName: string) {
+        return new PouchDB(process.env.COUCHDB_HOST + '/' + dbName, {
             auth: {
                 username: process.env.COUCHDB_USERNAME,
                 password: process.env.COUCHDB_PASSWORD,
@@ -60,105 +72,69 @@ export default class Management {
     }
 
     async send_email(to: string, subject: string, content: string) {
-        console.log('send_email', { to, subject, content })
+        this.logger.log('send_email', { to, subject, content })
     }
 
     async create_database(email: string) {
         const usersDb = this.connect('_users')
         const user = this.generate_auth_code(email, AUTH_DB_CODE_SIZE)
         const pass = this.generate_auth_code(email, 12)
-        await usersDb.put({
-            _id: "org.couchdb.user:" + user,
-            type: "user",
-            name: user,
-            password: pass,
-            roles: [],
-        })
+        const name = hashjs.utils.toHex(user)
         return {
-            databaseId: hashjs.utils.toHex(user),
-            user,
-            pass,
+            database: { name, user, pass, },
+            userDoc: await usersDb.put({
+                _id: "org.couchdb.user:" + user,
+                type: "user",
+                name: user,
+                password: pass,
+                roles: [],
+            })
         }
     }
 
-    async get_user_doc(db: PouchDB.Database, email: string) {
-        const userId = this.hash_email(email)
-        const id = 'user_' + userId
-        let doc
-        try {
-            console.info('fetching user')
-            doc = await db.get(id)
-        } catch (e) {
-            console.info('error fetching user')
-            console.error({erroooor: e})
-            if (e.status === 404) {
-                console.info('creating user')
-                doc = await db.put({
-                    _id: id,
-                    created: this.tick(),
-                    database: await this.create_database(email),
-                })
-            } else {
-                throw e
-            }
-        }
-        return doc
-    }
-
-    async authorize(email: string, code: string) {
-        const db = this.connect();
-        let response
-        try {
-            const userId = this.hash_email(email)
-            const id = 'authorize_' + userId
-            const authDoc = await db.get(id) as IAuthDoc
-            if (code === authDoc.code) {
-                const timeSinceAuth = this.tick() - authDoc.created
-                if(timeSinceAuth < AUTH_MAX_TIME) {
-                    await db.remove(authDoc)
-                    const userDoc = await this.get_user_doc(db, email)
-                    response = {status: 'ok', data: { database: userDoc.database }}
-                } else {
-                    response = {status: 'error', reason: 'authorize_timeout'}
-                }
-            } else {
-                response = {status: 'error', reason: 'authorize_code_mismatch'}
-            }
-        } catch(e) {
-            response = {status: 'error', reason: 'authorize_other'}
-            console.error({response, error: e})
-        }
-        return response
-    }
-
-
-    async create_auth_for(db: PouchDB.Database, email: string, authId: string) {
-        return Bacon.once(undefined)
-            .flatMap(() => this.generate_auth_code(email, AUTH_CODE_SIZE))
-            .flatMap(code => ({
-                doc: db.put({_id: authId, code, epooch: this.tick()}),
-                code,
-            }))
-            .flatMap(({ code }) => `${process.env.HOST}/auth/?code=${code}&email=${email}`)
-            .flatMap(loginLink => this.send_email(email, `Moneeey login`, `Please click the following link to complete your login ${loginLink}`))
-            .flatMap(() => ({ status: 'ok' }))
+    complete_login(db: PouchDB.Database, email: string, code: string) {
+        const emailId = this.hash_email(email)
+        const authId = 'authorize_' + emailId
+        const userId = 'user_' + emailId
+        return Bacon.once(0)
+            .flatMap(() => Bacon.fromPromise(db.get(authId)))
+            .flatMap(authDoc => {
+                const auth = authDoc as unknown as IAuthDoc
+                const time = this.tick() - auth.created
+                return auth.code !== code ? new Bacon.Error('Auth code mismatch') :
+                       time > AUTH_MAX_TIME ? new Bacon.Error('Auth expired') :
+                       authDoc
+            })
+            .flatMap(authDoc => Bacon.fromPromise(db.remove(authDoc)))
+            .flatMap(() => Bacon.fromPromise(db.get(userId)))
+            .flatMapError(error => {
+                if (error.status || error.status === 404 && error._id === userId) return new Bacon.Error(error)
+                return Bacon.fromPromise(db.put({
+                        _id: userId,
+                        created: this.tick(),
+                        database: this.create_database(email),
+                    } as unknown as IUserDoc))
+            })
+            .flatMap(userDoc => (userDoc._rev && !userDoc.database && Bacon.fromPromise(db.get(userId))) || userDoc)
+            .flatMap(userDoc => ({ status: 'ok', user: userDoc as unknown as IUserDoc}))
     }
 
     request_login(db: PouchDB.Database, email: string) {
-        const userId = this.hash_email(email)
-        const authId = 'authorize_' + userId
-        return Bacon.once(undefined)
-            .doLog()
+        const emailId = this.hash_email(email)
+        const authId = 'authorize_' + emailId
+        return Bacon.once(0)
             .flatMap(() => Bacon.fromPromise(db.get(authId)))
-            .doLog()
             .flatMap(existing => Bacon.fromPromise(db.remove(existing)))
-            .doLog()
-            .flatMapError(error => error.status === 404 ? Bacon.once(undefined) : new Bacon.Error(error))
-            .doLog()
-            // .flatMapConcat(() => this.create_auth_for(db, email, userId))
-            // .flatMapError(error => {
-                // console.error('request_login error', {error})
-                // return { status: 'error' }
-            // })
+            .flatMapError(error => error.status !== 404 && new Bacon.Error(error))
+            .flatMap(() => Bacon.fromPromise(db.put({
+                _id: authId,
+                code:this.generate_auth_code(email, AUTH_CODE_SIZE),
+                epooch: this.tick(),
+            })))
+            .flatMap(() => Bacon.fromPromise(db.get(authId)))
+            .flatMap((authDoc) => `${process.env.HOST}/auth/?code=${(authDoc as unknown as IAuthDoc).code}&email=${email}`)
+            .flatMap(loginLink => Bacon.fromPromise(this.send_email(email, `Moneeey login`, `Please click the following link to complete your login ${loginLink}`)))
+            .flatMap(() => ({ status: 'ok' }))
+            .doError(error => this.logger.error('request_login', { error }))
     }
 }

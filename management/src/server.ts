@@ -1,42 +1,46 @@
 import * as Bacon from "baconjs";
 import fs from 'fs';
 import dotenv from 'dotenv';
-import koa from 'koa';
-import koaBody from 'koa-body';
-import Management from "./management.js"
+import express, { Application, Request, Response } from "express";
+import Management from "./management"
 
 const prodSecretPath = '/run/secret/prod.env';
 dotenv.config(fs.existsSync(prodSecretPath) ? { path: prodSecretPath } : {});
-const app = new koa();
 
-app.use(koaBody());
+const app: Application = express();
 
-app.use(function index(ctx, next) {
-	try {
-		if ('/auth' == ctx.path && ctx.method === 'POST') {
-			const email = ctx.request.body['email']
-			const code = ctx.request.body['code']
-			// const mngmt = new Management()
-			// if (!code && email) {
-				// stream = stream.flatMap(() => Bacon.try(mngmt.request_login(mngmt.connect(), email)))
-			// } else if (code && email) {
-				// stream = stream.flatMap(() => Bacon.try(mngmt.authorize(email, code))))
-			// }
-			Bacon.once(undefined)
-				// .flatMap(() => mngmt.request_login(mngmt.connect(), email))
-				.flatMap(() => 'Hello')
-				.doLog()
-				.onValue(response => {
-					console.log('onValue', response)
-					ctx.body = response
-					next()
-				})
-		}
-	} catch (error) {
-		console.error('server error', { error })
-	}
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const ManageRequest = (req: Request, res: Response, cb: (management: Management) => void) =>
+	Bacon.once(new Management())
+		.flatMap(mng => cb(mng))
+		.take(1)
+		.flatMapError(error => {
+			console.log('error', { error })
+			return { status: 'error' }
+		})
+		.onValue(response => {
+			res.status(200).send(response)
+		})
+
+app.post("/auth/complete", async (req: Request, res: Response) => {
+	ManageRequest(req, res, mng => {
+		return mng.complete_login(mng.connect_default_db(), req.body['email'].toLowerCase(), req.body['code'])
+	})
 });
 
-app.listen(process.env.PORT, function () {
-	console.log('Server running on http://localhost:' + process.env.PORT)
+app.post("/auth/start", async (req: Request, res: Response) => {
+	ManageRequest(req, res, mng => {
+		return mng.request_login(mng.connect_default_db(), req.body['email'].toLowerCase())
+	})
 });
+
+try {
+	const port = parseInt('' + process.env.PORT)
+	app.listen(port, (): void => {
+		console.info(`Listening successfully on port ${port}`);
+	});
+} catch (error: any) {
+	console.error(`Error occured: ${error.message}`);
+}
