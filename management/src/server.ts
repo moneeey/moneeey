@@ -15,11 +15,6 @@ app.use(express.urlencoded({ extended: true }));
 const ManageRequest = (req: Request, res: Response, cb: (management: Management) => void) =>
 	Bacon.once(new Management())
 		.flatMap(mng => cb(mng))
-		.take(1)
-		.flatMapError(error => {
-			console.log('error', { error })
-			return { status: 'error' }
-		})
 		.onValue(response => {
 			res.status(200).send(response)
 		})

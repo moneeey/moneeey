@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { isObject } from "lodash";
 import { addSyntheticLeadingComment } from "typescript";
 import Management from "./management";
 
@@ -6,18 +7,19 @@ dotenv.config({ path: './sample.env' })
 
 const DEFAULT_DB_NAME = 'moneeeey'
 
+const makeDb = (dbName: string) => ({
+  dbName,
+  get: jest.fn(),
+  put: jest.fn(),
+  remove: jest.fn(),
+  close: jest.fn(),
+})
+type mockDbType = ReturnType<typeof makeDb>
+
 function PouchDBMock() {
   let connectedDBs: { [_dbName: string]: object } = {}
   let expectedDBs: string[] = []
 
-  const makeDb = (dbName: string) => ({
-    dbName,
-    get: jest.fn(),
-    put: jest.fn(),
-    remove: jest.fn(),
-    close: jest.fn(),
-  })
-  type mockDbType = ReturnType<typeof makeDb>
 
   return {
     connect<T>(dbName: string): PouchDB.Database<T> {
@@ -69,7 +71,7 @@ describe('management server', () => {
   })
 
   afterEach(() => {
-    expect(pouchDbMock.dbNames().sort()).toEqual(pouchDbMock.expectedDBNames())
+    expect(pouchDbMock.dbNames().sort()).toEqual(pouchDbMock.expectedDBNames().sort())
   })
 
   it('hash email', () => {
@@ -82,97 +84,191 @@ describe('management server', () => {
     pouchDbMock.expectDBs([DEFAULT_DB_NAME])
   }
 
-  describe('request_login', () => {
-    const email = 'fernando@baroni.tech'
-    const authDoc = {
-      "_id": "authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93",
-      "code": "07a10d43a423002df2b7e8907254e45273794aa02a128f6714772e5540f63ae8",
-      "epooch": 1634439600011,
-    }
-    const sendEmail = ['send_email', {
-      "content": "Please click the following link to complete your login frontend.moneeey.local:3000/auth/?code=07a10d43a423002df2b7e8907254e45273794aa02a128f6714772e5540f63ae8&email=fernando@baroni.tech",
-      "subject": "Moneeey login",
-      "to": "fernando@baroni.tech",
-    }];
+  function expectConnectDefaultAndUsersDB() {
+    pouchDbMock.expectDBs([DEFAULT_DB_NAME, '_users'])
+  }
 
-    it('success with no existing authDoc', async () => {
+  function expectDbState(db: mockDbType, expectedState: any) {
+      const state = {
+        get: db.get.mock.calls,
+        put: db.put.mock.calls,
+        remove: db.remove.mock.calls,
+        close: db.close.mock.calls,
+      }
+      expect(state).toEqual(expectedState)
+  }
+
+  const email = 'fernando@baroni.tech'
+  const authDoc = {
+    "_id": "authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93",
+    "created": 1634439600011,
+    "authCode": "1a0cb038c2a1474f2b92301b1f1fb794",
+    "loginCode": "e95f005af7a8275a59f17cd9a3171a93",
+  }
+  const existingAuthDoc = {
+    _id: 'existingAuthDocId',
+    code: 'oldCode',
+    epooch: 123456,
+  }
+  const userDoc = {
+    "_id": "user_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93",
+    "database": {
+      "name": "a",
+      "user": "b",
+      "pass": "c",
+    },
+    "created": 1634439600011,
+  }
+  const sendEmail = ['send_email', {
+    "content": "Please click the following link to complete your login frontend.moneeey.local:3000/auth/?code=1a0cb038c2a1474f2b92301b1f1fb794&email=fernando@baroni.tech",
+    "subject": "Moneeey login",
+    "to": "fernando@baroni.tech",
+  }];
+
+  describe('request_login', () => {
+    let db: PouchDB.Database
+    let mockDb: mockDbType
+
+    beforeEach(() => {
       expectConnectDefaultDB()
 
-      const db = management.connect_default_db()
-      const mockDb = pouchDbMock.mockedDbToMock(db)
+      db = management.connect_default_db()
+      mockDb = pouchDbMock.mockedDbToMock(db)
+    })
 
+    it('success with no existing authDoc', async () => {
       mockDb.get.mockRejectedValueOnce({ status: 404 })
         .mockResolvedValueOnce(authDoc)
       mockDb.put.mockResolvedValueOnce(authDoc)
 
-      await management.request_login(db, email).take(1).toPromise()
+      expect(await management.request_login(db, email).take(1).toPromise())
+        .toEqual({login: "e95f005af7a8275a59f17cd9a3171a93", status: "ok"})
 
-      expect(mockDb.put.mock.calls).toEqual([[authDoc]])
-      expect(mockDb.remove.mock.calls).toEqual([])
+      expectDbState(mockDb, {
+        get: [
+          ['authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93'],
+          ['authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93'],
+        ],
+        put: [ [authDoc], ],
+        remove: [],
+        close: [],
+      })
       expect(consoleMock.history).toEqual([{ log: sendEmail }])
     })
 
     it('success by replacing existing authDoc', async () => {
-      expectConnectDefaultDB()
-
-      const db = management.connect_default_db()
-      const mockDb = pouchDbMock.mockedDbToMock(db)
-      const existingAuthDoc = {
-        _id: 'existingAuthDocId',
-        code: 'badCode',
-        epooch: 123456,
-      }
-
       mockDb.get.mockResolvedValueOnce(existingAuthDoc)
         .mockResolvedValueOnce(authDoc)
       mockDb.put.mockResolvedValueOnce(authDoc)
       mockDb.remove.mockResolvedValueOnce({ ok: true })
 
-      await management.request_login(db, email).take(1).toPromise()
+      expect(await management.request_login(db, email).take(1).toPromise())
+        .toEqual({login: "e95f005af7a8275a59f17cd9a3171a93", status: "ok"})
 
-      expect(mockDb.put.mock.calls).toEqual([[authDoc]])
-      expect(mockDb.remove.mock.calls).toEqual([[existingAuthDoc]])
+      expectDbState(mockDb, {
+        get: [
+          ['authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93'],
+          ['authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93'],
+        ],
+        put: [ [authDoc], ],
+        remove: [ [ existingAuthDoc ] ],
+        close: [],
+      })
       expect(consoleMock.history).toEqual([{ log: sendEmail }])
     })
 
     it('error creating authDoc', async () => {
-      expectConnectDefaultDB()
-
-      const db = management.connect_default_db()
-      const mockDb = pouchDbMock.mockedDbToMock(db)
-
       mockDb.get.mockRejectedValueOnce({ status: 404 })
         .mockResolvedValueOnce(authDoc)
       mockDb.put.mockRejectedValueOnce({ status: 'ops' })
 
-      try {
-        await management.request_login(db, email).take(1).toPromise()
-      } catch {}
+      expect(await management.request_login(db, email).take(1).toPromise())
+        .toEqual({ status: 'error' })
 
-      expect(mockDb.put.mock.calls).toEqual([[authDoc]])
-      expect(mockDb.remove.mock.calls).toEqual([])
+      expectDbState(mockDb, {
+        get: [
+          ['authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93'],
+        ],
+        put: [ [authDoc], ],
+        remove: [],
+        close: [],
+      })
       expect(consoleMock.history).toEqual([{ error: ['request_login', { error: { status: 'ops'}}] }])
     })
 
     it('error sending email', async () => {
-      expectConnectDefaultDB()
-
-      const db = management.connect_default_db()
-      const mockDb = pouchDbMock.mockedDbToMock(db)
-
       mockDb.get.mockRejectedValueOnce({ status: 404 })
         .mockResolvedValueOnce(authDoc)
       mockDb.put.mockResolvedValueOnce(authDoc)
 
       jest.spyOn(management, 'send_email').mockRejectedValueOnce({ no: 'email-4-u' })
 
-      try {
-        await management.request_login(db, email).take(1).toPromise()
-      } catch {}
+      expect(await management.request_login(db, email).take(1).toPromise())
+        .toEqual({ status: 'error' })
 
       expect(mockDb.put.mock.calls).toEqual([[authDoc]])
       expect(mockDb.remove.mock.calls).toEqual([])
       expect(consoleMock.history).toEqual([{ error: ['request_login', { error: { no: 'email-4-u'}}] }])
     })
+  })
+
+  describe('complete_login', () => {
+    let db: PouchDB.Database
+    let mockDb: mockDbType
+
+    beforeEach(() => {
+      expectConnectDefaultDB()
+
+      db = management.connect_default_db()
+      mockDb = pouchDbMock.mockedDbToMock(db)
+    })
+
+    it('success existing user', async () => {
+      mockDb.get.mockResolvedValueOnce(authDoc)
+        .mockResolvedValueOnce(userDoc)
+      mockDb.put.mockResolvedValueOnce(authDoc)
+      mockDb.remove.mockResolvedValueOnce({ ok: true })
+
+      expect(await management.complete_login(db, email, '1a0cb038c2a1474f2b92301b1f1fb794').take(1).toPromise())
+        .toEqual({
+            "status": "ok",
+            "user": {
+              "_id": "user_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93",
+              "created": 1634439600011,
+              "database": {
+                "name": "a",
+                "pass": "c",
+                "user": "b",
+              },
+            },
+        })
+
+      expect(mockDb.put.mock.calls).toEqual([])
+      expect(mockDb.remove.mock.calls).toEqual([[authDoc]])
+      expect(consoleMock.history).toEqual([])
+    })
+
+    it('success non-existing user, create DB', async () => {
+      expectConnectDefaultAndUsersDB()
+      const userDoc = {
+        _id: 'user_'
+      }
+      mockDb.get.mockResolvedValueOnce(authDoc)
+        .mockRejectedValueOnce({ status: 404 })
+      mockDb.put.mockResolvedValueOnce(authDoc)
+      mockDb.remove.mockResolvedValueOnce({ ok: true })
+
+      await management.complete_login(db, email, '1a0cb038c2a1474f2b92301b1f1fb794').take(1).toPromise()
+
+      expect(mockDb.put.mock.calls).toEqual([])
+      expect(mockDb.remove.mock.calls).toEqual([[authDoc]])
+      expect(consoleMock.history).toEqual([])
+    })
+
+    it('error retrieving authDoc', async () => {})
+    it('wrong code', async () => {})
+    it('timeout', async () => {})
+    it('error removing authDoc', async () => {})
+    it('non 404 error retrieving user', async () => {})
   })
 });
