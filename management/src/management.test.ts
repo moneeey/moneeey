@@ -112,7 +112,7 @@ describe('management server', () => {
     return [
       "send_email",
       {
-        "content": "Please click the following link to complete your login frontend.moneeey.local:3000/auth/?code=" + confirmCode + "&email=fernando@baroni.tech",
+        "content": "Please click the following link to complete your login http://frontend.moneeey.local:3000/auth/?code=" + confirmCode + "&email=fernando@baroni.tech",
         "subject": "Moneeey login",
         "to": "fernando@baroni.tech"
       }

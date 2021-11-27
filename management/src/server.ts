@@ -31,6 +31,7 @@ app.post("/auth/complete", async (req: Request, res: Response) => { ManageReques
 	mng => mng.auth_complete(req.body['email'].toLowerCase(), req.body['code'])) });
 app.post("/auth/start", async (req: Request, res: Response) => { ManageRequest(res,
 	mng => mng.auth_start(req.body['email'].toLowerCase())) });
+app.get("/", async (req: Request, res: Response) => { res.send('Hello!') });
 
 (() => {
 	try {

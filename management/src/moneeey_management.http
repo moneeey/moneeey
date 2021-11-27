@@ -1,0 +1,26 @@
+### Setup
+GET localhost:4269/
+Accept: application/json
+
+> {%
+  client.global.set("email", "f@baroni.tech");
+  client.global.set("confirmation_code", "aaf0bc1b3bda66713603a3e99728b120");
+%}
+
+### Auth start
+POST localhost:4269/auth/start
+Content-Type: application/json
+
+{ "email": "{{ email }}" }
+
+> {% client.global.set("login_token", response.body.login); %}
+> {% client.global.set("email", request.body.email); %}
+
+### Auth complete
+POST localhost:4269/auth/complete
+Content-Type: application/json
+
+{
+  "email": "{{ email }}",
+  "code": "{{ confirmation_token }}"
+}

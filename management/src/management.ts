@@ -160,7 +160,8 @@ export default class Management {
                 .flatMap(() => Bacon.fromPromise(db.get(userId)))
                 .flatMapError(error => {
                     if (error.status === 404) {
-                        return Bacon.fromPromise(db.put({
+                        return Bacon.once(0)
+                            .flatMap(() => Bacon.fromPromise(db.put({
                                 _id: userId,
                                 created: this.tick(),
                                 updated: this.tick(),
@@ -168,7 +169,8 @@ export default class Management {
                                 auth: [],
                                 databases: [],
                                 sessions: [],
-                            } as MUser))
+                            } as MUser)))
+                            .flatMap(() => Bacon.fromPromise(db.get(userId)))
                     }
                     return new Bacon.Error(error)
                 }))
@@ -187,7 +189,7 @@ export default class Management {
                 return Bacon.combineTwo(update, Bacon.constant(loginInfo), (_updateResponse, info) => info)
             })
             .flatMap(loginInfo => {
-                const loginLink = `${process.env.HOST}/auth/?code=${loginInfo.auth.confirm_code}&email=${loginInfo.email}`
+                const loginLink = `${process.env.HOST}/auth/complete?code=${loginInfo.auth.confirm_code}&email=${loginInfo.email}`
                 const sendEmail = Bacon.fromPromise(this.send_email(loginInfo.email, `Moneeey login`, `Please click the following link to complete your login ${loginLink}`))
                 return Bacon.combineTwo(sendEmail, Bacon.constant(loginInfo), (_sendEmail, info) => info)
             })
