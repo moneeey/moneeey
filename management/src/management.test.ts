@@ -1,19 +1,27 @@
 import dotenv from "dotenv";
-import { isObject } from "lodash";
-import { addSyntheticLeadingComment } from "typescript";
-import Management from "./management";
+import Management, {AUTH_MAX_TIME} from "./management";
 
 dotenv.config({ path: './sample.env' })
 
 const DEFAULT_DB_NAME = 'moneeeey'
 
-const makeDb = (dbName: string) => ({
-  dbName,
-  get: jest.fn(),
-  put: jest.fn(),
-  remove: jest.fn(),
-  close: jest.fn(),
-})
+const makeDb = (dbName: string) => {
+  const history = [] as any[]
+  const spy = jest.fn()
+  const addHistorySpy = (level: string) => (...args: any[]) => {
+    history.push({ [level]: args })
+    return spy(...args)
+  }
+  return {
+    dbName,
+    get: addHistorySpy('get'),
+    put: addHistorySpy('put'),
+    remove: addHistorySpy('remove'),
+    close: addHistorySpy('close'),
+    history,
+    spy,
+  }
+}
 type mockDbType = ReturnType<typeof makeDb>
 
 function PouchDBMock() {
@@ -54,221 +62,267 @@ function ConsoleMock() {
   }
 }
 
+const AUTH_1 = {
+  "code": "0022008b603cbc4e203203a00e32e3ba",
+  "confirm_code": "6bd1ac10c31b02de0a5e9c28528be720",
+  "created": 1634439600006
+};
+
+const AUTH_2 = {
+  "code": "f08e423c80f4f94abafcd941abb98f90",
+  "confirm_code": "8313f4aa0ae393dbe9b005b4841a12b4",
+  "created": 1634439600004
+};
+
 describe('management server', () => {
+  const email = 'fernando@baroni.tech'
+  const emailHash = 'fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0'
   let consoleMock = ConsoleMock()
   let pouchDbMock = PouchDBMock()
   let management = new Management(consoleMock)
   let currentTick = 0
+  let db: PouchDB.Database
+  let dbMock: mockDbType
 
   beforeEach(() => {
     consoleMock = ConsoleMock()
     pouchDbMock = PouchDBMock()
+    pouchDbMock.expectDBs([DEFAULT_DB_NAME])
     management = new Management(consoleMock)
     currentTick = new Date(2021, 9, 17).getTime()
-    jest.spyOn(management, 'connect').mockImplementation(pouchDbMock.connect)
+    jest.spyOn(management, 'connect_db').mockImplementation(pouchDbMock.connect)
     jest.spyOn(management, 'tick').mockImplementation(() => ++currentTick)
     jest.spyOn(Math, 'random').mockImplementation(() => 0.420)
+    db = management.connect_default_db()
+    dbMock = pouchDbMock.mockedDbToMock(db)
   })
 
   afterEach(() => {
     expect(pouchDbMock.dbNames().sort()).toEqual(pouchDbMock.expectedDBNames().sort())
   })
 
-  it('hash email', () => {
-    expect(process.env.EMAIL_HASH_PREFIX).toEqual('somethingveryrandom')
-    expect(process.env.EMAIL_ROUNDS).toEqual('64')
-    expect(management.hash_email('fernando@baroni.tech')).toEqual('27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93')
-  })
-
-  function expectConnectDefaultDB() {
-    pouchDbMock.expectDBs([DEFAULT_DB_NAME])
-  }
-
-  function expectConnectDefaultAndUsersDB() {
-    pouchDbMock.expectDBs([DEFAULT_DB_NAME, '_users'])
-  }
-
-  function expectDbState(db: mockDbType, expectedState: any) {
-      const state = {
-        get: db.get.mock.calls,
-        put: db.put.mock.calls,
-        remove: db.remove.mock.calls,
-        close: db.close.mock.calls,
-      }
-      expect(state).toEqual(expectedState)
-  }
-
-  const email = 'fernando@baroni.tech'
-  const authDoc = {
-    "_id": "authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93",
-    "created": 1634439600011,
-    "authCode": "1a0cb038c2a1474f2b92301b1f1fb794",
-    "loginCode": "e95f005af7a8275a59f17cd9a3171a93",
-  }
-  const existingAuthDoc = {
-    _id: 'existingAuthDocId',
-    code: 'oldCode',
-    epooch: 123456,
-  }
-  const userDoc = {
-    "_id": "user_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93",
-    "database": {
-      "name": "a",
-      "user": "b",
-      "pass": "c",
-    },
-    "created": 1634439600011,
-  }
-  const sendEmail = ['send_email', {
-    "content": "Please click the following link to complete your login frontend.moneeey.local:3000/auth/?code=1a0cb038c2a1474f2b92301b1f1fb794&email=fernando@baroni.tech",
-    "subject": "Moneeey login",
-    "to": "fernando@baroni.tech",
-  }];
-
-  describe('request_login', () => {
-    let db: PouchDB.Database
-    let mockDb: mockDbType
-
-    beforeEach(() => {
-      expectConnectDefaultDB()
-
-      db = management.connect_default_db()
-      mockDb = pouchDbMock.mockedDbToMock(db)
-    })
-
-    it('success with no existing authDoc', async () => {
-      mockDb.get.mockRejectedValueOnce({ status: 404 })
-        .mockResolvedValueOnce(authDoc)
-      mockDb.put.mockResolvedValueOnce(authDoc)
-
-      expect(await management.request_login(db, email).take(1).toPromise())
-        .toEqual({login: "e95f005af7a8275a59f17cd9a3171a93", status: "ok"})
-
-      expectDbState(mockDb, {
-        get: [
-          ['authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93'],
-          ['authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93'],
-        ],
-        put: [ [authDoc], ],
-        remove: [],
-        close: [],
-      })
-      expect(consoleMock.history).toEqual([{ log: sendEmail }])
-    })
-
-    it('success by replacing existing authDoc', async () => {
-      mockDb.get.mockResolvedValueOnce(existingAuthDoc)
-        .mockResolvedValueOnce(authDoc)
-      mockDb.put.mockResolvedValueOnce(authDoc)
-      mockDb.remove.mockResolvedValueOnce({ ok: true })
-
-      expect(await management.request_login(db, email).take(1).toPromise())
-        .toEqual({login: "e95f005af7a8275a59f17cd9a3171a93", status: "ok"})
-
-      expectDbState(mockDb, {
-        get: [
-          ['authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93'],
-          ['authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93'],
-        ],
-        put: [ [authDoc], ],
-        remove: [ [ existingAuthDoc ] ],
-        close: [],
-      })
-      expect(consoleMock.history).toEqual([{ log: sendEmail }])
-    })
-
-    it('error creating authDoc', async () => {
-      mockDb.get.mockRejectedValueOnce({ status: 404 })
-        .mockResolvedValueOnce(authDoc)
-      mockDb.put.mockRejectedValueOnce({ status: 'ops' })
-
-      expect(await management.request_login(db, email).take(1).toPromise())
-        .toEqual({ status: 'error' })
-
-      expectDbState(mockDb, {
-        get: [
-          ['authorize_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93'],
-        ],
-        put: [ [authDoc], ],
-        remove: [],
-        close: [],
-      })
-      expect(consoleMock.history).toEqual([{ error: ['request_login', { error: { status: 'ops'}}] }])
-    })
-
-    it('error sending email', async () => {
-      mockDb.get.mockRejectedValueOnce({ status: 404 })
-        .mockResolvedValueOnce(authDoc)
-      mockDb.put.mockResolvedValueOnce(authDoc)
-
-      jest.spyOn(management, 'send_email').mockRejectedValueOnce({ no: 'email-4-u' })
-
-      expect(await management.request_login(db, email).take(1).toPromise())
-        .toEqual({ status: 'error' })
-
-      expect(mockDb.put.mock.calls).toEqual([[authDoc]])
-      expect(mockDb.remove.mock.calls).toEqual([])
-      expect(consoleMock.history).toEqual([{ error: ['request_login', { error: { no: 'email-4-u'}}] }])
+  describe('hash', () => {
+    it('hash email', () => {
+      expect(process.env.EMAIL_HASH_PREFIX).toEqual('somethingveryrandom')
+      expect(management.hash_email(email)).toEqual(emailHash)
     })
   })
 
-  describe('complete_login', () => {
-    let db: PouchDB.Database
-    let mockDb: mockDbType
-
-    beforeEach(() => {
-      expectConnectDefaultDB()
-
-      db = management.connect_default_db()
-      mockDb = pouchDbMock.mockedDbToMock(db)
-    })
-
-    it('success existing user', async () => {
-      mockDb.get.mockResolvedValueOnce(authDoc)
-        .mockResolvedValueOnce(userDoc)
-      mockDb.put.mockResolvedValueOnce(authDoc)
-      mockDb.remove.mockResolvedValueOnce({ ok: true })
-
-      expect(await management.complete_login(db, email, '1a0cb038c2a1474f2b92301b1f1fb794').take(1).toPromise())
-        .toEqual({
-            "status": "ok",
-            "user": {
-              "_id": "user_27f7d3a27ae0edac45d8f2da79e5a60323ce36b773dda33acf7d89d6de483d0a8d5358df4a3e8e91520efd4fe0aa3b7d37a6cbd0cba90a59894cff2e227cfc93",
-              "created": 1634439600011,
-              "database": {
-                "name": "a",
-                "pass": "c",
-                "user": "b",
-              },
-            },
-        })
-
-      expect(mockDb.put.mock.calls).toEqual([])
-      expect(mockDb.remove.mock.calls).toEqual([[authDoc]])
-      expect(consoleMock.history).toEqual([])
-    })
-
-    it('success non-existing user, create DB', async () => {
-      expectConnectDefaultAndUsersDB()
-      const userDoc = {
-        _id: 'user_'
+  function sendEmailLog(confirmCode: string = "") {
+    return [
+      "send_email",
+      {
+        "content": "Please click the following link to complete your login frontend.moneeey.local:3000/auth/?code=" + confirmCode + "&email=fernando@baroni.tech",
+        "subject": "Moneeey login",
+        "to": "fernando@baroni.tech"
       }
-      mockDb.get.mockResolvedValueOnce(authDoc)
-        .mockRejectedValueOnce({ status: 404 })
-      mockDb.put.mockResolvedValueOnce(authDoc)
-      mockDb.remove.mockResolvedValueOnce({ ok: true })
+    ];
+  }
 
-      await management.complete_login(db, email, '1a0cb038c2a1474f2b92301b1f1fb794').take(1).toPromise()
+  describe('auth_start', () => {
 
-      expect(mockDb.put.mock.calls).toEqual([])
-      expect(mockDb.remove.mock.calls).toEqual([[authDoc]])
-      expect(consoleMock.history).toEqual([])
+    it('success - creates new user', async () => {
+      dbMock.spy
+          .mockRejectedValueOnce({ status: 404 })
+          .mockImplementationOnce(userDoc => Promise.resolve(({...userDoc, _rev: 'created' })))
+          .mockResolvedValueOnce({})
+          .mockResolvedValueOnce({})
+
+      expect(await management.auth_start(email).toPromise())
+          .toEqual({login: "0022008b603cbc4e203203a00e32e3ba", status: "started"})
+
+      expect(dbMock.history).toEqual([
+        {
+          "get": [
+            "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0"
+          ]
+        },
+        {
+          "put": [
+            {
+              "_id": "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0",
+              "auth": [],
+              "created": 1634439600001,
+              "databases": [],
+              "email": "fernando@baroni.tech",
+              "sessions": [],
+              "updated": 1634439600002
+            }
+          ]
+        },
+        {
+          "put": [
+            {
+              "_id": "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0",
+              "_rev": "created",
+              "auth": [ AUTH_1 ],
+              "created": 1634439600001,
+              "databases": [],
+              "email": "fernando@baroni.tech",
+              "sessions": [],
+              "updated": 1634439600003
+            }
+          ]
+        }
+      ])
+      expect(consoleMock.history).toEqual([
+        { log: sendEmailLog("6bd1ac10c31b02de0a5e9c28528be720") },
+      ])
     })
 
-    it('error retrieving authDoc', async () => {})
-    it('wrong code', async () => {})
-    it('timeout', async () => {})
-    it('error removing authDoc', async () => {})
-    it('non 404 error retrieving user', async () => {})
+    it('success - existing user', async () => {
+      dbMock.spy
+          .mockResolvedValueOnce( {
+            "_id": "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0",
+            "_rev": "created",
+            "auth": [ AUTH_1 ],
+            "created": 1634439600001,
+            "databases": [],
+            "email": "fernando@baroni.tech",
+            "sessions": [],
+            "updated": 1634439600003
+          })
+          .mockImplementationOnce(userDoc => Promise.resolve(({...userDoc, _rev: 'created' })))
+          .mockResolvedValueOnce({ _rev: 'updated' })
+          .mockResolvedValueOnce({})
+
+      expect(await management.auth_start(email).toPromise())
+          .toEqual({login: "f08e423c80f4f94abafcd941abb98f90", status: "started"})
+
+      expect(dbMock.history).toEqual([
+        {
+          "get": [
+            "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0"
+          ]
+        },
+        {
+          "put": [
+            {
+              "_id": "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0",
+              "_rev": "created",
+              "auth": [ AUTH_2, AUTH_1 ],
+              "created": 1634439600001,
+              "databases": [],
+              "email": "fernando@baroni.tech",
+              "sessions": [],
+              "updated": 1634439600001
+            }
+          ]
+        }
+      ])
+      expect(consoleMock.history).toEqual([
+          { log: sendEmailLog("8313f4aa0ae393dbe9b005b4841a12b4") },
+      ])
+    })
+
+  })
+
+  describe('auth_complete', () => {
+
+    it('success - creates new session', async () => {
+        dbMock.spy
+            .mockResolvedValueOnce( {
+              "_id": "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0",
+              "_rev": "created",
+              "auth": [ AUTH_1, AUTH_2 ],
+              "created": 1634439600001,
+              "databases": [],
+              "email": "fernando@baroni.tech",
+              "sessions": [],
+              "updated": 1634439600003
+            })
+            .mockImplementationOnce(userDoc => Promise.resolve(({...userDoc, _rev: 'updated' })))
+
+        expect(await management.auth_complete(email, AUTH_1.confirm_code).toPromise())
+            .toEqual({status: "confirmed"})
+
+        expect(dbMock.history).toEqual([
+          {
+            "get": [
+              "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0"
+            ]
+          },
+          {
+            "put": [
+              {
+                "_id": "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0",
+                "_rev": "created",
+                "auth": [ AUTH_2 ],
+                "created": 1634439600001,
+                "databases": [],
+                "email": "fernando@baroni.tech",
+                "sessions": [{
+                  "code": AUTH_1.code,
+                  "created": 1634439600004,
+                }],
+                "updated": 1634439600002
+              }
+            ]
+          }
+        ])
+        expect(consoleMock.history).toEqual([])
+    })
+
+    it('confirmation_code not found', async () => {
+      dbMock.spy
+          .mockResolvedValueOnce( {
+            "_id": "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0",
+            "_rev": "created",
+            "auth": [ AUTH_1, AUTH_2 ],
+            "created": 1634439600001,
+            "databases": [],
+            "email": "fernando@baroni.tech",
+            "sessions": [],
+            "updated": 1634439600003
+          })
+
+      expect(await management.auth_complete(email, 'idontexist').toPromise())
+          .toEqual({status: "error"})
+
+      expect(dbMock.history).toEqual([
+        {
+          "get": [
+            "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0"
+          ]
+        },
+      ])
+      expect(consoleMock.history).toEqual([{
+        error: [
+            'auth_complete', { error: 'confirmation_code_not_found' }
+        ]
+      }])
+    })
+
+    it('expired', async () => {
+      dbMock.spy
+          .mockResolvedValueOnce( {
+            "_id": "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0",
+            "_rev": "created",
+            "auth": [ AUTH_1 ],
+            "created": 1634439600001,
+            "databases": [],
+            "email": "fernando@baroni.tech",
+            "sessions": [],
+            "updated": 1634439600003
+          })
+
+      currentTick += AUTH_MAX_TIME + 10
+
+      expect(await management.auth_complete(email, AUTH_1.confirm_code).toPromise())
+          .toEqual({status: "error"})
+
+      expect(dbMock.history).toEqual([
+        {
+          "get": [
+            "user_fe505a016c5edc723fc838853c0dd47379f6712e6d72ba9bb655dac4f9c6832254f95f8d93f38fc85e9522619fb2f2c0968d19406c8bcedc32fe8dfcfadd7ce0"
+          ]
+        },
+      ])
+      expect(consoleMock.history).toEqual([{
+        error: [
+          'auth_complete', { error: 'confirmation_code_expired' }
+        ]
+      }])
+    })
   })
 });
