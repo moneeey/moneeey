@@ -23,8 +23,8 @@ app.post('/database/destroy/:database', async (req: Request, res: Response) => M
 app.post('/database/export/:database', async (req: Request, res: Response) => ManageRequest(res, _ => { return Bacon.once({ status: 'WIP', action: 'export', database: req.params['database'] }) }));
 app.post('/database/import', async (_: Request, res: Response) => ManageRequest(res, _ => { return Bacon.once({ status: 'WIP' }) }));
 
-app.post('/auth/complete', async (req: Request, res: Response) => ManageRequest(res, mng => mng.auth_complete(req.body['email'].toLowerCase(), req.body['code'])));
 app.post('/auth/start', async (req: Request, res: Response) => ManageRequest(res, mng => mng.auth_start(req.body['email'].toLowerCase())));
+app.get('/auth/complete', async (req: Request, res: Response) => ManageRequest(res, mng => mng.auth_complete((req.query.email as string).toLowerCase(), req.query.code as string)));
 app.get('/', async (_: Request, res: Response) => res.send('Hello!'));
 
 const main = () => {
