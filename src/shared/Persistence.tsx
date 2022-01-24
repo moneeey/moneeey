@@ -15,7 +15,7 @@ export default class PersistenceStore extends Observable<PersistenceStore> {
   constructor() {
     super();
     this.db = new PouchDB('moneeey');
-    this.sync();
+    // this.sync();
   }
 
   async sync() {
