@@ -1,11 +1,12 @@
-import PouchDB from "pouchdb";
-import hashjs from "hash.js";
-import { v4 as uuid } from "uuid";
-import * as Bacon from "baconjs";
+import PouchDB from 'pouchdb';
+import hashjs from 'hash.js';
+import * as Bacon from 'baconjs';
+
+import { smtp_send } from './core'
 
 const AUTH_CODE_SIZE = 32
-const USERNAME_DB_LENGTH = 32
-export const AUTH_MAX_TIME = 2 * 60 * 60 * 1000
+
+const AUTH_MAX_TIME = 2 * 60 * 60 * 1000
 
 type IID = string;
 
@@ -16,30 +17,35 @@ interface IEntity {
     updated: number;
 }
 
+interface IDatabase {
+    database_id: IID;
+    level: number;
+}
+
+interface IAuth {
+    confirm_code: string;
+    code: string;
+    created: number;
+}
+
+interface ILogin {
+    email: string;
+    auth: IAuth;
+}
+
+interface ISession {
+    code: string;
+    created: number;
+}
+
 interface MUser extends IEntity {
     email: string;
-    databases: Array<{
-        database_id: IID;
-        level: number;
-    }>;
-    auth: Array<{
-        confirm_code: string; // sent to email
-        code: string; // stored in browser, which keeps waiting for email to be confirmed
-        created: number;
-    }>;
-    sessions: Array<{
-        code: string;
-        created: number;
-    }>;
+    databases: Array<IDatabase>;
+    auth: Array<IAuth>;
+    sessions: Array<ISession>;
 }
 
-interface MDB extends IEntity {
-    alias: string;
-    name: string;
-    user: string;
-}
-
-export default class Management {
+class Management {
     logger: Console;
 
     constructor(logger?: any) {
@@ -47,7 +53,7 @@ export default class Management {
     }
 
     connect_default_db() {
-        return this.connect_db('' + process.env.COUCHDB_DATABASE)
+        return this.connect_db(process.env.COUCHDB_DATABASE || '')
     }
 
     connect_db(dbName: string) {
@@ -71,18 +77,18 @@ export default class Management {
     }
 
     email_hash_prefix() {
-        return '' + process.env.EMAIL_HASH_PREFIX
+        return process.env.EMAIL_HASH_PREFIX || ''
     }
 
     hash_email(email: string) {
-        return this.hash_value(this.email_hash_prefix(), email.toLowerCase(), 128);
+        return this.hash_value(this.email_hash_prefix(), email, 128);
     }
 
     generate_auth_code(email: string, size: number) {
         const userId = this.hash_email(email)
         let result = ''
         while (result.length < size * 4) {
-            let buffer = '' + this.tick();
+            let buffer = this.tick();
             buffer += userId;
             buffer += Math.random() * size * 99999;
             result = this.hash_value(this.email_hash_prefix(), buffer + result + buffer, 64) + result;
@@ -92,67 +98,24 @@ export default class Management {
 
     async send_email(to: string, subject: string, content: string) {
         this.logger.log('send_email', { to, subject, content })
+        await smtp_send({ from: 'Moneeey registration', to, subject, html: content })
     }
 
-    // create_database(email: string, password: string) {
-    //     return Bacon.once(0)
-    //         .flatMap(() => this.connect_db('_users'))
-    //         .flatMap(usersDb => Bacon.retry({
-    //             retries: 10,
-    //             delay: () => 100,
-    //             source: () => Bacon.once(0)
-    //                 .flatMap(() => {
-    //                     const user = this.generate_auth_code(email, USERNAME_DB_LENGTH)
-    //                     const name = hashjs.utils.toHex(user)
-    //                     const userId = "org.couchdb.user:" + user
-    //                     const userDoc = { _id: userId, type: "user", name: user, password, roles: [], owner: email }
-    //                     return { user, userId, name, userDoc }
-    //                 })
-    //                 .flatMap(user => Bacon.combine(
-    //                     Bacon.constant(user),
-    //                     Bacon.once(0)
-    //                         .flatMap(() => Bacon.fromPromise(usersDb.get(user.userId)))
-    //                         .flatMap(() => new Bacon.Error('userId already exists, trying another userId'))
-    //                         .flatMapError(e => (e && e.status && e.status === 404) || new Bacon.Error(e))
-    //                         .filter(true)
-    //                         .flatMap(() => Bacon.fromPromise(usersDb.put(user.userDoc)))
-    //                         .flatMap(() => true),
-    //                     (user, created: boolean) => created && user
-    //                 ))
-    //         }))
-    // }
-
-    auth_complete(email: string, confirm_code: string) {
-        const db = this.connect_default_db()
-        const emailId = this.hash_email(email)
-        const userId = 'user_' + emailId
-        return Bacon.once(0)
-            .flatMap(() => Bacon.fromPromise(db.get(userId)))
-            .flatMap(userDoc => {
-                const user = userDoc as unknown as MUser
-                const auth = user.auth.find(auth => auth.confirm_code === confirm_code)
-                if (!auth) return new Bacon.Error("confirmation_code_not_found")
-                if (this.tick() - auth.created > AUTH_MAX_TIME) return new Bacon.Error("confirmation_code_expired")
-                const updatedUser: MUser = { ...user,
-                    updated: this.tick(),
-                    auth: user.auth.filter(cur => cur.confirm_code !== confirm_code && this.tick() - cur.created < AUTH_MAX_TIME),
-                    sessions: [
-                        { code: auth.code, created: this.tick(), }
-                    , ...user.sessions],
-                }
-                return Bacon.fromPromise(db.put(updatedUser))
-            })
-            .flatMap(() => ({ status: 'confirmed' }))
-            .flatMapError(error => {
-                this.logger.error('auth_complete', { error })
-                return { status: 'error' }
-            })
-            .take(1)
+    get_link(loginInfo: ILogin) {
+        let host = process.env.HOST
+        if (!process.env.PORT?.match(/(80|443)/)) {
+            host += ':' + process.env.PORT
+        }
+        const link = `${host}/auth/complete?code=${loginInfo.auth.confirm_code}&email=${loginInfo.email}`
+        return `<a href="${link}">${link}</a>`
     }
 
-    auth_start(Email: string) {
+    get_content(loginLink: string) {
+        return `Please click the following link to complete your registration: ${loginLink}`
+    }
+
+    auth_start(email: string) {
         const db = this.connect_default_db()
-        const email = Email.toLowerCase();
         const emailId = this.hash_email(email)
         const userId = 'user_' + emailId
         return Bacon.once(0)
@@ -165,7 +128,7 @@ export default class Management {
                                 _id: userId,
                                 created: this.tick(),
                                 updated: this.tick(),
-                                email: email,
+                                email,
                                 auth: [],
                                 databases: [],
                                 sessions: [],
@@ -174,9 +137,9 @@ export default class Management {
                     }
                     return new Bacon.Error(error)
                 }))
-            .flatMap(userDoc => {
-                const user = userDoc as MUser
-                const updatedUser: MUser = { ...user,
+            .flatMap((user: MUser) => {
+                const updatedUser: MUser = {
+                    ...user,
                     updated: this.tick(),
                     auth: [{
                         code: this.generate_auth_code(email, AUTH_CODE_SIZE),
@@ -185,12 +148,12 @@ export default class Management {
                     }, ...user.auth],
                 }
                 const update = Bacon.fromPromise(db.put(updatedUser))
-                const loginInfo = { email: user.email, auth: updatedUser.auth[0] }
+                const loginInfo: ILogin = { email: user.email, auth: updatedUser.auth[0] }
                 return Bacon.combineTwo(update, Bacon.constant(loginInfo), (_updateResponse, info) => info)
             })
             .flatMap(loginInfo => {
-                const loginLink = `${process.env.HOST}/auth/complete?code=${loginInfo.auth.confirm_code}&email=${loginInfo.email}`
-                const sendEmail = Bacon.fromPromise(this.send_email(loginInfo.email, `Moneeey login`, `Please click the following link to complete your login ${loginLink}`))
+                const loginLink = this.get_link(loginInfo)
+                const sendEmail = Bacon.fromPromise(this.send_email(loginInfo.email, 'Moneeey registration', this.get_content(loginLink)))
                 return Bacon.combineTwo(sendEmail, Bacon.constant(loginInfo), (_sendEmail, info) => info)
             })
             .flatMap(loginInfo => ({ status: 'started', login: loginInfo.auth.code }))
@@ -200,4 +163,35 @@ export default class Management {
             })
             .take(1)
     }
+
+    auth_complete(email: string, confirm_code: string) {
+        const db = this.connect_default_db()
+        const emailId = this.hash_email(email)
+        const userId = 'user_' + emailId
+        return Bacon.once(0)
+            .flatMap(() => Bacon.fromPromise(db.get(userId)))
+            .flatMap(userDoc => {
+                const user = userDoc as unknown as MUser
+                const auth = user.auth.find(auth => auth.confirm_code === confirm_code)
+                if (!auth) return new Bacon.Error('confirmation_code_not_found')
+                if (this.tick() - auth.created > AUTH_MAX_TIME) return new Bacon.Error('confirmation_code_expired')
+                const updatedUser: MUser = {
+                    ...user,
+                    updated: this.tick(),
+                    auth: user.auth.filter(cur => cur.confirm_code !== confirm_code && this.tick() - cur.created < AUTH_MAX_TIME),
+                    sessions: [
+                        { code: auth.code, created: this.tick(), }
+                        , ...user.sessions],
+                }
+                return Bacon.fromPromise(db.put(updatedUser))
+            })
+            .flatMap(() => ({ status: 'confirmed' }))
+            .flatMapError(error => {
+                this.logger.error('auth_complete', { error })
+                return { status: 'error' }
+            })
+            .take(1)
+    }
 }
+
+export default Management
