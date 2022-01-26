@@ -57,7 +57,8 @@ class Management {
     }
 
     connect_db(dbName: string) {
-        return new PouchDB(process.env.COUCHDB_HOST + '/' + dbName, {
+        const host = `http://${process.env.COUCHDB_HOST}/${dbName}`;
+        return new PouchDB(host, {
             auth: {
                 username: process.env.COUCHDB_USERNAME,
                 password: process.env.COUCHDB_PASSWORD,
@@ -106,7 +107,7 @@ class Management {
         if (!process.env.PORT?.match(/(80|443)/)) {
             host += ':' + process.env.PORT
         }
-        const link = `${host}/auth/complete?code=${loginInfo.auth.confirm_code}&email=${loginInfo.email}`
+        const link = `http://${host}/auth/complete?code=${loginInfo.auth.confirm_code}&email=${loginInfo.email}`
         return `<a href="${link}">${link}</a>`
     }
 
