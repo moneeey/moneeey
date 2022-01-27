@@ -1,12 +1,13 @@
-import PouchDB from "pouchdb";
-import {EntityType, IBaseEntity} from "./Entity";
-import MappedStore from "./MappedStore";
-import Observable from "./Observable";
+import PouchDB from 'pouchdb';
+import { EntityType, IBaseEntity } from './Entity';
+import MappedStore from './MappedStore';
+import Observable from './Observable';
 
 export enum Status {
   ONLINE = 'Online',
   OFFLINE = 'Offline'
 }
+
 export default class PersistenceStore extends Observable<PersistenceStore> {
   db: PouchDB.Database;
   entries: IBaseEntity[] = [];
@@ -15,27 +16,28 @@ export default class PersistenceStore extends Observable<PersistenceStore> {
   constructor() {
     super();
     this.db = new PouchDB('moneeey');
-    // this.sync();
+    this.sync();
   }
 
   async sync() {
+    const host = process.env.COUCHDB_HOST;
+    if (!host) return;
     const fromLocalstorage = (key: string) => {
       let v = window.localStorage.getItem(key) || window.prompt(key) || '';
       window.localStorage.setItem(key, v);
       return v;
     }
-    const host = 'couch.k8s.baroni.tech';
     const username = fromLocalstorage('ADMIN_USERNAME');
     const password = fromLocalstorage('ADMIN_PASSWORD');
     const database = 'accounts';
-    const remote = `https://${username}:${password}@${host}/${database}`;
+    const remote = `http://${username}:${password}@${host}/${database}`;
     const setStatus = (status: Status) => { this.status = status; this.dispatch(this); };
     return new Promise((resolve, reject) =>
       this.db.sync(remote, { live: true, retry: true })
-      .on('change', (c) => { resolve(setStatus(Status.ONLINE)); console.log(c) })
-      .on('paused', () => { resolve(setStatus(Status.OFFLINE)) })
-      .on('denied', () => resolve(setStatus(Status.OFFLINE)))
-      .on('error', () => reject(setStatus(Status.OFFLINE))));
+        .on('change', (c) => { resolve(setStatus(Status.ONLINE)); console.log(c) })
+        .on('paused', () => { resolve(setStatus(Status.OFFLINE)) })
+        .on('denied', () => resolve(setStatus(Status.OFFLINE)))
+        .on('error', () => reject(setStatus(Status.OFFLINE))));
   }
 
   async load() {

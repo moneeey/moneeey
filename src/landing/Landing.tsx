@@ -1,21 +1,24 @@
-import { Button, Input, Alert, Space } from "antd";
-import React from "react";
-import Messages from "../shared/Messages";
-import useMoneeeyStore from "../useMoneeeyStore";
+import { Button, Input, Space } from 'antd';
+import React from 'react';
+
+import { StatusProps, Status } from '../components/Status';
+import Messages from '../shared/Messages';
+import useMoneeeyStore from '../useMoneeeyStore';
 
 export default function Landing() {
   const { management } = useMoneeeyStore();
   const [email, setEmail] = React.useState('')
   const [disabled, setDisabled] = React.useState(false)
-  const [status, setStatus] = React.useState(undefined as (React.ReactChild | undefined))
+  const [status, setStatus] = React.useState<StatusProps>()
+
   const onRegisterOrLogin = () => {
     setDisabled(true);
-    setStatus(undefined);
+    setStatus({})
     management.registerOrLogin(email)
-      .flatMap(() => setStatus(<Alert type="success" message={Messages.landing.registration_success} />))
-      .flatMap(() => setStatus(<Alert type="info" message={Messages.landing.welcome_back} />))
+      .flatMap(() => setStatus({ type: 'success', message: Messages.landing.registration_success }))
+      .flatMap(() => setStatus({ type: 'info', message: Messages.landing.welcome_back }))
       .flatMapError(() => {
-        setStatus(<Alert type="error" message={Messages.landing.registration_failed} />)
+        setStatus({ type: 'error', message: Messages.landing.registration_failed })
         setDisabled(false);
       })
       .onEnd();
@@ -35,9 +38,9 @@ export default function Landing() {
         <li>Powered by PouchDB, CouchDB, React, BaconJS</li>
       </ul>
       <Space direction="vertical">
-        <Input type="text" placeholder="Email" value={email} onChange={({target: { value }}) => setEmail(value.toLowerCase())}/>
+        <Input type="text" placeholder="Email" value={email} onChange={({ target: { value } }) => setEmail(value.toLowerCase())} />
         <Button disabled={disabled} onClick={onRegisterOrLogin}>Create account / Login</Button>
-        {status}
+        <Status {...status} />
       </Space>
     </section>
   );
