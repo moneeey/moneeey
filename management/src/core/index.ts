@@ -1,2 +1,2 @@
-export { default } from './utils'
-export * from './smtp'
+export * from './utils';
+export * from './smtp';

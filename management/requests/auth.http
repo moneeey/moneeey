@@ -1,0 +1,19 @@
+@url = http://local.moneeey.baroni.tech:4269
+@email = fernando@baroni.tech
+
+### Auth start
+
+# @name start
+POST {{ url }}/auth/start
+Content-Type: application/json
+
+{ "email": "{{ email }}" }
+
+### Auth complete
+
+@confirm_code = {{ start.response.body.confirm_code }}
+
+POST {{ url }}/auth/complete
+Content-Type: application/json
+
+{ "email": "{{ email }}", "confirm_code": "{{ confirm_code }}" }

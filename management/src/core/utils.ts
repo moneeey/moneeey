@@ -1,3 +1,3 @@
-const parseBool = (value: any, defaultValue = false) => ['true', 'false', true, false].includes(value) && JSON.parse(value) || defaultValue
+const APP_DESC = 'Moneeey';
 
-export default parseBool
+export { APP_DESC };
