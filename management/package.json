@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/http-proxy": "^1.17.9",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "http-proxy": "^1.18.1",
     "nodemailer": "^6.7.2",
     "pouchdb": "^7.2.2"
   },

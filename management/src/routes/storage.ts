@@ -1,0 +1,19 @@
+import express, { Router } from 'express';
+
+import { HandleAuthAPI } from '.';
+import AuthController from '../controller/auth_controller';
+import StorageController from '../controller/storage_controller';
+import { smtp_send } from '../core';
+import connect_pouch from '../core/pouch';
+
+const router: Router = express.Router();
+const authController = new AuthController(console, connect_pouch, smtp_send)
+const storageController = new StorageController(console, connect_pouch, smtp_send)
+
+router.post('/new', HandleAuthAPI(authController, (_req, _res, user) => storageController.create(user)) );
+router.post('/destroy', HandleAuthAPI(authController, (req, _res, user) => storageController.destroy(user, req.body['databaseId'])) );
+router.post('/share', HandleAuthAPI(authController, (req, _res, user) => storageController.share(user, req.body['databaseId'], req.body['toEmail'], req.body['level'])) );
+router.post('/export', HandleAuthAPI(authController, (req, _res, user) => storageController.export(user, req.body['databaseId'])) );
+router.post('/import', HandleAuthAPI(authController, (req, _res, user) => storageController.import(user, req.body['databaseId'], req.body['data'])) );
+
+export default router;

@@ -1,19 +1,17 @@
 import { smtp_send_fn } from '../core';
-import { APP_DESC, APP_FROM_EMAIL, APP_URL, COUCHDB_HOST, HASH_PREFIX, MAX_AUTHENTICATION_SECONDS } from '../core/config';
+import { APP_DESC, APP_FROM_EMAIL, APP_URL, HASH_PREFIX, MAX_AUTHENTICATION_SECONDS } from '../core/config';
 import { connect_pouch_fn, pouch_db } from '../core/pouch';
 import { IAuth, IUser } from '../entities';
 import { hash_value, tick, uuid } from '../core/utils';
+import DatabaseController from './database_controller';
 
-const env = process.env;
-
-export default class AuthController {
+export default class AuthController extends DatabaseController {
   logger: Console
-  connect_pouch: connect_pouch_fn
   smtp_send: smtp_send_fn
 
   constructor(logger: Console, connect_pouch: connect_pouch_fn, smtp_send: smtp_send_fn) {
+    super(logger, connect_pouch)
     this.logger = logger
-    this.connect_pouch = connect_pouch
     this.smtp_send = smtp_send
   }
 
@@ -40,11 +38,19 @@ export default class AuthController {
     return { success: true, email, auth_code }
   }
 
-  async check(email: string, auth_code: string) {
-    const mainDb = this.connect_pouch(COUCHDB_HOST, {})
+  async authenticate(email: string, auth_code: string) {
+    const mainDb = this.connect_main_db()
     const user = await this.get_or_create_user(mainDb, email)
-    const found = user.auth.find(auth => auth.auth_code === auth_code && auth.confirmed && auth.updated > tick() - MAX_AUTHENTICATION_SECONDS)
-    return { success: !!found }
+    const auth = user.auth.find(auth => auth.auth_code === auth_code && auth.confirmed && auth.updated > tick() - MAX_AUTHENTICATION_SECONDS)
+    if (auth) {
+      auth.updated = tick()
+      return user
+    }
+    return null
+  }
+
+  async check(email: string, auth_code: string) {
+    return { success: !!(await this.authenticate(email, auth_code)) }
   }
 
   async complete(email: string, auth_code: string, confirm_code: string) {
@@ -68,10 +74,6 @@ export default class AuthController {
     user.auth = user.auth.filter(auth => auth.auth_code !== auth_code)
     mainDb.put(user)
     return { success: true }
-  }
-
-  connect_main_db() {
-    return this.connect_pouch(COUCHDB_HOST, {})
   }
 
   hash_email(email: string): string {
@@ -111,7 +113,6 @@ export default class AuthController {
           created: tick(),
           auth: [],
           databases: [],
-          sessions: [],
         } as IUser
       } else {
         this.logger.error('get_or_create_user', err)

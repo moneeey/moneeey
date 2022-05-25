@@ -1,9 +1,9 @@
+/* eslint-disable import/first */
 import dotenv from 'dotenv';
 dotenv.config({ path: './sample.env' })
 
-import * as utils from '../core/utils';
 import { pouch_db } from "../core/pouch"
-import { ConsoleMock, ConsoleMockType, mockDb, mockDbType } from "../core/test_utils"
+import { ConsoleMock, ConsoleMockType, mockDb, mockDbType, mock_utils } from "../core/test_utils"
 import AuthController from "./auth_controller"
 
 describe('auth_controller', () => {
@@ -12,36 +12,44 @@ describe('auth_controller', () => {
   let mainDb: mockDbType
   let smtp_mock: jest.Mock
 
+  const connectedToMain = {
+    "connect": ["https://your-couchdb.com/moneeeey", {
+      "auth": { "password": "samplecouchdbpass", "username": "samplecouchdbuser", },
+    },],
+  }
+
   beforeEach(() => {
     logger = ConsoleMock()
-    mainDb = mockDb('', {})
+    mainDb = mockDb()
     smtp_mock = jest.fn()
-    auth = new AuthController(logger as unknown as Console, (name, options) => mainDb as unknown as pouch_db, smtp_mock)
-    let tick = 123450000
-    jest.spyOn(utils, 'uuid').mockImplementation(() => 'UUID-1234-UUID-' + tick++)
-    jest.spyOn(utils, 'tick').mockImplementation(() => tick++)
-    jest.spyOn(utils, 'hash_value').mockImplementation((_prefix, value, _rounds) => 'hashed:-' + (tick++) + '-' + value)
+    auth = new AuthController(logger as unknown as Console, (name, options) => {
+      mainDb.connect(name, options)
+      return mainDb as unknown as pouch_db
+    }, smtp_mock)
+    mock_utils();
   })
 
   describe('start', () => {
     it('success new user', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockRejectedValueOnce(({ status: 404 }))
         .mockResolvedValueOnce({})
       expect(await auth.start('moneeey@baroni.tech')).toEqual({
-        "auth_code": "hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003",
+        "auth_code": "hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003",
         "email": "moneeey@baroni.tech",
         "success": true,
       })
       expect(mainDb.history).toEqual([
+        connectedToMain,
         { "get": ["user_hashed:-123450000-moneeey@baroni.tech",], },
         {
           "put": [{
             "_id": "user_hashed:-123450000-moneeey@baroni.tech",
             "auth": [
               {
-                "auth_code": "hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003",
-                "confirm_code": "hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003moneeey@baroni.tech_auth_UUID-1234-UUID-123450005",
+                "auth_code": "hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003",
+                "confirm_code": "hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005",
                 "confirmed": false,
                 "created": 123450007,
                 "updated": 123450008,
@@ -50,14 +58,13 @@ describe('auth_controller', () => {
             "created": 123450002,
             "databases": [],
             "email": "moneeey@baroni.tech",
-            "sessions": [],
             "updated": 123450009,
           },],
         },
       ])
       expect(smtp_mock.mock.calls).toEqual([[{
         "from": "moneeey@youremail.com",
-        "html": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003moneeey@baroni.tech_auth_UUID-1234-UUID-123450005&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003moneeey@baroni.tech_auth_UUID-1234-UUID-123450005&email=moneeey@baroni.tech</a>",
+        "html": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech</a>",
         "subject": "Moneeey login",
         "to": "moneeey@baroni.tech",
       }]])
@@ -68,7 +75,7 @@ describe('auth_controller', () => {
           "log": [
             "send_email",
             {
-              "content": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003moneeey@baroni.tech_auth_UUID-1234-UUID-123450005&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003moneeey@baroni.tech_auth_UUID-1234-UUID-123450005&email=moneeey@baroni.tech</a>",
+              "content": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech</a>",
               "subject": "Moneeey login",
               "to": "moneeey@baroni.tech",
             },
@@ -79,6 +86,7 @@ describe('auth_controller', () => {
     })
     it('success existing user', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
           "_id": "user_hashed:-123450000-moneeey@baroni.tech",
           "auth": [{
@@ -91,16 +99,16 @@ describe('auth_controller', () => {
           "created": 123450001,
           "databases": [],
           "email": "moneeey@baroni.tech",
-          "sessions": [],
           "updated": 123450004,
         }))
         .mockResolvedValueOnce({})
       expect(await auth.start('moneeey@baroni.tech')).toEqual({
-        "auth_code": "hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001",
+        "auth_code": "hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001",
         "email": "moneeey@baroni.tech",
         "success": true,
       })
       expect(mainDb.history).toEqual([
+        connectedToMain,
         { "get": ["user_hashed:-123450000-moneeey@baroni.tech",], },
         {
           "put": [{
@@ -112,8 +120,8 @@ describe('auth_controller', () => {
               "created": 123450002,
               "updated": 123450003,
             }, {
-              "auth_code": "hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001",
-              "confirm_code": "hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001moneeey@baroni.tech_auth_UUID-1234-UUID-123450003",
+              "auth_code": "hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001",
+              "confirm_code": "hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003",
               "confirmed": false,
               "created": 123450005,
               "updated": 123450006,
@@ -121,14 +129,13 @@ describe('auth_controller', () => {
             "created": 123450001,
             "databases": [],
             "email": "moneeey@baroni.tech",
-            "sessions": [],
             "updated": 123450007,
           }]
         },
       ])
       expect(smtp_mock.mock.calls).toEqual([[{
         "from": "moneeey@youremail.com",
-        "html": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&email=moneeey@baroni.tech</a>",
+        "html": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech</a>",
         "subject": "Moneeey login",
         "to": "moneeey@baroni.tech",
       }]])
@@ -139,7 +146,7 @@ describe('auth_controller', () => {
           "log": [
             "send_email",
             {
-              "content": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&email=moneeey@baroni.tech</a>",
+              "content": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech</a>",
               "subject": "Moneeey login",
               "to": "moneeey@baroni.tech",
             },
@@ -152,6 +159,7 @@ describe('auth_controller', () => {
   describe('check', () => {
     it('success', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
           "_id": "user_hashed:-123450000-moneeey@baroni.tech",
           "auth": [
@@ -166,20 +174,22 @@ describe('auth_controller', () => {
           "created": 123450001,
           "databases": [],
           "email": "moneeey@baroni.tech",
-          "sessions": [],
           "updated": 123450004,
         }))
       expect(await auth.check('moneeey@baroni.tech', 'correct_auth_code')).toEqual({
         "success": true,
       })
-      expect(mainDb.history).toEqual([{
-        "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
-      }])
+      expect(mainDb.history).toEqual([
+        connectedToMain,
+        {
+          "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
+        }])
       expect(logger.history).toEqual([
       ])
     })
     it('fails due to invalid code', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
           "_id": "user_hashed:-123450000-moneeey@baroni.tech",
           "auth": [
@@ -194,20 +204,22 @@ describe('auth_controller', () => {
           "created": 123450001,
           "databases": [],
           "email": "moneeey@baroni.tech",
-          "sessions": [],
           "updated": 123450004,
         }))
       expect(await auth.check('moneeey@baroni.tech', 'incorrect_auth_code')).toEqual({
         "success": false,
       })
-      expect(mainDb.history).toEqual([{
-        "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
-      }])
+      expect(mainDb.history).toEqual([
+        connectedToMain,
+        {
+          "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
+        }])
       expect(logger.history).toEqual([
       ])
     })
     it('fails due to not yet confirmed', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
           "_id": "user_hashed:-123450000-moneeey@baroni.tech",
           "auth": [
@@ -222,20 +234,22 @@ describe('auth_controller', () => {
           "created": 123450001,
           "databases": [],
           "email": "moneeey@baroni.tech",
-          "sessions": [],
           "updated": 123450004,
         }))
       expect(await auth.check('moneeey@baroni.tech', 'correct_auth_code')).toEqual({
         "success": false,
       })
-      expect(mainDb.history).toEqual([{
-        "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
-      }])
+      expect(mainDb.history).toEqual([
+        connectedToMain,
+        {
+          "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
+        }])
       expect(logger.history).toEqual([
       ])
     })
     it('fails due to not expired', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
           "_id": "user_hashed:-123450000-moneeey@baroni.tech",
           "auth": [
@@ -250,15 +264,16 @@ describe('auth_controller', () => {
           "created": 123450001,
           "databases": [],
           "email": "moneeey@baroni.tech",
-          "sessions": [],
           "updated": 123450004,
         }))
       expect(await auth.check('moneeey@baroni.tech', 'correct_auth_code')).toEqual({
         "success": false,
       })
-      expect(mainDb.history).toEqual([{
-        "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
-      }])
+      expect(mainDb.history).toEqual([
+        connectedToMain,
+        {
+          "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
+        }])
       expect(logger.history).toEqual([
       ])
     })
@@ -266,6 +281,7 @@ describe('auth_controller', () => {
   describe('complete', () => {
     it('success', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
           "_id": "user_hashed:-123450000-moneeey@baroni.tech",
           "auth": [
@@ -280,13 +296,13 @@ describe('auth_controller', () => {
           "created": 123450001,
           "databases": [],
           "email": "moneeey@baroni.tech",
-          "sessions": [],
           "updated": 123450004,
         }))
       expect(await auth.complete('moneeey@baroni.tech', 'correct_auth_code', 'correct_confirm_code')).toEqual({
         "success": true,
       })
       expect(mainDb.history).toEqual([
+        connectedToMain,
         { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
         {
           "put": [
@@ -304,7 +320,6 @@ describe('auth_controller', () => {
               "created": 123450001,
               "databases": [],
               "email": "moneeey@baroni.tech",
-              "sessions": [],
               "updated": 123450004,
             },
           ],
@@ -315,6 +330,7 @@ describe('auth_controller', () => {
     })
     it('fails due to expired auth', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
           "_id": "user_hashed:-123450000-moneeey@baroni.tech",
           "auth": [
@@ -329,13 +345,13 @@ describe('auth_controller', () => {
           "created": 123450001,
           "databases": [],
           "email": "moneeey@baroni.tech",
-          "sessions": [],
           "updated": 123450004,
         }))
       expect(await auth.complete('moneeey@baroni.tech', 'correct_auth_code', 'correct_confirm_code')).toEqual({
         "success": false,
       })
       expect(mainDb.history).toEqual([
+        connectedToMain,
         { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
       ])
       expect(logger.history).toEqual([
@@ -343,6 +359,7 @@ describe('auth_controller', () => {
     })
     it('fails due to invalid auth_code', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
           "_id": "user_hashed:-123450000-moneeey@baroni.tech",
           "auth": [
@@ -357,13 +374,13 @@ describe('auth_controller', () => {
           "created": 123450001,
           "databases": [],
           "email": "moneeey@baroni.tech",
-          "sessions": [],
           "updated": 123450004,
         }))
       expect(await auth.complete('moneeey@baroni.tech', 'incorrect_auth_code', 'correct_confirm_code')).toEqual({
         "success": false,
       })
       expect(mainDb.history).toEqual([
+        connectedToMain,
         { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
       ])
       expect(logger.history).toEqual([
@@ -371,6 +388,7 @@ describe('auth_controller', () => {
     })
     it('fails due to invalid confirm_code', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
           "_id": "user_hashed:-123450000-moneeey@baroni.tech",
           "auth": [
@@ -385,13 +403,13 @@ describe('auth_controller', () => {
           "created": 123450001,
           "databases": [],
           "email": "moneeey@baroni.tech",
-          "sessions": [],
           "updated": 123450004,
         }))
       expect(await auth.complete('moneeey@baroni.tech', 'correct_auth_code', 'incorrect_confirm_code')).toEqual({
         "success": false,
       })
       expect(mainDb.history).toEqual([
+        connectedToMain,
         { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
       ])
       expect(logger.history).toEqual([
@@ -401,6 +419,7 @@ describe('auth_controller', () => {
   describe('logout', () => {
     it('success', async () => {
       mainDb.spy
+        .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
           "_id": "user_hashed:-123450000-moneeey@baroni.tech",
           "auth": [
@@ -422,13 +441,13 @@ describe('auth_controller', () => {
           "created": 123450001,
           "databases": [],
           "email": "moneeey@baroni.tech",
-          "sessions": [],
           "updated": 123450004,
         }))
       expect(await auth.logout('moneeey@baroni.tech', 'correct_auth_code')).toEqual({
         "success": true,
       })
       expect(mainDb.history).toEqual([
+        connectedToMain,
         { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
         {
           "put": [
@@ -446,7 +465,6 @@ describe('auth_controller', () => {
               "created": 123450001,
               "databases": [],
               "email": "moneeey@baroni.tech",
-              "sessions": [],
               "updated": 123450004,
             },
           ],
