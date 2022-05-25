@@ -69,13 +69,14 @@ describe('auth_controller', () => {
         "to": "moneeey@baroni.tech",
       }]])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
+        { "debug": [ "get_or_create_user created default", {"email":"moneeey@baroni.tech"}, ], },
         { "debug": ["start - saving user with new auth",], },
         { "debug": ["start - sending confirmation email",], },
         {
-          "log": [
+          "info": [
             "send_email",
             {
-              "content": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech</a>",
               "subject": "Moneeey login",
               "to": "moneeey@baroni.tech",
             },
@@ -140,13 +141,13 @@ describe('auth_controller', () => {
         "to": "moneeey@baroni.tech",
       }]])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
         { "debug": ["start - saving user with new auth",], },
         { "debug": ["start - sending confirmation email",], },
         {
-          "log": [
+          "info": [
             "send_email",
             {
-              "content": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech</a>",
               "subject": "Moneeey login",
               "to": "moneeey@baroni.tech",
             },
@@ -185,9 +186,10 @@ describe('auth_controller', () => {
           "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
         }])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
       ])
     })
-    it('fails due to invalid code', async () => {
+    it('fails due to invalid auth code', async () => {
       mainDb.spy
         .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
@@ -215,6 +217,7 @@ describe('auth_controller', () => {
           "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
         }])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
       ])
     })
     it('fails due to not yet confirmed', async () => {
@@ -245,9 +248,10 @@ describe('auth_controller', () => {
           "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
         }])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
       ])
     })
-    it('fails due to not expired', async () => {
+    it('fails due to expired', async () => {
       mainDb.spy
         .mockResolvedValueOnce({})
         .mockResolvedValueOnce(({
@@ -275,6 +279,7 @@ describe('auth_controller', () => {
           "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
         }])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
       ])
     })
   })
@@ -326,6 +331,7 @@ describe('auth_controller', () => {
         },
       ])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
       ])
     })
     it('fails due to expired auth', async () => {
@@ -349,12 +355,15 @@ describe('auth_controller', () => {
         }))
       expect(await auth.complete('moneeey@baroni.tech', 'correct_auth_code', 'correct_confirm_code')).toEqual({
         "success": false,
+        "error": "code_expired",
       })
       expect(mainDb.history).toEqual([
         connectedToMain,
         { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
       ])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
+        { "error": [ "complete - error_code", {"email":"moneeey@baroni.tech", "error":"code_expired"}, ], },
       ])
     })
     it('fails due to invalid auth_code', async () => {
@@ -378,12 +387,15 @@ describe('auth_controller', () => {
         }))
       expect(await auth.complete('moneeey@baroni.tech', 'incorrect_auth_code', 'correct_confirm_code')).toEqual({
         "success": false,
+        "error": "auth_code",
       })
       expect(mainDb.history).toEqual([
         connectedToMain,
         { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
       ])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
+        { "error": [ "complete - error_code", {"email":"moneeey@baroni.tech", "error":"auth_code"}, ], },
       ])
     })
     it('fails due to invalid confirm_code', async () => {
@@ -407,12 +419,15 @@ describe('auth_controller', () => {
         }))
       expect(await auth.complete('moneeey@baroni.tech', 'correct_auth_code', 'incorrect_confirm_code')).toEqual({
         "success": false,
+        "error": "confirm_code",
       })
       expect(mainDb.history).toEqual([
         connectedToMain,
         { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
       ])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
+        { "error": [ "complete - error_code", {"email": "moneeey@baroni.tech", "error": "confirm_code"}, ], },
       ])
     })
   })
@@ -472,6 +487,7 @@ describe('auth_controller', () => {
 
       ])
       expect(logger.history).toEqual([
+        { "debug": [ "get_or_create_user retrieve", {"email": "moneeey@baroni.tech"}, ], },
       ])
     })
   })

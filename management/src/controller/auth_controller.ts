@@ -54,18 +54,19 @@ export default class AuthController extends DatabaseController {
   }
 
   async complete(email: string, auth_code: string, confirm_code: string) {
-    this.logger.info({ email, auth_code, confirm_code })
     const mainDb = this.connect_main_db()
     const user = await this.get_or_create_user(mainDb, email)
     const auth = user?.auth.find(auth => auth.auth_code === auth_code)
-    if (auth) {
-      if (auth.confirm_code !== confirm_code) return { success: false, error: 'confirm_code' }
-      if (auth.created < tick() - MAX_AUTHENTICATION_SECONDS) return { success: false, error: 'code_expired' }
-      auth.confirmed = true
-      mainDb.put(user)
-      return { success: true }
+    const error_code = (error: string) => {
+      this.logger.error('complete - error_code', { email, error })
+      return { success: false, error }
     }
-    return { success: false, error: 'auth_code not found' }
+    if (!auth) return error_code('auth_code')
+    if (auth.confirm_code !== confirm_code) return error_code('confirm_code')
+    if (auth.created < tick() - MAX_AUTHENTICATION_SECONDS) return error_code('code_expired')
+    auth.confirmed = true
+    mainDb.put(user)
+    return { success: true }
   }
 
   async logout(email: string, auth_code: string) {
@@ -86,7 +87,7 @@ export default class AuthController extends DatabaseController {
   }
 
   async send_email(to: string, subject: string, content: string) {
-    this.logger.log('send_email', { to, subject, content });
+    this.logger.info('send_email', { to, subject });
     await this.smtp_send({ from: APP_FROM_EMAIL, to, subject, html: content });
   };
 
@@ -103,9 +104,11 @@ export default class AuthController extends DatabaseController {
     const userId = 'user_' + this.hash_email(email)
     
     try {
+      this.logger.debug('get_or_create_user retrieve', { email })
       return await mainDb.get(userId) as IUser 
     } catch (err: any) {
       if (err?.status === 404) {
+        this.logger.debug('get_or_create_user created default', { email })
         return {
           email,
           _id: userId,
