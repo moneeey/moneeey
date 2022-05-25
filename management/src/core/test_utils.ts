@@ -14,6 +14,7 @@ export function mockDb() {
     get: addHistorySpy('get'),
     put: addHistorySpy('put'),
     remove: addHistorySpy('remove'),
+    destroy: addHistorySpy('destroy'),
     close: addHistorySpy('close'),
     history,
     spy,

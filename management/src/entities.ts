@@ -15,6 +15,7 @@ export enum IDatabaseLevel { OWNER=20, USER=10 }
 
 export interface IDatabase extends IUpdatable {
   database_id: IID;
+  description: string;
   level: IDatabaseLevel;
 }
 
