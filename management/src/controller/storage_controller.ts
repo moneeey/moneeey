@@ -72,15 +72,15 @@ export default class StorageController extends DatabaseController {
     }
   }
 
-  share(user: IUser, database: IID, toEmail: string, level: IDatabaseLevel) {
+  async share(user: IUser, database: IID, toEmail: string, level: IDatabaseLevel) {
     return { todo: 'not implemented' }
   }
 
-  export(user: IUser, database: IID) {
+  async export(user: IUser, database: IID) {
     return { todo: 'not implemented' }
   }
 
-  import(user: IUser, database: IID, content: string) {
+  async import(user: IUser, database: IID, content: string) {
     return { todo: 'not implemented' }
   }
 }

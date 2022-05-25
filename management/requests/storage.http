@@ -11,3 +11,15 @@ Authorization: Bearer {{auth_code}}
 Email: {{email}}
 
 {}
+
+### Storage destroy
+
+@database = asd
+
+# @name auth_start
+POST {{ url }}/storage/new
+Content-Type: application/json
+Authorization: Bearer {{auth_code}}
+Email: {{email}}
+
+{ "database": "{{ database }}" }

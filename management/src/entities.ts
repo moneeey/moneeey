@@ -11,7 +11,7 @@ export interface IEntity extends IUpdatable {
   _rev?: string;
 }
 
-export enum IDatabaseLevel { OWNER=20, USER=10 }
+export enum IDatabaseLevel { OWNER=20, USER=10, INVITED=5 }
 
 export interface IDatabase extends IUpdatable {
   database_id: IID;

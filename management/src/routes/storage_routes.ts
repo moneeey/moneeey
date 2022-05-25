@@ -10,10 +10,10 @@ const router: Router = express.Router();
 const authController = new AuthController(console, connect_pouch, smtp_send)
 const storageController = new StorageController(console, connect_pouch, smtp_send)
 
-router.post('/new', HandleAuthAPI(authController, (_req, _res, user) => storageController.create(user)) );
-router.post('/destroy', HandleAuthAPI(authController, (req, _res, user) => storageController.destroy(user, req.body['databaseId'])) );
-router.post('/share', HandleAuthAPI(authController, (req, _res, user) => storageController.share(user, req.body['databaseId'], req.body['toEmail'], req.body['level'])) );
-router.post('/export', HandleAuthAPI(authController, (req, _res, user) => storageController.export(user, req.body['databaseId'])) );
-router.post('/import', HandleAuthAPI(authController, (req, _res, user) => storageController.import(user, req.body['databaseId'], req.body['data'])) );
+router.post('/new', HandleAuthAPI(authController, (req, _res, user) => storageController.create(user, req.body['description'] )) );
+router.post('/destroy', HandleAuthAPI(authController, (req, _res, user) => storageController.destroy(user, req.body['database_id'])) );
+router.post('/share', HandleAuthAPI(authController, (req, _res, user) => storageController.share(user, req.body['database_id'], req.body['toEmail'], req.body['level'])) );
+router.post('/export', HandleAuthAPI(authController, (req, _res, user) => storageController.export(user, req.body['database_id'])) );
+router.post('/import', HandleAuthAPI(authController, (req, _res, user) => storageController.import(user, req.body['database_id'], req.body['data'])) );
 
 export default router;
