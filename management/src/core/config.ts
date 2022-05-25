@@ -19,4 +19,6 @@ export const COUCHDB_USERNAME: string = env('COUCHDB_USERNAME')
 export const COUCHDB_PASSWORD: string = env('COUCHDB_PASSWORD')
 
 export const HASH_PREFIX: string = env('HASH_PREFIX')
-export const MAX_AUTHENTICATION_SECONDS: number = 15*60
+export const MAX_AUTHENTICATION_SECONDS: number = 15*60*1000
+
+export const SMTP_URL: string = env('SMTP_URL')

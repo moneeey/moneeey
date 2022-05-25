@@ -54,18 +54,18 @@ export default class AuthController extends DatabaseController {
   }
 
   async complete(email: string, auth_code: string, confirm_code: string) {
+    this.logger.info({ email, auth_code, confirm_code })
     const mainDb = this.connect_main_db()
     const user = await this.get_or_create_user(mainDb, email)
-    const authenticated = user?.auth.find(auth =>
-        auth.auth_code === auth_code &&
-        auth.confirm_code === confirm_code &&
-        auth.created > tick() - MAX_AUTHENTICATION_SECONDS
-      )
-    if (authenticated) {
-      authenticated.confirmed = true
+    const auth = user?.auth.find(auth => auth.auth_code === auth_code)
+    if (auth) {
+      if (auth.confirm_code !== confirm_code) return { success: false, error: 'confirm_code' }
+      if (auth.created < tick() - MAX_AUTHENTICATION_SECONDS) return { success: false, error: 'code_expired' }
+      auth.confirmed = true
       mainDb.put(user)
+      return { success: true }
     }
-    return { success: !!authenticated }
+    return { success: false, error: 'auth_code not found' }
   }
 
   async logout(email: string, auth_code: string) {

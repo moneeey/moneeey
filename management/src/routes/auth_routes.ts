@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 
-import { HandleAPI } from '.';
+import { HandleAPI } from './handle_api';
 import AuthController from '../controller/auth_controller';
 import { smtp_send } from '../core';
 import connect_pouch from '../core/pouch';

@@ -12,13 +12,15 @@ export default class StorageController extends DatabaseController {
     this.smtp_send = smtp_send
   }
 
-  async create_database(prefix: string) {
+  async create_database(prefix: string, initialDocument: object) {
     const MAX_TRIES = 3
     for(let i = 0; i < MAX_TRIES; i++) {
       try {
         const database_id = prefix + uuid()
+        this.logger.debug('trying to create database', database_id)
         const db = this.connect_db(database_id)
-        await db.put({ _id: 'STORAGE_OWNER' })
+        await db.put({ _id: 'STORAGE_OWNER', ...initialDocument })
+        this.logger.info('successfuly created storage', database_id)
         return database_id
       } catch (err) {
         this.logger.error('create_database', err)
@@ -27,10 +29,9 @@ export default class StorageController extends DatabaseController {
   }
 
   async create(user: IUser) {
+    const database_id = await this.create_database(user._id + '_db_', { email: user.email, userId: user._id })
+
     const mainDb = this.connect_main_db()
-
-    const database_id = await this.create_database(user._id + '_db_')
-
     await mainDb.put({...user,
       databases: [...user.databases, {
         created: tick(),

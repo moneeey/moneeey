@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 
-import { HandleAuthAPI } from '.';
+import { HandleAuthAPI } from './handle_api';
 import AuthController from '../controller/auth_controller';
 import StorageController from '../controller/storage_controller';
 import { smtp_send } from '../core';
