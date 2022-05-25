@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Moneeey" type="CompoundRunConfigurationType">
-    <toRun name="BackendStart" type="js.build_tools.npm" />
-    <toRun name="FrontendStart" type="js.build_tools.npm" />
-    <method v="2" />
-  </configuration>
-</component>

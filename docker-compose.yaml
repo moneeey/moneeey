@@ -1,0 +1,28 @@
+version: '2'
+services:
+  management:
+    build: ./management
+    volumes:
+      - ./management/.env:/run/secret/prod.env:ro
+      - ./management/:/app
+    ports:
+      - '4269:4269'
+  couchdb:
+    image: couchdb:3.2
+    environment:
+      - COUCHDB_USER=dev
+      - COUCHDB_PASSWORD=dev
+    ports:
+      - '5984:5984'
+      - '4369:4369'
+      - '9100:9100'
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+  devmail:
+    image: maildev/maildev:2.0.5
+    ports:
+      - '1080:1080'
+      - '1025:1025'
+volumes:
+  couchdb_data:
+    driver: local
