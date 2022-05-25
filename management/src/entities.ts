@@ -1,39 +1,29 @@
-type IID = string;
+export type IID = string;
+export type IDate = number;
 
-interface IEntity {
-  _id: IID;
-  _rev?: string;
-  created: number;
-  updated: number;
+interface IUpdatable {
+  created: IDate;
+  updated: IDate;
 }
 
-interface IDatabase {
+export interface IEntity extends IUpdatable {
+  _id: IID;
+  _rev?: string;
+}
+
+export interface IDatabase {
   database_id: IID;
   level: number;
 }
 
-interface IAuth {
-  status?: string;
+export interface IAuth extends IUpdatable {
+  confirmed: boolean;
   confirm_code: string;
-  code: string;
-  created: number;
+  auth_code: string;
 }
 
-interface ILogin {
-  email: string;
-  auth: IAuth;
-}
-
-interface ISession {
-  code: string;
-  created: number;
-}
-
-interface IUser extends IEntity {
+export interface IUser extends IEntity {
   email: string;
   databases: Array<IDatabase>;
   auth: Array<IAuth>;
-  sessions: Array<ISession>;
 }
-
-export { IAuth, ILogin, ISession, IUser };

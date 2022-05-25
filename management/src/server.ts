@@ -1,15 +1,7 @@
-import fs from 'fs';
-
-import dotenv from 'dotenv';
 import express, { Application } from 'express';
 
 import { defaultRoutes, authRoutes, databaseRoutes } from './routes';
-
-const ENV_FILE = '/run/secret/prod.env';
-
-const env = process.env;
-
-dotenv.config(fs.existsSync(ENV_FILE) ? { path: ENV_FILE } : {});
+import { PORT } from './core/config';
 
 const app: Application = express();
 
@@ -22,8 +14,7 @@ app.use('/database', databaseRoutes);
 
 const main = () => {
   try {
-    const port = parseInt(env.PORT || '3000');
-    app.listen(port, (): void => console.info(`Listening successfully on port ${port}`));
+    app.listen(PORT, (): void => console.info(`Listening successfully on port ${PORT}`));
   } catch (error: any) {
     console.error(`Error occurred: ${error.message}`);
   }

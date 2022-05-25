@@ -1,0 +1,460 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: './sample.env' })
+
+import * as utils from '../core/utils';
+import { pouch_db } from "../core/pouch"
+import { ConsoleMock, ConsoleMockType, mockDb, mockDbType } from "../core/test_utils"
+import AuthController from "./auth_controller"
+
+describe('auth_controller', () => {
+  let auth: AuthController
+  let logger: ConsoleMockType
+  let mainDb: mockDbType
+  let smtp_mock: jest.Mock
+
+  beforeEach(() => {
+    logger = ConsoleMock()
+    mainDb = mockDb('', {})
+    smtp_mock = jest.fn()
+    auth = new AuthController(logger as unknown as Console, (name, options) => mainDb as unknown as pouch_db, smtp_mock)
+    let tick = 123450000
+    jest.spyOn(utils, 'uuid').mockImplementation(() => 'UUID-1234-UUID-' + tick++)
+    jest.spyOn(utils, 'tick').mockImplementation(() => tick++)
+    jest.spyOn(utils, 'hash_value').mockImplementation((_prefix, value, _rounds) => 'hashed:-' + (tick++) + '-' + value)
+  })
+
+  describe('start', () => {
+    it('success new user', async () => {
+      mainDb.spy
+        .mockRejectedValueOnce(({ status: 404 }))
+        .mockResolvedValueOnce({})
+      expect(await auth.start('moneeey@baroni.tech')).toEqual({
+        "auth_code": "hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003",
+        "email": "moneeey@baroni.tech",
+        "success": true,
+      })
+      expect(mainDb.history).toEqual([
+        { "get": ["user_hashed:-123450000-moneeey@baroni.tech",], },
+        {
+          "put": [{
+            "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+            "auth": [
+              {
+                "auth_code": "hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003",
+                "confirm_code": "hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003moneeey@baroni.tech_auth_UUID-1234-UUID-123450005",
+                "confirmed": false,
+                "created": 123450007,
+                "updated": 123450008,
+              },
+            ],
+            "created": 123450002,
+            "databases": [],
+            "email": "moneeey@baroni.tech",
+            "sessions": [],
+            "updated": 123450009,
+          },],
+        },
+      ])
+      expect(smtp_mock.mock.calls).toEqual([[{
+        "from": "moneeey@youremail.com",
+        "html": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003moneeey@baroni.tech_auth_UUID-1234-UUID-123450005&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003moneeey@baroni.tech_auth_UUID-1234-UUID-123450005&email=moneeey@baroni.tech</a>",
+        "subject": "Moneeey login",
+        "to": "moneeey@baroni.tech",
+      }]])
+      expect(logger.history).toEqual([
+        { "debug": ["start - saving user with new auth",], },
+        { "debug": ["start - sending confirmation email",], },
+        {
+          "log": [
+            "send_email",
+            {
+              "content": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003moneeey@baroni.tech_auth_UUID-1234-UUID-123450005&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUID-1234-UUID-123450003moneeey@baroni.tech_auth_UUID-1234-UUID-123450005&email=moneeey@baroni.tech</a>",
+              "subject": "Moneeey login",
+              "to": "moneeey@baroni.tech",
+            },
+          ],
+        },
+        { "debug": ["start - success",], },
+      ])
+    })
+    it('success existing user', async () => {
+      mainDb.spy
+        .mockResolvedValueOnce(({
+          "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+          "auth": [{
+            "auth_code": "other_auth_code",
+            "confirm_code": "other_confirm_code",
+            "confirmed": false,
+            "created": 123450002,
+            "updated": 123450003,
+          }],
+          "created": 123450001,
+          "databases": [],
+          "email": "moneeey@baroni.tech",
+          "sessions": [],
+          "updated": 123450004,
+        }))
+        .mockResolvedValueOnce({})
+      expect(await auth.start('moneeey@baroni.tech')).toEqual({
+        "auth_code": "hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001",
+        "email": "moneeey@baroni.tech",
+        "success": true,
+      })
+      expect(mainDb.history).toEqual([
+        { "get": ["user_hashed:-123450000-moneeey@baroni.tech",], },
+        {
+          "put": [{
+            "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+            "auth": [{
+              "auth_code": "other_auth_code",
+              "confirm_code": "other_confirm_code",
+              "confirmed": false,
+              "created": 123450002,
+              "updated": 123450003,
+            }, {
+              "auth_code": "hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001",
+              "confirm_code": "hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001moneeey@baroni.tech_auth_UUID-1234-UUID-123450003",
+              "confirmed": false,
+              "created": 123450005,
+              "updated": 123450006,
+            }],
+            "created": 123450001,
+            "databases": [],
+            "email": "moneeey@baroni.tech",
+            "sessions": [],
+            "updated": 123450007,
+          }]
+        },
+      ])
+      expect(smtp_mock.mock.calls).toEqual([[{
+        "from": "moneeey@youremail.com",
+        "html": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&email=moneeey@baroni.tech</a>",
+        "subject": "Moneeey login",
+        "to": "moneeey@baroni.tech",
+      }]])
+      expect(logger.history).toEqual([
+        { "debug": ["start - saving user with new auth",], },
+        { "debug": ["start - sending confirmation email",], },
+        {
+          "log": [
+            "send_email",
+            {
+              "content": "Please click the following link to complete your registration: <a href=\"http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&email=moneeey@baroni.tech\">http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUID-1234-UUID-123450001moneeey@baroni.tech_auth_UUID-1234-UUID-123450003&email=moneeey@baroni.tech</a>",
+              "subject": "Moneeey login",
+              "to": "moneeey@baroni.tech",
+            },
+          ],
+        },
+        { "debug": ["start - success",], },
+      ])
+    })
+  })
+  describe('check', () => {
+    it('success', async () => {
+      mainDb.spy
+        .mockResolvedValueOnce(({
+          "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+          "auth": [
+            {
+              "auth_code": "correct_auth_code",
+              "confirm_code": "correct_confirm_code",
+              "confirmed": true,
+              "created": 123450002,
+              "updated": 123450003,
+            },
+          ],
+          "created": 123450001,
+          "databases": [],
+          "email": "moneeey@baroni.tech",
+          "sessions": [],
+          "updated": 123450004,
+        }))
+      expect(await auth.check('moneeey@baroni.tech', 'correct_auth_code')).toEqual({
+        "success": true,
+      })
+      expect(mainDb.history).toEqual([{
+        "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
+      }])
+      expect(logger.history).toEqual([
+      ])
+    })
+    it('fails due to invalid code', async () => {
+      mainDb.spy
+        .mockResolvedValueOnce(({
+          "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+          "auth": [
+            {
+              "auth_code": "correct_auth_code",
+              "confirm_code": "correct_confirm_code",
+              "confirmed": true,
+              "created": 123450002,
+              "updated": 123450003,
+            },
+          ],
+          "created": 123450001,
+          "databases": [],
+          "email": "moneeey@baroni.tech",
+          "sessions": [],
+          "updated": 123450004,
+        }))
+      expect(await auth.check('moneeey@baroni.tech', 'incorrect_auth_code')).toEqual({
+        "success": false,
+      })
+      expect(mainDb.history).toEqual([{
+        "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
+      }])
+      expect(logger.history).toEqual([
+      ])
+    })
+    it('fails due to not yet confirmed', async () => {
+      mainDb.spy
+        .mockResolvedValueOnce(({
+          "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+          "auth": [
+            {
+              "auth_code": "correct_auth_code",
+              "confirm_code": "correct_confirm_code",
+              "confirmed": false,
+              "created": 123450002,
+              "updated": 123450003,
+            },
+          ],
+          "created": 123450001,
+          "databases": [],
+          "email": "moneeey@baroni.tech",
+          "sessions": [],
+          "updated": 123450004,
+        }))
+      expect(await auth.check('moneeey@baroni.tech', 'correct_auth_code')).toEqual({
+        "success": false,
+      })
+      expect(mainDb.history).toEqual([{
+        "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
+      }])
+      expect(logger.history).toEqual([
+      ])
+    })
+    it('fails due to not expired', async () => {
+      mainDb.spy
+        .mockResolvedValueOnce(({
+          "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+          "auth": [
+            {
+              "auth_code": "correct_auth_code",
+              "confirm_code": "correct_confirm_code",
+              "confirmed": false,
+              "created": 123450002,
+              "updated": 100000000,
+            },
+          ],
+          "created": 123450001,
+          "databases": [],
+          "email": "moneeey@baroni.tech",
+          "sessions": [],
+          "updated": 123450004,
+        }))
+      expect(await auth.check('moneeey@baroni.tech', 'correct_auth_code')).toEqual({
+        "success": false,
+      })
+      expect(mainDb.history).toEqual([{
+        "get": ["user_hashed:-123450000-moneeey@baroni.tech",],
+      }])
+      expect(logger.history).toEqual([
+      ])
+    })
+  })
+  describe('complete', () => {
+    it('success', async () => {
+      mainDb.spy
+        .mockResolvedValueOnce(({
+          "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+          "auth": [
+            {
+              "auth_code": "correct_auth_code",
+              "confirm_code": "correct_confirm_code",
+              "confirmed": false,
+              "created": 123450002,
+              "updated": 100000000,
+            },
+          ],
+          "created": 123450001,
+          "databases": [],
+          "email": "moneeey@baroni.tech",
+          "sessions": [],
+          "updated": 123450004,
+        }))
+      expect(await auth.complete('moneeey@baroni.tech', 'correct_auth_code', 'correct_confirm_code')).toEqual({
+        "success": true,
+      })
+      expect(mainDb.history).toEqual([
+        { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
+        {
+          "put": [
+            {
+              "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+              "auth": [
+                {
+                  "auth_code": "correct_auth_code",
+                  "confirm_code": "correct_confirm_code",
+                  "confirmed": true,
+                  "created": 123450002,
+                  "updated": 100000000,
+                },
+              ],
+              "created": 123450001,
+              "databases": [],
+              "email": "moneeey@baroni.tech",
+              "sessions": [],
+              "updated": 123450004,
+            },
+          ],
+        },
+      ])
+      expect(logger.history).toEqual([
+      ])
+    })
+    it('fails due to expired auth', async () => {
+      mainDb.spy
+        .mockResolvedValueOnce(({
+          "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+          "auth": [
+            {
+              "auth_code": "correct_auth_code",
+              "confirm_code": "correct_confirm_code",
+              "confirmed": false,
+              "created": 100000000,
+              "updated": 100000000,
+            },
+          ],
+          "created": 123450001,
+          "databases": [],
+          "email": "moneeey@baroni.tech",
+          "sessions": [],
+          "updated": 123450004,
+        }))
+      expect(await auth.complete('moneeey@baroni.tech', 'correct_auth_code', 'correct_confirm_code')).toEqual({
+        "success": false,
+      })
+      expect(mainDb.history).toEqual([
+        { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
+      ])
+      expect(logger.history).toEqual([
+      ])
+    })
+    it('fails due to invalid auth_code', async () => {
+      mainDb.spy
+        .mockResolvedValueOnce(({
+          "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+          "auth": [
+            {
+              "auth_code": "correct_auth_code",
+              "confirm_code": "correct_confirm_code",
+              "confirmed": false,
+              "created": 100000000,
+              "updated": 100000000,
+            },
+          ],
+          "created": 123450001,
+          "databases": [],
+          "email": "moneeey@baroni.tech",
+          "sessions": [],
+          "updated": 123450004,
+        }))
+      expect(await auth.complete('moneeey@baroni.tech', 'incorrect_auth_code', 'correct_confirm_code')).toEqual({
+        "success": false,
+      })
+      expect(mainDb.history).toEqual([
+        { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
+      ])
+      expect(logger.history).toEqual([
+      ])
+    })
+    it('fails due to invalid confirm_code', async () => {
+      mainDb.spy
+        .mockResolvedValueOnce(({
+          "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+          "auth": [
+            {
+              "auth_code": "correct_auth_code",
+              "confirm_code": "correct_confirm_code",
+              "confirmed": false,
+              "created": 100000000,
+              "updated": 100000000,
+            },
+          ],
+          "created": 123450001,
+          "databases": [],
+          "email": "moneeey@baroni.tech",
+          "sessions": [],
+          "updated": 123450004,
+        }))
+      expect(await auth.complete('moneeey@baroni.tech', 'correct_auth_code', 'incorrect_confirm_code')).toEqual({
+        "success": false,
+      })
+      expect(mainDb.history).toEqual([
+        { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
+      ])
+      expect(logger.history).toEqual([
+      ])
+    })
+  })
+  describe('logout', () => {
+    it('success', async () => {
+      mainDb.spy
+        .mockResolvedValueOnce(({
+          "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+          "auth": [
+            {
+              "auth_code": "correct_auth_code",
+              "confirm_code": "correct_confirm_code",
+              "confirmed": false,
+              "created": 100000000,
+              "updated": 100000000,
+            },
+            {
+              "auth_code": "unrelated_correct_auth_code",
+              "confirm_code": "unrelated_correct_confirm_code",
+              "confirmed": false,
+              "created": 100000000,
+              "updated": 100000000,
+            },
+          ],
+          "created": 123450001,
+          "databases": [],
+          "email": "moneeey@baroni.tech",
+          "sessions": [],
+          "updated": 123450004,
+        }))
+      expect(await auth.logout('moneeey@baroni.tech', 'correct_auth_code')).toEqual({
+        "success": true,
+      })
+      expect(mainDb.history).toEqual([
+        { "get": ["user_hashed:-123450000-moneeey@baroni.tech"] },
+        {
+          "put": [
+            {
+              "_id": "user_hashed:-123450000-moneeey@baroni.tech",
+              "auth": [
+                {
+                  "auth_code": "unrelated_correct_auth_code",
+                  "confirm_code": "unrelated_correct_confirm_code",
+                  "confirmed": false,
+                  "created": 100000000,
+                  "updated": 100000000,
+                },
+              ],
+              "created": 123450001,
+              "databases": [],
+              "email": "moneeey@baroni.tech",
+              "sessions": [],
+              "updated": 123450004,
+            },
+          ],
+        },
+
+      ])
+      expect(logger.history).toEqual([
+      ])
+    })
+  })
+})
