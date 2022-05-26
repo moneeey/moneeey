@@ -34,7 +34,7 @@ export default class PersistenceStore extends Observable<PersistenceStore> {
     const setStatus = (status: Status) => { this.status = status; this.dispatch(this); };
     return new Promise((resolve, reject) =>
       this.db.sync(remote, { live: true, retry: true })
-        .on('change', (c) => { resolve(setStatus(Status.ONLINE)); console.log(c) })
+        .on('change', () => { resolve(setStatus(Status.ONLINE)) })
         .on('paused', () => { resolve(setStatus(Status.OFFLINE)) })
         .on('denied', () => resolve(setStatus(Status.OFFLINE)))
         .on('error', () => reject(setStatus(Status.OFFLINE))));
@@ -68,7 +68,6 @@ export default class PersistenceStore extends Observable<PersistenceStore> {
   }
 
   monitorChanges(store: MappedStore<any>) {
-    store.listen
-      .onValue(o => this.persist(o))
+    store.addListener(o => this.persist(o))
   }
 }

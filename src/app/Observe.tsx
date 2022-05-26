@@ -1,6 +1,5 @@
 import React from "react";
 import _ from 'lodash';
-import * as Bacon from "baconjs";
 import Observable from "../shared/Observable";
 
 interface IObserveProps {
@@ -11,11 +10,10 @@ interface IObserveProps {
 export default function Observe({ children, subjects }: IObserveProps) {
   const [version, setVersion] = React.useState(0);
   React.useEffect(() => {
-    const streams = _.map(subjects, (s: any) => s.listen)
-    Bacon.combineAsArray(...streams)
-      .take(1)
-      .log()
-      .onValue(_streamValues => setVersion(v => v + 1))
+    const handler = (_value: any) => {
+      setVersion((version: number) => version + 1)
+    }
+    subjects.forEach(subject => subject.addListener(handler))
   }, [subjects, setVersion]);
-  return children(version);
+  return <div data-version={version}>{children}</div>;
 }

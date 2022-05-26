@@ -1,5 +1,11 @@
 version: '2'
 services:
+  frontend:
+    build: .
+    volumes:
+      - ./:/app
+    ports:
+      - '4270:4270'
   management:
     build: ./management
     volumes:

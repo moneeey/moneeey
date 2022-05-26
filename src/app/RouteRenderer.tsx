@@ -32,8 +32,9 @@ export default function RouteRenderer<IParameters extends IRouteParameters>({
   }
   const Navigator = () => {
     const history = ReactRouter.useHistory();
-    app.moneeeyStore.navigation.listen
-      .onValue(url => history && history.push(url));
+    app.moneeeyStore.navigation.addListener(url => {
+      history && history.push(url)
+    })
     return <div/>;
   }
   return (

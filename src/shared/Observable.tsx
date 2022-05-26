@@ -1,11 +1,17 @@
-import * as Bacon from "baconjs";
+type HandlerFn<T> = (value: T) => void
 
 export default class Observable<T> {
-  bus = new Bacon.Bus<T>();
+  listeners: Array<HandlerFn<T>> = []
 
-  get listen() { return this.bus; }
+  addListener(handler: HandlerFn<T>) {
+    this.listeners = [...this.listeners, handler]
+  }
+
+  removeListener(handler: HandlerFn<T>) {
+    this.listeners = this.listeners.filter(hn => hn !== handler)
+  }
 
   dispatch(value: T) {
-    this.bus.push(value);
+    this.listeners.forEach(cb => cb(value))
   }
 }

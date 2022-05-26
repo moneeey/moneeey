@@ -14,14 +14,14 @@ export default function Landing() {
   const onRegisterOrLogin = () => {
     setDisabled(true);
     setStatus({})
-    management.registerOrLogin(email)
-      .flatMap(() => setStatus({ type: 'success', message: Messages.landing.registration_success }))
-      .flatMap(() => setStatus({ type: 'info', message: Messages.landing.welcome_back }))
-      .flatMapError(() => {
-        setStatus({ type: 'error', message: Messages.landing.registration_failed })
-        setDisabled(false);
-      })
-      .onEnd();
+    // management.registerOrLogin(email)
+    //   .flatMap(() => setStatus({ type: 'success', message: Messages.landing.registration_success }))
+    //   .flatMap(() => setStatus({ type: 'info', message: Messages.landing.welcome_back }))
+    //   .flatMapError(() => {
+    //     setStatus({ type: 'error', message: Messages.landing.registration_failed })
+    //     setDisabled(false);
+    //   })
+    //   .onEnd();
   }
 
   return (
