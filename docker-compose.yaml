@@ -2,12 +2,14 @@ version: '2'
 services:
   frontend:
     build: .
+    restart: unless-stopped
     volumes:
       - ./:/app
     ports:
       - '4270:4270'
   management:
     build: ./management
+    restart: unless-stopped
     volumes:
       - ./management/.env:/run/secret/prod.env:ro
       - ./management/:/app
@@ -15,6 +17,7 @@ services:
       - '4269:4269'
   couchdb:
     image: couchdb:3.2
+    restart: unless-stopped
     environment:
       - COUCHDB_USER=dev
       - COUCHDB_PASSWORD=dev
@@ -26,6 +29,7 @@ services:
       - couchdb_data:/opt/couchdb/data
   devmail:
     image: maildev/maildev:2.0.5
+    restart: unless-stopped
     ports:
       - '1080:1080'
       - '1025:1025'

@@ -12,6 +12,10 @@ export default class StorageController extends DatabaseController {
     this.smtp_send = smtp_send
   }
 
+  async list(user: IUser) {
+    return { databases: user.databases }
+  }
+
   async create_database(prefix: string, initialDocument: object) {
     const MAX_TRIES = 3
     for (let i = 0; i < MAX_TRIES; i++) {

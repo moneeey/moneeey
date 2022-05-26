@@ -13,3 +13,9 @@ export function uuid(): string {
 export function tick() {
   return new Date().getTime()
 }
+
+export function validate_email(email: string): boolean {
+  // https://stackoverflow.com/a/9204568
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return re.test(email)
+}

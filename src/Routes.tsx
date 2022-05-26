@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { IAccount } from "./shared/Account";
 import Dashboard from "./app/Dashboard";
 import { IAppParameters, IRouteParameters, Route } from "./shared/Route";
@@ -7,13 +7,13 @@ import Landing from "./landing/Landing";
 import { Reports } from "./app/Reports";
 
 /////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////// Home
+//////////////////////////////////////////////////////// Landing
 class LandingRouter extends Route<IRouteParameters> {
   constructor() {
     super('', undefined);
   }
 
-  render(_parameters: IRouteParameters, _app: IAppParameters) {
+  render(_parameters: IRouteParameters, app: IAppParameters) {
     return <Landing />;
   }
 }

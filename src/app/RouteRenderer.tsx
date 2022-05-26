@@ -1,55 +1,46 @@
 import React from "react";
-import * as ReactRouter from "react-router-dom";
 import _ from 'lodash';
-import Route, { IAppParameters, IRouteParameters } from "../shared/Route";
+import { IAppParameters, IRouteParameters, Route as MyRoute } from "../shared/Route";
+import { useNavigate, BrowserRouter, Routes, Route, useParams } from "react-router-dom";
 
 interface IMappedRoute {
       path: string,
-      route: Route<IRouteParameters>
+      route: MyRoute<IRouteParameters>
 }
 
 export default function RouteRenderer<IParameters extends IRouteParameters>({
-  route,
+  root_route,
   app,
 }: {
-  route: Route<IParameters>,
+  root_route: MyRoute<IParameters>,
   app: IAppParameters,
 }) {
   const mapRoute = ({ route, path: parentPath }: IMappedRoute): IMappedRoute[] => {
     const path = parentPath + route.path;
     const children = route.children.map(child => mapRoute({ route: child, path }));
-    const current: IMappedRoute = {
-      path,
-      route
-    };
+    const current: IMappedRoute = { path, route };
     return [..._.flatten(children), current];
   };
-  const routes = mapRoute({ route, path: route.path });
-  const renderComponent = (renderRoute: Route<any>) => {
-    return (props: ReactRouter.RouteComponentProps<any>) => {
-      return renderRoute.render(props.match.params as any, app);
-    }
-  }
+  const routes = mapRoute({ route: root_route, path: root_route.path });
   const Navigator = () => {
-    const history = ReactRouter.useHistory();
-    app.moneeeyStore.navigation.addListener(url => {
-      history && history.push(url)
-    })
+    const navigate = useNavigate();
+    app.moneeeyStore.navigation.addListener(url => navigate && navigate(url))
     return <div/>;
   }
+
+  const params = useParams()
   return (
-    <ReactRouter.BrowserRouter>
-      <ReactRouter.Switch>
+    <BrowserRouter>
+      <Routes>
         {routes.map(route => (
-          <ReactRouter.Route
+          <Route
             key={route.path}
             path={route.path}
-            exact={true}
-            render={renderComponent(route.route)}
+            element={<>{route.route.render(params as any, app)}</>}
           />
           ))}
-      </ReactRouter.Switch>
+      </Routes>
       <Navigator />
-    </ReactRouter.BrowserRouter>
+    </BrowserRouter>
   );
 }

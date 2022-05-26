@@ -33,7 +33,7 @@ export default function AppMenu() {
       >
         Dashboard
       </Menu.Item>
-      <Observe subjects={[accounts]}>
+      <Observe subjects={[accounts]}>{(_v: number) => (
         <Menu.SubMenu key="Accounts" icon={<DollarOutlined />} title="Accounts">
           {accounts
             .allNonPayees()
@@ -57,7 +57,7 @@ export default function AppMenu() {
             <b>Edit Accounts</b>
           </Menu.Item>
         </Menu.SubMenu>
-      </Observe>
+      )}</Observe>
       <Menu.Item
         key="budgets"
         icon={<MailOutlined />}

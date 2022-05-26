@@ -84,7 +84,8 @@ const buildColumns = (moneeeyStore: MoneeeyStore, referenceAccount: TAccountUUID
       const to_acct = moneeeyStore.accounts.byUuid(row.to_account);
       if (!from_acct || !to_acct) return;
       const memo = (value || "") + " ";
-      const memo_tags = [...memo.matchAll(/[^#](#\w+)/g)].map((m) =>
+      const tags = Array.from(memo.matchAll(/[^#](#\w+)/g))
+      const memo_tags = [...tags].map((m) =>
         m[1].replace("#", "")
       );
       return (

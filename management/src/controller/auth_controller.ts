@@ -2,7 +2,7 @@ import { smtp_send_fn } from '../core';
 import { APP_DESC, APP_FROM_EMAIL, APP_URL, HASH_PREFIX, MAX_AUTHENTICATION_SECONDS } from '../core/config';
 import { connect_pouch_fn, pouch_db } from '../core/pouch';
 import { IAuth, IUser } from '../entities';
-import { hash_value, tick, uuid } from '../core/utils';
+import { hash_value, tick, uuid, validate_email } from '../core/utils';
 import DatabaseController from './database_controller';
 
 export default class AuthController extends DatabaseController {
@@ -32,7 +32,7 @@ export default class AuthController extends DatabaseController {
     const confirm_link = this.get_confirm_link(email, auth)
     const complete_email = this.get_complete_email(confirm_link)
     this.logger.debug('start - sending confirmation email')
-    this.send_email(email, `${APP_DESC} login`, complete_email)
+    await this.send_email(email, `${APP_DESC} login`, complete_email)
 
     this.logger.debug('start - success')
     return { success: true, email, auth_code }
@@ -50,7 +50,8 @@ export default class AuthController extends DatabaseController {
   }
 
   async check(email: string, auth_code: string) {
-    return { success: !!(await this.authenticate(email, auth_code)) }
+    const authenticated = await this.authenticate(email, auth_code)
+    return { success: !!authenticated }
   }
 
   async complete(email: string, auth_code: string, confirm_code: string) {
@@ -65,7 +66,7 @@ export default class AuthController extends DatabaseController {
     if (auth.confirm_code !== confirm_code) return error_code('confirm_code')
     if (auth.created < tick() - MAX_AUTHENTICATION_SECONDS) return error_code('code_expired')
     auth.confirmed = true
-    mainDb.put(user)
+    await mainDb.put(user)
     return { success: true }
   }
 
@@ -73,7 +74,7 @@ export default class AuthController extends DatabaseController {
     const mainDb = this.connect_main_db()
     const user = await this.get_or_create_user(mainDb, email)
     user.auth = user.auth.filter(auth => auth.auth_code !== auth_code)
-    mainDb.put(user)
+    await mainDb.put(user)
     return { success: true }
   }
 
@@ -88,11 +89,15 @@ export default class AuthController extends DatabaseController {
 
   async send_email(to: string, subject: string, content: string) {
     this.logger.info('send_email', { to, subject });
-    await this.smtp_send({ from: APP_FROM_EMAIL, to, subject, html: content });
+    try {
+      await this.smtp_send({ from: APP_FROM_EMAIL, to, subject, html: content });
+    } catch (err) {
+      this.logger.error('send_email', { err })
+    }
   };
 
   get_confirm_link(email: string, auth: IAuth) {
-    const link = `${APP_URL}/auth/complete?auth_code=${auth.auth_code}&confirm_code=${auth.confirm_code}&email=${email}`;
+    const link = `${APP_URL}/?auth_code=${auth.auth_code}&confirm_code=${auth.confirm_code}&email=${email}`;
     return `<a href="${link}">${link}</a>`;
   };
 
@@ -101,9 +106,12 @@ export default class AuthController extends DatabaseController {
   }
 
   async get_or_create_user(mainDb: pouch_db, email: string): Promise<IUser> {
-    const userId = 'user_' + this.hash_email(email)
-    
+    const userId = 'user_' + this.hash_email(email.toLowerCase())
     try {
+      if (!validate_email(email)) {
+        this.logger.error('invalid_email', { email })
+        throw new Error('invalid_email')
+      }
       this.logger.debug('get_or_create_user retrieve', { email })
       return await mainDb.get(userId) as IUser 
     } catch (err: any) {
