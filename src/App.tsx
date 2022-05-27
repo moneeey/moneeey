@@ -4,23 +4,21 @@ import 'antd/dist/antd.css';
 import MoneeeyStore, { } from './shared/MoneeeyStore';
 import { MoneeeyStoreProvider } from './useMoneeeyStore';
 import { TagsHighlightProvider } from './app/Tags';
-import { HomeRoute, LandingRoute } from './Routes';
 import RouteRenderer from './app/RouteRenderer';
-import Observe from './app/Observe';
+import { HomeRoute, LandingRoute } from './Routes';
+import { observer } from 'mobx-react';
 
-function Moneeey({ moneeeyStore }: { moneeeyStore: MoneeeyStore }) {
+export const Moneeey = observer(({ moneeeyStore }: { moneeeyStore: MoneeeyStore }) => {
+  const { management } = moneeeyStore
+  const root_route = management.loggedIn ? HomeRoute : LandingRoute
   return (
     <MoneeeyStoreProvider value={moneeeyStore}>
       <TagsHighlightProvider>
-        <Observe subjects={[moneeeyStore.management]}>
-          {(_v: number) => (
-          <RouteRenderer root_route={moneeeyStore.management.isLoggedIn ? HomeRoute : LandingRoute} app={{ moneeeyStore }} />
-          )}
-        </Observe>
+        <RouteRenderer root_route={root_route} app={{ moneeeyStore }} />
       </TagsHighlightProvider>
     </MoneeeyStoreProvider>
   )
-}
+})
 
 function App(): React.ReactElement {
   const [moneeeyStore] = React.useState(new MoneeeyStore());

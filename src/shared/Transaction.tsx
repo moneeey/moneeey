@@ -1,3 +1,4 @@
+import { computed, makeObservable } from "mobx";
 import { AccountStore, TAccountUUID } from "./Account";
 import { TDate, compareDates } from "./Date";
 import { IBaseEntity, TMonetary } from "./Entity";
@@ -18,14 +19,17 @@ export interface ITransaction extends IBaseEntity {
 export class TransactionStore extends MappedStore<ITransaction> {
   constructor() {
     super((t) => t.transaction_uuid);
+    makeObservable(this, {
+      sorted: computed,
+    })
   }
 
   sortTransactions(transactions: ITransaction[]): ITransaction[] {
     return transactions.sort((a, b) => compareDates(a.date, b.date));
   }
 
-  all() {
-    return this.sortTransactions(super.all());
+  get sorted() {
+    return this.sortTransactions(this.all);
   }
 
   viewAllWithAccount(account: TAccountUUID) {

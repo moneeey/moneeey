@@ -1,27 +1,31 @@
+import { makeObservable, observable, observe } from 'mobx';
 import PouchDB from 'pouchdb';
 import { EntityType, IBaseEntity } from './Entity';
 import MappedStore from './MappedStore';
-import Observable from './Observable';
 
 export enum Status {
   ONLINE = 'Online',
   OFFLINE = 'Offline'
 }
 
-export default class PersistenceStore extends Observable<PersistenceStore> {
+export default class PersistenceStore {
   db: PouchDB.Database;
   entries: IBaseEntity[] = [];
   status: Status = Status.OFFLINE;
   databaseId: string = '';
 
   constructor() {
-    super();
     this.db = new PouchDB('moneeey');
     this.sync();
-  }
 
+    makeObservable(this, {
+      status: observable,
+      databaseId: observable,
+    })
+  }
+  
   async sync() {
-    const setStatus = (status: Status) => { this.status = status; this.dispatch(this); };
+    const setStatus = (status: Status) => { this.status = status };
     return new Promise((resolve, reject) => {
       if (!this.databaseId) return
       this.db.sync('/couchdb/' + this.databaseId, { live: true, retry: true })
@@ -60,6 +64,6 @@ export default class PersistenceStore extends Observable<PersistenceStore> {
   }
 
   monitorChanges(store: MappedStore<any>) {
-    store.addListener(o => this.persist(o))
+    observe(store.itemsByUuid, o => console.log(o))
   }
 }

@@ -158,7 +158,6 @@ export function BalanceGrowthReport() {
               field: 'date',
               label: {
                 formatter: (x) => {
-                debugger
                 return period.formatter(parseDate(x))
                 }
               }
@@ -180,8 +179,8 @@ export function BalanceGrowthReport() {
 const tagExpensesProcess = (transaction: ITransaction, stt: ReportAsyncState) => {
   const sumTransactionTagExpenses = (account_uuid: TAccountUUID, transaction: ITransaction, value: number) => {
     const account = stt.moneeeyStore.accounts.byUuid(account_uuid);
-    const is_payee = account.type === AccountType.PAYEE;
-    const payee_tags = !is_payee ? account.tags : [];
+    const is_payee = account?.type === AccountType.PAYEE;
+    const payee_tags = (!is_payee && account?.tags) || [];
     const tags = new Set([...payee_tags, ...transaction.tags]);
     tags.forEach((tag) => {
       const group_date = dateToPeriod(stt.period, transaction.date);

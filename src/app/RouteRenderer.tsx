@@ -2,6 +2,7 @@ import React from "react";
 import _ from 'lodash';
 import { IAppParameters, IRouteParameters, Route as MyRoute } from "../shared/Route";
 import { useNavigate, BrowserRouter, Routes, Route, useParams } from "react-router-dom";
+import { observer } from "mobx-react";
 
 interface IMappedRoute {
       path: string,
@@ -22,10 +23,15 @@ export default function RouteRenderer<IParameters extends IRouteParameters>({
     return [..._.flatten(children), current];
   };
   const routes = mapRoute({ route: root_route, path: root_route.path });
+
   const Navigator = () => {
-    const navigate = useNavigate();
-    app.moneeeyStore.navigation.addListener(url => navigate && navigate(url))
-    return <div/>;
+    const navigate = useNavigate()
+    const Navigate = observer(() => {
+      const toUrl = app.moneeeyStore.navigation.navigateTo
+      if (toUrl) navigate(toUrl)
+      return <div/>
+    })
+    return <Navigate />
   }
 
   const params = useParams()

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { IAccount } from "./shared/Account";
 import Dashboard from "./app/Dashboard";
 import { IAppParameters, IRouteParameters, Route } from "./shared/Route";
@@ -46,12 +46,8 @@ class AccountRouter extends Route<IAccountRoute> {
   }
 
   render(parameters: IAccountRoute, app: IAppParameters) {
-    const accounts = app
-      .moneeeyStore
-      .accounts
-      .byPredicate((acc: IAccount) => this.slug(acc.name) === parameters.account_name);
-    if (accounts.length === 1) {
-      const account = accounts[0];
+    const account = app.moneeeyStore.accounts.find((acc: IAccount) => this.slug(acc.name) === parameters.account_name);
+    if (account) {
       const { account_uuid } = account;
       const transactions = app.moneeeyStore.transactions.viewAllWithAccount(account_uuid);
       return <TransactionTable transactions={transactions} referenceAccount={account_uuid} />;

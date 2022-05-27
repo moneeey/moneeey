@@ -18,7 +18,7 @@ export class CurrencyStore extends MappedStore<ICurrency> {
   }
 
   findByName(name: string) {
-    return this.all().filter((c) => c.short === name || c.name === name)[0];
+    return this.all.filter((c) => c.short === name || c.name === name)[0];
   }
 
   findUuidByName(name: string) {
@@ -37,6 +37,7 @@ export class CurrencyStore extends MappedStore<ICurrency> {
   }
 
   formatByUuid(currency_uuid: TCurrencyUUID, value: TMonetary) {
-    return this.format(this.byUuid(currency_uuid), value);
+    const currency = this.byUuid(currency_uuid)
+    return (currency && this.format(currency, value)) || '';
   }
 }

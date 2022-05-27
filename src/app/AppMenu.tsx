@@ -10,13 +10,14 @@ import {
   SettingOutlined,
   WarningTwoTone,
 } from "@ant-design/icons";
-import { IAccount } from "../shared/Account";
+import { AccountStore, IAccount } from "../shared/Account";
 import { HomeRoute, AccountRoute, ReportsRoute } from "../Routes";
-import Observe from "./Observe";
-import { Status } from "../shared/Persistence";
+import PersistenceStore, { Status } from "../shared/Persistence";
+import { CurrencyStore } from "../shared/Currency";
+import NavigationStore from "../shared/Navigation";
+import { observer } from "mobx-react";
 
-export default function AppMenu() {
-  const { navigation, accounts, currencies, persistence } = useMoneeeyStore();
+export const AccountsSubMenu = observer(({ accounts, currencies, navigation }: { accounts: AccountStore, currencies: CurrencyStore, navigation: NavigationStore}) => {
   const getAccountCurrency = (account: IAccount) => {
     const curr = currencies.byUuid(account.currency_uuid);
     if (curr) {
@@ -24,6 +25,49 @@ export default function AppMenu() {
     }
     return <b>?</b>;
   };
+  return (
+    <Menu.SubMenu key="Accounts" icon={<DollarOutlined />} title="Accounts">
+      {accounts
+        .allNonPayees()
+        .sort((a, b) => a.currency_uuid.localeCompare(b.currency_uuid))
+        .map((acct) => (
+          <Menu.Item
+            onClick={() =>
+              navigation.navigate(
+                AccountRoute.accountUrl(acct)
+              )
+            }
+            key={acct.account_uuid}
+          >
+            {getAccountCurrency(acct)} {acct.name}
+          </Menu.Item>
+        ))}
+      <Menu.Item
+        key="accounts"
+        onClick={() => navigation.navigate(HomeRoute.url())}
+      >
+        <b>Edit Accounts</b>
+      </Menu.Item>
+    </Menu.SubMenu>
+  )
+})
+
+const PersistenceSubMenu = observer(({ persistence, navigation }: { persistence: PersistenceStore, navigation: NavigationStore}) => {
+  return (
+          <Menu.Item
+            key="sync"
+            icon={persistence.status === Status.ONLINE
+              ? <CheckCircleTwoTone twoToneColor="green" />
+              : <WarningTwoTone twoToneColor="red" />}
+            onClick={() => navigation.navigate(HomeRoute.url())}
+          >
+            {persistence.status}
+          </Menu.Item>
+        )
+})
+
+export default function AppMenu() {
+  const { navigation, accounts, currencies, persistence } = useMoneeeyStore();
   return (
     <Menu mode="horizontal" triggerSubMenuAction="click">
       <Menu.Item
@@ -33,31 +77,7 @@ export default function AppMenu() {
       >
         Dashboard
       </Menu.Item>
-      <Observe subjects={[accounts]}>{(_v: number) => (
-        <Menu.SubMenu key="Accounts" icon={<DollarOutlined />} title="Accounts">
-          {accounts
-            .allNonPayees()
-            .sort((a, b) => a.currency_uuid.localeCompare(b.currency_uuid))
-            .map((acct) => (
-              <Menu.Item
-                onClick={() =>
-                  navigation.navigate(
-                    AccountRoute.accountUrl(acct)
-                  )
-                }
-                key={acct.account_uuid}
-              >
-                {getAccountCurrency(acct)} {acct.name}
-              </Menu.Item>
-            ))}
-          <Menu.Item
-            key="accounts"
-            onClick={() => navigation.navigate(HomeRoute.url())}
-          >
-            <b>Edit Accounts</b>
-          </Menu.Item>
-        </Menu.SubMenu>
-      )}</Observe>
+      <AccountsSubMenu {... {accounts, currencies, navigation}} />
       <Menu.Item
         key="budgets"
         icon={<MailOutlined />}
@@ -92,19 +112,7 @@ export default function AppMenu() {
           Edit Accounts
         </Menu.Item>
       </Menu.SubMenu>
-      <Observe subjects={[persistence]}>
-        {(_v: number) => (
-          <Menu.Item
-            key="sync"
-            icon={persistence.status === Status.ONLINE
-              ? <CheckCircleTwoTone twoToneColor="green" />
-              : <WarningTwoTone twoToneColor="red" />}
-            onClick={() => navigation.navigate(HomeRoute.url())}
-          >
-            {persistence.status}
-          </Menu.Item>
-        )}
-      </Observe>
+      <PersistenceSubMenu {... {persistence, navigation}} />
     </Menu>
   );
 }

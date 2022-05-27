@@ -18,11 +18,20 @@ export default function Landing() {
     setStatus({})
     if(await management.start(email)) {
       setStatus({ type: 'success', message: Messages.landing.welcome })
+      const tmr = setInterval(async () => {
+        if (await management.checkLoggedIn()) {
+          clearInterval(tmr)
+        }
+      }, 2000)
     } else {
       setStatus({ type: 'error', message: Messages.landing.failed })
     }
     setDisabled(false);
   }
+
+  useEffect(() => {
+    management.checkLoggedIn()
+  }, [management])
 
   useEffect(() => {
     if (searchParams.has('confirm_code')) {

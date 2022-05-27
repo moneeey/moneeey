@@ -14,10 +14,10 @@ export default function Dashboard() {
   const moneeeyStore = useMoneeeyStore();
 
   const addSamples = () => {
-    if (moneeeyStore.currencies.all().length === 0) {
+    if (moneeeyStore.currencies.all.length === 0) {
       SampleCurrencies.forEach((c) => moneeeyStore.currencies.add(c));
     }
-    if (moneeeyStore.accounts.all().length === 0) {
+    if (moneeeyStore.accounts.all.length === 0) {
       SampleAccounts.forEach((a) => moneeeyStore.accounts.add(a));
     }
     SampleTransactions.sort((a, b) =>
@@ -32,8 +32,7 @@ export default function Dashboard() {
       <TransactionTable
         referenceAccount={""}
         transactions={moneeeyStore.transactions
-          .all()
-          .sort((a, b) => compareDates(a.updated || "", b.updated || ""))
+          .sorted
           .splice(0, 5)}
       />
       <Button onClick={addSamples}>Add Samples</Button>

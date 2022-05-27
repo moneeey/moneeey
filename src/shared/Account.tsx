@@ -24,20 +24,16 @@ export class AccountStore extends MappedStore<IAccount> {
     super((a) => a.account_uuid);
   }
 
-  add(account: IAccount) {
-    super.add(account);
-  }
-
   allPayees() {
-    return this.all().filter((acct) => acct.type === AccountType.PAYEE);
+    return this.all.filter((acct) => acct.type === AccountType.PAYEE);
   }
 
   allNonPayees() {
-    return this.all().filter((acct) => acct.type !== AccountType.PAYEE);
+    return this.all.filter((acct) => acct.type !== AccountType.PAYEE);
   }
 
   byName(name: string) {
-    return this.all().filter((acct) => acct.name === name)[0];
+    return this.all.filter((acct) => acct.name === name)[0];
   }
 
   uuidByName(name: string) {
