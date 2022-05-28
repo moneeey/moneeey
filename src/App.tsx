@@ -7,6 +7,7 @@ import { TagsHighlightProvider } from './app/Tags';
 import RouteRenderer from './app/RouteRenderer';
 import { HomeRoute, LandingRoute } from './Routes';
 import { observer } from 'mobx-react';
+import AppMenu from './app/AppMenu';
 
 export const Moneeey = observer(({ moneeeyStore }: { moneeeyStore: MoneeeyStore }) => {
   const { management } = moneeeyStore
@@ -14,6 +15,7 @@ export const Moneeey = observer(({ moneeeyStore }: { moneeeyStore: MoneeeyStore 
   return (
     <MoneeeyStoreProvider value={moneeeyStore}>
       <TagsHighlightProvider>
+        {management.loggedIn && <AppMenu />}
         <RouteRenderer root_route={root_route} app={{ moneeeyStore }} />
       </TagsHighlightProvider>
     </MoneeeyStoreProvider>

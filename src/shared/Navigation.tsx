@@ -17,8 +17,6 @@ export default class NavigationStore {
   }
 
   get navigateTo() {
-    const url = this._navigateToUrl
-    this._navigateToUrl = ''
-    return url
+    return this._navigateToUrl
   }
 }
