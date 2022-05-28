@@ -1,18 +1,18 @@
-import { Tag } from "antd";
-import React from "react";
-import useMoneeeyStore from "../useMoneeeyStore";
-import { TagsRoute } from "../Routes";
+import { Tag } from 'antd';
+import React from 'react';
+import useMoneeeyStore from '../useMoneeeyStore';
+import { TagsRoute } from '../Routes';
 
 const TagColors: { [_group: string]: string } = {
-  highlight: "lightsalmon",
-  memo: "goldenrod",
-  from: "mediumturquoise",
-  to: "geekblue",
+  highlight: 'lightsalmon',
+  memo: 'goldenrod',
+  from: 'mediumturquoise',
+  to: 'geekblue'
 };
 
 const HighlightTagContext = React.createContext({
-  tag: "",
-  setTag: (_tag: string) => {},
+  tag: '',
+  setTag: (_tag: string) => {}
 });
 
 interface ITagsProp {
@@ -32,14 +32,11 @@ function TagsRenderer({ color, tags }: IStyledTagsProp) {
         return (
           <Tag
             key={t}
-            color={TagColors[tag === t ? "highlight" : color]}
+            color={TagColors[tag === t ? 'highlight' : color]}
             onMouseOver={() => setTag(t)}
-            onMouseOut={() => setTag("")}
+            onMouseOut={() => setTag('')}
             title={color}
-            onClick={() =>
-              moneeeyStore.navigation.navigate(TagsRoute.tagsUrl(t))
-            }
-          >
+            onClick={() => moneeeyStore.navigation.navigate(TagsRoute.tagsUrl(t))}>
             #{t}
           </Tag>
         );
@@ -49,20 +46,16 @@ function TagsRenderer({ color, tags }: IStyledTagsProp) {
 }
 
 export function TagsMemo({ tags }: ITagsProp) {
-  return <TagsRenderer color={"memo"} tags={tags} />;
+  return <TagsRenderer color={'memo'} tags={tags} />;
 }
 export function TagsFromAcct({ tags }: ITagsProp) {
-  return <TagsRenderer color={"from"} tags={tags} />;
+  return <TagsRenderer color={'from'} tags={tags} />;
 }
 export function TagsToAcct({ tags }: ITagsProp) {
-  return <TagsRenderer color={"to"} tags={tags} />;
+  return <TagsRenderer color={'to'} tags={tags} />;
 }
 
 export function TagsHighlightProvider({ children }: any) {
-  const [tag, setTag] = React.useState("");
-  return (
-    <HighlightTagContext.Provider value={{ tag, setTag }}>
-      {children}
-    </HighlightTagContext.Provider>
-  );
+  const [tag, setTag] = React.useState('');
+  return <HighlightTagContext.Provider value={{ tag, setTag }}>{children}</HighlightTagContext.Provider>;
 }

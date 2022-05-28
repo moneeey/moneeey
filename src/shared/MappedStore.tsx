@@ -1,12 +1,12 @@
-import _ from "lodash";
-import { action, computed, makeObservable, observable } from "mobx";
-import { currentDateTime } from "./Date";
-import { IBaseEntity } from "./Entity";
+import _ from 'lodash';
+import { action, computed, makeObservable, observable } from 'mobx';
+import { currentDateTime } from './Date';
+import { IBaseEntity } from './Entity';
 
 type UUIDGetter<T> = (item: T) => string;
 
 export default class MappedStore<T extends IBaseEntity> {
-  public itemsByUuid = new Map<string, T>()
+  public itemsByUuid = new Map<string, T>();
   protected itemUuids: string[] = [];
   protected getUuid: UUIDGetter<T>;
 
@@ -17,8 +17,8 @@ export default class MappedStore<T extends IBaseEntity> {
       add: action,
       remove: action,
       update: action,
-      all: computed,
-    })
+      all: computed
+    });
   }
 
   add(item: T) {
@@ -26,14 +26,14 @@ export default class MappedStore<T extends IBaseEntity> {
     this.itemUuids = [...this.itemUuids, uuid];
     this.update({
       ...item,
-      _id: item.entity_type + "-" + uuid,
-      created: currentDateTime(),
+      _id: item.entity_type + '-' + uuid,
+      created: currentDateTime()
     });
   }
 
   remove(item: T) {
     const uuid = this.getUuid(item);
-    this.itemsByUuid.delete(uuid)
+    this.itemsByUuid.delete(uuid);
     this.itemUuids = this.itemUuids.filter((i) => i !== uuid);
     item._deleted = true;
   }
@@ -42,8 +42,8 @@ export default class MappedStore<T extends IBaseEntity> {
     const uuid = this.getUuid(item);
     this.itemsByUuid.set(uuid, {
       ...item,
-      updated: currentDateTime(),
-    })
+      updated: currentDateTime()
+    });
   }
 
   hasKey(uuid: string) {
@@ -51,24 +51,21 @@ export default class MappedStore<T extends IBaseEntity> {
   }
 
   byUuid(uuid: string) {
-    return this.itemsByUuid.get(uuid)
+    return this.itemsByUuid.get(uuid);
   }
 
   byPredicate(predicate: (item: T) => boolean) {
-    return this.all.filter(predicate)
+    return this.all.filter(predicate);
   }
 
   find(predicate: (item: T) => boolean) {
-    return this
-      .itemUuids
-      .map(uuid => this.byUuid(uuid))
-      .find(o => o && predicate(o));
+    return this.itemUuids.map((uuid) => this.byUuid(uuid)).find((o) => o && predicate(o));
   }
 
   get all(): T[] {
     return _(this.itemUuids)
       .map((uuid: string) => this.byUuid(uuid))
       .compact()
-      .value()
+      .value();
   }
 }

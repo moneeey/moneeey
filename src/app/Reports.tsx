@@ -1,25 +1,19 @@
-import { Column, Line } from "@ant-design/charts";
-import { DownOutlined } from "@ant-design/icons";
-import { Button, Dropdown, Menu } from "antd";
-import {
-  startOfDay,
-  startOfMonth,
-  startOfQuarter,
-  startOfWeek,
-  startOfYear,
-} from "date-fns";
-import React from "react";
-import { AccountType, TAccountUUID } from "../shared/Account";
-import { TDate, formatDate, parseDate } from "../shared/Date";
-import { TMonetary } from "../shared/Entity";
-import MoneeeyStore from "../shared/MoneeeyStore";
-import { ITransaction } from "../shared/Transaction";
-import _ from "lodash";
-import Loading from "./Loading";
-import useMoneeeyStore from "../useMoneeeyStore";
+import { Column, Line } from '@ant-design/charts';
+import { DownOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Menu } from 'antd';
+import { startOfDay, startOfMonth, startOfQuarter, startOfWeek, startOfYear } from 'date-fns';
+import React from 'react';
+import { AccountType, TAccountUUID } from '../shared/Account';
+import { TDate, formatDate, parseDate } from '../shared/Date';
+import { TMonetary } from '../shared/Entity';
+import MoneeeyStore from '../shared/MoneeeyStore';
+import { ITransaction } from '../shared/Transaction';
+import _ from 'lodash';
+import Loading from './Loading';
+import useMoneeeyStore from '../useMoneeeyStore';
 
 async function asyncTimeout(fn: () => void, delay: number) {
-  return await new Promise(resolve => {
+  return await new Promise((resolve) => {
     setTimeout(() => {
       resolve(fn());
     }, delay);
@@ -27,12 +21,12 @@ async function asyncTimeout(fn: () => void, delay: number) {
 }
 
 async function asyncProcess<T>(
-    values: T[],
-    fn: (chnk: T[], state: any, chunks: T[][], tasks: number, tasksTotal: number) => void,
-    state: any = {},
-    chunkSize = 20,
-    chunkThrottle = 2,
-  ) {
+  values: T[],
+  fn: (chnk: T[], state: any, chunks: T[][], tasks: number, tasksTotal: number) => void,
+  state: any = {},
+  chunkSize = 20,
+  chunkThrottle = 2
+) {
   const chunks = _.chunk(values, chunkSize);
   const tasksTotal = chunks.length;
   while (chunks.length > 0) {
@@ -51,14 +45,25 @@ interface AsyncProcessTransactions {
   setProgress: (v: number) => void;
 }
 
-async function asyncProcessTransactionsForAccounts({ accounts, fn, period, moneeeyStore, setRows, setProgress }: AsyncProcessTransactions) {
+async function asyncProcessTransactionsForAccounts({
+  accounts,
+  fn,
+  period,
+  moneeeyStore,
+  setRows,
+  setProgress
+}: AsyncProcessTransactions) {
   const transactions = moneeeyStore.transactions.viewAllWithAccounts(accounts);
-  const processed = await asyncProcess(transactions, (chunk, stt, _chunks, tasks, tasksTotal) => {
-    setProgress(((tasksTotal - tasks) / tasksTotal) * 100)
-    chunk.forEach(t => fn(t, stt));
-  }, { moneeeyStore, data: new Map(), period });
+  const processed = await asyncProcess(
+    transactions,
+    (chunk, stt, _chunks, tasks, tasksTotal) => {
+      setProgress(((tasksTotal - tasks) / tasksTotal) * 100);
+      chunk.forEach((t) => fn(t, stt));
+    },
+    { moneeeyStore, data: new Map(), period }
+  );
   setRows(moneeeyStore.transactions.sortTransactions([...processed.data.values()]));
-  setProgress(0)
+  setProgress(0);
 }
 
 interface PeriodGroup {
@@ -70,12 +75,12 @@ interface PeriodGroup {
 
 const noopFormatter = (o: any) => o;
 const PeriodGroups: { [_name: string]: PeriodGroup } = {
-  Day: {label: "Day", groupFn: startOfDay, formatter: noopFormatter, order: 0},
-  Week: {label: "Week", groupFn: startOfWeek, formatter: noopFormatter, order: 1},
-  Month: {label: "Month", groupFn: startOfMonth, formatter: noopFormatter, order: 2},
-  Quarter: {label: "Quarter", groupFn: startOfQuarter, formatter: noopFormatter, order: 3},
-  Year: {label: "Year", groupFn: startOfYear, formatter: noopFormatter, order: 4},
-}
+  Day: { label: 'Day', groupFn: startOfDay, formatter: noopFormatter, order: 0 },
+  Week: { label: 'Week', groupFn: startOfWeek, formatter: noopFormatter, order: 1 },
+  Month: { label: 'Month', groupFn: startOfMonth, formatter: noopFormatter, order: 2 },
+  Quarter: { label: 'Quarter', groupFn: startOfQuarter, formatter: noopFormatter, order: 3 },
+  Year: { label: 'Year', groupFn: startOfYear, formatter: noopFormatter, order: 4 }
+};
 
 function dateToPeriod(period: PeriodGroup, date: TDate) {
   return formatDate(period.groupFn(parseDate(date)));
@@ -83,7 +88,7 @@ function dateToPeriod(period: PeriodGroup, date: TDate) {
 
 export function DateGroupingSelector({
   setPeriod,
-  period,
+  period
 }: {
   setPeriod: (newPeriod: PeriodGroup) => void;
   period: PeriodGroup;
@@ -93,29 +98,32 @@ export function DateGroupingSelector({
       overlay={
         <Menu>
           {_(_.values(PeriodGroups))
-          .sortBy('order')
-          .map((p) => (
-            <Menu.Item key={p.label} onClick={() => setPeriod(p)}>
-              {p.label}
-            </Menu.Item>
-          ))
-          .value()}
+            .sortBy('order')
+            .map((p) => (
+              <Menu.Item key={p.label} onClick={() => setPeriod(p)}>
+                {p.label}
+              </Menu.Item>
+            ))
+            .value()}
         </Menu>
       }
-      trigger={["click"]}
-    >
-      <Button type="link" className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+      trigger={['click']}>
+      <Button type='link' className='ant-dropdown-link' onClick={(e) => e.preventDefault()}>
         {period.label} <DownOutlined />
       </Button>
     </Dropdown>
   );
 }
 
-interface ReportDataPoint { date: TDate; balance: TMonetary; label: string }
+interface ReportDataPoint {
+  date: TDate;
+  balance: TMonetary;
+  label: string;
+}
 type ReportDataMap = Map<string, ReportDataPoint>;
 interface ReportAsyncState {
-  moneeeyStore: MoneeeyStore,
-  period: PeriodGroup,
+  moneeeyStore: MoneeeyStore;
+  period: PeriodGroup;
   data: ReportDataMap;
 }
 
@@ -131,7 +139,7 @@ const balanceGrowthProcess = (transaction: ITransaction, stt: ReportAsyncState) 
   };
   addBalanceToData(transaction.from_account, -transaction.from_value, transaction.date);
   addBalanceToData(transaction.to_account, transaction.to_value, transaction.date);
-}
+};
 
 export function BalanceGrowthReport() {
   const [period, setPeriod] = React.useState(PeriodGroups.Week);
@@ -139,9 +147,16 @@ export function BalanceGrowthReport() {
   const [progress, setProgress] = React.useState(0);
   const moneeeyStore = useMoneeeyStore();
   React.useEffect(() => {
-    const personal_accounts = moneeeyStore.accounts.allNonPayees().map(act => act.account_uuid);
-    asyncProcessTransactionsForAccounts({ accounts: personal_accounts, fn: balanceGrowthProcess, period, moneeeyStore, setRows, setProgress });
-  }, [moneeeyStore, period, setProgress, setRows])
+    const personal_accounts = moneeeyStore.accounts.allNonPayees().map((act) => act.account_uuid);
+    asyncProcessTransactionsForAccounts({
+      accounts: personal_accounts,
+      fn: balanceGrowthProcess,
+      period,
+      moneeeyStore,
+      setRows,
+      setProgress
+    });
+  }, [moneeeyStore, period, setProgress, setRows]);
 
   return (
     <>
@@ -153,22 +168,22 @@ export function BalanceGrowthReport() {
             data: rows,
             height: 400,
             //xField: "date",
-            yField: "balance",
+            yField: 'balance',
             xAxis: {
               field: 'date',
               label: {
                 formatter: (x) => {
-                return period.formatter(parseDate(x))
+                  return period.formatter(parseDate(x));
                 }
               }
             },
-            seriesField: "label",
+            seriesField: 'label',
             connectNulls: true,
             smooth: true,
             point: {
               size: 5,
-              shape: "diamond",
-            },
+              shape: 'diamond'
+            }
           }}
         />
       </Loading>
@@ -191,7 +206,7 @@ const tagExpensesProcess = (transaction: ITransaction, stt: ReportAsyncState) =>
       stt.data.set(group, {
         date: group_date,
         balance,
-        label: tag,
+        label: tag
       });
     });
   };
@@ -206,9 +221,16 @@ export function TagExpensesReport() {
   const [progress, setProgress] = React.useState(0);
 
   React.useEffect(() => {
-    const payee_accounts = moneeeyStore.accounts.allPayees().map(act => act.account_uuid);
-    asyncProcessTransactionsForAccounts({ accounts: payee_accounts, fn: tagExpensesProcess, period, moneeeyStore, setRows, setProgress });
-  }, [moneeeyStore, period, setProgress, setRows])
+    const payee_accounts = moneeeyStore.accounts.allPayees().map((act) => act.account_uuid);
+    asyncProcessTransactionsForAccounts({
+      accounts: payee_accounts,
+      fn: tagExpensesProcess,
+      period,
+      moneeeyStore,
+      setRows,
+      setProgress
+    });
+  }, [moneeeyStore, period, setProgress, setRows]);
 
   return (
     <>
@@ -219,9 +241,9 @@ export function TagExpensesReport() {
           {...{
             data: rows,
             height: 400,
-            xField: "date",
-            yField: "balance",
-            seriesField: "label",
+            xField: 'date',
+            yField: 'balance',
+            seriesField: 'label'
           }}
         />
       </Loading>

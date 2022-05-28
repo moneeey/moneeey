@@ -1,10 +1,10 @@
-import React from "react";
-import { IAccount } from "./shared/Account";
-import Dashboard from "./app/Dashboard";
-import { IAppParameters, IRouteParameters, Route } from "./shared/Route";
-import TransactionTable from "./app/TransactionTable";
-import Landing from "./landing/Landing";
-import { Reports } from "./app/Reports";
+import React from 'react';
+import { IAccount } from './shared/Account';
+import Dashboard from './app/Dashboard';
+import { IAppParameters, IRouteParameters, Route } from './shared/Route';
+import TransactionTable from './app/TransactionTable';
+import Landing from './landing/Landing';
+import { Reports } from './app/Reports';
 
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////// Landing
@@ -52,7 +52,7 @@ class AccountRouter extends Route<IAccountRoute> {
       const transactions = app.moneeeyStore.transactions.viewAllWithAccount(account_uuid);
       return <TransactionTable transactions={transactions} referenceAccount={account_uuid} />;
     }
-    return <p>Account {parameters.account_name} not found</p>
+    return <p>Account {parameters.account_name} not found</p>;
   }
 
   accountUrl(account: IAccount) {
@@ -75,11 +75,8 @@ class TagsRouter extends Route<ITagsRoute> {
   }
 
   render(parameters: ITagsRoute, app: IAppParameters) {
-    const transactions = app
-      .moneeeyStore
-      .transactions
-      .viewAllWithTag(parameters.tag, app.moneeeyStore.accounts);
-    return <TransactionTable transactions={transactions} referenceAccount={""} />;
+    const transactions = app.moneeeyStore.transactions.viewAllWithTag(parameters.tag, app.moneeeyStore.accounts);
+    return <TransactionTable transactions={transactions} referenceAccount={''} />;
   }
 
   tagsUrl(tag: string) {
@@ -91,8 +88,7 @@ export const TagsRoute = new TagsRouter();
 
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////// Reports
-interface IReportsRoute extends IRouteParameters {
-}
+interface IReportsRoute extends IRouteParameters {}
 
 class ReportsRouter extends Route<IReportsRoute> {
   constructor() {
@@ -101,7 +97,7 @@ class ReportsRouter extends Route<IReportsRoute> {
   }
 
   render(_parameters: IReportsRoute, _app: IAppParameters) {
-    return <Reports/>;
+    return <Reports />;
   }
 }
 

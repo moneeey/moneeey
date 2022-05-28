@@ -1,10 +1,10 @@
-import { AccountStore } from "./Account";
-import { CurrencyStore } from "./Currency";
-import { EntityType } from "./Entity";
-import NavigationStore from "./Navigation";
-import PersistenceStore from "./Persistence";
-import { TransactionStore } from "./Transaction";
-import ManagementStore from "./Management";
+import { AccountStore } from './Account';
+import { CurrencyStore } from './Currency';
+import { EntityType } from './Entity';
+import NavigationStore from './Navigation';
+import PersistenceStore from './Persistence';
+import { TransactionStore } from './Transaction';
+import ManagementStore from './Management';
 
 export default class MoneeeyStore {
   navigation = new NavigationStore();

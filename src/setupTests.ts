@@ -5,7 +5,7 @@
 import '@testing-library/jest-dom';
 class Worker {
   url: string;
-  onMessage = (..._args: any[]) => {}
+  onMessage = (..._args: any[]) => {};
   constructor(url: string) {
     this.url = url;
   }
@@ -14,5 +14,5 @@ class Worker {
     this.onMessage(msg);
   }
 }
-window.Worker = Worker as any
-URL.createObjectURL = () => '/your-url'
+window.Worker = Worker as any;
+URL.createObjectURL = () => '/your-url';

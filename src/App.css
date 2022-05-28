@@ -6,10 +6,10 @@
   float: right;
 }
 
-.transactionTable  .ant-table-thead > tr > th,
-.transactionTable  .ant-table-tbody > tr > td,
-.transactionTable  .ant-table tfoot > tr > th,
-.transactionTable  .ant-table tfoot > tr > td {
+.transactionTable .ant-table-thead > tr > th,
+.transactionTable .ant-table-tbody > tr > td,
+.transactionTable .ant-table tfoot > tr > th,
+.transactionTable .ant-table tfoot > tr > td {
   padding: 0.2px 0.2px !important;
 }
 
@@ -24,7 +24,7 @@
 
 .loadingBar-progress {
   height: 1em;
-  background-color: #3462AF;
+  background-color: #3462af;
 }
 
 .landing {

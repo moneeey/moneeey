@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable } from 'mobx';
 
 export default class NavigationStore {
   dateFormat: string = 'dd/MM/yyy';
@@ -8,15 +8,15 @@ export default class NavigationStore {
     makeObservable(this, {
       _navigateToUrl: observable,
       navigateTo: computed,
-      navigate: action,
-    })
+      navigate: action
+    });
   }
 
   navigate(url: string) {
-    this._navigateToUrl = url
+    this._navigateToUrl = url;
   }
 
   get navigateTo() {
-    return this._navigateToUrl
+    return this._navigateToUrl;
   }
 }

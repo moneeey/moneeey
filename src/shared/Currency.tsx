@@ -1,5 +1,5 @@
-import { IBaseEntity, TMonetary } from "./Entity";
-import MappedStore from "./MappedStore";
+import { IBaseEntity, TMonetary } from './Entity';
+import MappedStore from './MappedStore';
 
 export type TCurrencyUUID = string;
 
@@ -30,14 +30,14 @@ export class CurrencyStore extends MappedStore<ICurrency> {
       currency.prefix +
       value.toLocaleString(undefined, {
         maximumFractionDigits: currency.decimals,
-        minimumFractionDigits: currency.decimals,
+        minimumFractionDigits: currency.decimals
       }) +
       currency.suffix
     );
   }
 
   formatByUuid(currency_uuid: TCurrencyUUID, value: TMonetary) {
-    const currency = this.byUuid(currency_uuid)
+    const currency = this.byUuid(currency_uuid);
     return (currency && this.format(currency, value)) || '';
   }
 }

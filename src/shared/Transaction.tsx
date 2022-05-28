@@ -1,8 +1,8 @@
-import { computed, makeObservable } from "mobx";
-import { AccountStore, TAccountUUID } from "./Account";
-import { TDate, compareDates } from "./Date";
-import { IBaseEntity, TMonetary } from "./Entity";
-import MappedStore from "./MappedStore";
+import { computed, makeObservable } from 'mobx';
+import { AccountStore, TAccountUUID } from './Account';
+import { TDate, compareDates } from './Date';
+import { IBaseEntity, TMonetary } from './Entity';
+import MappedStore from './MappedStore';
 
 export type TTransactionUUID = string;
 
@@ -20,8 +20,8 @@ export class TransactionStore extends MappedStore<ITransaction> {
   constructor() {
     super((t) => t.transaction_uuid);
     makeObservable(this, {
-      sorted: computed,
-    })
+      sorted: computed
+    });
   }
 
   sortTransactions(transactions: ITransaction[]): ITransaction[] {
@@ -50,13 +50,10 @@ export class TransactionStore extends MappedStore<ITransaction> {
   }
 
   viewAllNonPayees(accountsStore: AccountStore) {
-    return this.viewAllWithAccounts(accountsStore.allNonPayees().map(act => act.account_uuid));
+    return this.viewAllWithAccounts(accountsStore.allNonPayees().map((act) => act.account_uuid));
   }
 
-  getAllTransactionTags(
-    transaction: ITransaction,
-    accountsStore: AccountStore
-  ) {
+  getAllTransactionTags(transaction: ITransaction, accountsStore: AccountStore) {
     const from_acct = accountsStore.accountTags(transaction.from_account);
     const to_acct = accountsStore.accountTags(transaction.to_account);
     return [...from_acct, ...to_acct, ...transaction.tags];

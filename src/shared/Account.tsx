@@ -1,14 +1,14 @@
-import { TCurrencyUUID } from "./Currency";
-import { TDate } from "./Date";
-import { IBaseEntity } from "./Entity";
-import MappedStore from "./MappedStore";
+import { TCurrencyUUID } from './Currency';
+import { TDate } from './Date';
+import { IBaseEntity } from './Entity';
+import MappedStore from './MappedStore';
 
 export type TAccountUUID = string;
 
 export enum AccountType {
-  CHECKING = "CHECKING",
-  CREDIT_CARD = "CREDIT_CARD",
-  PAYEE = "PAYEE",
+  CHECKING = 'CHECKING',
+  CREDIT_CARD = 'CREDIT_CARD',
+  PAYEE = 'PAYEE'
 }
 
 export interface IAccount extends IBaseEntity {

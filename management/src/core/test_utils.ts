@@ -17,9 +17,9 @@ export function mockDb() {
     destroy: addHistorySpy('destroy'),
     close: addHistorySpy('close'),
     history,
-    spy,
+    spy
   };
-};
+}
 export type mockDbType = ReturnType<typeof mockDb>;
 
 export function ConsoleMock() {
@@ -44,5 +44,5 @@ export function mock_utils() {
   let tick = 123450000;
   jest.spyOn(utils, 'uuid').mockImplementation(() => 'UUIDUUID-dcf7-6969-a608-420' + tick++);
   jest.spyOn(utils, 'tick').mockImplementation(() => tick++);
-  jest.spyOn(utils, 'hash_value').mockImplementation((_prefix, value, _rounds) => 'hashed:-' + (tick++) + '-' + value);
+  jest.spyOn(utils, 'hash_value').mockImplementation((_prefix, value, _rounds) => 'hashed:-' + tick++ + '-' + value);
 }
