@@ -73,7 +73,7 @@ describe('auth_controller', () => {
         [
           {
             from: 'moneeey@youremail.com',
-            html: 'Please click the following link to complete your registration: <a href="http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech">http://localhost:3000/auth/complete?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech</a>',
+            html: 'Please click the following link to complete your registration: <a href="http://localhost:4270/?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech">http://localhost:4270/?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech</a>',
             subject: 'Moneeey login',
             to: 'moneeey@baroni.tech'
           }
@@ -157,7 +157,7 @@ describe('auth_controller', () => {
         [
           {
             from: 'moneeey@youremail.com',
-            html: 'Please click the following link to complete your registration: <a href="http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech">http://localhost:3000/auth/complete?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech</a>',
+            html: 'Please click the following link to complete your registration: <a href="http://localhost:4270/?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech">http://localhost:4270/?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech</a>',
             subject: 'Moneeey login',
             to: 'moneeey@baroni.tech'
           }

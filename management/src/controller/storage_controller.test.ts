@@ -1,6 +1,5 @@
 /* eslint-disable import/first */
 import dotenv from 'dotenv';
-import { connect } from 'http2';
 dotenv.config({ path: './sample.env' });
 
 import { tick, uuid } from '../core';
