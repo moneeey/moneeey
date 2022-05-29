@@ -1,6 +1,3 @@
-import { Menu } from 'antd';
-import React from 'react';
-import useMoneeeyStore from '../useMoneeeyStore';
 import {
   AreaChartOutlined,
   CheckCircleTwoTone,
@@ -8,14 +5,23 @@ import {
   DollarOutlined,
   MailOutlined,
   SettingOutlined,
-  WarningTwoTone
+  WarningTwoTone,
 } from '@ant-design/icons';
+import { Menu } from 'antd';
+import { observer } from 'mobx-react';
+import React from 'react';
+
+import { AccountRoute } from '../routes/AccountRoute';
+import { AccountSettingsRoute } from '../routes/AccountSettingsRoute';
+import { CurrencySettingsRoute } from '../routes/CurrencySettingsRoute';
+import { HomeRoute } from '../routes/HomeRouter';
+import { PayeeSettingsRoute } from '../routes/PayeeSettingsRoute';
+import { ReportsRoute } from '../routes/ReportsRoute';
 import { AccountStore, IAccount } from '../shared/Account';
-import { HomeRoute, AccountRoute, ReportsRoute } from '../Routes';
-import PersistenceStore, { Status } from '../shared/Persistence';
 import { CurrencyStore } from '../shared/Currency';
 import NavigationStore from '../shared/Navigation';
-import { observer } from 'mobx-react';
+import PersistenceStore, { Status } from '../shared/Persistence';
+import useMoneeeyStore from '../useMoneeeyStore';
 
 export const AccountsSubMenu = observer(
   ({
@@ -86,13 +92,13 @@ export default function AppMenu() {
         Reports
       </Menu.Item>
       <Menu.SubMenu key='Settings' icon={<SettingOutlined />} title='Settings'>
-        <Menu.Item key='currencies' onClick={() => navigation.navigate(HomeRoute.url())}>
+        <Menu.Item key='currencies' onClick={() => navigation.navigate(CurrencySettingsRoute.url())}>
           Edit Currencies
         </Menu.Item>
-        <Menu.Item key='payees' onClick={() => navigation.navigate(HomeRoute.url())}>
+        <Menu.Item key='payees' onClick={() => navigation.navigate(PayeeSettingsRoute.url())}>
           Edit Payees
         </Menu.Item>
-        <Menu.Item key='accounts' onClick={() => navigation.navigate(HomeRoute.url())}>
+        <Menu.Item key='accounts' onClick={() => navigation.navigate(AccountSettingsRoute.url())}>
           Edit Accounts
         </Menu.Item>
       </Menu.SubMenu>

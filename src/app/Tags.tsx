@@ -1,7 +1,8 @@
 import { Tag } from 'antd';
 import React from 'react';
+
+import { TagsRoute } from '../routes/TagsRoute';
 import useMoneeeyStore from '../useMoneeeyStore';
-import { TagsRoute } from '../Routes';
 
 const TagColors: { [_group: string]: string } = {
   highlight: 'lightsalmon',

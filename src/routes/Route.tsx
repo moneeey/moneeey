@@ -1,4 +1,4 @@
-import MoneeeyStore from './MoneeeyStore';
+import MoneeeyStore from '../shared/MoneeeyStore';
 
 export interface IAppParameters {
   moneeeyStore: MoneeeyStore;
@@ -47,7 +47,7 @@ export abstract class Route<IParameters extends IRouteParameters> {
     if (currentUrl.indexOf(':') >= 0) {
       alert('Malformed URL: ' + currentUrl);
     }
-    return parentUrl + currentUrl;
+    return (parentUrl + currentUrl).replace('//', '/');
   }
 
   slug(value: string) {
