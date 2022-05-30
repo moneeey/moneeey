@@ -1,5 +1,7 @@
-import { makeObservable, observable, observe } from 'mobx';
+import _, { map, uniqBy } from 'lodash';
+import { makeObservable, observable, observe, toJS } from 'mobx';
 import PouchDB from 'pouchdb';
+
 import { EntityType, IBaseEntity } from './Entity';
 import MappedStore from './MappedStore';
 
@@ -13,10 +15,17 @@ export default class PersistenceStore {
   entries: IBaseEntity[] = [];
   status: Status = Status.OFFLINE;
   databaseId: string = '';
+  syncables: ({
+    uuid: string;
+    store: MappedStore<any, any>
+  })[] = [];
+  private _commit
+  private isCommiting = false
 
   constructor() {
     this.db = new PouchDB('moneeey');
     this.sync();
+    this._commit = _.debounce(this.commit, 1000)
 
     makeObservable(this, {
       status: observable,
@@ -44,7 +53,7 @@ export default class PersistenceStore {
   }
 
   async load() {
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
       this.db
         .allDocs({
           include_docs: true
@@ -56,19 +65,62 @@ export default class PersistenceStore {
     });
   }
 
-  async persist(item: any) {
-    return this.db.put(item);
+  async commit() {
+    try {
+      this.isCommiting = true
+      const objects = uniqBy(
+        this.syncables.map(({ store, uuid }) => {
+          const entity = toJS(store.byUuid(uuid))
+          return { store, _id: entity._id, entity, uuid };
+        }),
+        '_id'
+      );
+      this.syncables = []
+      try {
+        const updated = await this.db.bulkDocs(objects.map(sync => sync.entity));
+        map(updated, (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
+          if (resp.error) {
+            console.error('Sync Commit error', { resp })
+          } else if (resp.ok) {
+            const updated = objects.find(obj => obj._id === resp.id)
+            if (updated) {
+              const entity = { ...updated.entity, _rev: resp.rev }
+              console.info('Sync Commit success', { entity })
+              updated.store.merge(entity);
+            }
+          }
+        })
+      } catch(err) {
+        const error = err as PouchDB.Core.Error
+        console.error(error)
+      }
+    } finally {
+      this.isCommiting = false
+    }
+  }
+
+  persist(store: MappedStore<any, any>, item: IBaseEntity) {
+    if (!this.isCommiting) {
+      this.syncables.push({ store, uuid: store.getUuid(item) })
+      this._commit()
+    }
   }
 
   async fetch(id: string) {
-    return this.db.get(id);
+    return await this.db.get(id);
   }
 
   retrieve(type: EntityType) {
     return this.entries.filter((e) => e.entity_type === type);
   }
 
-  monitorChanges(store: MappedStore<any>) {
-    observe(store.itemsByUuid, (o) => console.log(o));
+  monitor(store: MappedStore<any, any>, type: EntityType) {
+    this.retrieve(type).forEach((e) => store.merge(e));
+    observe(store.itemsByUuid, (changes) => {
+      if (changes.type === 'add' || changes.type === 'update') {
+        const entity = changes.newValue
+        this.persist(store, entity)
+      }
+    });
   }
 }

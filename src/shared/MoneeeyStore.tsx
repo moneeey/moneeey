@@ -1,10 +1,10 @@
 import { AccountStore } from './Account';
 import { CurrencyStore } from './Currency';
 import { EntityType } from './Entity';
+import ManagementStore from './Management';
 import NavigationStore from './Navigation';
 import PersistenceStore from './Persistence';
 import { TransactionStore } from './Transaction';
-import ManagementStore from './Management';
 
 export default class MoneeeyStore {
   navigation = new NavigationStore();
@@ -16,13 +16,9 @@ export default class MoneeeyStore {
 
   constructor() {
     this.persistence.load().then(() => {
-      const loadAndMonitor = (store: any, typee: EntityType) => {
-        this.persistence.retrieve(typee).forEach((e) => store.add(e));
-        this.persistence.monitorChanges(store);
-      };
-      loadAndMonitor(this.accounts, EntityType.ACCOUNT);
-      loadAndMonitor(this.currencies, EntityType.CURRENCY);
-      loadAndMonitor(this.transactions, EntityType.TRANSACTION);
+      this.persistence.monitor(this.accounts, EntityType.ACCOUNT);
+      this.persistence.monitor(this.currencies, EntityType.CURRENCY);
+      this.persistence.monitor(this.transactions, EntityType.TRANSACTION);
     });
   }
 }

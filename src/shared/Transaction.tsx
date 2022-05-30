@@ -1,8 +1,10 @@
 import { computed, makeObservable } from 'mobx';
+
 import { AccountStore, TAccountUUID } from './Account';
-import { TDate, compareDates } from './Date';
-import { IBaseEntity, TMonetary } from './Entity';
+import { compareDates, currentDate, currentDateTime, TDate } from './Date';
+import { EntityType, IBaseEntity, TMonetary } from './Entity';
 import MappedStore from './MappedStore';
+import { uuid } from './Utils';
 
 export type TTransactionUUID = string;
 
@@ -16,9 +18,24 @@ export interface ITransaction extends IBaseEntity {
   memo: string;
 }
 
-export class TransactionStore extends MappedStore<ITransaction> {
+export class TransactionStore extends MappedStore<ITransaction, {}> {
   constructor() {
-    super((t) => t.transaction_uuid);
+    super((t) => t.transaction_uuid,
+    () => ({
+      entity_type: EntityType.TRANSACTION,
+      transaction_uuid: uuid(),
+      date: currentDate(),
+      from_account: '',
+      to_account: '',
+      from_value: 0,
+      to_value: 0,
+      memo: '',
+      tags: [],
+      updated: currentDateTime(),
+      created: currentDateTime(),
+    }),
+    (props) => ({})
+    );
     makeObservable(this, {
       sorted: computed
     });

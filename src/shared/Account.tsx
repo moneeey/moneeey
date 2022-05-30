@@ -1,7 +1,9 @@
-import { TCurrencyUUID } from './Currency';
-import { TDate } from './Date';
-import { IBaseEntity } from './Entity';
+import { CurrencyEditor, CurrencyEditorProps, DateEditor, TextEditor } from '../components/EntityEditor';
+import { ICurrency, TCurrencyUUID } from './Currency';
+import { currentDateTime, TDate } from './Date';
+import { EntityType, IBaseEntity } from './Entity';
 import MappedStore from './MappedStore';
+import { uuid } from './Utils';
 
 export type TAccountUUID = string;
 
@@ -19,9 +21,54 @@ export interface IAccount extends IBaseEntity {
   type: AccountType;
 }
 
-export class AccountStore extends MappedStore<IAccount> {
+interface IAccountSchemaFactory {
+  currencies: ICurrency[];
+  type: AccountType;
+}
+
+export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
   constructor() {
-    super((a) => a.account_uuid);
+    super(
+      (a) => a.account_uuid,
+      (props) => ({
+        entity_type: EntityType.ACCOUNT,
+        name: '',
+        account_uuid: uuid(),
+        tags: [],
+        currency_uuid: '',
+        type: props.type,
+        created: currentDateTime(),
+        updated: currentDateTime(),
+      }),
+      (props) => ({
+        name: {
+          title: 'Name',
+          field: 'name',
+          required: true,
+          validate: (value) => {
+            if (value.length < 2) return { valid: false, error: 'Please type a name' };
+            return { valid: true };
+          },
+          index: 0,
+          renderer: TextEditor,
+        },
+        created: {
+          title: 'Created',
+          field: 'created',
+          readOnly: true,
+          index: 1,
+          renderer: DateEditor,
+        },
+        currency_uuid: {
+          title: 'Currency',
+          field: 'currency_uuid',
+          required: true,
+          currencies: props.currencies,
+          index: 2,
+          renderer: CurrencyEditor,
+        } as CurrencyEditorProps,
+      })
+    );
   }
 
   allPayees() {

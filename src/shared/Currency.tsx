@@ -1,5 +1,8 @@
-import { IBaseEntity, TMonetary } from './Entity';
+import { DateEditor, NumberEditor, TextEditor } from '../components/EntityEditor';
+import { currentDateTime } from './Date';
+import { EntityType, IBaseEntity, TMonetary } from './Entity';
 import MappedStore from './MappedStore';
+import { uuid } from './Utils';
 
 export type TCurrencyUUID = string;
 
@@ -12,9 +15,64 @@ export interface ICurrency extends IBaseEntity {
   decimals: number;
 }
 
-export class CurrencyStore extends MappedStore<ICurrency> {
+export class CurrencyStore extends MappedStore<ICurrency, {}> {
   constructor() {
-    super((c) => c.currency_uuid);
+    super((c) => c.currency_uuid,
+    () => ({
+      entity_type: EntityType.CURRENCY,
+      currency_uuid: uuid(),
+      name: '',
+      short: '',
+      prefix: '',
+      suffix: '',
+      decimals: 2,
+      updated: currentDateTime(),
+      created: currentDateTime(),
+    } as ICurrency),
+    (props) => ({
+        name: {
+          title: 'Name',
+          field: 'name',
+          required: true,
+          validate: (value) => {
+            if (value.length < 2) return { valid: false, error: 'Please type a name' };
+            return { valid: true };
+          },
+          index: 0,
+          renderer: TextEditor,
+        },
+        short: {
+          title: 'Short name',
+          field: 'short',
+          index: 1,
+          renderer: TextEditor,
+        },
+        prefix: {
+          title: 'Prefix',
+          field: 'prefix',
+          index: 2,
+          renderer: TextEditor,
+        },
+        suffix: {
+          title: 'Suffix',
+          field: 'suffix',
+          index: 3,
+          renderer: TextEditor,
+        },
+        decimals: {
+          title: 'Decimals',
+          field: 'decimals',
+          index: 4,
+          renderer: NumberEditor,
+        },
+        created: {
+          title: 'Created',
+          field: 'created',
+          readOnly: true,
+          index: 5,
+          renderer: DateEditor,
+        },
+    }));
   }
 
   findByName(name: string) {

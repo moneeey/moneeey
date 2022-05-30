@@ -15,7 +15,7 @@ export class CurrencySettingsRouter extends Route<ICurrencySettingsRoute> {
   }
 
   render(_parameters: ICurrencySettingsRoute, app: IAppParameters) {
-    return <CurrencySettings currencies={app.moneeeyStore.currencies.all} />;
+    return <CurrencySettings currencies={app.moneeeyStore.currencies} />;
   }
 }
 

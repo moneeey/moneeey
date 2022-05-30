@@ -1,49 +1,49 @@
-import _ from 'lodash';
 import { action, computed, makeObservable, observable } from 'mobx';
+
+import { AccountEditorProps, CurrencyEditorProps, EditorProps } from '../components/EntityEditor';
 import { currentDateTime } from './Date';
 import { IBaseEntity } from './Entity';
 
 type UUIDGetter<T> = (item: T) => string;
 
-export default class MappedStore<T extends IBaseEntity> {
-  public itemsByUuid = new Map<string, T>();
-  protected itemUuids: string[] = [];
-  protected getUuid: UUIDGetter<T>;
+type RecordMap<T, V> = {
+  [P in Exclude<keyof T, "toString">]?: V
+}
 
-  constructor(getUuid: UUIDGetter<T>) {
+export type SchemaFactory<T extends IBaseEntity, SchemaProps> = (props: SchemaProps) => RecordMap<T, EditorProps>;
+
+export default class MappedStore<T extends IBaseEntity, SchemaProps> {
+  public readonly itemsByUuid = new Map<string, T>();
+  public readonly getUuid: UUIDGetter<T>;
+  public readonly schema: (props: SchemaProps) => RecordMap<T, EditorProps | AccountEditorProps | CurrencyEditorProps>;
+  public readonly factory: (props: SchemaProps) => T;
+
+  constructor(getUuid: UUIDGetter<T>, factory: (props: SchemaProps) => T, schema: SchemaFactory<T, SchemaProps>) {
     this.getUuid = getUuid;
+    this.schema = schema;
+    this.factory = factory
     makeObservable(this, {
       itemsByUuid: observable,
-      add: action,
+      merge: action,
       remove: action,
-      update: action,
       all: computed
     });
   }
 
-  add(item: T) {
+  merge(item: T) {
     const uuid = this.getUuid(item);
-    this.itemUuids = [...this.itemUuids, uuid];
-    this.update({
+    this.itemsByUuid.set(uuid, {
       ...item,
       _id: item.entity_type + '-' + uuid,
-      created: currentDateTime()
+      created: item.created || currentDateTime(),
+      updated: currentDateTime(),
     });
   }
 
   remove(item: T) {
     const uuid = this.getUuid(item);
     this.itemsByUuid.delete(uuid);
-    this.itemUuids = this.itemUuids.filter((i) => i !== uuid);
     item._deleted = true;
-  }
-
-  update(item: T) {
-    const uuid = this.getUuid(item);
-    this.itemsByUuid.set(uuid, {
-      ...item,
-      updated: currentDateTime()
-    });
   }
 
   hasKey(uuid: string) {
@@ -59,13 +59,10 @@ export default class MappedStore<T extends IBaseEntity> {
   }
 
   find(predicate: (item: T) => boolean) {
-    return this.itemUuids.map((uuid) => this.byUuid(uuid)).find((o) => o && predicate(o));
+    return this.all.find((o) => o && predicate(o));
   }
 
   get all(): T[] {
-    return _(this.itemUuids)
-      .map((uuid: string) => this.byUuid(uuid))
-      .compact()
-      .value();
+    return Array.from(this.itemsByUuid.values())
   }
 }

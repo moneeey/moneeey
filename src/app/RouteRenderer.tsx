@@ -28,10 +28,12 @@ export default function RouteRenderer<IParameters extends IRouteParameters>({
   const Navigator = () => {
     const navigate = useNavigate();
     const Navigate = observer(() => {
-      const toUrl = app.moneeeyStore.navigation.navigateTo;
-      if (toUrl) {
-        navigate(toUrl);
+      const toUrl = '' + app.moneeeyStore.navigation.navigateTo;
+      if (toUrl && toUrl !== '') {
         app.moneeeyStore.navigation.navigate('');
+        setTimeout(() => {
+          navigate(toUrl);
+        })
       }
       return <div />;
     });

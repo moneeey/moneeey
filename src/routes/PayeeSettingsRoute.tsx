@@ -1,12 +1,11 @@
 import React from 'react';
 
 import { AccountSettings } from '../app/AccountSettings';
+import { AccountType } from '../shared/Account';
 import { HomeRoute } from './HomeRouter';
 import { IAppParameters, IRouteParameters, Route } from './Route';
 
-interface IPayeeSettingsRoute extends IRouteParameters {
-
-}
+interface IPayeeSettingsRoute extends IRouteParameters {}
 
 export class PayeeSettingsRouter extends Route<IPayeeSettingsRoute> {
   constructor() {
@@ -15,7 +14,14 @@ export class PayeeSettingsRouter extends Route<IPayeeSettingsRoute> {
   }
 
   render(_parameters: IPayeeSettingsRoute, app: IAppParameters) {
-    return <AccountSettings accounts={app.moneeeyStore.accounts.allPayees()} currencies={app.moneeeyStore.currencies.all} />;
+    return (
+      <AccountSettings
+        get={() => app.moneeeyStore.accounts.allPayees()}
+        accounts={app.moneeeyStore.accounts}
+        currencies={app.moneeeyStore.currencies}
+        type={AccountType.PAYEE}
+      />
+    );
   }
 }
 
