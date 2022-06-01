@@ -1,4 +1,4 @@
-import { DateEditor, NumberEditor, TextEditor } from '../components/editor/EntityEditor';
+import { EditorType } from '../components/editor/EditorProps';
 import { currentDateTime } from './Date';
 import { EntityType, IBaseEntity, TMonetary } from './Entity';
 import MappedStore from './MappedStore';
@@ -34,43 +34,43 @@ export class CurrencyStore extends MappedStore<ICurrency, {}> {
           title: 'Name',
           field: 'name',
           required: true,
-          validate: (value) => {
+          validate: (value: string) => {
             if (value.length < 2) return { valid: false, error: 'Please type a name' };
             return { valid: true };
           },
           index: 0,
-          renderer: TextEditor,
+          editor: EditorType.TEXT,
         },
         short: {
           title: 'Short name',
           field: 'short',
           index: 1,
-          renderer: TextEditor,
+          editor: EditorType.TEXT,
         },
         prefix: {
           title: 'Prefix',
           field: 'prefix',
           index: 2,
-          renderer: TextEditor,
+          editor: EditorType.TEXT,
         },
         suffix: {
           title: 'Suffix',
           field: 'suffix',
           index: 3,
-          renderer: TextEditor,
+          editor: EditorType.TEXT,
         },
         decimals: {
           title: 'Decimals',
           field: 'decimals',
           index: 4,
-          renderer: NumberEditor,
+          editor: EditorType.NUMBER,
         },
         created: {
           title: 'Created',
           field: 'created',
           readOnly: true,
           index: 5,
-          renderer: DateEditor,
+          editor: EditorType.DATE,
         },
     }));
   }

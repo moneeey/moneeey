@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable } from 'mobx';
 
-import { EditorProps, EditorPropsType } from '../components/editor/EntityEditor';
+import { EditorProps } from '../components/editor/EditorProps';
 import { currentDateTime } from './Date';
 import { IBaseEntity } from './Entity';
 
@@ -10,12 +10,12 @@ type RecordMap<T, V> = {
   [P in Exclude<keyof T, "toString">]?: V
 }
 
-export type SchemaFactory<T extends IBaseEntity, SchemaProps> = (props: SchemaProps) => RecordMap<T, EditorProps>;
+export type SchemaFactory<T extends IBaseEntity, SchemaProps> = (props: SchemaProps) => RecordMap<T, EditorProps<any, any, any>>;
 
 export default class MappedStore<T extends IBaseEntity, SchemaProps> {
   public readonly itemsByUuid = new Map<string, T>();
   public readonly getUuid: UUIDGetter<T>;
-  public readonly schema: (props: SchemaProps) => RecordMap<T, EditorPropsType>;
+  public readonly schema: (props: SchemaProps) => RecordMap<T, EditorProps<any, any, any>>;
   public readonly factory: (props: SchemaProps) => T;
 
   constructor(getUuid: UUIDGetter<T>, factory: (props: SchemaProps) => T, schema: SchemaFactory<T, SchemaProps>) {

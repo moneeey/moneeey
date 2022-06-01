@@ -1,4 +1,5 @@
-import { CurrencyEditor, DateEditor, TextEditor } from '../components/editor/EntityEditor';
+import { CurrencyEditor } from '../components/editor/CurrencyEditor';
+import { EditorType } from '../components/editor/EditorProps';
 import { ICurrency, TCurrencyUUID } from './Currency';
 import { currentDateTime, TDate } from './Date';
 import { EntityType, IBaseEntity } from './Entity';
@@ -45,18 +46,18 @@ export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
           title: 'Name',
           field: 'name',
           required: true,
-          validate: (value) => {
+          validate: (value: string) => {
             if (value.length < 2) return { valid: false, error: 'Please type a name' };
             return { valid: true };
           },
           index: 0,
-          renderer: TextEditor,
+          editor: EditorType.TEXT,
         },
         currency_uuid: {
           title: 'Currency',
           field: 'currency_uuid',
           required: true,
-          currencies: props.currencies,
+          editor: EditorType.CURRENCY,
           index: 1,
           renderer: CurrencyEditor,
         },
@@ -65,7 +66,7 @@ export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
           field: 'created',
           readOnly: true,
           index: 2,
-          renderer: DateEditor,
+          editor: EditorType.DATE,
         },
       })
     );
