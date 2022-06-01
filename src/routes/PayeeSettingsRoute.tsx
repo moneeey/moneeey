@@ -13,10 +13,10 @@ export class PayeeSettingsRouter extends Route<IPayeeSettingsRoute> {
     this.parent?.addChild(this);
   }
 
-  render(_parameters: IPayeeSettingsRoute, app: IAppParameters) {
+  render({ app }: { app: IAppParameters }) {
     return (
       <AccountSettings
-        get={() => app.moneeeyStore.accounts.allPayees()}
+        entities={app.moneeeyStore.accounts.allPayees()}
         accounts={app.moneeeyStore.accounts}
         currencies={app.moneeeyStore.currencies}
         type={AccountType.PAYEE}

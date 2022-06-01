@@ -1,4 +1,4 @@
-import { Route, IRouteParameters } from './Route';
+import { IRouteParameters, Route } from './Route';
 
 interface ITestRouteParameters extends IRouteParameters {
   hello: string;
@@ -6,8 +6,8 @@ interface ITestRouteParameters extends IRouteParameters {
 }
 
 class TestRoute extends Route<ITestRouteParameters> {
-  render(parameters: IRouteParameters, app: any) {
-    return { parameters, app };
+  render() {
+    return <div/>
   }
 }
 

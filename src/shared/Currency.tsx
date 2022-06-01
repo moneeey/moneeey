@@ -1,4 +1,4 @@
-import { DateEditor, NumberEditor, TextEditor } from '../components/EntityEditor';
+import { DateEditor, NumberEditor, TextEditor } from '../components/editor/EntityEditor';
 import { currentDateTime } from './Date';
 import { EntityType, IBaseEntity, TMonetary } from './Entity';
 import MappedStore from './MappedStore';

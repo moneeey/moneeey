@@ -14,7 +14,7 @@ class TagsRouter extends Route<ITagsRoute> {
     this.parent?.addChild(this);
   }
 
-  render(parameters: ITagsRoute, app: IAppParameters) {
+  render({ app, parameters}: { app: IAppParameters, parameters: ITagsRoute }) {
     const transactions = app.moneeeyStore.transactions.viewAllWithTag(parameters.tag, app.moneeeyStore.accounts);
     return <TransactionTable transactions={transactions} referenceAccount={''} />;
   }

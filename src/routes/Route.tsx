@@ -1,3 +1,5 @@
+import { ReactElement } from 'react';
+
 import MoneeeyStore from '../shared/MoneeeyStore';
 
 export interface IAppParameters {
@@ -54,6 +56,6 @@ export abstract class Route<IParameters extends IRouteParameters> {
     return encodeURIComponent(slugify(value));
   }
 
-  abstract render(_parameters: IParameters, _app: IAppParameters): any;
+  abstract render({ parameters, app }: { parameters: IParameters, app: IAppParameters }): ReactElement;
 }
 export default Route;

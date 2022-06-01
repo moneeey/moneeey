@@ -15,7 +15,7 @@ class AccountRouter extends Route<IAccountRoute> {
     this.parent?.addChild(this);
   }
 
-  render(parameters: IAccountRoute, app: IAppParameters) {
+  render = ({ app, parameters }: { app: IAppParameters, parameters: IAccountRoute }) => {
     const account = app.moneeeyStore.accounts.find((acc: IAccount) => this.slug(acc.name) === parameters.account_name);
     if (account) {
       const { account_uuid } = account;

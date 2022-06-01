@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { EntityEditor } from '../components/EntityEditor';
+import { EntityEditor } from '../components/editor/EntityEditor';
 import { CurrencyStore } from '../shared/Currency';
 
 interface CurrencySettingsProps {

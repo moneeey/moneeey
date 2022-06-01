@@ -8,6 +8,7 @@ import {
   WarningTwoTone,
 } from '@ant-design/icons';
 import { Menu } from 'antd';
+import { observer } from 'mobx-react';
 import React from 'react';
 
 import { AccountRoute } from '../routes/AccountRoute';
@@ -20,14 +21,11 @@ import { IAccount } from '../shared/Account';
 import { Status } from '../shared/Persistence';
 import useMoneeeyStore from '../useMoneeeyStore';
 
-export default function AppMenu() {
+const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore();
   const getAccountCurrency = (account: IAccount) => {
     const curr = currencies.byUuid(account.currency_uuid);
-    if (curr) {
-      return <b>{curr.short}</b>;
-    }
-    return <b>?</b>;
+    return curr?.short || '?'
   };
   return (
     <Menu
@@ -98,4 +96,6 @@ export default function AppMenu() {
         }
       ]}></Menu>
   );
-}
+})
+
+export { AppMenu as default }

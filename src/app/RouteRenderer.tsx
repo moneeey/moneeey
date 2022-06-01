@@ -10,45 +10,52 @@ interface IMappedRoute {
   route: MyRoute<IRouteParameters>;
 }
 
-export default function RouteRenderer<IParameters extends IRouteParameters>({
+const RouteElem = observer(({route, app }: { route: MyRoute<IRouteParameters>, app: IAppParameters }) => {
+  const params = useParams()
+  return <route.render parameters={params as any} app={app} />
+})
+
+const Navigator = ({ app }: { app: IAppParameters }) => {
+  const navigateTo = useNavigate();
+  const Navigate = observer(() => {
+    const toUrl = '' + app.moneeeyStore.navigation.navigateTo;
+    if (toUrl && toUrl !== '') {
+      app.moneeeyStore.navigation.navigate('');
+      setTimeout(() => {
+        navigateTo(toUrl);
+      }, 1)
+    }
+    return <div />;
+  });
+  return <Navigate />;
+};
+
+const RouteRenderer = observer(<IParameters extends IRouteParameters>({
   root_route,
   app
 }: {
   root_route: MyRoute<IParameters>;
   app: IAppParameters;
-}) {
+}) => {
   const mapRoute = ({ route, path: parentPath }: IMappedRoute): IMappedRoute[] => {
-    const path = parentPath + route.path;
+    const path = (parentPath + route.path).replace(/\/+/g, '/');
     const children = route.children.map((child) => mapRoute({ route: child, path }));
     const current: IMappedRoute = { path, route };
     return [..._.flatten(children), current];
   };
   const routes = mapRoute({ route: root_route, path: root_route.path });
 
-  const Navigator = () => {
-    const navigate = useNavigate();
-    const Navigate = observer(() => {
-      const toUrl = '' + app.moneeeyStore.navigation.navigateTo;
-      if (toUrl && toUrl !== '') {
-        app.moneeeyStore.navigation.navigate('');
-        setTimeout(() => {
-          navigate(toUrl);
-        })
-      }
-      return <div />;
-    });
-    return <Navigate />;
-  };
-
-  const params = useParams();
   return (
     <BrowserRouter>
       <Routes>
         {routes.map((route) => (
-          <Route key={route.path} path={route.path} element={<>{route.route.render(params as any, app)}</>} />
+          <Route key={route.path} path={route.path} element={<RouteElem route={route.route} app={app} />} />
         ))}
       </Routes>
-      <Navigator />
+      <Navigator app={app} />
     </BrowserRouter>
   );
-}
+})
+
+export { RouteRenderer }
+export default RouteRenderer

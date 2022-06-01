@@ -3,13 +3,13 @@ import { ColumnType } from 'antd/lib/table';
 import _ from 'lodash';
 import { observer } from 'mobx-react';
 import moment from 'moment';
-import { cloneElement, ReactElement, useState } from 'react';
+import { useState } from 'react';
 
-import { IAccount } from '../shared/Account';
-import { ICurrency } from '../shared/Currency';
-import { formatDate } from '../shared/Date';
-import { IBaseEntity } from '../shared/Entity';
-import MappedStore from '../shared/MappedStore';
+import { IAccount } from '../../shared/Account';
+import { ICurrency } from '../../shared/Currency';
+import { formatDate } from '../../shared/Date';
+import { IBaseEntity } from '../../shared/Entity';
+import MappedStore from '../../shared/MappedStore';
 
 interface validation {
   valid: boolean;
@@ -26,8 +26,10 @@ export interface EditorProps {
   validate?: (value: any) => validation;
   value?: any;
   entity?: any;
-  onSave?: (value: any) => void;
+  onSave?: (entity: any) => void;
 }
+
+export type EditorPropsType = EditorProps | AccountEditorProps | CurrencyEditorProps
 
 interface BaseEditorProps extends EditorProps {
   ComposedInput: any;
@@ -83,19 +85,19 @@ const TextEditor = observer((props: EditorProps) => {
   return editor.element;
 })
 
-function DateEditor(props: EditorProps) {
+const DateEditor = observer((props: EditorProps) => {
   const editor = BaseEditor({
     ...props,
-    value: (props.value && moment(props.value)) || moment(),
+    value: (props.entity[props.field] && moment(props.entity[props.field])) || moment(),
     ComposedInput: DatePicker,
     ComposedProps: {
       onSelect: (value: moment.Moment) => editor.onChange(formatDate(value.toDate()), value)
     }
   });
   return editor.element;
-}
+})
 
-function NumberEditor(props: EditorProps) {
+const NumberEditor = observer((props: EditorProps) => {
   const editor = BaseEditor({
     ...props,
     value: props.entity[props.field],
@@ -105,7 +107,7 @@ function NumberEditor(props: EditorProps) {
     }
   });
   return editor.element;
-}
+})
 
 interface BaseSelectorEditorProps extends BaseEditorProps {
   options: Array<{
@@ -130,35 +132,35 @@ function BaseSelectEditor(props: BaseSelectorEditorProps) {
 export interface CurrencyEditorProps extends EditorProps {
   currencies: ICurrency[];
 }
-function CurrencyEditor(props: CurrencyEditorProps) {
+const CurrencyEditor = observer((props: CurrencyEditorProps) => {
   const editor = BaseSelectEditor({
     ...props,
     value: props.entity[props.field],
     options: _(props.currencies)
-      .map((currency) => ({ label: currency.name, value: currency._id }))
+      .map((currency) => ({ label: currency.name, value: currency.currency_uuid }))
       .value(),
     ComposedProps: {},
     ComposedInput: Select
   });
   return editor.element;
-}
+})
 
-export interface AccountEditorProps extends EditorProps {
+interface AccountEditorProps extends EditorProps {
   accounts: IAccount[];
 }
-function AccountEditor(props: AccountEditorProps) {
+const AccountEditor = observer((props: AccountEditorProps) => {
   const editor = BaseSelectEditor({
     ...props,
     value: props.entity[props.field],
     options: _(props.accounts)
-      .map((account) => ({ label: account.name, value: account._id }))
+      .map((account) => ({ label: account.name, value: account.account_uuid }))
       .compact()
       .value(),
     ComposedProps: {},
     ComposedInput: Select
   });
   return editor.element;
-}
+})
 
 interface EntityEditorProps<T extends IBaseEntity, SchemaProps> {
   entities: T[];

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Reports } from '../app/Reports';
 import { HomeRoute } from './HomeRouter';
-import { IAppParameters, IRouteParameters, Route } from './Route';
+import { IRouteParameters, Route } from './Route';
 
 interface IReportsRoute extends IRouteParameters {
 
@@ -14,7 +14,7 @@ class ReportsRouter extends Route<IReportsRoute> {
     this.parent?.addChild(this);
   }
 
-  render(_parameters: IReportsRoute, _app: IAppParameters) {
+  render() {
     return <Reports />;
   }
 }
