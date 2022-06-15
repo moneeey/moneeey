@@ -6,11 +6,32 @@
   float: right;
 }
 
+.entityEditor .ant-table-thead > tr > th,
+.entityEditor .ant-table-tbody > tr > td,
+.entityEditor .ant-table tfoot > tr > th,
+.entityEditor .ant-table tfoot > tr > td,
 .transactionTable .ant-table-thead > tr > th,
 .transactionTable .ant-table-tbody > tr > td,
 .transactionTable .ant-table tfoot > tr > th,
 .transactionTable .ant-table tfoot > tr > td {
-  padding: 0.2px 0.2px !important;
+  padding: 0;
+}
+
+.entityEditor .ant-select,
+.entityEditor .ant-select-selector,
+.entityEditor input,
+.entityEditor .ant-input-number,
+.entityEditor .ant-picker {
+  width: 100% !important;
+  border: 0 !important;
+}
+
+.entityEditor-feedback {
+  position: absolute;
+  top: 0.2em;
+  z-index: 999;
+  right: 1em;
+  float: right;
 }
 
 .loadingBar-container {

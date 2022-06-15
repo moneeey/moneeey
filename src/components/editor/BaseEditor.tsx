@@ -32,8 +32,8 @@ export function BaseEditor<EntityType>({
     onChange,
     element: (
       <label>
-        <ComposedInput {...{ readOnly, title, placeholder: title, value: currentValue, ...ComposedProps }} />
-        {error && <Typography.Text type='danger'>{error}</Typography.Text>}
+        <ComposedInput {...{ readOnly, status: !!error ? 'error' : undefined, title, placeholder: title, ...ComposedProps, value: currentValue }} />
+        {error && <Typography.Text className="entityEditor-feedback" type='danger'>{error}</Typography.Text>}
       </label>
     )
   };
