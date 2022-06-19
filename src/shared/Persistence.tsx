@@ -1,4 +1,4 @@
-import _, { map, uniqBy } from 'lodash';
+import _, { map, uniqBy, values } from 'lodash';
 import { makeObservable, observable, observe, toJS } from 'mobx';
 import PouchDB from 'pouchdb';
 
@@ -11,20 +11,21 @@ export enum Status {
 }
 
 export default class PersistenceStore {
-  db: PouchDB.Database;
-  entries: IBaseEntity[] = [];
-  status: Status = Status.OFFLINE;
-  databaseId: string = '';
-  syncables: ({
+  public status: Status = Status.OFFLINE;
+  public databaseId: string = '';
+  private db: PouchDB.Database;
+  private entries: {
+    [_id: string]: IBaseEntity;
+  } = {};
+  private syncables: ({
     uuid: string;
     store: MappedStore<any, any>
   })[] = [];
   private _commit
-  private isCommiting = false
 
   constructor() {
     this.db = new PouchDB('moneeey');
-    this.sync();
+    this.sync()
     this._commit = _.debounce(this.commit, 1000)
 
     makeObservable(this, {
@@ -59,67 +60,82 @@ export default class PersistenceStore {
           include_docs: true
         })
         .then((docs) => {
-          this.entries = [...(docs.rows.map((d) => d.doc) as unknown[] as any[])];
+          map([...(docs.rows.map((d) => d.doc) as unknown[] as any[])], entity => {
+            this.entries[entity._id] = entity
+          })
           resolve(this.entries);
         });
     });
   }
 
   async commit() {
+    const objects = uniqBy(
+      this.syncables.map(({ store, uuid }) => {
+        const entity = toJS(store.byUuid(uuid));
+        return { store, _id: entity._id, entity, uuid };
+      }),
+      '_id'
+    );
+    this.syncables = [];
     try {
-      this.isCommiting = true
-      const objects = uniqBy(
-        this.syncables.map(({ store, uuid }) => {
-          const entity = toJS(store.byUuid(uuid))
-          return { store, _id: entity._id, entity, uuid };
-        }),
-        '_id'
-      );
-      this.syncables = []
-      try {
-        const updated = await this.db.bulkDocs(objects.map(sync => sync.entity));
-        map(updated, (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
-          if (resp.error) {
-            console.error('Sync Commit error', { resp })
-          } else if (resp.ok) {
-            const updated = objects.find(obj => obj._id === resp.id)
-            if (updated) {
-              const entity = { ...updated.entity, _rev: resp.rev }
-              console.info('Sync Commit success', { entity })
-              updated.store.merge(entity);
-            }
-          }
-        })
-      } catch(err) {
-        const error = err as PouchDB.Core.Error
-        console.error(error)
-      }
-    } finally {
-      this.isCommiting = false
+      const responses = await this.db.bulkDocs(objects.map((sync) => sync.entity));
+      map(responses, async (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
+        const { error, status, ok, id, rev } = resp;
+        const current = objects.find((obj) => obj._id === id);
+        if (!current) return;
+        if (error && status === 409) {
+          const actual = await this.fetch(id);
+          console.error('Sync Commit conflict', { resp, current, actual });
+          current.store.merge(actual, { setUpdated: false });
+        } else if (error) {
+          console.error('Sync Commit error', { error, current });
+        } else if (ok) {
+          const entity = { ...current.entity, _rev: rev };
+          console.info('Sync Commit success', { entity });
+          current.store.merge(entity, { setUpdated: false });
+        }
+      });
+    } catch (err) {
+      const error = err as PouchDB.Core.Error;
+      console.error(error);
     }
   }
 
   persist(store: MappedStore<any, any>, item: IBaseEntity) {
-    if (!this.isCommiting) {
-      this.syncables.push({ store, uuid: store.getUuid(item) })
-      this._commit()
-    }
+    console.log('Sync will persist', { item })
+    this.syncables.push({ store, uuid: store.getUuid(item) })
+    this._commit()
   }
 
   async fetch(id: string) {
-    return await this.db.get(id);
+    const entity = await this.db.get(id, { conflicts: true });
+    if (entity._conflicts) {
+      await map(entity._conflicts, async rev => {
+        await this.db.remove(id, rev)
+      })
+    }
+    this.entries[entity._id] = entity as IBaseEntity
+    return entity
   }
 
   retrieve(type: EntityType) {
-    return this.entries.filter((e) => e.entity_type === type);
+    return values(this.entries).filter((e) => e.entity_type === type);
   }
 
   monitor(store: MappedStore<any, any>, type: EntityType) {
     this.retrieve(type).forEach((e) => store.merge(e));
     observe(store.itemsByUuid, (changes) => {
-      if (changes.type === 'add' || changes.type === 'update') {
-        const entity = changes.newValue
-        this.persist(store, entity)
+      if (changes.type === 'add') {
+        this.persist(store, changes.newValue)
+      } else if (changes.type === 'update') {
+        const oldRev = changes.oldValue._rev
+        const newRev = changes.newValue._rev
+        if (oldRev === newRev) {
+          console.info('Rev update, will persist', changes)
+          this.persist(store, changes.newValue)
+        } else {
+          console.info('Ref changed, skip persist', changes)
+        }
       }
     });
   }

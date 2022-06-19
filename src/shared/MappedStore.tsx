@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable } from 'mobx';
 
-import { EditorProps } from '../components/editor/EditorProps';
+import { SchemaProps } from '../components/editor/EditorProps';
 import { currentDateTime } from './Date';
 import { IBaseEntity } from './Entity';
 
@@ -10,15 +10,15 @@ type RecordMap<T, V> = {
   [P in Exclude<keyof T, "toString">]?: V
 }
 
-export type SchemaFactory<T extends IBaseEntity, SchemaProps> = (props: SchemaProps) => RecordMap<T, EditorProps<any, any, any>>;
+export type SchemaFactory<T extends IBaseEntity, SchemaFactoryProps> = (props: SchemaFactoryProps) => RecordMap<T, SchemaProps<any, any, any>>;
 
-export default class MappedStore<T extends IBaseEntity, SchemaProps> {
+export default class MappedStore<T extends IBaseEntity, SchemaFactoryProps> {
   public readonly itemsByUuid = new Map<string, T>();
   public readonly getUuid: UUIDGetter<T>;
-  public readonly schema: (props: SchemaProps) => RecordMap<T, EditorProps<any, any, any>>;
-  public readonly factory: (props: SchemaProps) => T;
+  public readonly schema: (props: SchemaFactoryProps) => RecordMap<T, SchemaProps<any, any, any>>;
+  public readonly factory: (props: SchemaFactoryProps) => T;
 
-  constructor(getUuid: UUIDGetter<T>, factory: (props: SchemaProps) => T, schema: SchemaFactory<T, SchemaProps>) {
+  constructor(getUuid: UUIDGetter<T>, factory: (props: SchemaFactoryProps) => T, schema: SchemaFactory<T, SchemaFactoryProps>) {
     this.getUuid = getUuid;
     this.schema = schema;
     this.factory = factory
@@ -30,13 +30,13 @@ export default class MappedStore<T extends IBaseEntity, SchemaProps> {
     });
   }
 
-  merge(item: T) {
+  merge(item: T, options: { setUpdated: boolean } = { setUpdated: true }) {
     const uuid = this.getUuid(item);
     this.itemsByUuid.set(uuid, {
       ...item,
       _id: item.entity_type + '-' + uuid,
       created: item.created || currentDateTime(),
-      updated: currentDateTime(),
+      updated: options.setUpdated ? currentDateTime() : item.updated || currentDateTime(),
     });
   }
 

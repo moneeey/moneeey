@@ -67,7 +67,7 @@ export class TransactionStore extends MappedStore<ITransaction, {}> {
   }
 
   viewAllNonPayees(accountsStore: AccountStore) {
-    return this.viewAllWithAccounts(accountsStore.allNonPayees().map((act) => act.account_uuid));
+    return this.viewAllWithAccounts(accountsStore.allNonPayees.map((act) => act.account_uuid));
   }
 
   getAllTransactionTags(transaction: ITransaction, accountsStore: AccountStore) {

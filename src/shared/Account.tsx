@@ -1,3 +1,5 @@
+import { computed, makeObservable } from 'mobx';
+
 import { CurrencyEditor } from '../components/editor/CurrencyEditor';
 import { EditorType } from '../components/editor/EditorProps';
 import { ICurrency, TCurrencyUUID } from './Currency';
@@ -36,12 +38,19 @@ export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
         name: '',
         account_uuid: uuid(),
         tags: [],
-        currency_uuid: '',
+        currency_uuid: props.currencies[0]?.currency_uuid,
         type: props.type,
         created: currentDateTime(),
         updated: currentDateTime(),
       }),
       (props) => ({
+        _rev: {
+          title: 'Rev',
+          field: '_rev',
+          readOnly: true,
+          index: 0,
+          editor: EditorType.TEXT,
+        },
         name: {
           title: 'Name',
           field: 'name',
@@ -61,22 +70,33 @@ export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
           index: 1,
           renderer: CurrencyEditor,
         },
+        tags: {
+          title: 'Tags',
+          field: 'tags',
+          index: 2,
+          editor: EditorType.TAG,
+        },
         created: {
           title: 'Created',
           field: 'created',
           readOnly: true,
-          index: 2,
+          index: 3,
           editor: EditorType.DATE,
         },
       })
     );
+
+    makeObservable(this, {
+      allPayees: computed,
+      allNonPayees: computed,
+    })
   }
 
-  allPayees() {
+  get allPayees() {
     return this.all.filter((acct) => acct.type === AccountType.PAYEE);
   }
 
-  allNonPayees() {
+  get allNonPayees() {
     return this.all.filter((acct) => acct.type !== AccountType.PAYEE);
   }
 

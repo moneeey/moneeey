@@ -5,13 +5,16 @@ import { BaseEditor } from './BaseEditor';
 import { NumberEditorProps } from './EditorProps';
 
 export const NumberEditor = observer(<EntityType,>(props: NumberEditorProps<EntityType>) => {
-  const editor = BaseEditor({
-    ...props,
-    ComposedInput: InputNumber,
-    ComposedProps: {
-      value: (props.entity as any)[props.field],
-      onChange: (value: number | null) => editor.onChange(value)
-    }
-  });
-  return editor.element;
+  return (
+    <BaseEditor
+      {...{
+        ...props,
+        value: props.store.byUuid(props.entityId)?.[props.field],
+        ComposedInput: InputNumber,
+        ComposedProps: (onChange) => ({
+          onChange: (value: number | null) => onChange(value)
+        })
+      }}
+    />
+  );
 });

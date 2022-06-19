@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+
 import { TDateTime } from './Date';
 
 export const generateUuid = () => uuidv4();

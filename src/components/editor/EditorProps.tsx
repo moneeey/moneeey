@@ -1,5 +1,6 @@
 import { IAccount, TAccountUUID } from '../../shared/Account';
 import { ICurrency, TCurrencyUUID } from '../../shared/Currency';
+import MappedStore from '../../shared/MappedStore';
 
 interface validation {
   valid: boolean;
@@ -12,45 +13,49 @@ export enum EditorType {
   DATE='DATE',
   CURRENCY='CURRENCY',
   ACCOUNT='ACCOUNT',
+  TAG='TAG',
 }
 
-export interface EditorProps<EntityType, ValueEditorType, ValueEntityType> {
+export interface SchemaProps<EntityType, ValueEditorType, ValueEntityType> {
   editor: EditorType;
   field: string;
   title: string;
   index: number;
   readOnly?: boolean;
   required?: boolean;
-  entity?: EntityType,
   validate?: (value: ValueEditorType) => validation;
-  onUpdate?: (entity: EntityType, value: ValueEntityType) => void;
-  onSave?: (entity: EntityType) => void;
+  onUpdate?: (value: ValueEntityType) => EntityType;
+}
+
+export interface EditorProps<EntityType, ValueEditorType, ValueEntityType> extends SchemaProps<EntityType, ValueEditorType, ValueEntityType> {
+  entityId: string;
+  store: MappedStore<any, any>;
 }
 
 export interface TextEditorProps<EntityType> extends EditorProps<EntityType, string, string> {
-  editor: EditorType.TEXT;
 }
 
 export interface NumberEditorProps<EntityType> extends EditorProps<EntityType, number, number> {
-  editor: EditorType.NUMBER;
 }
 
 export interface DateEditorProps<EntityType> extends EditorProps<EntityType, moment.Moment, string> {
-  editor: EditorType.DATE;
 }
 
 export interface AccountEditorProps<EntityType> extends EditorProps<EntityType, TAccountUUID, TAccountUUID> {
-  editor: EditorType.ACCOUNT;
   accounts: IAccount[];
 }
 
 export interface CurrencyEditorProps<EntityType> extends EditorProps<EntityType, TCurrencyUUID, TCurrencyUUID> {
-  editor: EditorType.CURRENCY;
   currencies: ICurrency[];
+}
+
+export interface TagEditorProps<EntityType> extends EditorProps<EntityType, string[], string[]> {
+  tags: string[];
 }
 
 export type EditorPropsType<T> = TextEditorProps<T> |
   NumberEditorProps<T> |
   DateEditorProps<T> |
   AccountEditorProps<T> |
+  TagEditorProps<T> |
   CurrencyEditorProps<T>;

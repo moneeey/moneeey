@@ -1,20 +1,23 @@
 import { BaseEditor, BaseEditorProps } from './BaseEditor';
 
-interface BaseSelectEditorProps<EntityType> extends BaseEditorProps<EntityType>{
+interface BaseSelectEditorProps<EntityType, ValueEditorType, ValueEntityType> extends BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> {
   options: Array<{
     label: string;
-    value: any;
+    value: ValueEditorType;
   }>;
 }
 
-export function BaseSelectEditor<EntityType>(props: BaseSelectEditorProps<EntityType>) {
-  const editor = BaseEditor({
-    ...props,
-    ComposedProps: {
-      ...props.ComposedProps,
-      options: props.options,
-      onSelect: (value: string) => editor.onChange(value)
-    }
-  });
-  return editor;
+export function BaseSelectEditor<EntityType>(props: BaseSelectEditorProps<EntityType, any, any>) {
+  return (
+    <BaseEditor
+      {...{
+        ...props,
+        ComposedProps: (onChange) => ({
+          ...props.ComposedProps,
+          options: props.options,
+          onSelect: (value: string) => onChange(value)
+        })
+      }}
+    />
+  );
 }

@@ -2,15 +2,16 @@ import { Column, Line } from '@ant-design/charts';
 import { DownOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Menu } from 'antd';
 import { startOfDay, startOfMonth, startOfQuarter, startOfWeek, startOfYear } from 'date-fns';
+import _ from 'lodash';
 import React from 'react';
+
 import { AccountType, TAccountUUID } from '../shared/Account';
-import { TDate, formatDate, parseDate } from '../shared/Date';
+import { formatDate, parseDate, TDate } from '../shared/Date';
 import { TMonetary } from '../shared/Entity';
 import MoneeeyStore from '../shared/MoneeeyStore';
 import { ITransaction } from '../shared/Transaction';
-import _ from 'lodash';
-import Loading from './Loading';
 import useMoneeeyStore from '../useMoneeeyStore';
+import Loading from './Loading';
 
 async function asyncTimeout(fn: () => void, delay: number) {
   return await new Promise((resolve) => {
@@ -147,7 +148,7 @@ export function BalanceGrowthReport() {
   const [progress, setProgress] = React.useState(0);
   const moneeeyStore = useMoneeeyStore();
   React.useEffect(() => {
-    const personal_accounts = moneeeyStore.accounts.allNonPayees().map((act) => act.account_uuid);
+    const personal_accounts = moneeeyStore.accounts.allNonPayees.map((act) => act.account_uuid);
     asyncProcessTransactionsForAccounts({
       accounts: personal_accounts,
       fn: balanceGrowthProcess,
@@ -221,7 +222,7 @@ export function TagExpensesReport() {
   const [progress, setProgress] = React.useState(0);
 
   React.useEffect(() => {
-    const payee_accounts = moneeeyStore.accounts.allPayees().map((act) => act.account_uuid);
+    const payee_accounts = moneeeyStore.accounts.allPayees.map((act) => act.account_uuid);
     asyncProcessTransactionsForAccounts({
       accounts: payee_accounts,
       fn: tagExpensesProcess,

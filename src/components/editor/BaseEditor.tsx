@@ -3,17 +3,25 @@ import { useState } from 'react';
 
 import { EditorProps } from './EditorProps';
 
-export interface BaseEditorProps<EntityType> extends EditorProps<EntityType, any, any> {
+export interface BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> extends EditorProps<EntityType, ValueEditorType, ValueEntityType> {
+  value: ValueEditorType;
   ComposedInput: any;
-  ComposedProps: any;
+  ComposedProps: (onChange: (value: ValueEntityType, editorValue?: ValueEditorType) => void) => any;
 }
 
 export function BaseEditor<EntityType>({
-  title, readOnly, validate, entity, ComposedInput, ComposedProps, onSave, onUpdate,
-}: BaseEditorProps<EntityType>) {
-  const [currentValue, setCurrentValue] = useState(ComposedProps.value);
+  title,
+  readOnly,
+  validate,
+  ComposedInput,
+  ComposedProps,
+  onUpdate,
+  value
+}: BaseEditorProps<EntityType, any, any>) {
+  const [currentValue, setCurrentValue] = useState(value);
   const [error, setError] = useState('');
   const onChange = (value: any, editorValue?: any) => {
+    console.log('onChange', { value, editorValue })
     setCurrentValue(editorValue || value);
     setError('');
     if (validate) {
@@ -23,18 +31,25 @@ export function BaseEditor<EntityType>({
         return;
       }
     }
-    if (entity) {
-      onUpdate && onUpdate(entity, value)
-      onSave && onSave(entity);
-    }
+    onUpdate && onUpdate(value);
   };
-  return {
-    onChange,
-    element: (
-      <label>
-        <ComposedInput {...{ readOnly, status: !!error ? 'error' : undefined, title, placeholder: title, ...ComposedProps, value: currentValue }} />
-        {error && <Typography.Text className="entityEditor-feedback" type='danger'>{error}</Typography.Text>}
-      </label>
-    )
-  };
+  return (
+    <label>
+      <ComposedInput
+        {...{
+          readOnly,
+          status: !!error ? 'error' : undefined,
+          title,
+          placeholder: title,
+          ...ComposedProps(onChange),
+          value: currentValue
+        }}
+      />
+      {error && (
+        <Typography.Text className='entityEditor-feedback' type='danger'>
+          {error}
+        </Typography.Text>
+      )}
+    </label>
+  );
 }

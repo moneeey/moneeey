@@ -5,13 +5,16 @@ import { BaseEditor } from './BaseEditor';
 import { TextEditorProps } from './EditorProps';
 
 export const TextEditor = observer(<EntityType,>(props: TextEditorProps<EntityType>) => {
-  const editor = BaseEditor({
-    ...props,
-    ComposedInput: Input,
-    ComposedProps: {
-      value: (props.entity as any)[props.field],
-      onChange: ({ target: { value } }: any) => editor.onChange(value)
-    }
-  });
-  return editor.element;
+  return (
+    <BaseEditor
+      {...{
+        ...props,
+        value: props.store.byUuid(props.entityId)?.[props.field],
+        ComposedInput: Input,
+        ComposedProps: (onChange) => ({
+          onChange: ({ target: { value } }: any) => onChange(value)
+        })
+      }}
+    />
+  );
 });

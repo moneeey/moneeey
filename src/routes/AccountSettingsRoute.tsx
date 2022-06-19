@@ -16,7 +16,7 @@ export class AccountSettingsRouter extends Route<IAccountSettingsRoute> {
   render({ app }: { app: IAppParameters }) {
     return (
       <AccountSettings
-        entities={app.moneeeyStore.accounts.allNonPayees()}
+        entities={app.moneeeyStore.accounts.allNonPayees}
         currencies={app.moneeeyStore.currencies}
         accounts={app.moneeeyStore.accounts}
         type={AccountType.CHECKING}
