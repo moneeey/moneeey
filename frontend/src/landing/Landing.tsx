@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { StatusProps, Status } from '../components/Status';
 import Messages from '../shared/Messages';
-import useMoneeeyStore from '../useMoneeeyStore';
+import useMoneeeyStore from '../shared/useMoneeeyStore';
 
 export default function Landing() {
   const { management } = useMoneeeyStore();

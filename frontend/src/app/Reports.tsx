@@ -10,7 +10,7 @@ import { formatDate, parseDate, TDate } from '../shared/Date';
 import { TMonetary } from '../shared/Entity';
 import MoneeeyStore from '../shared/MoneeeyStore';
 import { ITransaction } from '../shared/Transaction';
-import useMoneeeyStore from '../useMoneeeyStore';
+import useMoneeeyStore from '../shared/useMoneeeyStore';
 import Loading from './Loading';
 
 async function asyncTimeout(fn: () => void, delay: number) {

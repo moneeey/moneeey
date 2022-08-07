@@ -8,7 +8,7 @@ import RouteRenderer from './app/RouteRenderer';
 import { TagsHighlightProvider } from './app/Tags';
 import { HomeRoute } from './routes/HomeRouter';
 import MoneeeyStore from './shared/MoneeeyStore';
-import { MoneeeyStoreProvider } from './useMoneeeyStore';
+import { MoneeeyStoreProvider } from './shared/useMoneeeyStore';
 
 function App(): React.ReactElement {
   const [moneeeyStore] = React.useState(new MoneeeyStore());

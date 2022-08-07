@@ -8,7 +8,7 @@ import { compareDates, formatDateAs } from '../shared/Date';
 import { TMonetary } from '../shared/Entity';
 import MoneeeyStore from '../shared/MoneeeyStore';
 import { ITransaction } from '../shared/Transaction';
-import useMoneeeyStore from '../useMoneeeyStore';
+import useMoneeeyStore from '../shared/useMoneeeyStore';
 import { TagsFromAcct, TagsMemo, TagsToAcct } from './Tags';
 
 function TransactionRowControls({ row, moneeeyStore }: { row: ITransaction; moneeeyStore: MoneeeyStore }) {

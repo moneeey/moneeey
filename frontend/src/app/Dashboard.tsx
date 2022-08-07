@@ -1,5 +1,5 @@
 import React from 'react';
-import useMoneeeyStore from '../useMoneeeyStore';
+import useMoneeeyStore from '../shared/useMoneeeyStore';
 import { BalanceGrowthReport } from './Reports';
 import TransactionTable from './TransactionTable';
 

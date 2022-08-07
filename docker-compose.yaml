@@ -1,10 +1,10 @@
 version: '2'
 services:
   frontend:
-    build: .
+    build: ./frontend
     restart: unless-stopped
     volumes:
-      - ./:/app
+      - ./frontend:/app
     ports:
       - '4270:4270'
   management:
