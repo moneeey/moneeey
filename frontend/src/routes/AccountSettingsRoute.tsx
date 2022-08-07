@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AccountSettings } from '../app/AccountSettings';
+import { AccountTable } from '../tables/AccountTable';
 import { AccountType } from '../shared/Account';
 import { HomeRoute } from './HomeRouter';
 import { IAppParameters, IRouteParameters, Route } from './Route';
@@ -15,7 +15,7 @@ export class AccountSettingsRouter extends Route<IAccountSettingsRoute> {
 
   render({ app }: { app: IAppParameters }) {
     return (
-      <AccountSettings
+      <AccountTable
         currencies={app.moneeeyStore.currencies}
         accounts={app.moneeeyStore.accounts}
         type={AccountType.CHECKING}

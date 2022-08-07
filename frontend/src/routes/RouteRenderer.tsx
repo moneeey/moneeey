@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import React from 'react';
 import { BrowserRouter, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 
-import { IAppParameters, IRouteParameters, Route as MyRoute } from '../routes/Route';
+import { IAppParameters, IRouteParameters, Route as MyRoute } from './Route';
 
 interface IMappedRoute {
   path: string;

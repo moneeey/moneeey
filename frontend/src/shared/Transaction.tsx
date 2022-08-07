@@ -1,10 +1,10 @@
 import { computed, makeObservable } from 'mobx';
 
 import { AccountStore, TAccountUUID } from './Account';
-import { compareDates, currentDate, currentDateTime, TDate } from './Date';
+import { compareDates, currentDate, currentDateTime, TDate } from '../utils/Date';
 import { EntityType, IBaseEntity, TMonetary } from './Entity';
 import MappedStore from './MappedStore';
-import { uuid } from './Utils';
+import { uuid } from '../utils/Utils';
 
 export type TTransactionUUID = string;
 

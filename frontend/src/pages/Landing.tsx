@@ -3,8 +3,8 @@ import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { StatusProps, Status } from '../components/Status';
-import Messages from '../shared/Messages';
-import useMoneeeyStore from '../shared/useMoneeeyStore';
+import Messages from '../utils/Messages';
+import useMoneeeyStore from './useMoneeeyStore';
 
 export default function Landing() {
   const { management } = useMoneeeyStore();

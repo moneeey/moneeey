@@ -3,10 +3,10 @@ import { computed, makeObservable } from 'mobx';
 import { CurrencyEditor } from '../components/editor/CurrencyEditor';
 import { EditorType } from '../components/editor/EditorProps';
 import { ICurrency, TCurrencyUUID } from './Currency';
-import { currentDateTime, TDate } from './Date';
+import { currentDateTime, TDate } from '../utils/Date';
 import { EntityType, IBaseEntity } from './Entity';
 import MappedStore from './MappedStore';
-import { uuid } from './Utils';
+import { uuid } from '../utils/Utils';
 
 export type TAccountUUID = string;
 

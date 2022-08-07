@@ -19,9 +19,9 @@ import { PayeeSettingsRoute } from '../routes/PayeeSettingsRoute';
 import { ReportsRoute } from '../routes/ReportsRoute';
 import { IAccount } from '../shared/Account';
 import { Status } from '../shared/Persistence';
-import useMoneeeyStore from '../shared/useMoneeeyStore';
+import useMoneeeyStore from '../pages/useMoneeeyStore';
 
-const AppMenu = observer(() => {
+export const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore();
   const getAccountCurrency = (account: IAccount) => {
     const curr = currencies.byUuid(account.currency_uuid);
@@ -98,4 +98,4 @@ const AppMenu = observer(() => {
   );
 })
 
-export { AppMenu as default }
+export default AppMenu;

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CurrencySettings } from '../app/CurrencySettings';
+import { CurrencyTable } from '../tables/CurrencyTable';
 import { HomeRoute } from './HomeRouter';
 import { IAppParameters, IRouteParameters, Route } from './Route';
 
@@ -15,7 +15,7 @@ export class CurrencySettingsRouter extends Route<ICurrencySettingsRoute> {
   }
 
   render({ app }: { app: IAppParameters }) {
-    return <CurrencySettings currencies={app.moneeeyStore.currencies} />;
+    return <CurrencyTable currencies={app.moneeeyStore.currencies} />;
   }
 }
 

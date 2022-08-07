@@ -1,7 +1,7 @@
 import { action, computed, makeObservable, observable } from 'mobx';
 
 import { FieldProps } from '../components/editor/EditorProps';
-import { currentDateTime } from './Date';
+import { currentDateTime } from '../utils/Date';
 import { IBaseEntity } from './Entity';
 
 type UUIDGetter<T> = (item: T) => string;

@@ -3,12 +3,12 @@ import 'antd/dist/antd.css';
 
 import React from 'react';
 
-import AppMenu from './app/AppMenu';
-import RouteRenderer from './app/RouteRenderer';
-import { TagsHighlightProvider } from './app/Tags';
+import AppMenu from './components/AppMenu';
+import RouteRenderer from './routes/RouteRenderer';
+import { TagsHighlightProvider } from './components/Tags';
 import { HomeRoute } from './routes/HomeRouter';
 import MoneeeyStore from './shared/MoneeeyStore';
-import { MoneeeyStoreProvider } from './shared/useMoneeeyStore';
+import { MoneeeyStoreProvider } from './pages/useMoneeeyStore';
 
 function App(): React.ReactElement {
   const [moneeeyStore] = React.useState(new MoneeeyStore());

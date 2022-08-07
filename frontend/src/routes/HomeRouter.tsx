@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Dashboard from '../app/Dashboard';
+import Dashboard from '../pages/Dashboard';
 import { IRouteParameters, Route } from './Route';
 
 class HomeRouter extends Route<IRouteParameters> {

@@ -2,7 +2,7 @@ import { DatePicker } from 'antd';
 import { observer } from 'mobx-react';
 import moment from 'moment';
 
-import { formatDate, TDate } from '../../shared/Date';
+import { formatDate, TDate } from '../../utils/Date';
 import { BaseEditor } from './BaseEditor';
 import { EditorProps } from './EditorProps';
 

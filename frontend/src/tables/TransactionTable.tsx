@@ -4,12 +4,12 @@ import React from 'react';
 
 import { AccountRoute } from '../routes/AccountRoute';
 import { TAccountUUID } from '../shared/Account';
-import { compareDates, formatDateAs } from '../shared/Date';
+import { compareDates, formatDateAs } from '../utils/Date';
 import { TMonetary } from '../shared/Entity';
 import MoneeeyStore from '../shared/MoneeeyStore';
 import { ITransaction } from '../shared/Transaction';
-import useMoneeeyStore from '../shared/useMoneeeyStore';
-import { TagsFromAcct, TagsMemo, TagsToAcct } from './Tags';
+import useMoneeeyStore from '../pages/useMoneeeyStore';
+import { TagsFromAcct, TagsMemo, TagsToAcct } from '../components/Tags';
 
 function TransactionRowControls({ row, moneeeyStore }: { row: ITransaction; moneeeyStore: MoneeeyStore }) {
   return (

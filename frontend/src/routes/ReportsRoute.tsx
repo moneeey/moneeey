@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Reports } from '../app/Reports';
+import { Reports } from '../pages/Reports';
 import { HomeRoute } from './HomeRouter';
 import { IRouteParameters, Route } from './Route';
 

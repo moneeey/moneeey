@@ -4,16 +4,15 @@ import _ from 'lodash';
 import { action } from 'mobx';
 import { observer } from 'mobx-react';
 import React, { useMemo } from 'react';
-
-import { IBaseEntity } from '../../shared/Entity';
-import MappedStore from '../../shared/MappedStore';
-import { AccountEditor } from './AccountEditor';
-import { CurrencyEditor } from './CurrencyEditor';
-import { DateEditor } from './DateEditor';
-import { EditorType, FieldProps } from './EditorProps';
-import { NumberEditor } from './NumberEditor';
-import { TagEditor } from './TagEditor';
-import { TextEditor } from './TextEditor';
+import { IBaseEntity } from '../shared/Entity';
+import MappedStore from '../shared/MappedStore';
+import { AccountEditor } from './editor/AccountEditor';
+import { CurrencyEditor } from './editor/CurrencyEditor';
+import { DateEditor } from './editor/DateEditor';
+import { EditorType, FieldProps } from './editor/EditorProps';
+import { NumberEditor } from './editor/NumberEditor';
+import { TagEditor } from './editor/TagEditor';
+import { TextEditor } from './editor/TextEditor';
 
 interface EntityEditorProps<T extends IBaseEntity, SchemaProps> {
   schemaProps: SchemaProps;

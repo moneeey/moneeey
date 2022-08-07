@@ -1,8 +1,8 @@
 import { EditorType } from '../components/editor/EditorProps';
-import { currentDateTime } from './Date';
+import { currentDateTime } from '../utils/Date';
 import { EntityType, IBaseEntity, TMonetary } from './Entity';
 import MappedStore from './MappedStore';
-import { uuid } from './Utils';
+import { uuid } from '../utils/Utils';
 
 export type TCurrencyUUID = string;
 

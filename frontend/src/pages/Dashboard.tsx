@@ -1,7 +1,7 @@
 import React from 'react';
-import useMoneeeyStore from '../shared/useMoneeeyStore';
+import useMoneeeyStore from './useMoneeeyStore';
 import { BalanceGrowthReport } from './Reports';
-import TransactionTable from './TransactionTable';
+import TransactionTable from '../tables/TransactionTable';
 
 export default function Dashboard() {
   const moneeeyStore = useMoneeeyStore();

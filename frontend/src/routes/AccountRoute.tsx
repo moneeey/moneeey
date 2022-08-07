@@ -1,6 +1,6 @@
 import React from 'react';
 
-import TransactionTable from '../app/TransactionTable';
+import TransactionTable from '../tables/TransactionTable';
 import { IAccount } from '../shared/Account';
 import { HomeRoute } from './HomeRouter';
 import { IAppParameters, IRouteParameters, Route } from './Route';
