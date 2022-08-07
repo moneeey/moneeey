@@ -1,27 +1,34 @@
 import { Typography } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { EditorProps } from './EditorProps';
 
+type OnChange<ValueEditorType, ValueEntityType> = (value: ValueEntityType, editorValue?: ValueEditorType) => void
+
 export interface BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> extends EditorProps<EntityType, ValueEditorType, ValueEntityType> {
   value: ValueEditorType;
+  rev: string;
   ComposedInput: any;
-  ComposedProps: (onChange: (value: ValueEntityType, editorValue?: ValueEditorType) => void) => any;
+  ComposedProps: (onChange: OnChange<ValueEditorType, ValueEntityType>) => any;
 }
 
 export function BaseEditor<EntityType>({
-  title,
-  readOnly,
-  validate,
   ComposedInput,
   ComposedProps,
+  value,
+  rev,
   onUpdate,
-  value
+  field: {
+    field,
+    title,
+    readOnly,
+    validate,
+  },
 }: BaseEditorProps<EntityType, any, any>) {
+  console.log('BaseEditor', { field, rev, value })
   const [currentValue, setCurrentValue] = useState(value);
   const [error, setError] = useState('');
   const onChange = (value: any, editorValue?: any) => {
-    console.log('onChange', { value, editorValue })
     setCurrentValue(editorValue || value);
     setError('');
     if (validate) {
@@ -33,11 +40,15 @@ export function BaseEditor<EntityType>({
     }
     onUpdate && onUpdate(value);
   };
+  useEffect(() => {
+    setCurrentValue(value)
+  }, [setCurrentValue, value])
   return (
     <label>
       <ComposedInput
         {...{
           readOnly,
+          rev,
           status: !!error ? 'error' : undefined,
           title,
           placeholder: title,
