@@ -10,11 +10,13 @@ export interface DateEditorProps<EntityType> extends EditorProps<EntityType, mom
 }
 
 export const DateEditor = observer(<EntityType,>(props: DateEditorProps<EntityType>) => {
+  const entity = props.store.byUuid(props.entityId)
   return (
     <BaseEditor
       {...{
         ...props,
-        value: moment(props.store.byUuid(props.entityId)?.[props.field.field]),
+        value: moment(entity?.[props.field.field]),
+        rev: entity?._rev,
         ComposedInput: DatePicker,
         ComposedProps: (onChange) => ({
           onSelect: (value: moment.Moment) => onChange(formatDate(value.toDate()), value)

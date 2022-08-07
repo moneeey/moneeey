@@ -25,7 +25,6 @@ export function BaseEditor<EntityType>({
     validate,
   },
 }: BaseEditorProps<EntityType, any, any>) {
-  console.log('BaseEditor', { field, rev, value })
   const [currentValue, setCurrentValue] = useState(value);
   const [error, setError] = useState('');
   const onChange = (value: any, editorValue?: any) => {
@@ -43,13 +42,16 @@ export function BaseEditor<EntityType>({
   useEffect(() => {
     setCurrentValue(value)
   }, [setCurrentValue, value])
+
+  const status = !!error ? 'error' : undefined
+
   return (
     <label>
       <ComposedInput
         {...{
           readOnly,
           rev,
-          status: !!error ? 'error' : undefined,
+          status,
           title,
           placeholder: title,
           ...ComposedProps(onChange),

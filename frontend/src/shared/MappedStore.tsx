@@ -27,6 +27,7 @@ export default class MappedStore<T extends IBaseEntity, SchemaFactoryProps> {
       merge: action,
       remove: action,
       all: computed,
+      ids: computed,
     });
   }
 
@@ -64,5 +65,9 @@ export default class MappedStore<T extends IBaseEntity, SchemaFactoryProps> {
 
   get all(): T[] {
     return Array.from(this.itemsByUuid.values())
+  }
+
+  get ids(): string[] {
+    return Array.from(this.itemsByUuid.keys())
   }
 }

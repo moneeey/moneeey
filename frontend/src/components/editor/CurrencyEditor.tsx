@@ -11,11 +11,13 @@ export interface CurrencyEditorProps<EntityType> extends EditorProps<EntityType,
 }
 
 export const CurrencyEditor = observer(<EntityType,>(props: CurrencyEditorProps<EntityType>) => {
+  const entity = props.store.byUuid(props.entityId)
   return (
     <BaseSelectEditor
       {...{
         ...props,
-        value: props.store.byUuid(props.entityId)?.[props.field.field],
+        value: entity?.[props.field.field],
+        rev: entity?._rev,
         options: _(props.currencies)
           .map((currency) => ({ label: currency.name, value: currency.currency_uuid }))
           .value(),

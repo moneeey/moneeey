@@ -8,11 +8,13 @@ export interface NumberEditorProps<EntityType> extends EditorProps<EntityType, n
 }
 
 export const NumberEditor = observer(<EntityType,>(props: NumberEditorProps<EntityType>) => {
+  const entity = props.store.byUuid(props.entityId)
   return (
     <BaseEditor
       {...{
         ...props,
-        value: props.store.byUuid(props.entityId)?.[props.field.field],
+        value: entity?.[props.field.field],
+        rev: entity?._rev,
         ComposedInput: InputNumber,
         ComposedProps: (onChange) => ({
           onChange: (value: number | null) => onChange(value)

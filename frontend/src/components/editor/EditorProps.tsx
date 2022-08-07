@@ -26,7 +26,6 @@ export interface FieldProps<FieldEntityType, ValueEditorType, ValueEntityType> {
 
 export interface EditorProps<FieldEntityType, ValueEditorType, ValueEntityType>  {
   entityId: string;
-  rev: string;
   field: FieldProps<FieldEntityType, ValueEditorType, ValueEntityType>;
   store: MappedStore<any, any>;
   onUpdate?: (value: ValueEntityType) => FieldEntityType;

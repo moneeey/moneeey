@@ -44,13 +44,6 @@ export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
         updated: currentDateTime(),
       }),
       (props) => ({
-        _rev: {
-          title: 'Rev',
-          field: '_rev',
-          readOnly: true,
-          index: 0,
-          editor: EditorType.TEXT,
-        },
         name: {
           title: 'Name',
           field: 'name',

@@ -8,11 +8,13 @@ export interface TextEditorProps<EntityType> extends EditorProps<EntityType, str
 }
 
 export const TextEditor = observer(<EntityType,>(props: TextEditorProps<EntityType>) => {
+  const entity = props.store.byUuid(props.entityId)
   return (
     <BaseEditor
       {...{
         ...props,
-        value: props.store.byUuid(props.entityId)?.[props.field.field],
+        value: entity?.[props.field.field],
+        rev: entity?._rev,
         ComposedInput: Input,
         ComposedProps: (onChange) => ({
           onChange: ({ target: { value } }: any) => onChange(value)

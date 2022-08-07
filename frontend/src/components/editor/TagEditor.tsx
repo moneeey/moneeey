@@ -10,11 +10,13 @@ export interface TagEditorProps<EntityType> extends EditorProps<EntityType, stri
 }
 
 export const TagEditor = observer(<EntityType,>(props: TagEditorProps<EntityType>) => {
+  const entity = props.store.byUuid(props.entityId)
   return (
     <BaseSelectEditor
       {...{
         ...props,
-        value: props.store.byUuid(props.entityId)?.[props.field.field],
+        value: entity?.[props.field.field],
+        rev: entity?._rev,
         options: _(props.tags)
           .map((tag) => ({ label: tag, value: tag }))
           .compact()

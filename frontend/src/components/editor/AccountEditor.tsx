@@ -11,11 +11,13 @@ export interface AccountEditorProps<EntityType> extends EditorProps<EntityType, 
 }
 
 export const AccountEditor = observer(<EntityType,>(props: AccountEditorProps<EntityType>) => {
+  const entity = props.store.byUuid(props.entityId)
   return (
     <BaseSelectEditor
       {...{
         ...props,
-        value: props.store.byUuid(props.entityId)?.[props.field.field],
+        value: entity?.[props.field.field],
+        rev: entity?._rev,
         options: _(props.accounts)
           .map((account) => ({ label: account.name, value: account.account_uuid }))
           .compact()
