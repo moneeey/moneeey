@@ -2,10 +2,11 @@ import { computed, makeObservable } from 'mobx';
 
 import { AccountStore, TAccountUUID } from './Account';
 import { compareDates, currentDate, currentDateTime, TDate } from '../utils/Date';
-import { EntityType, IBaseEntity, TMonetary } from './Entity';
-import MappedStore from './MappedStore';
 import { uuid } from '../utils/Utils';
 import { EditorType } from '../components/editor/EditorProps';
+import { IBaseEntity, TMonetary, EntityType } from '../shared/Entity';
+import MappedStore from '../shared/MappedStore';
+import TagsStore from '../shared/Tags';
 
 export type TTransactionUUID = string;
 
@@ -20,8 +21,10 @@ export interface ITransaction extends IBaseEntity {
 }
 
 export class TransactionStore extends MappedStore<ITransaction, {}> {
-  constructor() {
-    super((t) => t.transaction_uuid,
+  constructor(tagsStore: TagsStore) {
+    super(
+      tagsStore,
+      (t) => t.transaction_uuid,
     () => ({
       entity_type: EntityType.TRANSACTION,
       transaction_uuid: uuid(),
@@ -119,3 +122,5 @@ export class TransactionStore extends MappedStore<ITransaction, {}> {
     return [...from_acct, ...to_acct, ...transaction.tags];
   }
 }
+
+export default TransactionStore;

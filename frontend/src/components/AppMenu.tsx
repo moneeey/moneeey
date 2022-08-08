@@ -17,7 +17,7 @@ import { CurrencySettingsRoute } from '../routes/CurrencySettingsRoute';
 import { HomeRoute } from '../routes/HomeRouter';
 import { PayeeSettingsRoute } from '../routes/PayeeSettingsRoute';
 import { ReportsRoute } from '../routes/ReportsRoute';
-import { IAccount } from '../shared/Account';
+import { IAccount } from '../entities/Account';
 import { Status } from '../shared/Persistence';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
 

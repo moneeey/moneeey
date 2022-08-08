@@ -3,6 +3,7 @@ import { action, computed, makeObservable, observable } from 'mobx';
 import { FieldProps } from '../components/editor/EditorProps';
 import { currentDateTime } from '../utils/Date';
 import { IBaseEntity } from './Entity';
+import TagsStore from './Tags';
 
 type UUIDGetter<T> = (item: T) => string;
 
@@ -17,11 +18,13 @@ export default class MappedStore<T extends IBaseEntity, SchemaFactoryProps> {
   public readonly getUuid: UUIDGetter<T>;
   public readonly schema: (props: SchemaFactoryProps) => RecordMap<T, FieldProps<any, any, any>>;
   public readonly factory: (props: SchemaFactoryProps) => T;
+  public readonly tagsStore: TagsStore;
 
-  constructor(getUuid: UUIDGetter<T>, factory: (props: SchemaFactoryProps) => T, schema: SchemaFactory<T, SchemaFactoryProps>) {
+  constructor(tagsStore: TagsStore, getUuid: UUIDGetter<T>, factory: (props: SchemaFactoryProps) => T, schema: SchemaFactory<T, SchemaFactoryProps>) {
     this.getUuid = getUuid;
     this.schema = schema;
-    this.factory = factory
+    this.factory = factory;
+    this.tagsStore = tagsStore;
     makeObservable(this, {
       itemsByUuid: observable,
       merge: action,
@@ -33,6 +36,7 @@ export default class MappedStore<T extends IBaseEntity, SchemaFactoryProps> {
 
   merge(item: T, options: { setUpdated: boolean } = { setUpdated: true }) {
     const uuid = this.getUuid(item);
+    this.tagsStore.registerAll(item.tags)
     this.itemsByUuid.set(uuid, {
       ...item,
       _id: item.entity_type + '-' + uuid,

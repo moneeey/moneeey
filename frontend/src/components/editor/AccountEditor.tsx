@@ -1,19 +1,14 @@
 import { Input, Select } from 'antd';
-import _, { isEmpty } from 'lodash';
+import _ from 'lodash';
 import { observer } from 'mobx-react';
-import { ReactNode } from 'react';
-import { TAccountUUID, IAccount } from '../../shared/Account';
+import { TAccountUUID } from '../../entities/Account';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { TagsFrom, TagsTo } from '../Tags';
 
 import { BaseSelectEditor } from './BaseSelectEditor';
 import { EditorProps } from './EditorProps';
 
-export interface AccountEditorProps<EntityType> extends EditorProps<EntityType, TAccountUUID, TAccountUUID> {
-  accounts: IAccount[];
-}
-
-export const AccountEditor = observer(<EntityType,>(props: AccountEditorProps<EntityType>) => {
+export const AccountEditor = observer(<EntityType,>(props: EditorProps<EntityType, TAccountUUID, TAccountUUID>) => {
   const { accounts } = useMoneeeyStore()
   const entity = props.store.byUuid(props.entityId)
   const value = entity?.[props.field.field]
@@ -26,7 +21,7 @@ export const AccountEditor = observer(<EntityType,>(props: AccountEditorProps<En
           ...props,
           value,
           rev: entity?._rev,
-          options: _(props.accounts)
+          options: _(accounts.all)
             .map((account) => ({ label: account.name, value: account.account_uuid }))
             .compact()
             .value(),

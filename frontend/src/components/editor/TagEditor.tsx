@@ -1,15 +1,13 @@
 import { Select } from 'antd';
 import _, { compact, flatten, flattenDeep } from 'lodash';
 import { observer } from 'mobx-react';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
 
 import { BaseSelectEditor } from './BaseSelectEditor';
 import { EditorProps } from './EditorProps';
 
-export interface TagEditorProps<EntityType> extends EditorProps<EntityType, string[], string[]> {
-  tags: string[];
-}
-
-export const TagEditor = observer(<EntityType,>(props: TagEditorProps<EntityType>) => {
+export const TagEditor = observer(<EntityType,>(props: EditorProps<EntityType, string[], string[]>) => {
+  const { tags } = useMoneeeyStore()
   const entity = props.store.byUuid(props.entityId)
   const currentValue = entity?.[props.field.field]
   return (
@@ -18,7 +16,7 @@ export const TagEditor = observer(<EntityType,>(props: TagEditorProps<EntityType
         ...props,
         value: currentValue,
         rev: entity?._rev,
-        options: _(props.tags)
+        options: _(tags.all)
           .map((tag) => ({ label: tag, value: tag }))
           .compact()
           .value(),

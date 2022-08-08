@@ -2,11 +2,11 @@ import React from 'react';
 import { observer } from 'mobx-react';
 
 import TransactionTable from '../tables/TransactionTable';
-import { IAccount } from '../shared/Account';
+import { IAccount } from '../entities/Account';
 import { HomeRoute } from './HomeRouter';
 import { IAppParameters, IRouteParameters, Route } from './Route';
-import { ITransaction } from '../shared/Transaction';
 import MoneeeyStore from '../shared/MoneeeyStore';
+import { ITransaction } from '../entities/Transaction';
 
 interface IAccountRoute extends IRouteParameters {
   account_name: string;
@@ -25,7 +25,7 @@ const AccountTransactions = observer(({ slug, account_name, moneeyStore: { trans
       const filterByAccount = transactions.filterByAccounts([account_uuid])
       const schemaFilter = (_sp: any, row: ITransaction) => filterByAccount(row)
       const referenceAccount = account_uuid
-      return <TransactionTable {...{ transactions, accounts, currencies, schemaFilter, referenceAccount }} />;
+      return <TransactionTable {...{ transactions, accounts, currencies, schemaFilter, referenceAccount, account_name }} />;
     }
     return <p>Account {account_name} not found</p>;
 })

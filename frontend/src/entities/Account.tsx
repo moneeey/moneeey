@@ -4,9 +4,10 @@ import { CurrencyEditor } from '../components/editor/CurrencyEditor';
 import { EditorType } from '../components/editor/EditorProps';
 import { ICurrency, TCurrencyUUID } from './Currency';
 import { currentDateTime, TDate } from '../utils/Date';
-import { EntityType, IBaseEntity } from './Entity';
-import MappedStore from './MappedStore';
+import { EntityType, IBaseEntity } from '../shared/Entity';
+import MappedStore from '../shared/MappedStore';
 import { uuid } from '../utils/Utils';
+import TagsStore from '../shared/Tags';
 
 export type TAccountUUID = string;
 
@@ -30,8 +31,9 @@ interface IAccountSchemaFactory {
 }
 
 export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
-  constructor() {
+  constructor(tagsStore: TagsStore) {
     super(
+      tagsStore,
       (a) => a.account_uuid,
       (props) => ({
         entity_type: EntityType.ACCOUNT,
@@ -61,7 +63,6 @@ export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
           required: true,
           editor: EditorType.CURRENCY,
           index: 1,
-          renderer: CurrencyEditor,
         },
         tags: {
           title: 'Tags',
@@ -107,3 +108,5 @@ export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
     return [];
   }
 }
+
+export default AccountStore;

@@ -1,7 +1,8 @@
 import { EditorType } from '../components/editor/EditorProps';
+import { IBaseEntity, EntityType, TMonetary } from '../shared/Entity';
+import MappedStore from '../shared/MappedStore';
+import TagsStore from '../shared/Tags';
 import { currentDateTime } from '../utils/Date';
-import { EntityType, IBaseEntity, TMonetary } from './Entity';
-import MappedStore from './MappedStore';
 import { uuid } from '../utils/Utils';
 
 export type TCurrencyUUID = string;
@@ -16,20 +17,22 @@ export interface ICurrency extends IBaseEntity {
 }
 
 export class CurrencyStore extends MappedStore<ICurrency, {}> {
-  constructor() {
-    super((c) => c.currency_uuid,
-    () => ({
-      entity_type: EntityType.CURRENCY,
-      currency_uuid: uuid(),
-      name: '',
-      short: '',
-      prefix: '',
-      suffix: '',
-      decimals: 2,
-      updated: currentDateTime(),
-      created: currentDateTime(),
-    } as ICurrency),
-    (props) => ({
+  constructor(tagsStore: TagsStore) {
+    super(
+      tagsStore,
+      (c) => c.currency_uuid,
+      () => ({
+        entity_type: EntityType.CURRENCY,
+        currency_uuid: uuid(),
+        name: '',
+        short: '',
+        prefix: '',
+        suffix: '',
+        decimals: 2,
+        updated: currentDateTime(),
+        created: currentDateTime(),
+      } as ICurrency),
+      (props) => ({
         name: {
           title: 'Name',
           field: 'name',
@@ -78,7 +81,7 @@ export class CurrencyStore extends MappedStore<ICurrency, {}> {
           index: 6,
           editor: EditorType.DATE,
         },
-    }));
+      }));
   }
 
   findByName(name: string) {
@@ -105,3 +108,5 @@ export class CurrencyStore extends MappedStore<ICurrency, {}> {
     return (currency && this.format(currency, value)) || '';
   }
 }
+
+export default CurrencyStore;

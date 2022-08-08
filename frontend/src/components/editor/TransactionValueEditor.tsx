@@ -2,14 +2,11 @@ import { DatePicker, Input } from 'antd';
 import { observer } from 'mobx-react';
 import moment from 'moment';
 
-import { formatDate, TDate } from '../../utils/Date';
+import { TDate } from '../../utils/Date';
 import { BaseEditor } from './BaseEditor';
 import { EditorProps } from './EditorProps';
 
-export interface TransactionValueEditorProps<EntityType> extends EditorProps<EntityType, moment.Moment, TDate> {
-}
-
-export const TransactionValueEditor = observer(<EntityType,>(props: TransactionValueEditorProps<EntityType>) => {
+export const TransactionValueEditor = observer(<EntityType,>(props: EditorProps<EntityType, moment.Moment, TDate>) => {
   const entity = props.store.byUuid(props.entityId)
 
       // const formatterForAccount = (account_uuid: TAccountUUID) => {

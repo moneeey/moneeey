@@ -2,15 +2,13 @@ import { Select } from 'antd';
 import _ from 'lodash';
 import { observer } from 'mobx-react';
 import { TCurrencyUUID, ICurrency } from '../../shared/Currency';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
 
 import { BaseSelectEditor } from './BaseSelectEditor';
 import { EditorProps } from './EditorProps';
 
-export interface CurrencyEditorProps<EntityType> extends EditorProps<EntityType, TCurrencyUUID, TCurrencyUUID> {
-  currencies: ICurrency[];
-}
-
-export const CurrencyEditor = observer(<EntityType,>(props: CurrencyEditorProps<EntityType>) => {
+export const CurrencyEditor = observer(<EntityType,>(props: EditorProps<EntityType, TCurrencyUUID, TCurrencyUUID>) => {
+  const { currencies } = useMoneeeyStore()
   const entity = props.store.byUuid(props.entityId)
   return (
     <BaseSelectEditor
@@ -18,7 +16,7 @@ export const CurrencyEditor = observer(<EntityType,>(props: CurrencyEditorProps<
         ...props,
         value: entity?.[props.field.field],
         rev: entity?._rev,
-        options: _(props.currencies)
+        options: _(currencies.all)
           .map((currency) => ({ label: currency.name, value: currency.currency_uuid }))
           .value(),
         ComposedProps: () => ({}),

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { TableEditor } from '../components/TableEditor';
-import { CurrencyStore } from '../shared/Currency';
+import { CurrencyStore } from '../entities/Currency';
 
 interface CurrencySettingsProps {
   currencies: CurrencyStore;

@@ -4,10 +4,7 @@ import { observer } from 'mobx-react';
 import { BaseEditor } from './BaseEditor';
 import { EditorProps } from './EditorProps';
 
-export interface NumberEditorProps<EntityType> extends EditorProps<EntityType, number, number> {
-}
-
-export const NumberEditor = observer(<EntityType,>(props: NumberEditorProps<EntityType>) => {
+export const NumberEditor = observer(<EntityType,>(props: EditorProps<EntityType, number, number>) => {
   const entity = props.store.byUuid(props.entityId)
   return (
     <BaseEditor

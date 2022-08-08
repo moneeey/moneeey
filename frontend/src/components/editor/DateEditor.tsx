@@ -6,10 +6,7 @@ import { formatDate, TDate } from '../../utils/Date';
 import { BaseEditor } from './BaseEditor';
 import { EditorProps } from './EditorProps';
 
-export interface DateEditorProps<EntityType> extends EditorProps<EntityType, moment.Moment, TDate> {
-}
-
-export const DateEditor = observer(<EntityType,>(props: DateEditorProps<EntityType>) => {
+export const DateEditor = observer(<EntityType,>(props: EditorProps<EntityType, moment.Moment, TDate>) => {
   const entity = props.store.byUuid(props.entityId)
   return (
     <BaseEditor

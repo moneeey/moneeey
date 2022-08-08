@@ -1,16 +1,18 @@
-import { AccountStore } from './Account';
-import { CurrencyStore } from './Currency';
+import AccountStore from '../entities/Account';
+import CurrencyStore from '../entities/Currency';
+import TransactionStore from '../entities/Transaction';
 import { EntityType } from './Entity';
 import ManagementStore from './Management';
 import NavigationStore from './Navigation';
 import PersistenceStore from './Persistence';
-import { TransactionStore } from './Transaction';
+import TagsStore from './Tags';
 
 export default class MoneeeyStore {
+  tags = new TagsStore();
   navigation = new NavigationStore();
-  accounts = new AccountStore();
-  transactions = new TransactionStore();
-  currencies = new CurrencyStore();
+  accounts = new AccountStore(this.tags);
+  transactions = new TransactionStore(this.tags);
+  currencies = new CurrencyStore(this.tags);
   persistence = new PersistenceStore();
   management = new ManagementStore();
 

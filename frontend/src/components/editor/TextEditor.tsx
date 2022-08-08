@@ -5,10 +5,7 @@ import { TagsMemo } from '../Tags';
 import { BaseEditor } from './BaseEditor';
 import { EditorProps } from './EditorProps';
 
-export interface TextEditorProps<EntityType> extends EditorProps<EntityType, string, string> {
-}
-
-export const TextEditor = observer(<EntityType,>(props: TextEditorProps<EntityType>) => {
+export const TextEditor = observer(<EntityType,>(props: EditorProps<EntityType, string, string>) => {
   const entity = props.store.byUuid(props.entityId)
   return (
     <BaseEditor

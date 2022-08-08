@@ -1,5 +1,5 @@
 import React from 'react';
-import { ITransaction } from '../shared/Transaction';
+import { ITransaction } from '../entities/Transaction';
 
 import TransactionTable from '../tables/TransactionTable';
 import { HomeRoute } from './HomeRouter';
@@ -20,7 +20,7 @@ class TagsRouter extends Route<ITagsRoute> {
     const filterByTag = transactions.filterByTag(parameters.tag, accounts)
     const schemaFilter = (_sp: any, row: ITransaction) => filterByTag(row)
     const referenceAccount = ''
-    return <TransactionTable {...{ transactions, accounts, currencies, schemaFilter, referenceAccount }} />;
+    return <TransactionTable {...{ transactions, accounts, currencies, schemaFilter, referenceAccount, tag: parameters.tag }} />;
   }
 
   tagsUrl(tag: string) {

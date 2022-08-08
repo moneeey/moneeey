@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { AccountTable } from '../tables/AccountTable';
-import { AccountType } from '../shared/Account';
+import { AccountType } from '../entities/Account';
 import { HomeRoute } from './HomeRouter';
 import { IAppParameters, IRouteParameters, Route } from './Route';
 

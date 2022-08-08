@@ -37,7 +37,10 @@ function TagsRenderer({ color, tags }: IStyledTagsProp) {
             onMouseOver={() => setTag(t)}
             onMouseOut={() => setTag('')}
             title={color}
-            onClick={() => moneeeyStore.navigation.navigate(TagsRoute.tagsUrl(t))}>
+            onClick={(e) => {
+              e.preventDefault()
+              moneeeyStore.navigation.navigate(TagsRoute.tagsUrl(t))
+            }}>
             #{t}
           </Tag>
         );

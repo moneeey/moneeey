@@ -9,16 +9,15 @@ import { TagsMemo } from '../Tags';
 import { BaseEditor } from './BaseEditor';
 import { EditorProps } from './EditorProps';
 
-export interface MemoEditorProps<EntityType> extends EditorProps<EntityType, string, string> {
-}
+export const MemoEditor = observer(<EntityType,>(props: EditorProps<EntityType, string, string>) => {
+  const tagsForText = (text: string): string[] => Array.from(text.matchAll(/[^#](#\w+)/g)).map((m: any) => m[1].replace('#', ''));
 
-export const MemoEditor = observer(<EntityType,>(props: MemoEditorProps<EntityType>) => {
   const entity = props.store.byUuid(props.entityId)
   const value = entity?.[props.field.field]
+
   const [currentValue, setCurrentValue] = useState('')
   const memo = (currentValue || value || '');
-  const tags = Array.from(memo.matchAll(/[^#](#\w+)/g))
-    .map((m: any) => m[1].replace('#', ''));
+  const tags = tagsForText(memo)
 
   return (
     <BaseEditor
@@ -30,7 +29,7 @@ export const MemoEditor = observer(<EntityType,>(props: MemoEditorProps<EntityTy
         ComposedProps: (onChange) => ({
           onChange: ({ target: { value } }: any) => {
             setCurrentValue(value)
-            return onChange(value, value, { tags })
+            return onChange(value, value, { tags: tagsForText(value) })
           },
           addonAfter: <TagsMemo tags={tags} />,
         })
