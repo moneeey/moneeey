@@ -1,3 +1,4 @@
+import { compact, flatten } from 'lodash';
 import { BaseEditor, BaseEditorProps } from './BaseEditor';
 
 interface BaseSelectEditorProps<EntityType, ValueEditorType, ValueEntityType> extends BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> {
@@ -13,9 +14,9 @@ export function BaseSelectEditor<EntityType>(props: BaseSelectEditorProps<Entity
       {...{
         ...props,
         ComposedProps: (onChange) => ({
-          ...props.ComposedProps,
           options: props.options,
-          onSelect: (value: string) => onChange(value)
+          onSelect: (value: string) => onChange(value),
+          ...props.ComposedProps(onChange),
         })
       }}
     />

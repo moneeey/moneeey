@@ -8,7 +8,7 @@ const TagColors: { [_group: string]: string } = {
   highlight: 'lightsalmon',
   memo: 'goldenrod',
   from: 'mediumturquoise',
-  to: 'geekblue'
+  to: 'geekblue',
 };
 
 const HighlightTagContext = React.createContext({
@@ -49,10 +49,10 @@ function TagsRenderer({ color, tags }: IStyledTagsProp) {
 export function TagsMemo({ tags }: ITagsProp) {
   return <TagsRenderer color={'memo'} tags={tags} />;
 }
-export function TagsFromAcct({ tags }: ITagsProp) {
+export function TagsFrom({ tags }: ITagsProp) {
   return <TagsRenderer color={'from'} tags={tags} />;
 }
-export function TagsToAcct({ tags }: ITagsProp) {
+export function TagsTo({ tags }: ITagsProp) {
   return <TagsRenderer color={'to'} tags={tags} />;
 }
 

@@ -26,6 +26,20 @@
   border: 0 !important;
 }
 
+.entityEditor .accountEditor {
+  display: flex !important;
+}
+
+.entityEditor .accountEditor label {
+  flex-grow: 1;
+}
+
+.entityEditor .accountEditor span {
+  padding-left: 1em;
+}
+
+
+
 .entityEditor .ant-input-group-addon {
   background-color: white;
   border: 0;
