@@ -12,6 +12,8 @@ export enum EditorType {
   CURRENCY='CURRENCY',
   ACCOUNT='ACCOUNT',
   TAG='TAG',
+  MEMO='MEMO',
+  TRANSACTION_VALUE='TRANSACTION_VALUE',
 }
 
 export interface FieldProps<FieldEntityType, ValueEditorType, ValueEntityType> {
@@ -28,5 +30,5 @@ export interface EditorProps<FieldEntityType, ValueEditorType, ValueEntityType> 
   entityId: string;
   field: FieldProps<FieldEntityType, ValueEditorType, ValueEntityType>;
   store: MappedStore<any, any>;
-  onUpdate?: (value: ValueEntityType) => FieldEntityType;
+  onUpdate: (value: ValueEntityType, additional: any) => FieldEntityType;
 }

@@ -10,9 +10,11 @@ import { AccountEditor } from './editor/AccountEditor';
 import { CurrencyEditor } from './editor/CurrencyEditor';
 import { DateEditor } from './editor/DateEditor';
 import { EditorType, FieldProps } from './editor/EditorProps';
+import { MemoEditor } from './editor/MemoEditor';
 import { NumberEditor } from './editor/NumberEditor';
 import { TagEditor } from './editor/TagEditor';
 import { TextEditor } from './editor/TextEditor';
+import { TransactionValueEditor } from './editor/TransactionValueEditor';
 
 interface EntityEditorProps<T extends IBaseEntity, SchemaProps> {
   schemaProps: SchemaProps;
@@ -26,7 +28,9 @@ const EditorTypeToEditor = {
   [EditorType.DATE]: DateEditor,
   [EditorType.ACCOUNT]: AccountEditor,
   [EditorType.CURRENCY]: CurrencyEditor,
-  [EditorType.TAG]: TagEditor
+  [EditorType.TAG]: TagEditor,
+  [EditorType.MEMO]: MemoEditor,
+  [EditorType.TRANSACTION_VALUE]: TransactionValueEditor,
 };
 
 type Row = {
@@ -52,13 +56,15 @@ export const TableEditor = observer(
         title: props.title,
         dataIndex: props.field,
         sorter: true,
+        // sorter: EditorTypeToSorter[props.editor],
         render: (_value: any, { entityId }: Row): React.ReactNode => {
           const Editor = EditorTypeToEditor[props.editor] as unknown as any;
 
-          const onUpdate = action((value: any) =>
+          const onUpdate = action((value: any, additional: any = {}) =>
             store.merge({
               ...(store.byUuid(entityId) || store.factory(schemaProps)),
-              [props.field]: value
+              [props.field]: value,
+              ...additional
             } as T)
           )
 

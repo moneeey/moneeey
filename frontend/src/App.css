@@ -26,6 +26,11 @@
   border: 0 !important;
 }
 
+.entityEditor .ant-input-group-addon {
+  background-color: white;
+  border: 0;
+}
+
 .entityEditor-feedback {
   position: absolute;
   top: 0.2em;

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { EditorProps } from './EditorProps';
 
-type OnChange<ValueEditorType, ValueEntityType> = (value: ValueEntityType, editorValue?: ValueEditorType) => void
+type OnChange<ValueEditorType, ValueEntityType> = (value: ValueEntityType, editorValue?: ValueEditorType, additional?: any) => void
 
 export interface BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> extends EditorProps<EntityType, ValueEditorType, ValueEntityType> {
   value: ValueEditorType;
@@ -27,7 +27,7 @@ export function BaseEditor<EntityType>({
 }: BaseEditorProps<EntityType, any, any>) {
   const [currentValue, setCurrentValue] = useState(value);
   const [error, setError] = useState('');
-  const onChange = (value: any, editorValue?: any) => {
+  const onChange = (value: any, editorValue?: any, additional?: any) => {
     setCurrentValue(editorValue || value);
     setError('');
     if (validate) {
@@ -37,7 +37,7 @@ export function BaseEditor<EntityType>({
         return;
       }
     }
-    onUpdate && onUpdate(value);
+    onUpdate && onUpdate(value, additional);
   };
   useEffect(() => {
     setCurrentValue(value)

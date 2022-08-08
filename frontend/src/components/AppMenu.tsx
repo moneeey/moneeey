@@ -19,7 +19,7 @@ import { PayeeSettingsRoute } from '../routes/PayeeSettingsRoute';
 import { ReportsRoute } from '../routes/ReportsRoute';
 import { IAccount } from '../shared/Account';
 import { Status } from '../shared/Persistence';
-import useMoneeeyStore from '../pages/useMoneeeyStore';
+import useMoneeeyStore from '../shared/useMoneeeyStore';
 
 export const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore();

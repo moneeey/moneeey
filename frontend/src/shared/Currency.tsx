@@ -65,11 +65,17 @@ export class CurrencyStore extends MappedStore<ICurrency, {}> {
           index: 4,
           editor: EditorType.NUMBER,
         },
+        tags: {
+          title: 'Tags',
+          field: 'tags',
+          index: 5,
+          editor: EditorType.TAG,
+        },
         created: {
           title: 'Created',
           field: 'created',
           readOnly: true,
-          index: 5,
+          index: 6,
           editor: EditorType.DATE,
         },
     }));

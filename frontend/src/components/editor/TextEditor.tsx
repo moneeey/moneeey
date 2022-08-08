@@ -1,5 +1,6 @@
 import { Input } from 'antd';
 import { observer } from 'mobx-react';
+import { TagsMemo } from '../Tags';
 
 import { BaseEditor } from './BaseEditor';
 import { EditorProps } from './EditorProps';
@@ -17,7 +18,7 @@ export const TextEditor = observer(<EntityType,>(props: TextEditorProps<EntityTy
         rev: entity?._rev,
         ComposedInput: Input,
         ComposedProps: (onChange) => ({
-          onChange: ({ target: { value } }: any) => onChange(value)
+          onChange: ({ target: { value } }: any) => onChange(value),
         })
       }}
     />

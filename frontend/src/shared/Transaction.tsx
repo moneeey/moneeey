@@ -5,6 +5,7 @@ import { compareDates, currentDate, currentDateTime, TDate } from '../utils/Date
 import { EntityType, IBaseEntity, TMonetary } from './Entity';
 import MappedStore from './MappedStore';
 import { uuid } from '../utils/Utils';
+import { EditorType } from '../components/editor/EditorProps';
 
 export type TTransactionUUID = string;
 
@@ -34,7 +35,45 @@ export class TransactionStore extends MappedStore<ITransaction, {}> {
       updated: currentDateTime(),
       created: currentDateTime(),
     }),
-    (props) => ({})
+    (props) => ({
+        date: {
+          title: 'Date',
+          field: 'date',
+          index: 0,
+          editor: EditorType.DATE,
+        },
+        from_account: {
+          title: 'From',
+          field: 'from_account',
+          index: 1,
+          editor: EditorType.ACCOUNT,
+        },
+        to_account: {
+          title: 'To',
+          field: 'to_account',
+          index: 2,
+          editor: EditorType.ACCOUNT,
+        },
+        memo: {
+          title: 'Memo',
+          field: 'memo',
+          index: 3,
+          editor: EditorType.MEMO,
+        },
+        from_value: {
+          title: 'Value',
+          field: 'from_value',
+          index: 4,
+          editor: EditorType.TRANSACTION_VALUE,
+        },
+        created: {
+          title: 'Created',
+          field: 'created',
+          readOnly: true,
+          index: 7,
+          editor: EditorType.DATE,
+        },
+    })
     );
     makeObservable(this, {
       sorted: computed
@@ -53,17 +92,21 @@ export class TransactionStore extends MappedStore<ITransaction, {}> {
     return this.viewAllWithAccounts([account]);
   }
 
-  viewAllWithAccounts(accounts: TAccountUUID[]) {
+  filterByAccounts(accounts: TAccountUUID[]) {
     const accountSet = new Set(accounts);
-    return this.sortTransactions(
-      this.byPredicate((row) => accountSet.has(row.from_account) || accountSet.has(row.to_account))
-    );
+    return (row: ITransaction) => accountSet.has(row.from_account) || accountSet.has(row.to_account)
+  }
+
+  viewAllWithAccounts(accounts: TAccountUUID[]) {
+    return this.sortTransactions(this.byPredicate(this.filterByAccounts(accounts)));
+  }
+
+  filterByTag(tag: string, accountsStore: AccountStore) {
+    return (row: ITransaction) => this.getAllTransactionTags(row, accountsStore).indexOf(tag) >= 0
   }
 
   viewAllWithTag(tag: string, accountsStore: AccountStore) {
-    return this.sortTransactions(
-      this.byPredicate((row) => this.getAllTransactionTags(row, accountsStore).indexOf(tag) >= 0)
-    );
+    return this.sortTransactions(this.byPredicate(this.filterByTag(tag, accountsStore)));
   }
 
   viewAllNonPayees(accountsStore: AccountStore) {
