@@ -1,9 +1,9 @@
-import _, { map, uniqBy, values } from 'lodash';
-import { makeObservable, observable, observe, toJS } from 'mobx';
-import PouchDB from 'pouchdb';
+import _, { map, uniqBy, values } from 'lodash'
+import { makeObservable, observable, observe, toJS } from 'mobx'
+import PouchDB from 'pouchdb'
 
-import { EntityType, IBaseEntity } from './Entity';
-import MappedStore from './MappedStore';
+import { EntityType, IBaseEntity } from './Entity'
+import MappedStore from './MappedStore'
 
 export enum Status {
   ONLINE = 'Online',
@@ -11,46 +11,47 @@ export enum Status {
 }
 
 export default class PersistenceStore {
-  public status: Status = Status.OFFLINE;
-  public databaseId: string = '';
-  private db: PouchDB.Database;
+  public status: Status = Status.OFFLINE
+  public databaseId = ''
+  private db: PouchDB.Database
   private entries: {
     [_id: string]: IBaseEntity;
-  } = {};
+  } = {}
   private syncables: ({
     uuid: string;
-    store: MappedStore<any, any>
-  })[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store: MappedStore<any, unknown>
+  })[] = []
   private _commit
 
   constructor() {
-    this.db = new PouchDB('moneeey');
+    this.db = new PouchDB('moneeey')
     this.sync()
     this._commit = _.debounce(this.commit, 1000)
 
     makeObservable(this, {
       status: observable,
       databaseId: observable
-    });
+    })
   }
 
   async sync() {
     const setStatus = (status: Status) => {
-      this.status = status;
-    };
+      this.status = status
+    }
     return new Promise((resolve, reject) => {
-      if (!this.databaseId) return;
+      if (!this.databaseId) return
       this.db
         .sync('/couchdb/' + this.databaseId, { live: true, retry: true })
         .on('change', () => {
-          resolve(setStatus(Status.ONLINE));
+          resolve(setStatus(Status.ONLINE))
         })
         .on('paused', () => {
-          resolve(setStatus(Status.OFFLINE));
+          resolve(setStatus(Status.OFFLINE))
         })
         .on('denied', () => resolve(setStatus(Status.OFFLINE)))
-        .on('error', () => reject(setStatus(Status.OFFLINE)));
-    });
+        .on('error', () => reject(setStatus(Status.OFFLINE)))
+    })
   }
 
   async load() {
@@ -60,55 +61,55 @@ export default class PersistenceStore {
           include_docs: true
         })
         .then((docs) => {
-          map([...(docs.rows.map((d) => d.doc) as unknown[] as any[])], entity => {
-            this.entries[entity._id] = entity
+          map([...(docs.rows.map((d) => d.doc) as unknown[] as IBaseEntity[])], entity => {
+            if (entity._id) this.entries[entity._id] = entity
           })
-          resolve(this.entries);
-        });
-    });
+          resolve(this.entries)
+        })
+    })
   }
 
   async commit() {
     const objects = uniqBy(
       this.syncables.map(({ store, uuid }) => {
-        const entity = toJS(store.byUuid(uuid));
-        return { store, _id: entity._id, entity, uuid };
+        const entity = toJS(store.byUuid(uuid)) as unknown as {_id: string}
+        return { store, _id: entity._id, entity, uuid }
       }),
       '_id'
-    );
-    this.syncables = [];
+    )
+    this.syncables = []
     try {
-      const responses = await this.db.bulkDocs(objects.map((sync) => sync.entity));
+      const responses = await this.db.bulkDocs(objects.map((sync) => sync.entity))
       map(responses, async (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
-        const { error, status, ok, id, rev } = resp;
-        const current = objects.find((obj) => obj._id === id);
-        if (!current) return;
+        const { error, status, ok, id, rev } = resp
+        const current = objects.find((obj) => obj._id === id)
+        if (!current) return
         if (error && status === 409) {
-          const actual = await this.fetch(id);
-          console.error('Sync Commit conflict', { resp, current, actual });
-          current.store.merge(actual, { setUpdated: false });
+          const actual = await this.fetch(id)
+          console.error('Sync Commit conflict', { resp, current, actual })
+          current.store.merge(actual, { setUpdated: false })
         } else if (error) {
-          console.error('Sync Commit error', { error, current });
+          console.error('Sync Commit error', { error, current })
         } else if (ok) {
-          const entity = { ...current.entity, _rev: rev };
-          console.info('Sync Commit success', { entity });
-          current.store.merge(entity, { setUpdated: false });
+          const entity = { ...current.entity, _rev: rev }
+          console.info('Sync Commit success', { entity })
+          current.store.merge(entity, { setUpdated: false })
         }
-      });
+      })
     } catch (err) {
-      const error = err as PouchDB.Core.Error;
-      console.error(error);
+      const error = err as PouchDB.Core.Error
+      console.error(error)
     }
   }
 
-  persist(store: MappedStore<any, any>, item: IBaseEntity) {
+  persist<EntityType extends IBaseEntity>(store: MappedStore<EntityType, unknown>, item: EntityType) {
     console.log('Sync will persist', { item })
-    this.syncables.push({ store, uuid: store.getUuid(item) })
+    this.syncables.push({ store: store as never, uuid: store.getUuid(item) })
     this._commit()
   }
 
   async fetch(id: string) {
-    const entity = await this.db.get(id, { conflicts: true });
+    const entity = await this.db.get(id, { conflicts: true })
     if (entity._conflicts) {
       await map(entity._conflicts, async rev => {
         await this.db.remove(id, rev)
@@ -119,11 +120,11 @@ export default class PersistenceStore {
   }
 
   retrieve(type: EntityType) {
-    return values(this.entries).filter((e) => e.entity_type === type);
+    return values(this.entries).filter((e) => e.entity_type === type)
   }
 
-  monitor(store: MappedStore<any, any>, type: EntityType) {
-    this.retrieve(type).forEach((e) => store.merge(e));
+  monitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType, unknown>, type: EntityType) {
+    this.retrieve(type).forEach((e) => store.merge(e as TEntityType))
     observe(store.itemsByUuid, (changes) => {
       if (changes.type === 'add') {
         this.persist(store, changes.newValue)
@@ -137,6 +138,6 @@ export default class PersistenceStore {
           console.info('Ref changed, skip persist', changes)
         }
       }
-    });
+    })
   }
 }

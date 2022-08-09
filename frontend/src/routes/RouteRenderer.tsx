@@ -1,9 +1,8 @@
-import _ from 'lodash';
-import { observer } from 'mobx-react';
-import React from 'react';
-import { BrowserRouter, Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import _ from 'lodash'
+import { observer } from 'mobx-react'
+import { BrowserRouter, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 
-import { IAppParameters, IRouteParameters, Route as MyRoute } from './Route';
+import { IAppParameters, IRouteParameters, Route as MyRoute } from './Route'
 
 interface IMappedRoute {
   path: string;
@@ -12,23 +11,25 @@ interface IMappedRoute {
 
 const RouteElem = observer(({route, app }: { route: MyRoute<IRouteParameters>, app: IAppParameters }) => {
   const params = useParams()
-  return <route.render parameters={params as any} app={app} />
+  const Render = route.render
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <Render parameters={params as any} app={app} />
 })
 
 const Navigator = ({ app }: { app: IAppParameters }) => {
-  const navigateTo = useNavigate();
+  const navigateTo = useNavigate()
   const Navigate = observer(() => {
-    const toUrl = '' + app.moneeeyStore.navigation.navigateTo;
+    const toUrl = '' + app.moneeeyStore.navigation.navigateTo
     if (toUrl && toUrl !== '') {
-      app.moneeeyStore.navigation.navigate('');
+      app.moneeeyStore.navigation.navigate('')
       setTimeout(() => {
-        navigateTo(toUrl);
+        navigateTo(toUrl)
       }, 1)
     }
-    return <div />;
-  });
-  return <Navigate />;
-};
+    return <div />
+  })
+  return <Navigate />
+}
 
 const RouteRenderer = observer(<IParameters extends IRouteParameters>({
   root_route,
@@ -38,12 +39,12 @@ const RouteRenderer = observer(<IParameters extends IRouteParameters>({
   app: IAppParameters;
 }) => {
   const mapRoute = ({ route, path: parentPath }: IMappedRoute): IMappedRoute[] => {
-    const path = (parentPath + route.path).replace(/\/+/g, '/');
-    const children = route.children.map((child) => mapRoute({ route: child, path }));
-    const current: IMappedRoute = { path, route };
-    return [..._.flatten(children), current];
-  };
-  const routes = mapRoute({ route: root_route, path: root_route.path });
+    const path = (parentPath + route.path).replace(/\/+/g, '/')
+    const children = route.children.map((child) => mapRoute({ route: child, path }))
+    const current: IMappedRoute = { path, route }
+    return [..._.flatten(children), current]
+  }
+  const routes = mapRoute({ route: root_route, path: root_route.path })
 
   return (
     <BrowserRouter>
@@ -54,7 +55,7 @@ const RouteRenderer = observer(<IParameters extends IRouteParameters>({
       </Routes>
       <Navigator app={app} />
     </BrowserRouter>
-  );
+  )
 })
 
 export { RouteRenderer }

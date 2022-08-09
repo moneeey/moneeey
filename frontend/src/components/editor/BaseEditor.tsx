@@ -1,49 +1,48 @@
-import { Typography } from 'antd';
-import { useEffect, useState } from 'react';
+import { Typography } from 'antd'
+import { useEffect, useState } from 'react'
 
-import { EditorProps } from './EditorProps';
+import { EditorProps } from './EditorProps'
 
-type OnChange<ValueEditorType, ValueEntityType> = (value: ValueEntityType, editorValue?: ValueEditorType, additional?: any) => void
+type OnChange<ValueEditorType, ValueEntityType> = (value: ValueEntityType, editorValue?: ValueEditorType, additional?: object) => void
 
 export interface BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> extends EditorProps<EntityType, ValueEditorType, ValueEntityType> {
   value: ValueEditorType;
   rev: string;
-  ComposedInput: any;
-  ComposedProps: (onChange: OnChange<ValueEditorType, ValueEntityType>) => any;
+  ComposedInput: JSX.Element;
+  ComposedProps: (onChange: OnChange<ValueEditorType, ValueEntityType>) => object;
 }
 
-export function BaseEditor<EntityType>({
+export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
   ComposedInput,
   ComposedProps,
   value,
   rev,
   onUpdate,
   field: {
-    field,
     title,
     readOnly,
     validate,
   },
-}: BaseEditorProps<EntityType, any, any>) {
-  const [currentValue, setCurrentValue] = useState(value);
-  const [error, setError] = useState('');
-  const onChange = (value: any, editorValue?: any, additional?: any) => {
-    setCurrentValue(editorValue || value);
-    setError('');
+}: BaseEditorProps<EntityType, ValueEditorType, ValueEntityType>) {
+  const [currentValue, setCurrentValue] = useState(value)
+  const [error, setError] = useState('')
+  const onChange = (value: ValueEntityType, editorValue?: ValueEditorType, additional: object = {}) => {
+    setCurrentValue((editorValue || value) as ValueEditorType)
+    setError('')
     if (validate) {
-      const { valid, error } = validate(value);
+      const { valid, error } = validate(value as unknown as ValueEditorType)
       if (!valid) {
-        setError(error || '');
-        return;
+        setError(error || '')
+        return
       }
     }
-    onUpdate && onUpdate(value, additional);
-  };
+    onUpdate && onUpdate(value, additional)
+  }
   useEffect(() => {
     setCurrentValue(value)
   }, [setCurrentValue, value])
 
-  const status = !!error ? 'error' : undefined
+  const status = error ? 'error' : undefined
 
   return (
     <label>
@@ -64,5 +63,5 @@ export function BaseEditor<EntityType>({
         </Typography.Text>
       )}
     </label>
-  );
+  )
 }

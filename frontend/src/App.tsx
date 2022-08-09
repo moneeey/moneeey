@@ -1,17 +1,17 @@
-import './App.css';
-import 'antd/dist/antd.css';
+import './App.css'
+import 'antd/dist/antd.css'
 
-import React from 'react';
+import React from 'react'
 
-import AppMenu from './components/AppMenu';
-import RouteRenderer from './routes/RouteRenderer';
-import { TagsHighlightProvider } from './components/Tags';
-import { HomeRoute } from './routes/HomeRouter';
-import MoneeeyStore from './shared/MoneeeyStore';
-import { MoneeeyStoreProvider } from './shared/useMoneeeyStore';
+import AppMenu from './components/AppMenu'
+import RouteRenderer from './routes/RouteRenderer'
+import { TagsHighlightProvider } from './components/Tags'
+import { HomeRoute } from './routes/HomeRouter'
+import MoneeeyStore from './shared/MoneeeyStore'
+import { MoneeeyStoreProvider } from './shared/useMoneeeyStore'
 
 function App(): React.ReactElement {
-  const [moneeeyStore] = React.useState(new MoneeeyStore());
+  const [moneeeyStore] = React.useState(new MoneeeyStore())
 
   return (
     <div className='App'>
@@ -22,7 +22,7 @@ function App(): React.ReactElement {
         </TagsHighlightProvider>
       </MoneeeyStoreProvider>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

@@ -9,5 +9,5 @@ const Messages = {
     confirm_code: 'Bad confirm code, please try again',
     code_expired: 'Confirm code expired, please try again'
   }
-};
-export default Messages;
+}
+export default Messages

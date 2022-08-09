@@ -6,27 +6,26 @@ import {
   MailOutlined,
   SettingOutlined,
   WarningTwoTone,
-} from '@ant-design/icons';
-import { Menu } from 'antd';
-import { observer } from 'mobx-react';
-import React from 'react';
+} from '@ant-design/icons'
+import { Menu } from 'antd'
+import { observer } from 'mobx-react'
 
-import { AccountRoute } from '../routes/AccountRoute';
-import { AccountSettingsRoute } from '../routes/AccountSettingsRoute';
-import { CurrencySettingsRoute } from '../routes/CurrencySettingsRoute';
-import { HomeRoute } from '../routes/HomeRouter';
-import { PayeeSettingsRoute } from '../routes/PayeeSettingsRoute';
-import { ReportsRoute } from '../routes/ReportsRoute';
-import { IAccount } from '../entities/Account';
-import { Status } from '../shared/Persistence';
-import useMoneeeyStore from '../shared/useMoneeeyStore';
+import { AccountRoute } from '../routes/AccountRoute'
+import { AccountSettingsRoute } from '../routes/AccountSettingsRoute'
+import { CurrencySettingsRoute } from '../routes/CurrencySettingsRoute'
+import { HomeRoute } from '../routes/HomeRouter'
+import { PayeeSettingsRoute } from '../routes/PayeeSettingsRoute'
+import { ReportsRoute } from '../routes/ReportsRoute'
+import { IAccount } from '../entities/Account'
+import { Status } from '../shared/Persistence'
+import useMoneeeyStore from '../shared/useMoneeeyStore'
 
 export const AppMenu = observer(() => {
-  const { navigation, accounts, currencies, persistence } = useMoneeeyStore();
+  const { navigation, accounts, currencies, persistence } = useMoneeeyStore()
   const getAccountCurrency = (account: IAccount) => {
-    const curr = currencies.byUuid(account.currency_uuid);
+    const curr = currencies.byUuid(account.currency_uuid)
     return curr?.short || '?'
-  };
+  }
   return (
     <Menu
       mode='horizontal'
@@ -95,7 +94,7 @@ export const AppMenu = observer(() => {
           onClick: () => navigation.navigate(HomeRoute.url())
         }
       ]}></Menu>
-  );
+  )
 })
 
-export default AppMenu;
+export default AppMenu

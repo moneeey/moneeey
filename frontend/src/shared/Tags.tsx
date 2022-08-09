@@ -1,5 +1,5 @@
-import { forEach } from "lodash"
-import { action, computed, makeObservable, observable } from "mobx"
+import { forEach } from 'lodash'
+import { action, computed, makeObservable, observable } from 'mobx'
 
 export default class TagsStore {
   public readonly available = new Set<string>()

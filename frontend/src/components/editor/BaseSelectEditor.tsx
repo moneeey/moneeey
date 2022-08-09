@@ -1,5 +1,4 @@
-import { compact, flatten } from 'lodash';
-import { BaseEditor, BaseEditorProps } from './BaseEditor';
+import { BaseEditor, BaseEditorProps } from './BaseEditor'
 
 interface BaseSelectEditorProps<EntityType, ValueEditorType, ValueEntityType> extends BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> {
   options: Array<{
@@ -8,7 +7,7 @@ interface BaseSelectEditorProps<EntityType, ValueEditorType, ValueEntityType> ex
   }>;
 }
 
-export function BaseSelectEditor<EntityType>(props: BaseSelectEditorProps<EntityType, any, any>) {
+export function BaseSelectEditor<EntityType, ValueEditorType, ValueEntityType>(props: BaseSelectEditorProps<EntityType, ValueEditorType, ValueEntityType>) {
   return (
     <BaseEditor
       {...{
@@ -20,5 +19,5 @@ export function BaseSelectEditor<EntityType>(props: BaseSelectEditorProps<Entity
         })
       }}
     />
-  );
+  )
 }

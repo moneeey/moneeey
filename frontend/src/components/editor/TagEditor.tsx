@@ -1,10 +1,10 @@
-import { Select } from 'antd';
-import _, { compact, flatten, flattenDeep } from 'lodash';
-import { observer } from 'mobx-react';
-import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import { Select } from 'antd'
+import _, { flattenDeep } from 'lodash'
+import { observer } from 'mobx-react'
+import useMoneeeyStore from '../../shared/useMoneeeyStore'
 
-import { BaseSelectEditor } from './BaseSelectEditor';
-import { EditorProps } from './EditorProps';
+import { BaseSelectEditor } from './BaseSelectEditor'
+import { EditorProps } from './EditorProps'
 
 export const TagEditor = observer(<EntityType,>(props: EditorProps<EntityType, string[], string[]>) => {
   const { tags } = useMoneeeyStore()
@@ -28,5 +28,5 @@ export const TagEditor = observer(<EntityType,>(props: EditorProps<EntityType, s
         ComposedInput: Select
       }}
     />
-  );
-});
+  )
+})

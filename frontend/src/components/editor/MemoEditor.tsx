@@ -1,22 +1,18 @@
-import { DatePicker, Input } from 'antd';
-import { observer } from 'mobx-react';
-import moment from 'moment';
-import { useEffect, useState } from 'react';
-import useMoneeeyStore from '../../shared/useMoneeeyStore';
-
-import { formatDate, TDate } from '../../utils/Date';
-import { TagsMemo } from '../Tags';
-import { BaseEditor } from './BaseEditor';
-import { EditorProps } from './EditorProps';
+import { Input } from 'antd'
+import { observer } from 'mobx-react'
+import { ChangeEvent, useState } from 'react'
+import { TagsMemo } from '../Tags'
+import { BaseEditor } from './BaseEditor'
+import { EditorProps } from './EditorProps'
 
 export const MemoEditor = observer(<EntityType,>(props: EditorProps<EntityType, string, string>) => {
-  const tagsForText = (text: string): string[] => Array.from(text.matchAll(/[^#](#\w+)/g)).map((m: any) => m[1].replace('#', ''));
+  const tagsForText = (text: string): string[] => Array.from(text.matchAll(/[^#](#\w+)/g)).map((m: RegExpMatchArray) => m[1].replace('#', ''))
 
   const entity = props.store.byUuid(props.entityId)
   const value = entity?.[props.field.field]
 
   const [currentValue, setCurrentValue] = useState('')
-  const memo = (currentValue || value || '');
+  const memo = (currentValue || value || '')
   const tags = tagsForText(memo)
 
   return (
@@ -27,7 +23,7 @@ export const MemoEditor = observer(<EntityType,>(props: EditorProps<EntityType, 
         rev: entity?._rev,
         ComposedInput: Input,
         ComposedProps: (onChange) => ({
-          onChange: ({ target: { value } }: any) => {
+          onChange: ({ target: { value } }: ChangeEvent<HTMLInputElement>) => {
             setCurrentValue(value)
             return onChange(value, value, { tags: tagsForText(value) })
           },
@@ -35,5 +31,5 @@ export const MemoEditor = observer(<EntityType,>(props: EditorProps<EntityType, 
         })
       }}
     />
-  );
-});
+  )
+})

@@ -1,11 +1,11 @@
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
 
-import { TDateTime } from '../utils/Date';
+import { TDateTime } from '../utils/Date'
 
-export const generateUuid = () => uuidv4();
+export const generateUuid = () => uuidv4()
 export type TMonetary = number;
 
-export const randomRange = (minn: number, maxx: number) => Math.random() * (maxx - minn) + minn;
+export const randomRange = (minn: number, maxx: number) => Math.random() * (maxx - minn) + minn
 
 export enum EntityType {
   ACCOUNT = 'ACCOUNT',

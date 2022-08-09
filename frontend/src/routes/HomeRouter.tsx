@@ -1,16 +1,14 @@
-import React from 'react';
-
-import Dashboard from '../pages/Dashboard';
-import { IRouteParameters, Route } from './Route';
+import Dashboard from '../pages/Dashboard'
+import { IRouteParameters, Route } from './Route'
 
 class HomeRouter extends Route<IRouteParameters> {
   constructor() {
-    super('/', undefined);
+    super('/', undefined)
   }
 
   render() {
-    return <Dashboard />;
+    return <Dashboard />
   }
 }
 
-export const HomeRoute = new HomeRouter();
+export const HomeRoute = new HomeRouter()

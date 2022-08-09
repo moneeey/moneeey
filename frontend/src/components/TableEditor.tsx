@@ -1,20 +1,20 @@
-import { Table } from 'antd';
-import { ColumnType } from 'antd/lib/table';
-import _ from 'lodash';
-import { action } from 'mobx';
-import { observer } from 'mobx-react';
-import React, { useMemo } from 'react';
-import { IBaseEntity } from '../shared/Entity';
-import MappedStore from '../shared/MappedStore';
-import { AccountEditor } from './editor/AccountEditor';
-import { CurrencyEditor } from './editor/CurrencyEditor';
-import { DateEditor } from './editor/DateEditor';
-import { EditorType, FieldProps } from './editor/EditorProps';
-import { MemoEditor } from './editor/MemoEditor';
-import { NumberEditor } from './editor/NumberEditor';
-import { TagEditor } from './editor/TagEditor';
-import { TextEditor } from './editor/TextEditor';
-import { TransactionValueEditor } from './editor/TransactionValueEditor';
+import { Table } from 'antd'
+import { ColumnType } from 'antd/lib/table'
+import _ from 'lodash'
+import { action } from 'mobx'
+import { observer } from 'mobx-react'
+import React, { useMemo } from 'react'
+import { IBaseEntity } from '../shared/Entity'
+import MappedStore from '../shared/MappedStore'
+import { AccountEditor } from './editor/AccountEditor'
+import { CurrencyEditor } from './editor/CurrencyEditor'
+import { DateEditor } from './editor/DateEditor'
+import { EditorType, FieldProps } from './editor/EditorProps'
+import { MemoEditor } from './editor/MemoEditor'
+import { NumberEditor } from './editor/NumberEditor'
+import { TagEditor } from './editor/TagEditor'
+import { TextEditor } from './editor/TextEditor'
+import { TransactionValueEditor } from './editor/TransactionValueEditor'
 
 interface EntityEditorProps<T extends IBaseEntity, SchemaProps> {
   schemaProps: SchemaProps;
@@ -31,7 +31,7 @@ const EditorTypeToEditor = {
   [EditorType.TAG]: TagEditor,
   [EditorType.MEMO]: MemoEditor,
   [EditorType.TRANSACTION_VALUE]: TransactionValueEditor,
-};
+}
 
 type Row = {
   entityId: string;
@@ -46,21 +46,19 @@ export const TableEditor = observer(
       .map(row => store.getUuid(row))
       .concat('new')
       .map(entityId => ({ entityId })),
-      [store.ids])
+    [store.ids])
 
     const columns: ColumnType<Row>[] = useMemo(() => _(store.schema(schemaProps))
       .values()
       .compact()
-      .sort((a, b) => a.index - b.index)
-      .map((props: FieldProps<any, any, any>): ColumnType<Row> => ({
+      .sort((a: FieldProps<unknown>, b: FieldProps<unknown>) => a.index - b.index)
+      .map((props: FieldProps<unknown>): ColumnType<Row> => ({
         title: props.title,
         dataIndex: props.field,
         sorter: true,
         // sorter: EditorTypeToSorter[props.editor],
-        render: (_value: any, { entityId }: Row): React.ReactNode => {
-          const Editor = EditorTypeToEditor[props.editor] as unknown as any;
-
-          const onUpdate = action((value: any, additional: any = {}) =>
+        render: (_value: unknown, { entityId }: Row): React.ReactNode => {
+          const onUpdate = action((value: unknown, additional: object = {}) =>
             store.merge({
               ...(store.byUuid(entityId) || store.factory(schemaProps)),
               [props.field]: value,
@@ -69,14 +67,14 @@ export const TableEditor = observer(
           )
 
           const key = entityId + '_' + props.field
-          const field = props as unknown as any
 
-          return <Editor {...{ ...schemaProps, store, entityId, key, field, onUpdate }} />
+          const Editor = EditorTypeToEditor[props.editor]
+          return <Editor {...{ ...schemaProps, store, entityId, key, field: props, onUpdate }} />
         }
       })
       )
       .value()
-      , [schemaProps])
+    , [schemaProps])
 
     return (
       <Table
@@ -86,6 +84,6 @@ export const TableEditor = observer(
         dataSource={entities}
         pagination={false}
       />
-    );
+    )
   }
-);
+)

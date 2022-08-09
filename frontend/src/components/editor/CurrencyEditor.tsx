@@ -1,11 +1,11 @@
-import { Select } from 'antd';
-import _ from 'lodash';
-import { observer } from 'mobx-react';
-import { TCurrencyUUID, ICurrency } from '../../shared/Currency';
-import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import { Select } from 'antd'
+import _ from 'lodash'
+import { observer } from 'mobx-react'
+import { TCurrencyUUID } from '../../shared/Currency'
+import useMoneeeyStore from '../../shared/useMoneeeyStore'
 
-import { BaseSelectEditor } from './BaseSelectEditor';
-import { EditorProps } from './EditorProps';
+import { BaseSelectEditor } from './BaseSelectEditor'
+import { EditorProps } from './EditorProps'
 
 export const CurrencyEditor = observer(<EntityType,>(props: EditorProps<EntityType, TCurrencyUUID, TCurrencyUUID>) => {
   const { currencies } = useMoneeeyStore()
@@ -23,5 +23,5 @@ export const CurrencyEditor = observer(<EntityType,>(props: EditorProps<EntityTy
         ComposedInput: Select
       }}
     />
-  );
-});
+  )
+})

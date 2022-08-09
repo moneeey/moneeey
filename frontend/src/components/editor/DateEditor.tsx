@@ -1,10 +1,10 @@
-import { DatePicker } from 'antd';
-import { observer } from 'mobx-react';
-import moment from 'moment';
+import { DatePicker } from 'antd'
+import { observer } from 'mobx-react'
+import moment from 'moment'
 
-import { formatDate, TDate } from '../../utils/Date';
-import { BaseEditor } from './BaseEditor';
-import { EditorProps } from './EditorProps';
+import { formatDate, TDate } from '../../utils/Date'
+import { BaseEditor } from './BaseEditor'
+import { EditorProps } from './EditorProps'
 
 export const DateEditor = observer(<EntityType,>(props: EditorProps<EntityType, moment.Moment, TDate>) => {
   const entity = props.store.byUuid(props.entityId)
@@ -20,5 +20,5 @@ export const DateEditor = observer(<EntityType,>(props: EditorProps<EntityType, 
         })
       }}
     />
-  );
-});
+  )
+})

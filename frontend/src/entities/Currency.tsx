@@ -1,9 +1,9 @@
-import { EditorType } from '../components/editor/EditorProps';
-import { IBaseEntity, EntityType, TMonetary } from '../shared/Entity';
-import MappedStore from '../shared/MappedStore';
-import TagsStore from '../shared/Tags';
-import { currentDateTime } from '../utils/Date';
-import { uuid } from '../utils/Utils';
+import { EditorType } from '../components/editor/EditorProps'
+import { IBaseEntity, EntityType, TMonetary } from '../shared/Entity'
+import MappedStore from '../shared/MappedStore'
+import TagsStore from '../shared/Tags'
+import { currentDateTime } from '../utils/Date'
+import { uuid } from '../utils/Utils'
 
 export type TCurrencyUUID = string;
 
@@ -16,7 +16,7 @@ export interface ICurrency extends IBaseEntity {
   decimals: number;
 }
 
-export class CurrencyStore extends MappedStore<ICurrency, {}> {
+export class CurrencyStore extends MappedStore<ICurrency, unknown> {
   constructor(tagsStore: TagsStore) {
     super(
       tagsStore,
@@ -32,14 +32,14 @@ export class CurrencyStore extends MappedStore<ICurrency, {}> {
         updated: currentDateTime(),
         created: currentDateTime(),
       } as ICurrency),
-      (props) => ({
+      () => ({
         name: {
           title: 'Name',
           field: 'name',
           required: true,
           validate: (value: string) => {
-            if (value.length < 2) return { valid: false, error: 'Please type a name' };
-            return { valid: true };
+            if (value.length < 2) return { valid: false, error: 'Please type a name' }
+            return { valid: true }
           },
           index: 0,
           editor: EditorType.TEXT,
@@ -81,15 +81,15 @@ export class CurrencyStore extends MappedStore<ICurrency, {}> {
           index: 6,
           editor: EditorType.DATE,
         },
-      }));
+      }))
   }
 
   findByName(name: string) {
-    return this.all.filter((c) => c.short === name || c.name === name)[0];
+    return this.all.filter((c) => c.short === name || c.name === name)[0]
   }
 
   findUuidByName(name: string) {
-    return this.findByName(name).currency_uuid;
+    return this.findByName(name).currency_uuid
   }
 
   format(currency: ICurrency, value: TMonetary) {
@@ -100,13 +100,13 @@ export class CurrencyStore extends MappedStore<ICurrency, {}> {
         minimumFractionDigits: currency.decimals
       }) +
       currency.suffix
-    );
+    )
   }
 
   formatByUuid(currency_uuid: TCurrencyUUID, value: TMonetary) {
-    const currency = this.byUuid(currency_uuid);
-    return (currency && this.format(currency, value)) || '';
+    const currency = this.byUuid(currency_uuid)
+    return (currency && this.format(currency, value)) || ''
   }
 }
 
-export default CurrencyStore;
+export default CurrencyStore

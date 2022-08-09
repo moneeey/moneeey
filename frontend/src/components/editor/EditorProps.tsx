@@ -1,4 +1,4 @@
-import MappedStore from '../../shared/MappedStore';
+import MappedStore from '../../shared/MappedStore'
 
 interface validation {
   valid: boolean;
@@ -16,7 +16,7 @@ export enum EditorType {
   TRANSACTION_VALUE='TRANSACTION_VALUE',
 }
 
-export interface FieldProps<FieldEntityType, ValueEditorType, ValueEntityType> {
+export interface FieldProps<ValueEditorType> {
   editor: EditorType;
   field: string;
   title: string;
@@ -28,7 +28,7 @@ export interface FieldProps<FieldEntityType, ValueEditorType, ValueEntityType> {
 
 export interface EditorProps<FieldEntityType, ValueEditorType, ValueEntityType>  {
   entityId: string;
-  field: FieldProps<FieldEntityType, ValueEditorType, ValueEntityType>;
-  store: MappedStore<any, any>;
-  onUpdate: (value: ValueEntityType, additional: any) => FieldEntityType;
+  field: FieldProps<ValueEditorType>;
+  store: MappedStore<never, unknown>;
+  onUpdate: (value: ValueEntityType, additional: object) => FieldEntityType;
 }

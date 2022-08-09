@@ -1,12 +1,12 @@
-import { computed, makeObservable } from 'mobx';
+import { computed, makeObservable } from 'mobx'
 
-import { AccountStore, TAccountUUID } from './Account';
-import { compareDates, currentDate, currentDateTime, TDate } from '../utils/Date';
-import { uuid } from '../utils/Utils';
-import { EditorType } from '../components/editor/EditorProps';
-import { IBaseEntity, TMonetary, EntityType } from '../shared/Entity';
-import MappedStore from '../shared/MappedStore';
-import TagsStore from '../shared/Tags';
+import { AccountStore, TAccountUUID } from './Account'
+import { compareDates, currentDate, currentDateTime, TDate } from '../utils/Date'
+import { uuid } from '../utils/Utils'
+import { EditorType } from '../components/editor/EditorProps'
+import { IBaseEntity, TMonetary, EntityType } from '../shared/Entity'
+import MappedStore from '../shared/MappedStore'
+import TagsStore from '../shared/Tags'
 
 export type TTransactionUUID = string;
 
@@ -20,25 +20,25 @@ export interface ITransaction extends IBaseEntity {
   memo: string;
 }
 
-export class TransactionStore extends MappedStore<ITransaction, {}> {
+export class TransactionStore extends MappedStore<ITransaction, unknown> {
   constructor(tagsStore: TagsStore) {
     super(
       tagsStore,
       (t) => t.transaction_uuid,
-    () => ({
-      entity_type: EntityType.TRANSACTION,
-      transaction_uuid: uuid(),
-      date: currentDate(),
-      from_account: '',
-      to_account: '',
-      from_value: 0,
-      to_value: 0,
-      memo: '',
-      tags: [],
-      updated: currentDateTime(),
-      created: currentDateTime(),
-    }),
-    (props) => ({
+      () => ({
+        entity_type: EntityType.TRANSACTION,
+        transaction_uuid: uuid(),
+        date: currentDate(),
+        from_account: '',
+        to_account: '',
+        from_value: 0,
+        to_value: 0,
+        memo: '',
+        tags: [],
+        updated: currentDateTime(),
+        created: currentDateTime(),
+      }),
+      () => ({
         date: {
           title: 'Date',
           field: 'date',
@@ -76,32 +76,32 @@ export class TransactionStore extends MappedStore<ITransaction, {}> {
           index: 7,
           editor: EditorType.DATE,
         },
-    })
-    );
+      })
+    )
     makeObservable(this, {
       sorted: computed
-    });
+    })
   }
 
   sortTransactions(transactions: ITransaction[]): ITransaction[] {
-    return transactions.sort((a, b) => compareDates(a.date, b.date));
+    return transactions.sort((a, b) => compareDates(a.date, b.date))
   }
 
   get sorted() {
-    return this.sortTransactions(this.all);
+    return this.sortTransactions(this.all)
   }
 
   viewAllWithAccount(account: TAccountUUID) {
-    return this.viewAllWithAccounts([account]);
+    return this.viewAllWithAccounts([account])
   }
 
   filterByAccounts(accounts: TAccountUUID[]) {
-    const accountSet = new Set(accounts);
+    const accountSet = new Set(accounts)
     return (row: ITransaction) => accountSet.has(row.from_account) || accountSet.has(row.to_account)
   }
 
   viewAllWithAccounts(accounts: TAccountUUID[]) {
-    return this.sortTransactions(this.byPredicate(this.filterByAccounts(accounts)));
+    return this.sortTransactions(this.byPredicate(this.filterByAccounts(accounts)))
   }
 
   filterByTag(tag: string, accountsStore: AccountStore) {
@@ -109,18 +109,18 @@ export class TransactionStore extends MappedStore<ITransaction, {}> {
   }
 
   viewAllWithTag(tag: string, accountsStore: AccountStore) {
-    return this.sortTransactions(this.byPredicate(this.filterByTag(tag, accountsStore)));
+    return this.sortTransactions(this.byPredicate(this.filterByTag(tag, accountsStore)))
   }
 
   viewAllNonPayees(accountsStore: AccountStore) {
-    return this.viewAllWithAccounts(accountsStore.allNonPayees.map((act) => act.account_uuid));
+    return this.viewAllWithAccounts(accountsStore.allNonPayees.map((act) => act.account_uuid))
   }
 
   getAllTransactionTags(transaction: ITransaction, accountsStore: AccountStore) {
-    const from_acct = accountsStore.accountTags(transaction.from_account);
-    const to_acct = accountsStore.accountTags(transaction.to_account);
-    return [...from_acct, ...to_acct, ...transaction.tags];
+    const from_acct = accountsStore.accountTags(transaction.from_account)
+    const to_acct = accountsStore.accountTags(transaction.to_account)
+    return [...from_acct, ...to_acct, ...transaction.tags]
   }
 }
 
-export default TransactionStore;
+export default TransactionStore

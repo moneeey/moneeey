@@ -1,64 +1,64 @@
-import { Button, Input, Space } from 'antd';
-import React, { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Button, Input, Space } from 'antd'
+import React, { useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
-import { StatusProps, Status } from '../components/Status';
-import Messages from '../utils/Messages';
-import useMoneeeyStore from '../shared/useMoneeeyStore';
+import { StatusProps, Status } from '../components/Status'
+import Messages from '../utils/Messages'
+import useMoneeeyStore from '../shared/useMoneeeyStore'
 
 export default function Landing() {
-  const { management } = useMoneeeyStore();
-  const [email, setEmail] = React.useState('');
-  const [disabled, setDisabled] = React.useState(false);
-  const [status, setStatus] = React.useState<StatusProps>();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { management } = useMoneeeyStore()
+  const [email, setEmail] = React.useState('')
+  const [disabled, setDisabled] = React.useState(false)
+  const [status, setStatus] = React.useState<StatusProps>()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const onRegisterOrLogin = async () => {
-    setDisabled(true);
-    setStatus({});
+    setDisabled(true)
+    setStatus({})
     if (await management.start(email)) {
-      setStatus({ type: 'success', message: Messages.landing.welcome });
+      setStatus({ type: 'success', message: Messages.landing.welcome })
       const tmr = setInterval(async () => {
         if (await management.checkLoggedIn()) {
-          clearInterval(tmr);
+          clearInterval(tmr)
         }
-      }, 2000);
+      }, 2000)
     } else {
-      setStatus({ type: 'error', message: Messages.landing.failed });
+      setStatus({ type: 'error', message: Messages.landing.failed })
     }
-    setDisabled(false);
-  };
+    setDisabled(false)
+  }
 
   useEffect(() => {
-    management.checkLoggedIn();
-  }, [management]);
+    management.checkLoggedIn()
+  }, [management])
 
   useEffect(() => {
     if (searchParams.has('confirm_code')) {
       (async () => {
-        const email = searchParams.get('email') || '';
-        const auth_code = searchParams.get('auth_code') || '';
-        const confirm_code = searchParams.get('confirm_code') || '';
-        setSearchParams({});
-        const { success, error } = await management.complete(email, auth_code, confirm_code);
+        const email = searchParams.get('email') || ''
+        const auth_code = searchParams.get('auth_code') || ''
+        const confirm_code = searchParams.get('confirm_code') || ''
+        setSearchParams({})
+        const { success, error } = await management.complete(email, auth_code, confirm_code)
         if (!success && error) {
-          let message;
+          let message
           if (error === 'code_expired') {
-            message = Messages.login.code_expired;
+            message = Messages.login.code_expired
           } else if (error === 'confirm_code') {
-            message = Messages.login.confirm_code;
+            message = Messages.login.confirm_code
           } else if (error === 'auth_code') {
-            message = Messages.login.auth_code;
+            message = Messages.login.auth_code
           }
           if (message) {
-            setStatus({ type: 'error', message });
+            setStatus({ type: 'error', message })
           }
         } else if (success) {
-          setStatus({ type: 'success', message: Messages.login.completed });
+          setStatus({ type: 'success', message: Messages.login.completed })
         }
-      })();
+      })()
     }
-  }, [searchParams, setSearchParams, management]);
+  }, [searchParams, setSearchParams, management])
 
   return (
     <section className='landing'>
@@ -84,5 +84,5 @@ export default function Landing() {
         <Status {...status} />
       </Space>
     </section>
-  );
+  )
 }

@@ -1,12 +1,12 @@
-import { Input, Select } from 'antd';
-import _ from 'lodash';
-import { observer } from 'mobx-react';
-import { TAccountUUID } from '../../entities/Account';
-import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import { TagsFrom, TagsTo } from '../Tags';
+import { Input, Select } from 'antd'
+import _ from 'lodash'
+import { observer } from 'mobx-react'
+import { TAccountUUID } from '../../entities/Account'
+import useMoneeeyStore from '../../shared/useMoneeeyStore'
+import { TagsFrom, TagsTo } from '../Tags'
 
-import { BaseSelectEditor } from './BaseSelectEditor';
-import { EditorProps } from './EditorProps';
+import { BaseSelectEditor } from './BaseSelectEditor'
+import { EditorProps } from './EditorProps'
 
 export const AccountEditor = observer(<EntityType,>(props: EditorProps<EntityType, TAccountUUID, TAccountUUID>) => {
   const { accounts } = useMoneeeyStore()
@@ -31,5 +31,5 @@ export const AccountEditor = observer(<EntityType,>(props: EditorProps<EntityTyp
       />
       <TagsComponent tags={tags} />
     </Input.Group>
-  );
-});
+  )
+})

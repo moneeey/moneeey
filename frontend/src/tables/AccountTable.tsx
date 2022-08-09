@@ -1,8 +1,8 @@
-import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite'
 
-import { TableEditor } from '../components/TableEditor';
-import { AccountStore, AccountType, IAccount } from '../entities/Account';
-import { CurrencyStore } from '../entities/Currency';
+import { TableEditor } from '../components/TableEditor'
+import { AccountStore, AccountType } from '../entities/Account'
+import { CurrencyStore } from '../entities/Currency'
 
 interface AccountSettingsProps {
   accounts: AccountStore;

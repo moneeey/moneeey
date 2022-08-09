@@ -1,22 +1,18 @@
-import React from 'react';
+import { Reports } from '../pages/Reports'
+import { HomeRoute } from './HomeRouter'
+import { IRouteParameters, Route } from './Route'
 
-import { Reports } from '../pages/Reports';
-import { HomeRoute } from './HomeRouter';
-import { IRouteParameters, Route } from './Route';
-
-interface IReportsRoute extends IRouteParameters {
-
-}
+type IReportsRoute = IRouteParameters
 
 class ReportsRouter extends Route<IReportsRoute> {
   constructor() {
-    super('/reports', HomeRoute);
-    this.parent?.addChild(this);
+    super('/reports', HomeRoute)
+    this.parent?.addChild(this)
   }
 
   render() {
-    return <Reports />;
+    return <Reports />
   }
 }
 
-export const ReportsRoute = new ReportsRouter();
+export const ReportsRoute = new ReportsRouter()

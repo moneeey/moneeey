@@ -1,13 +1,12 @@
-import { computed, makeObservable } from 'mobx';
+import { computed, makeObservable } from 'mobx'
 
-import { CurrencyEditor } from '../components/editor/CurrencyEditor';
-import { EditorType } from '../components/editor/EditorProps';
-import { ICurrency, TCurrencyUUID } from './Currency';
-import { currentDateTime, TDate } from '../utils/Date';
-import { EntityType, IBaseEntity } from '../shared/Entity';
-import MappedStore from '../shared/MappedStore';
-import { uuid } from '../utils/Utils';
-import TagsStore from '../shared/Tags';
+import { EditorType } from '../components/editor/EditorProps'
+import { ICurrency, TCurrencyUUID } from './Currency'
+import { currentDateTime, TDate } from '../utils/Date'
+import { EntityType, IBaseEntity } from '../shared/Entity'
+import MappedStore from '../shared/MappedStore'
+import { uuid } from '../utils/Utils'
+import TagsStore from '../shared/Tags'
 
 export type TAccountUUID = string;
 
@@ -45,14 +44,14 @@ export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
         created: currentDateTime(),
         updated: currentDateTime(),
       }),
-      (props) => ({
+      () => ({
         name: {
           title: 'Name',
           field: 'name',
           required: true,
           validate: (value: string) => {
-            if (value.length < 2) return { valid: false, error: 'Please type a name' };
-            return { valid: true };
+            if (value.length < 2) return { valid: false, error: 'Please type a name' }
+            return { valid: true }
           },
           index: 0,
           editor: EditorType.TEXT,
@@ -78,7 +77,7 @@ export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
           editor: EditorType.DATE,
         },
       })
-    );
+    )
 
     makeObservable(this, {
       allPayees: computed,
@@ -87,26 +86,26 @@ export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
   }
 
   get allPayees() {
-    return this.all.filter((acct) => acct.type === AccountType.PAYEE);
+    return this.all.filter((acct) => acct.type === AccountType.PAYEE)
   }
 
   get allNonPayees() {
-    return this.all.filter((acct) => acct.type !== AccountType.PAYEE);
+    return this.all.filter((acct) => acct.type !== AccountType.PAYEE)
   }
 
   byName(name: string) {
-    return this.all.filter((acct) => acct.name === name)[0];
+    return this.all.filter((acct) => acct.name === name)[0]
   }
 
   uuidByName(name: string) {
-    return this.byName(name).account_uuid;
+    return this.byName(name).account_uuid
   }
 
   accountTags(account_uuid: TAccountUUID) {
-    const acct = this.byUuid(account_uuid);
-    if (acct) return acct.tags;
-    return [];
+    const acct = this.byUuid(account_uuid)
+    if (acct) return acct.tags
+    return []
   }
 }
 
-export default AccountStore;
+export default AccountStore

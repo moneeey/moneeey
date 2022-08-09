@@ -1,7 +1,7 @@
-import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite'
 
-import { TableEditor } from '../components/TableEditor';
-import { CurrencyStore } from '../entities/Currency';
+import { TableEditor } from '../components/TableEditor'
+import { CurrencyStore } from '../entities/Currency'
 
 interface CurrencySettingsProps {
   currencies: CurrencyStore;
@@ -9,6 +9,6 @@ interface CurrencySettingsProps {
 
 const CurrencyTable = observer(({ currencies }: CurrencySettingsProps) => (
   <TableEditor store={currencies} schemaProps={{}} />
-));
+))
 
 export { CurrencyTable, CurrencyTable as default }
