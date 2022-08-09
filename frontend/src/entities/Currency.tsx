@@ -1,7 +1,7 @@
 import { EditorType } from '../components/editor/EditorProps'
 import { IBaseEntity, EntityType, TMonetary } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
-import TagsStore from '../shared/Tags'
+import MoneeeyStore from '../shared/MoneeeyStore'
 import { currentDateTime } from '../utils/Date'
 import { uuid } from '../utils/Utils'
 
@@ -16,10 +16,10 @@ export interface ICurrency extends IBaseEntity {
   decimals: number;
 }
 
-export class CurrencyStore extends MappedStore<ICurrency, unknown> {
-  constructor(tagsStore: TagsStore) {
+export class CurrencyStore extends MappedStore<ICurrency> {
+  constructor(moneeeyStore: MoneeeyStore) {
     super(
-      tagsStore,
+      moneeeyStore,
       (c) => c.currency_uuid,
       () => ({
         entity_type: EntityType.CURRENCY,

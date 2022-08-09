@@ -1,6 +1,6 @@
 import { Table } from 'antd'
 import { ColumnType } from 'antd/lib/table'
-import _ from 'lodash'
+import _, { compact, values } from 'lodash'
 import { action } from 'mobx'
 import { observer } from 'mobx-react'
 import React, { useMemo } from 'react'
@@ -9,20 +9,20 @@ import MappedStore from '../shared/MappedStore'
 import { AccountEditor } from './editor/AccountEditor'
 import { CurrencyEditor } from './editor/CurrencyEditor'
 import { DateEditor } from './editor/DateEditor'
-import { EditorType, FieldProps } from './editor/EditorProps'
+import { EditorProps, EditorType, FieldProps } from './editor/EditorProps'
 import { MemoEditor } from './editor/MemoEditor'
 import { NumberEditor } from './editor/NumberEditor'
 import { TagEditor } from './editor/TagEditor'
 import { TextEditor } from './editor/TextEditor'
 import { TransactionValueEditor } from './editor/TransactionValueEditor'
 
-interface EntityEditorProps<T extends IBaseEntity, SchemaProps> {
-  schemaProps: SchemaProps;
-  store: MappedStore<T, SchemaProps>;
-  schemaFilter?: (schema: SchemaProps, row: T) => boolean;
+interface EntityEditorProps<T extends IBaseEntity> {
+  store: MappedStore<T>;
+  schemaFilter?: (row: T) => boolean;
+  factory: () => T;
 }
 
-const EditorTypeToEditor = {
+const EditorTypeToEditor: Record<EditorType, (pros: EditorProps<unknown, unknown, unknown>) => JSX.Element> = {
   [EditorType.TEXT]: TextEditor,
   [EditorType.NUMBER]: NumberEditor,
   [EditorType.DATE]: DateEditor,
@@ -38,21 +38,19 @@ type Row = {
 }
 
 export const TableEditor = observer(
-  <T extends IBaseEntity, SchemaProps>({ schemaFilter, store, schemaProps }: EntityEditorProps<T, SchemaProps>) => {
+  <T extends IBaseEntity>({ schemaFilter, store, factory }: EntityEditorProps<T>) => {
 
     const entities = useMemo(() => store.ids
       .map(id => store.byUuid(id) as T)
-      .filter(row => !schemaFilter || schemaFilter(schemaProps, row))
+      .filter(row => !schemaFilter || schemaFilter(row))
       .map(row => store.getUuid(row))
       .concat('new')
       .map(entityId => ({ entityId })),
-    [store.ids])
+    [store, store.ids])
 
-    const columns: ColumnType<Row>[] = useMemo(() => _(store.schema(schemaProps))
-      .values()
-      .compact()
-      .sort((a: FieldProps<unknown>, b: FieldProps<unknown>) => a.index - b.index)
-      .map((props: FieldProps<unknown>): ColumnType<Row> => ({
+    const columns: ColumnType<Row>[] = useMemo(() => compact(values(store.schema()))
+      .sort((a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index)
+      .map((props: FieldProps<never>): ColumnType<Row> => ({
         title: props.title,
         dataIndex: props.field,
         sorter: true,
@@ -60,7 +58,7 @@ export const TableEditor = observer(
         render: (_value: unknown, { entityId }: Row): React.ReactNode => {
           const onUpdate = action((value: unknown, additional: object = {}) =>
             store.merge({
-              ...(store.byUuid(entityId) || store.factory(schemaProps)),
+              ...(store.byUuid(entityId) || factory()),
               [props.field]: value,
               ...additional
             } as T)
@@ -68,13 +66,12 @@ export const TableEditor = observer(
 
           const key = entityId + '_' + props.field
 
-          const Editor = EditorTypeToEditor[props.editor]
-          return <Editor {...{ ...schemaProps, store, entityId, key, field: props, onUpdate }} />
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const Editor = EditorTypeToEditor[props.editor] as unknown as any
+          return <Editor {...{ store, entityId, key, field: props, onUpdate }} />
         }
-      })
-      )
-      .value()
-    , [schemaProps])
+      }))
+    , [store])
 
     return (
       <Table

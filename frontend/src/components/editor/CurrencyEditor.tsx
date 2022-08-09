@@ -1,7 +1,7 @@
 import { Select } from 'antd'
 import _ from 'lodash'
 import { observer } from 'mobx-react'
-import { TCurrencyUUID } from '../../shared/Currency'
+import { TCurrencyUUID } from '../../entities/Currency'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 
 import { BaseSelectEditor } from './BaseSelectEditor'

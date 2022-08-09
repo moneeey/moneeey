@@ -10,10 +10,8 @@ interface IMappedRoute {
 }
 
 const RouteElem = observer(({route, app }: { route: MyRoute<IRouteParameters>, app: IAppParameters }) => {
-  const params = useParams()
-  const Render = route.render
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return <Render parameters={params as any} app={app} />
+  const parameters = _.reduce(useParams(), (accum, value, key) => ({ ...accum, [key]: value }), {})
+  return <>{route.render({ parameters, app })}</>
 })
 
 const Navigator = ({ app }: { app: IAppParameters }) => {
@@ -58,5 +56,4 @@ const RouteRenderer = observer(<IParameters extends IRouteParameters>({
   )
 })
 
-export { RouteRenderer }
-export default RouteRenderer
+export { RouteRenderer, RouteRenderer as default }

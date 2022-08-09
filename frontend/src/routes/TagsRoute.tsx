@@ -17,7 +17,7 @@ class TagsRouter extends Route<ITagsRoute> {
   render({ app, parameters}: { app: IAppParameters, parameters: ITagsRoute }) {
     const { transactions, accounts, currencies } = app.moneeeyStore
     const filterByTag = transactions.filterByTag(parameters.tag, accounts)
-    const schemaFilter = (_sp: unknown, row: ITransaction) => filterByTag(row)
+    const schemaFilter = (row: ITransaction) => filterByTag(row)
     const referenceAccount = ''
     return <TransactionTable {...{ transactions, accounts, currencies, schemaFilter, referenceAccount, tag: parameters.tag }} />
   }

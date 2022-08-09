@@ -20,7 +20,7 @@ export default class PersistenceStore {
   private syncables: ({
     uuid: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store: MappedStore<any, unknown>
+    store: MappedStore<any>;
   })[] = []
   private _commit
 
@@ -102,7 +102,7 @@ export default class PersistenceStore {
     }
   }
 
-  persist<EntityType extends IBaseEntity>(store: MappedStore<EntityType, unknown>, item: EntityType) {
+  persist<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, item: EntityType) {
     console.log('Sync will persist', { item })
     this.syncables.push({ store: store as never, uuid: store.getUuid(item) })
     this._commit()
@@ -123,7 +123,7 @@ export default class PersistenceStore {
     return values(this.entries).filter((e) => e.entity_type === type)
   }
 
-  monitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType, unknown>, type: EntityType) {
+  monitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType>, type: EntityType) {
     this.retrieve(type).forEach((e) => store.merge(e as TEntityType))
     observe(store.itemsByUuid, (changes) => {
       if (changes.type === 'add') {

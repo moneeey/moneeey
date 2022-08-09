@@ -22,7 +22,7 @@ const AccountTransactions = observer(({ slug, account_name, moneeyStore: { trans
   if (account) {
     const { account_uuid } = account
     const filterByAccount = transactions.filterByAccounts([account_uuid])
-    const schemaFilter = (_sp: unknown, row: ITransaction) => filterByAccount(row)
+    const schemaFilter = (row: ITransaction) => filterByAccount(row)
     const referenceAccount = account_uuid
     return <TransactionTable {...{ transactions, accounts, currencies, schemaFilter, referenceAccount, account_name }} />
   }

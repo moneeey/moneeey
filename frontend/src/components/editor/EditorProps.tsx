@@ -1,3 +1,4 @@
+import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore'
 
 interface validation {
@@ -29,6 +30,6 @@ export interface FieldProps<ValueEditorType> {
 export interface EditorProps<FieldEntityType, ValueEditorType, ValueEntityType>  {
   entityId: string;
   field: FieldProps<ValueEditorType>;
-  store: MappedStore<never, unknown>;
+  store: MappedStore<any>;
   onUpdate: (value: ValueEntityType, additional: object) => FieldEntityType;
 }

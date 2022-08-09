@@ -10,9 +10,9 @@ import TagsStore from './Tags'
 export default class MoneeeyStore {
   tags = new TagsStore()
   navigation = new NavigationStore()
-  accounts = new AccountStore(this.tags)
-  transactions = new TransactionStore(this.tags)
-  currencies = new CurrencyStore(this.tags)
+  accounts = new AccountStore(this)
+  transactions = new TransactionStore(this)
+  currencies = new CurrencyStore(this)
   persistence = new PersistenceStore()
   management = new ManagementStore()
 

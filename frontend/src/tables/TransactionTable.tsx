@@ -9,7 +9,7 @@ interface TransactionSettingsProps {
   transactions: TransactionStore;
   accounts: AccountStore;
   currencies: CurrencyStore;
-  schemaFilter: (schema: unknown, row: ITransaction) => boolean;
+  schemaFilter: (row: ITransaction) => boolean;
   referenceAccount: TAccountUUID;
 }
 

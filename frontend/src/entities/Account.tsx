@@ -1,12 +1,12 @@
 import { computed, makeObservable } from 'mobx'
 
 import { EditorType } from '../components/editor/EditorProps'
-import { ICurrency, TCurrencyUUID } from './Currency'
+import { TCurrencyUUID } from './Currency'
 import { currentDateTime, TDate } from '../utils/Date'
 import { EntityType, IBaseEntity } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import { uuid } from '../utils/Utils'
-import TagsStore from '../shared/Tags'
+import MoneeeyStore from '../shared/MoneeeyStore'
 
 export type TAccountUUID = string;
 
@@ -24,23 +24,18 @@ export interface IAccount extends IBaseEntity {
   type: AccountType;
 }
 
-interface IAccountSchemaFactory {
-  currencies: ICurrency[];
-  type: AccountType;
-}
-
-export class AccountStore extends MappedStore<IAccount, IAccountSchemaFactory> {
-  constructor(tagsStore: TagsStore) {
+export class AccountStore extends MappedStore<IAccount> {
+  constructor(moneeeyStore: MoneeeyStore) {
     super(
-      tagsStore,
-      (a) => a.account_uuid,
-      (props) => ({
+      moneeeyStore,
+      (a: IAccount) => a.account_uuid,
+      () => ({
         entity_type: EntityType.ACCOUNT,
         name: '',
         account_uuid: uuid(),
         tags: [],
-        currency_uuid: props.currencies[0]?.currency_uuid,
-        type: props.type,
+        currency_uuid: moneeeyStore.currencies.all[0]?.currency_uuid,
+        type: AccountType.CHECKING,
         created: currentDateTime(),
         updated: currentDateTime(),
       }),

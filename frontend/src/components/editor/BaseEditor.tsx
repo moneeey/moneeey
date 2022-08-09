@@ -8,7 +8,7 @@ type OnChange<ValueEditorType, ValueEntityType> = (value: ValueEntityType, edito
 export interface BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> extends EditorProps<EntityType, ValueEditorType, ValueEntityType> {
   value: ValueEditorType;
   rev: string;
-  ComposedInput: JSX.Element;
+  ComposedInput: any;
   ComposedProps: (onChange: OnChange<ValueEditorType, ValueEntityType>) => object;
 }
 
@@ -27,10 +27,11 @@ export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
   const [currentValue, setCurrentValue] = useState(value)
   const [error, setError] = useState('')
   const onChange = (value: ValueEntityType, editorValue?: ValueEditorType, additional: object = {}) => {
-    setCurrentValue((editorValue || value) as ValueEditorType)
+    const newValue = (editorValue || value) as ValueEditorType
+    setCurrentValue(newValue)
     setError('')
     if (validate) {
-      const { valid, error } = validate(value as unknown as ValueEditorType)
+      const { valid, error } = validate(newValue)
       if (!valid) {
         setError(error || '')
         return

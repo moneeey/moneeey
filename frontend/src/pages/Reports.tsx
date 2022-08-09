@@ -21,10 +21,10 @@ async function asyncTimeout(fn: () => void, delay: number) {
   })
 }
 
-async function asyncProcess<T>(
+async function asyncProcess<T, State>(
   values: T[],
-  fn: (chnk: T[], state: object, chunks: T[][], tasks: number, tasksTotal: number) => void,
-  state: object = {},
+  fn: (chnk: T[], state: State, chunks: T[][], tasks: number, tasksTotal: number) => void,
+  state: State,
   chunkSize = 20,
   chunkThrottle = 2
 ) {
@@ -39,7 +39,7 @@ async function asyncProcess<T>(
 
 interface AsyncProcessTransactions {
   accounts: TAccountUUID[];
-  fn: (transaction: ITransaction, stt: object) => void;
+  fn: (transaction: ITransaction, stt: ReportAsyncState) => void;
   period: PeriodGroup;
   moneeeyStore: MoneeeyStore;
   setRows: (t: ITransaction[]) => void;

@@ -6,7 +6,7 @@ import { uuid } from '../utils/Utils'
 import { EditorType } from '../components/editor/EditorProps'
 import { IBaseEntity, TMonetary, EntityType } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
-import TagsStore from '../shared/Tags'
+import MoneeeyStore from '../shared/MoneeeyStore'
 
 export type TTransactionUUID = string;
 
@@ -20,10 +20,10 @@ export interface ITransaction extends IBaseEntity {
   memo: string;
 }
 
-export class TransactionStore extends MappedStore<ITransaction, unknown> {
-  constructor(tagsStore: TagsStore) {
+export class TransactionStore extends MappedStore<ITransaction> {
+  constructor(moneeeyStore: MoneeeyStore) {
     super(
-      tagsStore,
+      moneeeyStore,
       (t) => t.transaction_uuid,
       () => ({
         entity_type: EntityType.TRANSACTION,

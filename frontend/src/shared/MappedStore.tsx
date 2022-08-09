@@ -3,7 +3,7 @@ import { action, computed, makeObservable, observable } from 'mobx'
 import { FieldProps } from '../components/editor/EditorProps'
 import { currentDateTime } from '../utils/Date'
 import { IBaseEntity } from './Entity'
-import TagsStore from './Tags'
+import MoneeeyStore from './MoneeeyStore'
 
 type UUIDGetter<T> = (item: T) => string;
 
@@ -11,20 +11,20 @@ type RecordMap<T, V> = {
   [P in Exclude<keyof T, 'toString'>]?: V
 }
 
-export type SchemaFactory<T extends IBaseEntity, SchemaFactoryProps> = (props: SchemaFactoryProps) => RecordMap<T, FieldProps<never, never, never>>;
+export type SchemaFactory<T extends IBaseEntity> = () => RecordMap<T, FieldProps<never>>;
 
-export default class MappedStore<T extends IBaseEntity, SchemaFactoryProps> {
+export default class MappedStore<T extends IBaseEntity> {
   public readonly itemsByUuid = new Map<string, T>()
   public readonly getUuid: UUIDGetter<T>
-  public readonly schema: (props: SchemaFactoryProps) => RecordMap<T, FieldProps<never, never, never>>
-  public readonly factory: (props: SchemaFactoryProps) => T
-  public readonly tagsStore: TagsStore
+  public readonly schema: () => RecordMap<T, FieldProps<never>>
+  public readonly factory: () => T
+  public readonly moneeeyStore: MoneeeyStore
 
-  constructor(tagsStore: TagsStore, getUuid: UUIDGetter<T>, factory: (props: SchemaFactoryProps) => T, schema: SchemaFactory<T, SchemaFactoryProps>) {
+  constructor(moneeeyStore: MoneeeyStore, getUuid: UUIDGetter<T>, factory: () => T, schema: SchemaFactory<T>) {
     this.getUuid = getUuid
     this.schema = schema
     this.factory = factory
-    this.tagsStore = tagsStore
+    this.moneeeyStore = moneeeyStore
     makeObservable(this, {
       itemsByUuid: observable,
       merge: action,
@@ -36,7 +36,7 @@ export default class MappedStore<T extends IBaseEntity, SchemaFactoryProps> {
 
   merge(item: T, options: { setUpdated: boolean } = { setUpdated: true }) {
     const uuid = this.getUuid(item)
-    this.tagsStore.registerAll(item.tags)
+    this.moneeeyStore.tags.registerAll(item.tags)
     this.itemsByUuid.set(uuid, {
       ...item,
       _id: item.entity_type + '-' + uuid,
