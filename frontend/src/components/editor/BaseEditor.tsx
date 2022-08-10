@@ -27,8 +27,8 @@ export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
 }: BaseEditorProps<EntityType, ValueEditorType, ValueEntityType>) {
   const [currentValue, setCurrentValue] = useState(value)
   const [error, setError] = useState('')
-  const onChange = (value?: ValueEntityType, editorValue?: ValueEditorType, additional: object = {}) => {
-    const newValue = (editorValue || value) as ValueEditorType
+  const onChange = (entityValue?: ValueEntityType, editorValue?: ValueEditorType, additional: object = {}) => {
+    const newValue = (editorValue || entityValue) as ValueEditorType
     setCurrentValue(newValue)
     setError('')
     if (validate) {
@@ -38,7 +38,7 @@ export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
         return
       }
     }
-    onUpdate && onUpdate(newValue as unknown as ValueEntityType, additional)
+    onUpdate && onUpdate((entityValue || editorValue) as unknown as ValueEntityType, additional)
   }
   useEffect(() => {
     setCurrentValue(value)
