@@ -2,7 +2,11 @@ import { Input, Select } from 'antd'
 import _ from 'lodash'
 import { observer } from 'mobx-react'
 import { TAccountUUID } from '../../entities/Account'
+import { IBaseEntity } from '../../shared/Entity'
+import MappedStore from '../../shared/MappedStore'
+import MoneeeyStore from '../../shared/MoneeeyStore'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
+import { Row } from '../TableEditor'
 import { TagsFrom, TagsTo } from '../Tags'
 
 import { BaseSelectEditor } from './BaseSelectEditor'
@@ -33,3 +37,12 @@ export const AccountEditor = observer(<EntityType,>(props: EditorProps<EntityTyp
     </Input.Group>
   )
 })
+
+export const AccountSorter = <EntityType extends IBaseEntity,>(store: MappedStore<EntityType>, field: keyof EntityType, moneeeyStore: MoneeeyStore) =>
+  (a?: Row, b?: Row, asc?: boolean): number => {
+    const entityA = store.byUuid(a?.entityId||'')
+    const entityB = store.byUuid(b?.entityId||'')
+    const av = moneeeyStore.accounts.nameForUuid('' + entityA?.[field] || '')
+    const bv = moneeeyStore.accounts.nameForUuid('' + entityB?.[field] || '')
+    return asc ? av.localeCompare(bv) : bv.localeCompare(av)
+  }

@@ -2,7 +2,7 @@ import { observer } from 'mobx-react'
 import { ITransaction } from '../../entities/Transaction'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { EditorProps } from './EditorProps'
-import { NumberEditor } from './NumberEditor'
+import { NumberEditor, NumberSorter } from './NumberEditor'
 
 export const TransactionValueEditor = observer(<EntityType,>(props: EditorProps<EntityType, number, number>) => {
   const entity = props.store.byUuid(props.entityId) as ITransaction
@@ -55,3 +55,5 @@ export const TransactionValueEditor = observer(<EntityType,>(props: EditorProps<
     </div>
   }
 })
+
+export const TransactionValueSorter = NumberSorter

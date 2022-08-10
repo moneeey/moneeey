@@ -101,6 +101,12 @@ export class AccountStore extends MappedStore<IAccount> {
     if (acct) return acct.tags
     return []
   }
+
+  nameForUuid(account_uuid: TAccountUUID) {
+    const acct = this.byUuid(account_uuid)
+    if (acct) return acct.name
+    return ''
+  }
 }
 
 export default AccountStore

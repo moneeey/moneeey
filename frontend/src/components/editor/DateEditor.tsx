@@ -1,8 +1,11 @@
 import { DatePicker } from 'antd'
 import { observer } from 'mobx-react'
 import moment from 'moment'
+import { IBaseEntity } from '../../shared/Entity'
+import MappedStore from '../../shared/MappedStore'
 
-import { formatDate, TDate } from '../../utils/Date'
+import { formatDate, TDate, compareDates } from '../../utils/Date'
+import { Row } from '../TableEditor'
 import { BaseEditor } from './BaseEditor'
 import { EditorProps } from './EditorProps'
 
@@ -22,3 +25,13 @@ export const DateEditor = observer(<EntityType,>(props: EditorProps<EntityType, 
     />
   )
 })
+
+export const DateSorter = <EntityType extends IBaseEntity,>(store: MappedStore<EntityType>, field: keyof EntityType) =>
+  (a?: Row, b?: Row, asc?: boolean): number => {
+    const entityA = store.byUuid(a?.entityId||'')
+    const entityB = store.byUuid(b?.entityId||'')
+    const av = '' + entityA?.[field] || ''
+    const bv = '' + entityB?.[field] || ''
+
+    return asc ? compareDates(av, bv) : compareDates(bv, av)
+  }

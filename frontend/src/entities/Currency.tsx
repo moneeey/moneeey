@@ -107,6 +107,11 @@ export class CurrencyStore extends MappedStore<ICurrency> {
     const currency = this.byUuid(currency_uuid)
     return (currency && this.format(currency, value)) || ''
   }
+
+  nameForUuid(currency_uuid: TCurrencyUUID) {
+    const currency = this.byUuid(currency_uuid)
+    return (currency && currency.name) || ''
+  }
 }
 
 export default CurrencyStore
