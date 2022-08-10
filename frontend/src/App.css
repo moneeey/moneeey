@@ -21,7 +21,8 @@
 .entityEditor .ant-select-selector,
 .entityEditor input,
 .entityEditor .ant-input-number,
-.entityEditor .ant-picker {
+.entityEditor .ant-picker,
+.entityEditor .ant-input-affix-wrapper {
   width: 100% !important;
   border: 0 !important;
 }
@@ -70,4 +71,10 @@
 .landing {
   text-align: left;
   padding: 1em;
+}
+
+.transactionMultiEditor > label {
+  width: 50%;
+  max-width: 50%;
+  display: inline-flex;
 }

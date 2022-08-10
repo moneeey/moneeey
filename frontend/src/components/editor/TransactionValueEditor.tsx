@@ -17,6 +17,7 @@ export const TransactionValueEditor = observer(<EntityType,>(props: EditorProps<
   if (isSameCurrency) {
     return <NumberEditor {...{
       ...props,
+      rev: entity?._rev,
       prefix: fromCurrency?.prefix,
       suffix: fromCurrency?.suffix,
       value: entity?.from_value,
@@ -26,12 +27,14 @@ export const TransactionValueEditor = observer(<EntityType,>(props: EditorProps<
       }),
     }} />
   } else {
-    return <>
+    return <div className="transactionMultiEditor">
       <NumberEditor {...{
         ...props,
+        rev: entity?._rev,
         prefix: fromCurrency?.prefix,
         suffix: fromCurrency?.suffix,
         value: entity?.from_value,
+        field: { ...props.field, field: 'from_value' },
         onUpdate: (value: number) => props.onUpdate(0, {
           from_value: value,
           to_value: entity?.to_value,
@@ -39,14 +42,16 @@ export const TransactionValueEditor = observer(<EntityType,>(props: EditorProps<
       }} />
       <NumberEditor {...{
         ...props,
+        rev: entity?._rev,
         prefix: toCurrency?.prefix,
         suffix: toCurrency?.suffix,
         value: entity?.to_value,
+        field: { ...props.field, field: 'to_value' },
         onUpdate: (value: number) => props.onUpdate(0, {
           from_value: entity?.from_value,
           to_value: value,
         }),
       }} />
-    </>
+    </div>
   }
 })

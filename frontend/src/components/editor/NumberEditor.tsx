@@ -1,5 +1,6 @@
-import { InputNumber } from 'antd'
+import { Input } from 'antd'
 import { observer } from 'mobx-react'
+import { ChangeEvent } from 'react'
 
 import { BaseEditor } from './BaseEditor'
 import { EditorProps } from './EditorProps'
@@ -18,11 +19,11 @@ export const NumberEditor = observer(<EntityType,>(props: EditorProps<EntityType
         ...props,
         value: entity?.[props.field.field],
         rev: entity?._rev,
-        ComposedInput: InputNumber,
+        ComposedInput: Input,
         ComposedProps: (onChange: (value?: number, editorValue?: number, additional?: Partial<EntityType>) => void) => ({
           prefix,
-          addonAfter: suffix,
-          onChange: (value: number | null) => value && onChange(value, value, {})
+          suffix,
+          onChange: ({ target: { value } }: ChangeEvent<HTMLInputElement>) => onChange(parseInt(value), parseInt(value), {}),
         })
       }}
     />
