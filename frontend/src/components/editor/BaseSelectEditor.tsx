@@ -12,9 +12,9 @@ export function BaseSelectEditor<EntityType, ValueEditorType, ValueEntityType>(p
     <BaseEditor
       {...{
         ...props,
-        ComposedProps: (onChange) => ({
+        ComposedProps: (onChange: (value?: ValueEntityType, editorValue?: ValueEditorType, additional?: object) => void) => ({
           options: props.options,
-          onSelect: (value: string) => onChange(value),
+          onSelect: (value: ValueEditorType) => onChange(undefined, value, undefined),
           ...props.ComposedProps(onChange),
         })
       }}

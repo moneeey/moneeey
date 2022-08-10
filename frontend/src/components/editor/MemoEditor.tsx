@@ -22,7 +22,7 @@ export const MemoEditor = observer(<EntityType,>(props: EditorProps<EntityType, 
         value: memo.replace('##', '#'),
         rev: entity?._rev,
         ComposedInput: Input,
-        ComposedProps: (onChange) => ({
+        ComposedProps: (onChange: (value?: string, editorValue?: string, additional?: object) => void) => ({
           onChange: ({ target: { value } }: ChangeEvent<HTMLInputElement>) => {
             setCurrentValue(value)
             return onChange(value, value, { tags: tagsForText(value) })

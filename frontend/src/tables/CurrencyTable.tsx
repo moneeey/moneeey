@@ -8,7 +8,7 @@ interface CurrencySettingsProps {
 }
 
 const CurrencyTable = observer(({ currencies }: CurrencySettingsProps) => (
-  <TableEditor store={currencies} schemaProps={{}} />
+  <TableEditor store={currencies} factory={() => currencies.factory()} />
 ))
 
 export { CurrencyTable, CurrencyTable as default }

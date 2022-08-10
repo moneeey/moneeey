@@ -1,6 +1,6 @@
 import { Table } from 'antd'
 import { ColumnType } from 'antd/lib/table'
-import _, { compact, values } from 'lodash'
+import { compact, values } from 'lodash'
 import { action } from 'mobx'
 import { observer } from 'mobx-react'
 import React, { useMemo } from 'react'

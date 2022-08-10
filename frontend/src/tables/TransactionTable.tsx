@@ -13,8 +13,8 @@ interface TransactionSettingsProps {
   referenceAccount: TAccountUUID;
 }
 
-const TransactionTable = observer(({ transactions, currencies, accounts, schemaFilter, referenceAccount, ...rest }: TransactionSettingsProps) => (
-  <TableEditor store={transactions} schemaProps={{ currencies: currencies.all, accounts: accounts.all, referenceAccount, ...rest }} schemaFilter={schemaFilter} />
+const TransactionTable = observer(({ transactions, schemaFilter }: TransactionSettingsProps) => (
+  <TableEditor store={transactions} schemaFilter={schemaFilter} factory={() => transactions.factory()} />
 ))
 
 export { TransactionTable, TransactionTable as default }

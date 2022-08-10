@@ -13,8 +13,8 @@ export const NumberEditor = observer(<EntityType,>(props: EditorProps<EntityType
         value: entity?.[props.field.field],
         rev: entity?._rev,
         ComposedInput: InputNumber,
-        ComposedProps: (onChange) => ({
-          onChange: (value: number | null) => onChange(value)
+        ComposedProps: (onChange: (value?: number, editorValue?: number, additional?: object) => void) => ({
+          onChange: (value: number | null) => value && onChange(value, value, {})
         })
       }}
     />

@@ -14,8 +14,8 @@ export const TextEditor = observer(<EntityType,>(props: EditorProps<EntityType, 
         value: entity?.[props.field.field],
         rev: entity?._rev,
         ComposedInput: Input,
-        ComposedProps: (onChange) => ({
-          onChange: ({ target: { value } }: ChangeEvent<HTMLInputElement>) => onChange(value),
+        ComposedProps: (onChange: (value?: string, editorValue?: string, additional?: object) => void) => ({
+          onChange: ({ target: { value } }: ChangeEvent<HTMLInputElement>) => onChange(value, value, {}),
         })
       }}
     />

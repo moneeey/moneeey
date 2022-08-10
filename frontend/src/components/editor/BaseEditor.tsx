@@ -3,11 +3,12 @@ import { useEffect, useState } from 'react'
 
 import { EditorProps } from './EditorProps'
 
-type OnChange<ValueEditorType, ValueEntityType> = (value: ValueEntityType, editorValue?: ValueEditorType, additional?: object) => void
+type OnChange<ValueEditorType, ValueEntityType> = (value?: ValueEntityType, editorValue?: ValueEditorType, additional?: object) => void
 
 export interface BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> extends EditorProps<EntityType, ValueEditorType, ValueEntityType> {
   value: ValueEditorType;
   rev: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ComposedInput: any;
   ComposedProps: (onChange: OnChange<ValueEditorType, ValueEntityType>) => object;
 }
@@ -26,7 +27,7 @@ export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
 }: BaseEditorProps<EntityType, ValueEditorType, ValueEntityType>) {
   const [currentValue, setCurrentValue] = useState(value)
   const [error, setError] = useState('')
-  const onChange = (value: ValueEntityType, editorValue?: ValueEditorType, additional: object = {}) => {
+  const onChange = (value?: ValueEntityType, editorValue?: ValueEditorType, additional: object = {}) => {
     const newValue = (editorValue || value) as ValueEditorType
     setCurrentValue(newValue)
     setError('')
@@ -37,7 +38,7 @@ export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
         return
       }
     }
-    onUpdate && onUpdate(value, additional)
+    onUpdate && onUpdate(newValue as unknown as ValueEntityType, additional)
   }
   useEffect(() => {
     setCurrentValue(value)

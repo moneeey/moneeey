@@ -1,13 +1,8 @@
-import { Input } from 'antd'
 import { observer } from 'mobx-react'
-import moment from 'moment'
-import { ChangeEvent } from 'react'
 
-import { TDate } from '../../utils/Date'
-import { BaseEditor } from './BaseEditor'
 import { EditorProps } from './EditorProps'
 
-export const TransactionValueEditor = observer(<EntityType,>(props: EditorProps<EntityType, moment.Moment, TDate>) => {
+export const TransactionValueEditor = observer(<EntityType,>(props: EditorProps<EntityType, number, number>) => {
   const entity = props.store.byUuid(props.entityId)
 
   // const formatterForAccount = (account_uuid: TAccountUUID) => {
@@ -36,16 +31,6 @@ export const TransactionValueEditor = observer(<EntityType,>(props: EditorProps<
   {/* </> */}
   // );
   return (
-    <BaseEditor
-      {...{
-        ...props,
-        value: entity?.[props.field.field],
-        rev: entity?._rev,
-        ComposedInput: Input,
-        ComposedProps: (onChange) => ({
-          onChange: ({ target: { value } }: ChangeEvent<HTMLInputElement>) => onChange(value)
-        })
-      }}
-    />
+    <p>NotImplemented {entity}</p>
   )
 })
