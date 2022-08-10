@@ -3,14 +3,14 @@ import { useEffect, useState } from 'react'
 
 import { EditorProps } from './EditorProps'
 
-type OnChange<ValueEditorType, ValueEntityType> = (value?: ValueEntityType, editorValue?: ValueEditorType, additional?: object) => void
+type OnChange<EntityType, ValueEditorType, ValueEntityType> = (value?: ValueEntityType, editorValue?: ValueEditorType, additional?: Partial<EntityType>) => void
 
 export interface BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> extends EditorProps<EntityType, ValueEditorType, ValueEntityType> {
   value: ValueEditorType;
   rev: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ComposedInput: any;
-  ComposedProps: (onChange: OnChange<ValueEditorType, ValueEntityType>) => object;
+  ComposedProps: (onChange: OnChange<EntityType, ValueEditorType, ValueEntityType>) => object;
 }
 
 export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({

@@ -4,7 +4,13 @@ import { observer } from 'mobx-react'
 import { BaseEditor } from './BaseEditor'
 import { EditorProps } from './EditorProps'
 
-export const NumberEditor = observer(<EntityType,>(props: EditorProps<EntityType, number, number>) => {
+interface PrefixSuffix {
+  prefix?: string;
+  suffix?: string;
+}
+
+export const NumberEditor = observer(<EntityType,>(props: EditorProps<EntityType, number, number> & PrefixSuffix) => {
+  const { prefix, suffix } = props
   const entity = props.store.byUuid(props.entityId)
   return (
     <BaseEditor
@@ -13,7 +19,9 @@ export const NumberEditor = observer(<EntityType,>(props: EditorProps<EntityType
         value: entity?.[props.field.field],
         rev: entity?._rev,
         ComposedInput: InputNumber,
-        ComposedProps: (onChange: (value?: number, editorValue?: number, additional?: object) => void) => ({
+        ComposedProps: (onChange: (value?: number, editorValue?: number, additional?: Partial<EntityType>) => void) => ({
+          prefix,
+          suffix,
           onChange: (value: number | null) => value && onChange(value, value, {})
         })
       }}
