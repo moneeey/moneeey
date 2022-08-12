@@ -39,8 +39,6 @@
   padding-left: 1em;
 }
 
-
-
 .entityEditor .ant-input-group-addon {
   background-color: white;
   border: 0;
@@ -77,4 +75,41 @@
   width: 50%;
   max-width: 50%;
   display: inline-flex;
+}
+
+.importArea ul {
+  list-style: none;
+}
+
+.importArea div.uploadAreaEnabled,
+.importArea div.uploadAreaDisabled {
+  margin: 2em;
+  padding: 5em;
+  flex-grow: 1;
+}
+
+.uploadAreaEnabled {
+  background-color: rgb(155, 189, 240);
+}
+
+.uploadAreaDisabled {
+  background-color: #969696;
+}
+
+.importStarter {
+  display: flex;
+  max-width: 80%;
+  margin: auto;
+}
+
+.importStarter .importSettings {
+  max-width: 40%;
+  margin: 2em;
+}
+
+.importStarter .referenceAccount .ant-select,
+.importStarter .referenceAccount .ant-select-selector,
+.importStarter .referenceAccount label,
+.importStarter .referenceAccount input {
+  width: 100%;
 }

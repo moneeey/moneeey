@@ -1,6 +1,7 @@
-import _, { map, uniqBy, values } from 'lodash'
+import _, { map, omit, uniqBy, values } from 'lodash'
 import { makeObservable, observable, observe, toJS } from 'mobx'
 import PouchDB from 'pouchdb'
+import { asyncProcess } from '../utils/Utils'
 
 import { EntityType, IBaseEntity } from './Entity'
 import MappedStore from './MappedStore'
@@ -22,6 +23,10 @@ export default class PersistenceStore {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     store: MappedStore<any>;
   })[] = []
+  private stores: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [_type: string]: MappedStore<any>;
+  } = {}
   private _commit
 
   constructor() {
@@ -93,6 +98,7 @@ export default class PersistenceStore {
         } else if (ok) {
           const entity = { ...current.entity, _rev: rev }
           console.info('Sync Commit success', { entity })
+          if (entity && entity._id) this.entries[entity._id] = entity as IBaseEntity
           current.store.merge(entity, { setUpdated: false })
         }
       })
@@ -105,6 +111,7 @@ export default class PersistenceStore {
   persist<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, item: EntityType) {
     console.log('Sync will persist', { item })
     this.syncables.push({ store: store as never, uuid: store.getUuid(item) })
+    if (item && item._id) this.entries[item._id] = item
     this._commit()
   }
 
@@ -124,6 +131,7 @@ export default class PersistenceStore {
   }
 
   monitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType>, type: EntityType) {
+    this.stores[type] = store
     this.retrieve(type).forEach((e) => store.merge(e as TEntityType))
     observe(store.itemsByUuid, (changes) => {
       if (changes.type === 'add') {
@@ -139,5 +147,36 @@ export default class PersistenceStore {
         }
       }
     })
+  }
+
+  exportAll(onProgress: (perc: number) => void) {
+    return asyncProcess(values(this.entries), (chunk, result, _chunks, tasks, tasksTotal) => {
+      onProgress(Math.round((tasks / tasksTotal) * 100))
+      result.data = result.data + chunk.map(entity => JSON.stringify(toJS(entity))).join('\n') + '\n'
+    }, { data: '' }, 10, 50)
+  }
+
+  restoreAll(content: string, onProgress: (perc: number) => void) {
+    const entries = content.split('\n')
+    return asyncProcess(entries, (chunk, result, _chunks, tasks, tasksTotal) => {
+      onProgress(Math.round((tasks / tasksTotal) * 100))
+      chunk.forEach(line => {
+        try {
+          const entity = JSON.parse(line)
+          const store = entity['entity_type'] && this.stores[entity['entity_type']]
+          if (store) {
+            store.merge(omit(entity, ['_rev']))
+          } else {
+            result.errors.push('Unknown entity type "' + entity['entity_type'] + '": ' + line)
+          }
+        } catch {
+          result.errors.push('Failed to parse line JSON: ' + line)
+        }
+      })
+    }, { errors: [] as string[] }, 10, 50)
+  }
+
+  truncateAll() {
+    this.db.destroy()
   }
 }

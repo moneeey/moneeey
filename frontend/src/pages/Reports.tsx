@@ -12,30 +12,7 @@ import MoneeeyStore from '../shared/MoneeeyStore'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
 import Loading from '../components/Loading'
 import { ITransaction } from '../entities/Transaction'
-
-async function asyncTimeout(fn: () => void, delay: number) {
-  return await new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(fn())
-    }, delay)
-  })
-}
-
-async function asyncProcess<T, State>(
-  values: T[],
-  fn: (chnk: T[], state: State, chunks: T[][], tasks: number, tasksTotal: number) => void,
-  state: State,
-  chunkSize = 20,
-  chunkThrottle = 2
-) {
-  const chunks = _.chunk(values, chunkSize)
-  const tasksTotal = chunks.length
-  while (chunks.length > 0) {
-    const chunk = chunks.shift()
-    await asyncTimeout(() => fn(chunk || [], state, chunks, chunks.length, tasksTotal), chunkThrottle)
-  }
-  return state
-}
+import { asyncProcess } from '../utils/Utils'
 
 interface AsyncProcessTransactions {
   accounts: TAccountUUID[];
