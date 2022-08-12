@@ -26,3 +26,9 @@ export interface IBaseEntity extends IBaseCouchEntity {
   updated?: TDateTime;
   created?: TDateTime;
 }
+
+export function isEntityType<TEntityType>(entity_type: EntityType) {
+  return function(object: { entity_type?: EntityType }): object is TEntityType {
+    return object?.entity_type === entity_type
+  }
+}

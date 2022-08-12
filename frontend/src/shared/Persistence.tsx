@@ -156,6 +156,15 @@ export default class PersistenceStore {
     }, { data: '' }, 10, 50)
   }
 
+  restoreEntity(entity: { entity_type?: string }) {
+    const store = entity['entity_type'] && this.stores[entity['entity_type']]
+    if (store) {
+      store.merge(omit(entity, ['_rev']))
+      return true
+    }
+    return false
+  }
+
   restoreAll(content: string, onProgress: (perc: number) => void) {
     const entries = content.split('\n')
     return asyncProcess(entries, (chunk, result, _chunks, tasks, tasksTotal) => {
@@ -163,10 +172,7 @@ export default class PersistenceStore {
       chunk.forEach(line => {
         try {
           const entity = JSON.parse(line)
-          const store = entity['entity_type'] && this.stores[entity['entity_type']]
-          if (store) {
-            store.merge(omit(entity, ['_rev']))
-          } else {
+          if (!this.restoreEntity(entity)) {
             result.errors.push('Unknown entity type "' + entity['entity_type'] + '": ' + line)
           }
         } catch {

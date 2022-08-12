@@ -30,6 +30,7 @@ const Messages = {
     restore_data_placeholder: 'Paste your restore data here and click "Restore data" again',
     clear_data_token: 'DELETE EVERYTHING',
     clear_data_placeholder: 'Type "DELETE EVERYTHING" in this text area and hit "Clear data" again to delete everything and start from zero.',
+    create_entity: (entity: string) => `Create ${entity}`
   }
 }
 export default Messages

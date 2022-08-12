@@ -14,6 +14,8 @@ function slugify(string: string) {
   const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
   const p = new RegExp(a.split('').join('|'), 'g')
 
+  if (string === '-') return string
+
   return string
     .toString()
     .toLowerCase()

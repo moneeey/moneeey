@@ -1,3 +1,4 @@
+import { isEmpty } from 'lodash'
 import { action, computed, makeObservable, observable } from 'mobx'
 
 import { FieldProps } from '../components/editor/EditorProps'
@@ -51,12 +52,12 @@ export default class MappedStore<T extends IBaseEntity> {
     item._deleted = true
   }
 
-  hasKey(uuid: string) {
-    return this.itemsByUuid.has(uuid)
+  hasKey(uuid: string | undefined) {
+    return !isEmpty(uuid) && this.itemsByUuid.has(uuid||'')
   }
 
-  byUuid(uuid: string) {
-    return this.itemsByUuid.get(uuid)
+  byUuid(uuid: string | undefined) {
+    return !isEmpty(uuid) ? this.itemsByUuid.get(uuid||'') : undefined
   }
 
   byPredicate(predicate: (item: T) => boolean) {

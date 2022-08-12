@@ -18,7 +18,7 @@ import { TagEditor } from './editor/TagEditor'
 import { TextEditor, TextSorter } from './editor/TextEditor'
 import { TransactionValueEditor, TransactionValueSorter } from './editor/TransactionValueEditor'
 
-interface EntityEditorProps<T extends IBaseEntity> {
+interface TableEditorProps<T extends IBaseEntity> {
   store: MappedStore<T>;
   schemaFilter?: (row: T) => boolean;
   factory: () => T;
@@ -49,12 +49,24 @@ const EditorTypeToSorter: Record<EditorType, SortFn> = {
   [EditorType.TRANSACTION_VALUE]: TransactionValueSorter,
 }
 
+const EditorTypeToWidth: Record<EditorType, number | undefined> = {
+  [EditorType.DATE]: 115,
+  [EditorType.TRANSACTION_VALUE]: 250,
+  [EditorType.TEXT]: undefined,
+  [EditorType.NUMBER]: undefined,
+  [EditorType.ACCOUNT]: undefined,
+  [EditorType.CURRENCY]: undefined,
+  [EditorType.TAG]: undefined,
+  [EditorType.MEMO]: undefined,
+}
+
+
 export type Row = {
   entityId: string;
 }
 
 export const TableEditor = observer(
-  <T extends IBaseEntity>({ schemaFilter, store, factory }: EntityEditorProps<T>) => {
+  <T extends IBaseEntity>({ schemaFilter, store, factory }: TableEditorProps<T>) => {
 
     const moneeeyStore = useMoneeeyStore()
 
@@ -63,7 +75,7 @@ export const TableEditor = observer(
       .filter(row => !schemaFilter || schemaFilter(row))
       .map(row => store.getUuid(row))
       .concat('new')
-      .map(entityId => ({ entityId })), [store, store.ids])
+      .map(entityId => ({ entityId })), [store, store.ids, schemaFilter])
 
     const columns: ColumnType<Row>[] = useMemo(() => compact(values(store.schema()))
       .sort((a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index)
@@ -71,9 +83,12 @@ export const TableEditor = observer(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const Editor = EditorTypeToEditor[props.editor] as unknown as any
         const sorter = EditorTypeToSorter[props.editor](store, props.field as keyof T, moneeeyStore)
+        const width = EditorTypeToWidth[props.editor]
         return {
+          width: width || props.width,
           title: props.title,
           dataIndex: props.field,
+          defaultSortOrder: props.defaultSortOrder,
           sorter: sorter ? (a, b, sortOrder) => sorter(a, b, sortOrder === 'ascend') : undefined,
           render: (_value: unknown, { entityId }: Row): React.ReactNode => {
             const key = entityId + '_' + props.field
@@ -93,7 +108,7 @@ export const TableEditor = observer(
     return (
       <Table
         rowKey='entityId'
-        className='entityEditor'
+        className='tableEditor'
         columns={columns}
         dataSource={entities}
         pagination={false}

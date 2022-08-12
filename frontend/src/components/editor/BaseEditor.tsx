@@ -60,7 +60,7 @@ export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
         }}
       />
       {error && (
-        <Typography.Text className='entityEditor-feedback' type='danger'>
+        <Typography.Text className='tableEditor-feedback' type='danger'>
           {error}
         </Typography.Text>
       )}

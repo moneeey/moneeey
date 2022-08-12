@@ -4,10 +4,10 @@ import { AccountStore, TAccountUUID } from './Account'
 import { compareDates, currentDate, currentDateTime, TDate } from '../utils/Date'
 import { tokenize, uuid } from '../utils/Utils'
 import { EditorType } from '../components/editor/EditorProps'
-import { IBaseEntity, TMonetary, EntityType } from '../shared/Entity'
+import { IBaseEntity, TMonetary, EntityType, isEntityType } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
-import { compact, filter, flatten, includes, map, sortBy } from 'lodash'
+import { compact, filter, flatten, includes, isEmpty, map, sortBy } from 'lodash'
 
 export type TTransactionUUID = string;
 
@@ -23,7 +23,7 @@ export interface ITransaction extends IBaseEntity {
   import_data?: string;
 }
 
-export class TransactionStore extends MappedStore<ITransaction> {
+class TransactionStore extends MappedStore<ITransaction> {
   constructor(moneeeyStore: MoneeeyStore) {
     super(
       moneeeyStore,
@@ -47,6 +47,7 @@ export class TransactionStore extends MappedStore<ITransaction> {
           field: 'date',
           index: 0,
           editor: EditorType.DATE,
+          defaultSortOrder: 'ascend',
         },
         from_account: {
           title: 'From',
@@ -100,7 +101,7 @@ export class TransactionStore extends MappedStore<ITransaction> {
 
   filterByAccounts(accounts: TAccountUUID[]) {
     const accountSet = new Set(accounts)
-    return (row: ITransaction) => accountSet.has(row.from_account) || accountSet.has(row.to_account)
+    return (row: ITransaction) => accountSet.has(row.from_account) || accountSet.has(row.to_account) || (isEmpty(row.from_account) && isEmpty(row.to_account))
   }
 
   viewAllWithAccounts(accounts: TAccountUUID[]) {
@@ -144,7 +145,6 @@ export class TransactionStore extends MappedStore<ITransaction> {
 
   findAccountsForTokens(referenceAccount: TAccountUUID, tokenMap: Map<ITransaction, string[]>, _tokens: string[]) {
     const tokens = compact(flatten(_tokens.map(s => tokenize(s.toLowerCase()))))
-    console.log('findAccountsForTokens', { referenceAccount, tokenMap, tokens })
     console.time('findAccountsForTokens')
     const matching = map(Array.from(tokenMap.entries()), ([transaction, transactionTokens]) => {
       const matching = transactionTokens.filter(tok => includes(tokens, tok))
@@ -158,9 +158,12 @@ export class TransactionStore extends MappedStore<ITransaction> {
     const accounts = filter(flatten(highestMatches.map(m => [m.transaction.from_account, m.transaction.to_account])),
       account_uuid => account_uuid !== referenceAccount)
     console.timeEnd('findAccountsForTokens')
+    console.log('findAccountsForTokens', { referenceAccount, tokenMap, tokens, accounts })
     return accounts
   }
-
 }
 
-export default TransactionStore
+const isTransaction = isEntityType<ITransaction>(EntityType.TRANSACTION)
+
+
+export { TransactionStore, TransactionStore as default, isTransaction }

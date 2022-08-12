@@ -19,14 +19,11 @@ interface AccountTransactionProps {
 
 const AccountTransactions = observer(({ slug, account_name, moneeyStore: { transactions, accounts, currencies } }: AccountTransactionProps) => {
   const account = accounts.find((acc: IAccount) => slug(acc.name) === account_name)
-  if (account) {
-    const { account_uuid } = account
-    const filterByAccount = transactions.filterByAccounts([account_uuid])
-    const schemaFilter = (row: ITransaction) => filterByAccount(row)
-    const referenceAccount = account_uuid
-    return <TransactionTable {...{ transactions, accounts, currencies, schemaFilter, referenceAccount, account_name }} />
-  }
-  return <p>Account {account_name} not found</p>
+  const account_uuid = account?.account_uuid || ''
+  const filterByAccount = transactions.filterByAccounts([account_uuid])
+  const schemaFilter = (row: ITransaction) => filterByAccount(row)
+  const referenceAccount = account_uuid
+  return <TransactionTable {...{ transactions, accounts, currencies, schemaFilter, referenceAccount, account_name }} />
 })
 
 class AccountRouter extends Route<IAccountRoute> {

@@ -26,7 +26,7 @@ export const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore()
   const getAccountCurrency = (account: IAccount) => {
     const curr = currencies.byUuid(account.currency_uuid)
-    return curr?.short || '?'
+    return curr?.short || curr?.name || '?'
   }
   return (
     <Menu
@@ -40,18 +40,19 @@ export const AppMenu = observer(() => {
           onClick: () => navigation.navigate(HomeRoute.url())
         },
         {
-          key: 'accounts',
-          label: 'Accounts',
+          key: 'transactions',
+          label: 'Transactions',
           icon: <DollarOutlined />,
           children: [
             ...accounts
               .allNonPayees
-              .sort((a, b) => a.currency_uuid.localeCompare(b.currency_uuid))
+              .sort((a, b) => a.currency_uuid?.localeCompare(b.currency_uuid))
               .map((acct) => ({
                 key: 'account_' + acct._id,
                 label: `${getAccountCurrency(acct)} ${acct.name}`,
                 onClick: () => navigation.navigate(AccountRoute.accountUrl(acct))
               })),
+            { key: 'unassigned', label: 'Unassigned', onClick: () => navigation.navigate(AccountRoute.url({ account_name: '-' })) },
             { key: 'import', label: 'Import', onClick: () => navigation.navigate(ImportRoute.url()) },
           ]
         },

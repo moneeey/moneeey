@@ -1,12 +1,12 @@
 import { Input } from 'antd'
 import { isEmpty, last } from 'lodash'
+import { observer } from 'mobx-react'
 import { ChangeEvent, Dispatch, useCallback, useState } from 'react'
 import { useDropzone, FileRejection } from 'react-dropzone'
-import { AccountEditor } from '../../components/editor/AccountEditor'
-import { EditorType } from '../../components/editor/EditorProps'
-import { IAccount } from '../../entities/Account'
+import { AccountSelector } from '../../components/editor/AccountEditor'
+import { TAccountUUID } from '../../entities/Account'
 import { FileUploaderMode, ImportConfig, ImportInput, ImportTask } from '../../shared/ImportContent'
-import MappedStore from '../../shared/MappedStore'
+import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { TDateFormat } from '../../utils/Date'
 import Messages from '../../utils/Messages'
 
@@ -53,6 +53,22 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
   )
 }
 
+interface ReferenceAccountSelectorProps {
+  referenceAccount: TAccountUUID;
+  onReferenceAccount: (account: TAccountUUID) => void;
+}
+
+export const ReferenceAccountSelector = observer(({ referenceAccount, onReferenceAccount }: ReferenceAccountSelectorProps) => {
+  const moneeeyStore = useMoneeeyStore()
+  return (
+    <AccountSelector 
+      account={referenceAccount}
+      accounts={moneeeyStore.accounts.allNonPayees}
+      onSelect={(value) => onReferenceAccount(value)}
+    />
+  )
+})
+
 function ImportStarter({ onTask }: { onTask: Dispatch<ImportTask> }) {
   const [config, setConfig] = useState({
     dateFormat: TDateFormat,
@@ -73,26 +89,17 @@ function ImportStarter({ onTask }: { onTask: Dispatch<ImportTask> }) {
           <h3>{Messages.import.configuration}</h3>
           <Input.Group className="referenceAccount">
             {Messages.util.reference_account}
-            <AccountEditor
-              entityId={config.referenceAccount}
-              field={{
-                editor: EditorType.ACCOUNT,
-                field: 'from_account',
-                index: 0,
-                title: Messages.util.reference_account,
-              }}
-              onUpdate={(value) => setConfig(config => ({...config, referenceAccount: value}))}
-              store={{ byUuid: () => ({ from_account: config.referenceAccount } as unknown as IAccount) } as unknown as MappedStore<IAccount>} />
+            <ReferenceAccountSelector referenceAccount={config.referenceAccount} onReferenceAccount={referenceAccount => setConfig(config => ({ ...config, referenceAccount }))} />
           </Input.Group>
           <Input.Group>
             {Messages.util.date_format}
             <Input type='text' placeholder={TDateFormat} value={config.dateFormat}
-              onChange={({ target: { value } }: ChangeEvent<HTMLInputElement>) => setConfig(config => ({...config, dateFormat: value}))} />
+              onChange={({ target: { value } }: ChangeEvent<HTMLInputElement>) => setConfig(config => ({ ...config, dateFormat: value }))} />
           </Input.Group>
           <Input.Group>
             {Messages.util.decimal_separator}
             <Input type='text' placeholder={'. or ,'} value={config.decimalSeparator}
-              onChange={({ target: { value } }: ChangeEvent<HTMLInputElement>) => setConfig(config => ({...config, decimalSeparator: value}))} />
+              onChange={({ target: { value } }: ChangeEvent<HTMLInputElement>) => setConfig(config => ({ ...config, decimalSeparator: value }))} />
           </Input.Group>
         </section>
         <FileUploader onFile={onFile} error={error} />

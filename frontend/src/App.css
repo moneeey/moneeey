@@ -2,49 +2,41 @@
   text-align: center;
 }
 
-.transactionRowControls {
-  float: right;
-}
-
-.entityEditor .ant-table-thead > tr > th,
-.entityEditor .ant-table-tbody > tr > td,
-.entityEditor .ant-table tfoot > tr > th,
-.entityEditor .ant-table tfoot > tr > td,
-.transactionTable .ant-table-thead > tr > th,
-.transactionTable .ant-table-tbody > tr > td,
-.transactionTable .ant-table tfoot > tr > th,
-.transactionTable .ant-table tfoot > tr > td {
+.tableEditor .ant-table-thead > tr > th,
+.tableEditor .ant-table-tbody > tr > td,
+.tableEditor .ant-table tfoot > tr > th,
+.tableEditor .ant-table tfoot > tr > td {
   padding: 0;
 }
 
-.entityEditor .ant-select,
-.entityEditor .ant-select-selector,
-.entityEditor input,
-.entityEditor .ant-input-number,
-.entityEditor .ant-picker,
-.entityEditor .ant-input-affix-wrapper {
+.tableEditor .ant-select,
+.tableEditor .ant-select-selector,
+.tableEditor input,
+.tableEditor .ant-input-number,
+.tableEditor .ant-picker,
+.tableEditor .ant-input-affix-wrapper {
   width: 100% !important;
   border: 0 !important;
 }
 
-.entityEditor .accountEditor {
+.tableEditor .accountEditor {
   display: flex !important;
 }
 
-.entityEditor .accountEditor label {
+.tableEditor .accountEditor label {
   flex-grow: 1;
 }
 
-.entityEditor .accountEditor span {
+.tableEditor .accountEditor span {
   padding-left: 1em;
 }
 
-.entityEditor .ant-input-group-addon {
+.tableEditor .ant-input-group-addon {
   background-color: white;
   border: 0;
 }
 
-.entityEditor-feedback {
+.tableEditor-feedback {
   position: absolute;
   top: 0.2em;
   z-index: 999;

@@ -1,5 +1,6 @@
 import { head, isEmpty, shuffle } from 'lodash'
-import { ITransaction } from '../entities/Transaction'
+import { TAccountUUID } from '../entities/Account'
+import { ITransaction, TTransactionUUID } from '../entities/Transaction'
 import { formatDate, isValidDate, parseDateFmt, TDateFormat } from '../utils/Date'
 import { asyncTimeout, asyncProcess, uuid } from '../utils/Utils'
 import { EntityType } from './Entity'
@@ -31,6 +32,7 @@ export interface ImportResult {
     description: string;
   }[];
   transactions: ITransaction[];
+  recommended_accounts: Record<TTransactionUUID, TAccountUUID[]>;
 }
 
 export type ProcessProgressFn = (tasks: number, total: number) => void
@@ -79,10 +81,10 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
       const sep = findSeparator(first10.join('\n'))
       const columns = findColumns((head(shuffle(first10)) || '').split(sep), data.config.dateFormat || TDateFormat)
       if (columns.dateIndex === -1) {
-        return Promise.resolve({ errors: [{ data: first10.join('\n'), description: 'Date column not found' }], transactions: [] })
+        return Promise.resolve({ errors: [{ data: first10.join('\n'), description: 'Date column not found' }], transactions: [], recommended_accounts: {} })
       }
       if (columns.valueIndex === -1) {
-        return Promise.resolve({ errors: [{ data: first10.join('\n'), description: 'Value/Amount column not found' }], transactions: [] })
+        return Promise.resolve({ errors: [{ data: first10.join('\n'), description: 'Value/Amount column not found' }], transactions: [], recommended_accounts: {} })
       }
       onProgress(loadStep++, preloadSteps)
       const tokenMap = moneeeyStore.transactions.tokenMap
@@ -91,18 +93,18 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
       return await asyncProcess(lines, (chunk, stt, _chunks, tasks, tasksTotal) => {
         onProgress(tasks, tasksTotal)
         chunk.forEach(line => {
-          const tokens = line.split(sep)
-          const { value, date, other } = retrieveColumns(tokens, columns, data.config.dateFormat || TDateFormat)
-          const from_account = data.config.referenceAccount || ''
-          const accounts = moneeeyStore.transactions.findAccountsForTokens(from_account, tokenMap, other)
-          const to_account = accounts[0]|| ''
-          const import_id = `date=${date} accounts=${[from_account, to_account].sort().join(',')} value=${value}`
+          const { referenceAccount, dateFormat } = data.config
+          const tokens = line.replace('"', '').split(sep)
+          const { value, date, other } = retrieveColumns(tokens, columns, dateFormat || TDateFormat)
+          const accounts = moneeeyStore.transactions.findAccountsForTokens(referenceAccount, tokenMap, other)
+          const other_account = accounts[0]|| ''
+          const import_id = `date=${date} accounts=${[referenceAccount, other_account].sort().join(',')} value=${value}`
           const transaction: ITransaction = {
             entity_type: EntityType.TRANSACTION,
             transaction_uuid: uuid(),
             date,
-            from_account,
-            to_account,
+            from_account: value < 0 ? referenceAccount : other_account,
+            to_account: value < 0 ? other_account : referenceAccount,
             from_value: value,
             to_value: value,
             memo: line,
@@ -111,12 +113,13 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
             import_data: line,
           }
           stt.transactions.push(transaction)
-          return stt
+          stt.recommended_accounts[transaction.transaction_uuid] = accounts
         })
       }, {
         errors: [],
         transactions: [],
-      } as ImportResult, 10, 50)
+        recommended_accounts: {},
+      } as ImportResult, 20, 50)
     }, 100)
   },
   csv: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {

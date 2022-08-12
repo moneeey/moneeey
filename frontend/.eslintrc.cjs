@@ -38,7 +38,8 @@ module.exports = {
     'semi': [
       'error',
       'never'
-    ]
+    ],
+    'react/display-name': ['off'],
   },
   'settings': {
     'react': {

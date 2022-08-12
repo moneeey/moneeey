@@ -19,15 +19,17 @@ export enum EditorType {
 export interface FieldProps<ValueEditorType> {
   editor: EditorType;
   field: string;
-  title: string;
+  title?: string;
   index: number;
   readOnly?: boolean;
   required?: boolean;
+  defaultSortOrder?: 'descend' | 'ascend';
+  width?: number;
   validate?: (value: ValueEditorType) => validation;
 }
 
 export interface EditorProps<TEntityType, ValueEditorType, ValueEntityType>  {
-  entityId: string;
+  entityId?: string;
   field: FieldProps<ValueEditorType>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   store: MappedStore<any>;
