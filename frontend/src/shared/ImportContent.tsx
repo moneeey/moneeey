@@ -33,7 +33,6 @@ export interface ImportResult {
   }[];
   transactions: ITransaction[];
   recommended_accounts: Record<TTransactionUUID, TAccountUUID[]>;
-  is_updating: Set<TTransactionUUID>;
 }
 
 export type ProcessProgressFn = (tasks: number, total: number) => void
@@ -83,10 +82,22 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
       const sep = findSeparator(first10.join('\n'))
       const columns = findColumns((head(shuffle(first10)) || '').split(sep), data.config.dateFormat || TDateFormat)
       if (columns.dateIndex === -1) {
-        return Promise.resolve({ errors: [{ data: first10.join('\n'), description: 'Date column not found' }], transactions: [], recommended_accounts: {}, is_updating: new Set() })
+        return Promise.resolve({
+          errors: [
+            { data: first10.join('\n'), description: 'Date column not found' }
+          ],
+          transactions: [],
+          recommended_accounts: {},
+        })
       }
       if (columns.valueIndex === -1) {
-        return Promise.resolve({ errors: [{ data: first10.join('\n'), description: 'Value/Amount column not found' }], transactions: [], recommended_accounts: {}, is_updating: new Set() })
+        return Promise.resolve({
+          errors: [
+            { data: first10.join('\n'), description: 'Value/Amount column not found' }
+          ],
+          transactions: [],
+          recommended_accounts: {}
+        })
       }
       onProgress(loadStep++, preloadSteps)
       const tokenMap = importer.tokenMap
@@ -97,7 +108,13 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
         chunk.forEach(line => {
           const { referenceAccount, dateFormat } = data.config
           const tokens = line.replace('"', '').split(sep)
-          if (tokens.length < 2) return
+          if (tokens.length < 2) {
+            stt.errors.push({
+              data: line,
+              description: 'Not enough tokens: ' + tokens.join(',')
+            })
+            return
+          }
           const { value, date, other } = retrieveColumns(tokens, columns, dateFormat || TDateFormat)
           const accounts = importer.findAccountsForTokens(referenceAccount, tokenMap, other)
           const other_account = accounts[0]|| ''
@@ -117,7 +134,6 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
           const import_id = importer.importId(transaction)
           const existing = importer.findForImportId(import_id)
           if (existing) {
-            stt.is_updating.add(existing.transaction_uuid)
             transaction.transaction_uuid = existing.transaction_uuid
             if (existing.memo !== transaction.memo) {
               transaction.memo = existing.memo + ';' + transaction.memo
@@ -134,7 +150,6 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
         errors: [],
         transactions: [],
         recommended_accounts: {},
-        is_updating: new Set(),
       } as ImportResult, 20, 50)
     }, 100)
   },

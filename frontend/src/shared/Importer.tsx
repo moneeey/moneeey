@@ -43,16 +43,18 @@ class Importer {
       return results
     }, [] as { transaction: ITransaction; common: string[] }[])
     const filterNonReferenceAccount = (account_uuid: TAccountUUID) => !isEmpty(account_uuid) && account_uuid !== referenceAccount
-    const matchingAccounts = matchingTransactions
+    const matchingTransactionAccounts = matchingTransactions
       .filter(m => m.common.length >= maxCommons)
       .map(m => [m.transaction.from_account, m.transaction.to_account])
-    const nonReferenceAccount = filter(flatten(matchingAccounts), filterNonReferenceAccount)
-    const mostMatchedFirst = reverse(sortBy(values(groupBy(nonReferenceAccount, identity)), v => v.length))
-    const names = compact(mostMatchedFirst.map(head)).map(account_uuid => this.moneeeyStore.accounts.nameForUuid(account_uuid))
-    const matchedAccountUuids = mostMatchedFirst.map(head)
+    const nonReferenceAccount = filter(flatten(matchingTransactionAccounts), filterNonReferenceAccount)
+    const mostMatchedFirst = uniq(reverse(sortBy(values(groupBy(nonReferenceAccount, identity)), v => v.length)))
+    const mostMatched = compact(mostMatchedFirst.map(head)).map(account_uuid => ({
+      account_uuid,
+      name: this.moneeeyStore.accounts.nameForUuid(account_uuid),
+    }))
     console.timeEnd('Importer.findAccountsForTokens')
-    console.log('Importer.findAccountsForTokens', { referenceAccount, tokenMap, tokens, mostMatchedFirst, names, matchingTransactions })
-    return matchedAccountUuids
+    console.log('Importer.findAccountsForTokens', { referenceAccount, tokenMap, tokens, mostMatchedFirst, mostMatched, matchingTransactions, matchingTransactionAccounts })
+    return mostMatched.map(m => m.account_uuid)
   }
 
   findForImportId(import_id: string[]) {

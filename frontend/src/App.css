@@ -36,6 +36,27 @@
   border: 0;
 }
 
+.tableEditor .importUnchanged,
+.tableEditor .importUnchanged .ant-select-selection-item {
+  color: gray;
+}
+
+.tableEditor .importNew,
+.tableEditor .importNew .ant-select-selection-item {
+  color: green;
+  font-weight: bold;
+}
+
+.tableEditor .importUpdated,
+.tableEditor .importUpdated .ant-select-selection-item {
+  color: purple;
+  font-weight: bolder;
+}
+
+.tableEditor .newTag {
+  font-size: xx-small;
+}
+
 .tableEditor-feedback {
   position: absolute;
   top: 0.2em;
