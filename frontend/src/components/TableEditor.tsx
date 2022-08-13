@@ -23,6 +23,7 @@ interface TableEditorProps<T extends IBaseEntity> {
   store: MappedStore<T>;
   schemaFilter?: (row: T) => boolean;
   factory: () => T;
+  creatable?: boolean;
 }
 
 const EditorTypeToEditor: Record<EditorType, (pros: EditorProps<unknown, unknown, unknown>) => JSX.Element> = {
@@ -67,7 +68,7 @@ export type Row = {
 }
 
 export const TableEditor = observer(
-  <T extends IBaseEntity>({ schemaFilter, store, factory }: TableEditorProps<T>) => {
+  <T extends IBaseEntity>({ schemaFilter, store, factory, creatable }: TableEditorProps<T>) => {
 
     const moneeeyStore = useMoneeeyStore()
 
@@ -75,7 +76,7 @@ export const TableEditor = observer(
       .map(id => store.byUuid(id) as T)
       .filter(row => !schemaFilter || schemaFilter(row))
       .map(row => store.getUuid(row))
-      .concat('new')
+      .concat(creatable !== false ? ['new'] : [])
       .map(entityId => ({ entityId })), [store, store.ids, schemaFilter])
 
     const columns: ColumnType<Row>[] = useMemo(() => compact(values(store.schema()))

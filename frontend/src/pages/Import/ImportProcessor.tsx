@@ -17,7 +17,10 @@ function ImportProcessResult({ task, result, setResult }: { task: ImportTask, re
     }
     return <AccountSelector
       account={account_uuid}
-      accounts={compact(map(result?.recommended_accounts[row.transaction_uuid], account_uuid => moneeeyStore.accounts.byUuid(account_uuid)))}
+      accounts={compact([
+        ...map(result?.recommended_accounts[row.transaction_uuid], account_uuid => moneeeyStore.accounts.byUuid(account_uuid)),
+        ...map(moneeeyStore.accounts.all)
+      ])}
       onSelect={(account_uuid: TAccountUUID) => setResult({
         ...result,
         transactions: map(result?.transactions, t => t.transaction_uuid === row.transaction_uuid ? { ...t, [field]: account_uuid } : t)
@@ -46,6 +49,7 @@ function ImportProcessResult({ task, result, setResult }: { task: ImportTask, re
           { dataIndex: 'to_account', title: 'To', render: accountRender('to_account'), },
           { dataIndex: 'memo', title: 'Memo' },
           { dataIndex: 'from_value', title: 'Value' },
+          { dataIndex: 'noop', title: 'Status', render: (_v, transaction: ITransaction) => result.is_updating.has(transaction.transaction_uuid) ? 'Update' : 'New' },
         ]} />
       <Button type='primary' onClick={onImport}>Import transactions</Button>
     </>
@@ -72,6 +76,7 @@ function ImportProcess({ task }: { task: ImportTask }) {
           }],
           transactions: [],
           recommended_accounts: {},
+          is_updating: new Set(),
         })
       }
     })()

@@ -1,11 +1,13 @@
 import { Input } from 'antd'
 import { isEmpty, last } from 'lodash'
 import { observer } from 'mobx-react'
-import { ChangeEvent, Dispatch, useCallback, useState } from 'react'
+import { ChangeEvent, Dispatch, useCallback, useEffect, useState } from 'react'
 import { useDropzone, FileRejection } from 'react-dropzone'
 import { AccountSelector } from '../../components/editor/AccountEditor'
 import { TAccountUUID } from '../../entities/Account'
+import ConfigStore from '../../entities/Config'
 import { FileUploaderMode, ImportConfig, ImportInput, ImportTask } from '../../shared/ImportContent'
+import MoneeeyStore from '../../shared/MoneeeyStore'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { TDateFormat } from '../../utils/Date'
 import Messages from '../../utils/Messages'
@@ -69,10 +71,10 @@ export const ReferenceAccountSelector = observer(({ referenceAccount, onReferenc
   )
 })
 
-function ImportStarter({ onTask }: { onTask: Dispatch<ImportTask> }) {
+function ImportStarter({ onTask, configuration }: { onTask: Dispatch<ImportTask>, configuration: ConfigStore }) {
   const [config, setConfig] = useState({
-    dateFormat: TDateFormat,
-    decimalSeparator: ',',
+    dateFormat: configuration.main.date_format,
+    decimalSeparator: configuration.main.decimal_separator,
     referenceAccount: '',
   } as ImportConfig)
 

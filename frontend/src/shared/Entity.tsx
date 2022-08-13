@@ -11,7 +11,8 @@ export enum EntityType {
   ACCOUNT = 'ACCOUNT',
   TRANSACTION = 'TRANSACTION',
   BUDGET = 'BUDGET',
-  CURRENCY = 'CURRENCY'
+  CURRENCY = 'CURRENCY',
+  CONFIG = 'CONFIG',
 }
 
 export interface IBaseCouchEntity {

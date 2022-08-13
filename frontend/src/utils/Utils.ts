@@ -1,4 +1,4 @@
-import { chunk, flatten } from 'lodash'
+import { chunk } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 
 export function uuid() {
@@ -6,7 +6,7 @@ export function uuid() {
 }
 
 export function tokenize(text: string | undefined) {
-  return flatten((text||'').split(/[^\w]/))
+  return (text||'').toLowerCase().split(/[\W\d]/)
 }
 
 export async function asyncTimeout<R>(fn: () => R | Promise<R>, delay: number): Promise<R> {

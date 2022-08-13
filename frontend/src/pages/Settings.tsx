@@ -1,6 +1,7 @@
 import { Button, Input } from 'antd'
 import { useState } from 'react'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
+import ConfigTable from '../tables/ConfigTable'
 import Messages from '../utils/Messages'
 
 enum BackupRestoreState {
@@ -63,6 +64,7 @@ export default function Settings() {
   }
 
   return <section className="settingsArea">
+    <ConfigTable config={moneeeyStore.config} />
     <p>
       <Button onClick={onBackupData} disabled={actionsDisabled}>Export data</Button>
       <Button onClick={onRestoreData} disabled={actionsDisabled && backupRestoreState !== BackupRestoreState.RESTORE_INPUT}>Restore data</Button>

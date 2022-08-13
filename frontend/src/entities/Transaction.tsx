@@ -2,12 +2,12 @@ import { computed, makeObservable } from 'mobx'
 
 import { AccountStore, TAccountUUID } from './Account'
 import { compareDates, currentDate, currentDateTime, TDate } from '../utils/Date'
-import { tokenize, uuid } from '../utils/Utils'
+import { uuid } from '../utils/Utils'
 import { EditorType } from '../components/editor/EditorProps'
 import { IBaseEntity, TMonetary, EntityType, isEntityType } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
-import { compact, filter, flatten, includes, isEmpty, map, sortBy } from 'lodash'
+import { isEmpty } from 'lodash'
 
 export type TTransactionUUID = string;
 
@@ -19,7 +19,6 @@ export interface ITransaction extends IBaseEntity {
   from_value: TMonetary;
   to_value: TMonetary;
   memo: string;
-  import_id?: string;
   import_data?: string;
 }
 
@@ -124,42 +123,6 @@ class TransactionStore extends MappedStore<ITransaction> {
     const from_acct = accountsStore.accountTags(transaction.from_account)
     const to_acct = accountsStore.accountTags(transaction.to_account)
     return [...from_acct, ...to_acct, ...transaction.tags]
-  }
-
-  get tokenMap() {
-    console.time('Transactions.tokenMap')
-    const tokenMap = this.all.reduce((accum, transaction) => {
-      const tokens = [
-        ...transaction.tags,
-        ...tokenize(transaction.memo),
-        ...tokenize(transaction.import_data),
-        ...tokenize(transaction.import_id),
-      ]
-      accum.set(transaction, tokens)
-      return accum
-    }, new Map<ITransaction, string[]>)
-    console.timeEnd('Transactions.tokenMap')
-    return tokenMap
-  }
-
-
-  findAccountsForTokens(referenceAccount: TAccountUUID, tokenMap: Map<ITransaction, string[]>, _tokens: string[]) {
-    const tokens = compact(flatten(_tokens.map(s => tokenize(s.toLowerCase()))))
-    console.time('findAccountsForTokens')
-    const matching = map(Array.from(tokenMap.entries()), ([transaction, transactionTokens]) => {
-      const matching = transactionTokens.filter(tok => includes(tokens, tok))
-      return {
-        transaction,
-        matching,
-        count: matching.length,
-      }
-    })
-    const highestMatches = sortBy(matching, r => r.count).filter(r => r.count > 0).slice(0, 5)
-    const accounts = filter(flatten(highestMatches.map(m => [m.transaction.from_account, m.transaction.to_account])),
-      account_uuid => account_uuid !== referenceAccount)
-    console.timeEnd('findAccountsForTokens')
-    console.log('findAccountsForTokens', { referenceAccount, tokenMap, tokens, accounts })
-    return accounts
   }
 }
 

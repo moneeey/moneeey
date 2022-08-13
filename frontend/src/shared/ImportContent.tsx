@@ -1,7 +1,7 @@
 import { head, isEmpty, shuffle } from 'lodash'
 import { TAccountUUID } from '../entities/Account'
 import { ITransaction, TTransactionUUID } from '../entities/Transaction'
-import { formatDate, isValidDate, parseDateFmt, TDateFormat } from '../utils/Date'
+import { currentDateTime, formatDate, isValidDate, parseDateFmt, TDateFormat } from '../utils/Date'
 import { asyncTimeout, asyncProcess, uuid } from '../utils/Utils'
 import { EntityType } from './Entity'
 import MoneeeyStore from './MoneeeyStore'
@@ -33,6 +33,7 @@ export interface ImportResult {
   }[];
   transactions: ITransaction[];
   recommended_accounts: Record<TTransactionUUID, TAccountUUID[]>;
+  is_updating: Set<TTransactionUUID>;
 }
 
 export type ProcessProgressFn = (tasks: number, total: number) => void
@@ -61,8 +62,8 @@ export const findColumns = (tokens: string[], dateFormat: string) => {
 
 export const retrieveColumns = (tokens: string[], columns: ReturnType<typeof findColumns>, dateFormat: string) => {
   return {
-    value: parseFloat(tokens[columns.valueIndex].replace(/,/, '.')),
-    date: formatDate(parseDateFmt(tokens[columns.dateIndex], dateFormat)),
+    value: parseFloat((tokens[columns.valueIndex]||'').replace(/,/, '.')),
+    date: formatDate(parseDateFmt((tokens[columns.dateIndex]||''), dateFormat)),
     other: tokens.filter((_v, index) => index !== columns.valueIndex && index !== columns.dateIndex)
   }
 }
@@ -70,6 +71,7 @@ export const retrieveColumns = (tokens: string[], columns: ReturnType<typeof fin
 export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
   txt: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
     return asyncTimeout(async () => {
+      const { importer } = moneeeyStore
       const preloadSteps = 5
       let loadStep = 1
       onProgress(loadStep++, preloadSteps)
@@ -81,13 +83,13 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
       const sep = findSeparator(first10.join('\n'))
       const columns = findColumns((head(shuffle(first10)) || '').split(sep), data.config.dateFormat || TDateFormat)
       if (columns.dateIndex === -1) {
-        return Promise.resolve({ errors: [{ data: first10.join('\n'), description: 'Date column not found' }], transactions: [], recommended_accounts: {} })
+        return Promise.resolve({ errors: [{ data: first10.join('\n'), description: 'Date column not found' }], transactions: [], recommended_accounts: {}, is_updating: new Set() })
       }
       if (columns.valueIndex === -1) {
-        return Promise.resolve({ errors: [{ data: first10.join('\n'), description: 'Value/Amount column not found' }], transactions: [], recommended_accounts: {} })
+        return Promise.resolve({ errors: [{ data: first10.join('\n'), description: 'Value/Amount column not found' }], transactions: [], recommended_accounts: {}, is_updating: new Set() })
       }
       onProgress(loadStep++, preloadSteps)
-      const tokenMap = moneeeyStore.transactions.tokenMap
+      const tokenMap = importer.tokenMap
       onProgress(loadStep++, preloadSteps)
 
       return await asyncProcess(lines, (chunk, stt, _chunks, tasks, tasksTotal) => {
@@ -95,22 +97,35 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
         chunk.forEach(line => {
           const { referenceAccount, dateFormat } = data.config
           const tokens = line.replace('"', '').split(sep)
+          if (tokens.length < 2) return
           const { value, date, other } = retrieveColumns(tokens, columns, dateFormat || TDateFormat)
-          const accounts = moneeeyStore.transactions.findAccountsForTokens(referenceAccount, tokenMap, other)
+          const accounts = importer.findAccountsForTokens(referenceAccount, tokenMap, other)
           const other_account = accounts[0]|| ''
-          const import_id = `date=${date} accounts=${[referenceAccount, other_account].sort().join(',')} value=${value}`
           const transaction: ITransaction = {
             entity_type: EntityType.TRANSACTION,
             transaction_uuid: uuid(),
             date,
+            memo: line,
+            tags: [],
             from_account: value < 0 ? referenceAccount : other_account,
             to_account: value < 0 ? other_account : referenceAccount,
             from_value: value,
             to_value: value,
-            memo: line,
-            tags: [],
-            import_id,
             import_data: line,
+            updated: currentDateTime(),
+          }
+          const import_id = importer.importId(transaction)
+          const existing = importer.findForImportId(import_id)
+          if (existing) {
+            stt.is_updating.add(existing.transaction_uuid)
+            transaction.transaction_uuid = existing.transaction_uuid
+            if (existing.memo !== transaction.memo) {
+              transaction.memo = existing.memo + ';' + transaction.memo
+            }
+            transaction.tags = existing.tags
+            transaction.from_account = transaction.from_account || existing.from_account
+            transaction.to_account = transaction.to_account || existing.to_account
+            transaction._rev = existing._rev
           }
           stt.transactions.push(transaction)
           stt.recommended_accounts[transaction.transaction_uuid] = accounts
@@ -119,6 +134,7 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
         errors: [],
         transactions: [],
         recommended_accounts: {},
+        is_updating: new Set(),
       } as ImportResult, 20, 50)
     }, 100)
   },
