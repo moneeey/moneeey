@@ -17,6 +17,7 @@ import { NumberEditor, NumberSorter } from './editor/NumberEditor'
 import { TagEditor } from './editor/TagEditor'
 import { TextEditor, TextSorter } from './editor/TextEditor'
 import { TransactionValueEditor, TransactionValueSorter } from './editor/TransactionValueEditor'
+import VirtualTable from './VirtualTableEditor'
 
 interface TableEditorProps<T extends IBaseEntity> {
   store: MappedStore<T>;
@@ -50,8 +51,8 @@ const EditorTypeToSorter: Record<EditorType, SortFn> = {
 }
 
 const EditorTypeToWidth: Record<EditorType, number | undefined> = {
-  [EditorType.DATE]: 115,
-  [EditorType.TRANSACTION_VALUE]: 250,
+  [EditorType.DATE]: 142,
+  [EditorType.TRANSACTION_VALUE]: 320,
   [EditorType.TEXT]: undefined,
   [EditorType.NUMBER]: undefined,
   [EditorType.ACCOUNT]: undefined,
@@ -106,10 +107,10 @@ export const TableEditor = observer(
       }), [store])
 
     return (
-      <Table
+      <VirtualTable
         rowKey='entityId'
         className='tableEditor'
-        columns={columns}
+        columns={columns as any}
         dataSource={entities}
         pagination={false}
       />
