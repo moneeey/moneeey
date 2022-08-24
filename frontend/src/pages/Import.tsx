@@ -2,8 +2,8 @@ import { observer } from 'mobx-react'
 import { useState } from 'react'
 import { ImportTask } from '../shared/ImportContent'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
-import ImportProcess from './Import/ImportProcessor'
-import ImportStarter from './Import/ImportStarter'
+import ImportProcess from './import/ImportProcessor'
+import ImportStarter from './import/ImportStarter'
 
 
 const Import = observer(() => {

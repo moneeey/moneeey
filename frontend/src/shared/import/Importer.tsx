@@ -1,8 +1,8 @@
 import { compact, flatten, includes, filter, reduce, groupBy, identity, values, sortBy, map, reverse, head, uniq, isEmpty, times, constant } from 'lodash'
-import { TAccountUUID } from '../entities/Account'
-import { ITransaction } from '../entities/Transaction'
-import { tokenize } from '../utils/Utils'
-import MoneeeyStore from './MoneeeyStore'
+import { TAccountUUID } from '../../entities/Account'
+import { ITransaction } from '../../entities/Transaction'
+import { tokenize } from '../../utils/Utils'
+import MoneeeyStore from '../MoneeeyStore'
 
 class Importer {
   private moneeeyStore: MoneeeyStore

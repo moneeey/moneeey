@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction } from 'react'
 import { AccountSelector } from '../../components/editor/AccountEditor'
 import { TAccountUUID } from '../../entities/Account'
 import { ITransaction } from '../../entities/Transaction'
-import { ImportResult, ImportTask } from '../../shared/ImportContent'
+import { ImportResult, ImportTask } from '../../shared/import/ImportContent'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 
 function ImportProcessResult({ task, result, setResult }: { task: ImportTask, result: ImportResult, setResult: Dispatch<SetStateAction<ImportResult>> }) {

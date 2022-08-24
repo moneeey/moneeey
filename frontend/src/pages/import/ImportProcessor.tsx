@@ -1,8 +1,23 @@
 import { useEffect, useState } from 'react'
-import { ContentProcessor, ImportResult, ImportTask } from '../../shared/ImportContent'
+import { FileUploaderMode, ImportResult, ImportTask, ProcessContentFn, ProcessProgressFn } from '../../shared/import/ImportContent'
+import { txtImport } from '../../shared/import/TxtImporter'
+import MoneeeyStore from '../../shared/MoneeeyStore'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import Messages from '../../utils/Messages'
 import { ImportProcessResult } from './ImportProcessResult'
+
+export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
+  txt: txtImport(),
+  csv: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
+    return ContentProcessor['txt'](moneeeyStore, data, onProgress)
+  },
+  pdf: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
+    return ContentProcessor['txt'](moneeeyStore, data, onProgress)
+  },
+  ofx: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
+    return ContentProcessor['txt'](moneeeyStore, data, onProgress)
+  },
+}
 
 function ImportProcess({ task }: { task: ImportTask }) {
   const [progress, setProgress] = useState(0)
