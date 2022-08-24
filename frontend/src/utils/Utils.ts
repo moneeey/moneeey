@@ -23,7 +23,7 @@ export async function asyncProcess<T, State>(
   state: State,
   chunkSize = 20,
   chunkThrottle = 2
-) {
+): Promise<State> {
   const chunks = chunk(values, chunkSize)
   const tasksTotal = chunks.length
   while (chunks.length > 0) {

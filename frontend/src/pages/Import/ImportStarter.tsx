@@ -7,7 +7,6 @@ import { AccountSelector } from '../../components/editor/AccountEditor'
 import { TAccountUUID } from '../../entities/Account'
 import ConfigStore from '../../entities/Config'
 import { FileUploaderMode, ImportConfig, ImportInput, ImportTask } from '../../shared/ImportContent'
-import MoneeeyStore from '../../shared/MoneeeyStore'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { TDateFormat } from '../../utils/Date'
 import Messages from '../../utils/Messages'
@@ -39,7 +38,8 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
     multiple: true,
     accept: {
       'text/plain': ['.txt', '.csv'],
-      // TODO: pdf, ofx
+      'application/x-ofx': ['.ofx'],
+      'application/x-pdf': ['.pdf'],
     },
   })
 
