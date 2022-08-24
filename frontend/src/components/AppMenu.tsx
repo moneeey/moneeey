@@ -7,7 +7,7 @@ import {
   SettingOutlined,
   WarningTwoTone,
 } from '@ant-design/icons'
-import { Menu } from 'antd'
+import { Menu, Typography } from 'antd'
 import { observer } from 'mobx-react'
 
 import { AccountRoute } from '../routes/AccountRoute'
@@ -49,7 +49,7 @@ export const AppMenu = observer(() => {
               .sort((a, b) => a.currency_uuid?.localeCompare(b.currency_uuid))
               .map((acct) => ({
                 key: 'account_' + acct._id,
-                label: `${getAccountCurrency(acct)} ${acct.name}`,
+                label: <span><Typography.Text type='secondary'>{getAccountCurrency(acct)}</Typography.Text> {acct.name}</span>,
                 onClick: () => navigation.navigate(AccountRoute.accountUrl(acct))
               })),
             { key: 'unassigned', label: 'Unassigned', onClick: () => navigation.navigate(AccountRoute.url({ account_name: '-' })) },

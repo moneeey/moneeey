@@ -19,6 +19,17 @@
   border: 0 !important;
 }
 
+.tableEditor tr:nth-child(2n) td,
+.tableEditor tr:nth-child(2n) td .ant-select,
+.tableEditor tr:nth-child(2n) td .ant-select-selector,
+.tableEditor tr:nth-child(2n) td input,
+.tableEditor tr:nth-child(2n) td .ant-input-number,
+.tableEditor tr:nth-child(2n) td .ant-picker,
+.tableEditor tr:nth-child(2n) td .ant-input-affix-wrapper,
+.tableEditor tr:nth-child(2n) td .ant-input-group-addon {
+  background-color: #f1f5fd;;
+}
+
 .tableEditor .accountEditor {
   display: flex !important;
 }
