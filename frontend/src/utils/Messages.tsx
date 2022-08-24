@@ -13,7 +13,7 @@ const Messages = {
     processing: 'Importing...',
     drop_here: 'Drop the files here ...',
     click_or_drop_here: 'Drag and drop files here, or click to select files',
-    supported_formats: 'Supported: TXT, CSV',
+    supported_formats: 'Supported: TXT, CSV, OFX',
     unknown_mode: (mode: string) => `Unknown mode ${mode}`,
     new_import: 'New import',
     configuration: 'Configuration',

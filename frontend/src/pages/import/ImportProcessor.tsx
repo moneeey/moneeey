@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FileUploaderMode, ImportResult, ImportTask, ProcessContentFn, ProcessProgressFn } from '../../shared/import/ImportContent'
+import { pdfImport } from '../../shared/import/PdfImporter'
 import { txtImport } from '../../shared/import/TxtImporter'
 import MoneeeyStore from '../../shared/MoneeeyStore'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
@@ -11,9 +12,7 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
   csv: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
     return ContentProcessor['txt'](moneeeyStore, data, onProgress)
   },
-  pdf: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
-    return ContentProcessor['txt'](moneeeyStore, data, onProgress)
-  },
+  pdf: pdfImport(),
   ofx: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
     return ContentProcessor['txt'](moneeeyStore, data, onProgress)
   },

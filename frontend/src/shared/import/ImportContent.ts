@@ -96,16 +96,3 @@ export function importTransaction(date: string, line: string, value: number, ref
   }
   return transaction
 }
-
-export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
-  txt: txtImport(),
-  csv: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
-    return ContentProcessor['txt'](moneeeyStore, data, onProgress)
-  },
-  pdf: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
-    return ContentProcessor['txt'](moneeeyStore, data, onProgress)
-  },
-  ofx: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
-    return ContentProcessor['txt'](moneeeyStore, data, onProgress)
-  },
-}

@@ -1,7 +1,7 @@
 import { Input } from 'antd'
 import { isEmpty, last } from 'lodash'
 import { observer } from 'mobx-react'
-import { ChangeEvent, Dispatch, useCallback, useEffect, useState } from 'react'
+import { ChangeEvent, Dispatch, useCallback, useState } from 'react'
 import { useDropzone, FileRejection } from 'react-dropzone'
 import { AccountSelector } from '../../components/editor/AccountEditor'
 import { TAccountUUID } from '../../entities/Account'
@@ -39,7 +39,7 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
     accept: {
       'text/plain': ['.txt', '.csv'],
       'application/x-ofx': ['.ofx'],
-      'application/x-pdf': ['.pdf'],
+      // 'application/x-pdf': ['.pdf'],
     },
   })
 
