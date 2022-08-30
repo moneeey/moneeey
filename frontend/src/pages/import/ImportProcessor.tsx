@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { FileUploaderMode, ImportResult, ImportTask, ProcessContentFn, ProcessProgressFn } from '../../shared/import/ImportContent'
 import { pdfImport } from '../../shared/import/PdfImporter'
 import { txtImport } from '../../shared/import/TxtImporter'
+import { ofxImport } from '../../shared/import/OfxImporter'
 import MoneeeyStore from '../../shared/MoneeeyStore'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import Messages from '../../utils/Messages'
@@ -13,14 +14,12 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
     return ContentProcessor['txt'](moneeeyStore, data, onProgress)
   },
   pdf: pdfImport(),
-  ofx: function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
-    return ContentProcessor['txt'](moneeeyStore, data, onProgress)
-  },
+  ofx: ofxImport(),
 }
 
 function ImportProcess({ task }: { task: ImportTask }) {
   const [progress, setProgress] = useState(0)
-  const [result, setResult] = useState<ImportResult>(undefined as unknown as ImportResult)
+  const [result, setResult] = useState<ImportResult>({ errors: [], transactions: [], recommended_accounts: {} })
   const moneeeyStore = useMoneeeyStore()
 
   useEffect(() => {

@@ -137,3 +137,19 @@
 .importStarter .referenceAccount input {
   width: 100%;
 }
+
+.budgetArea .periods {
+  display: flex;
+  justify-content: space-around;
+}
+
+.budgetArea .editor {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  max-width: 30em;
+}
+
+.budgetArea .editor .ant-select {
+  width: 100%;
+}

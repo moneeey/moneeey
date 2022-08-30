@@ -21,6 +21,7 @@ import { Status } from '../shared/Persistence'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
 import { ImportRoute } from '../routes/ImportRoute'
 import { SettingsRoute } from '../routes/SettingsRoute'
+import { BudgetRoute } from '../routes/BudgetRoute'
 
 export const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore()
@@ -56,7 +57,7 @@ export const AppMenu = observer(() => {
             { key: 'import', label: 'Import', onClick: () => navigation.navigate(ImportRoute.url()) },
           ]
         },
-        { key: 'budget', label: 'Budget', icon: <MailOutlined />, onClick: () => navigation.navigate(HomeRoute.url()) },
+        { key: 'budget', label: 'Budget', icon: <MailOutlined />, onClick: () => navigation.navigate(BudgetRoute.url()) },
         {
           key: 'reports',
           label: 'Reports',

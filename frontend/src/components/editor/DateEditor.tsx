@@ -19,7 +19,9 @@ export const DateEditor = observer(<EntityType,>(props: EditorProps<EntityType, 
         rev: entity?._rev,
         ComposedInput: DatePicker,
         ComposedProps: (onChange: (value?: TDate, editorValue?: moment.Moment, additional?: Partial<EntityType>) => void) => ({
-          onSelect: (value: moment.Moment) => onChange(formatDate(value.toDate()), value, {})
+          onSelect: (value: moment.Moment) => onChange(formatDate(value.toDate()), value, {}),
+          allowClear: !props.field.readOnly,
+          disabled: !!props.field.readOnly,
         })
       }}
     />

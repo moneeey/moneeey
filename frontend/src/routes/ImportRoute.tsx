@@ -1,4 +1,4 @@
-import Import from '../pages/Import'
+import Import from '../pages/import/Import'
 import { HomeRoute } from './HomeRouter'
 import { IRouteParameters, Route } from './Route'
 

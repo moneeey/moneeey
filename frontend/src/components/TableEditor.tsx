@@ -1,4 +1,3 @@
-import { Table } from 'antd'
 import { ColumnType } from 'antd/lib/table'
 import { compact, values } from 'lodash'
 import { action } from 'mobx'
@@ -111,7 +110,7 @@ export const TableEditor = observer(
       <VirtualTable
         rowKey='entityId'
         className='tableEditor'
-        columns={columns as any}
+        columns={columns as ColumnType<object>[]}
         dataSource={entities}
         pagination={false}
       />
