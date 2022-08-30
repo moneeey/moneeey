@@ -8,7 +8,7 @@ export default class NavigationStore {
     makeObservable(this, {
       _navigateToUrl: observable,
       navigateTo: computed,
-      navigate: action
+      navigate: action,
     })
   }
 

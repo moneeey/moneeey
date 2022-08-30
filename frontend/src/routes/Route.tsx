@@ -2,16 +2,18 @@ import { ReactNode } from 'react'
 import MoneeeyStore from '../shared/MoneeeyStore'
 
 export interface IAppParameters {
-  moneeeyStore: MoneeeyStore;
+  moneeeyStore: MoneeeyStore
 }
 
 export interface IRouteParameters {
-  [_index: string]: string;
+  [_index: string]: string
 }
 
 function slugify(string: string) {
-  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
-  const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
+  const a =
+    'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
+  const b =
+    'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
   const p = new RegExp(a.split('').join('|'), 'g')
 
   if (string === '-') return string
@@ -57,6 +59,12 @@ export abstract class Route<IParameters extends IRouteParameters> {
     return encodeURIComponent(slugify(value))
   }
 
-  abstract render({ parameters, app }: { parameters: IParameters, app: IAppParameters }): ReactNode;
+  abstract render({
+    parameters,
+    app,
+  }: {
+    parameters: IParameters
+    app: IAppParameters
+  }): ReactNode
 }
 export default Route

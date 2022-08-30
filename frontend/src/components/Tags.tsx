@@ -13,15 +13,17 @@ const TagColors: { [_group: string]: string } = {
 
 const HighlightTagContext = React.createContext({
   tag: '',
-  setTag: (_v: string) => { _v }
+  setTag: (_v: string) => {
+    _v
+  },
 })
 
 interface ITagsProp {
-  tags: string[];
+  tags: string[]
 }
 
 interface IStyledTagsProp extends ITagsProp {
-  color: string;
+  color: string
 }
 
 function TagsRenderer({ color, tags }: IStyledTagsProp) {
@@ -41,7 +43,8 @@ function TagsRenderer({ color, tags }: IStyledTagsProp) {
             onClick={(e) => {
               e.preventDefault()
               moneeeyStore.navigation.navigate(TagsRoute.tagsUrl(t))
-            }}>
+            }}
+          >
             #{t}
           </Tag>
         )
@@ -62,5 +65,9 @@ export function TagsTo({ tags }: ITagsProp) {
 
 export function TagsHighlightProvider({ children }: { children: ReactNode[] }) {
   const [tag, setTag] = React.useState('')
-  return <HighlightTagContext.Provider value={{ tag, setTag }}>{children}</HighlightTagContext.Provider>
+  return (
+    <HighlightTagContext.Provider value={{ tag, setTag }}>
+      {children}
+    </HighlightTagContext.Provider>
+  )
 }

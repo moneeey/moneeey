@@ -1,25 +1,35 @@
 import { computed, makeObservable } from 'mobx'
 
 import { AccountStore, TAccountUUID } from './Account'
-import { compareDates, currentDate, currentDateTime, TDate } from '../utils/Date'
+import {
+  compareDates,
+  currentDate,
+  currentDateTime,
+  TDate,
+} from '../utils/Date'
 import { uuid } from '../utils/Utils'
 import { EditorType } from '../components/editor/EditorProps'
-import { IBaseEntity, TMonetary, EntityType, isEntityType } from '../shared/Entity'
+import {
+  IBaseEntity,
+  TMonetary,
+  EntityType,
+  isEntityType,
+} from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { isEmpty } from 'lodash'
 
-export type TTransactionUUID = string;
+export type TTransactionUUID = string
 
 export interface ITransaction extends IBaseEntity {
-  transaction_uuid: TTransactionUUID;
-  date: TDate;
-  from_account: TAccountUUID;
-  to_account: TAccountUUID;
-  from_value: TMonetary;
-  to_value: TMonetary;
-  memo: string;
-  import_data?: string;
+  transaction_uuid: TTransactionUUID
+  date: TDate
+  from_account: TAccountUUID
+  to_account: TAccountUUID
+  from_value: TMonetary
+  to_value: TMonetary
+  memo: string
+  import_data?: string
 }
 
 class TransactionStore extends MappedStore<ITransaction> {
@@ -82,7 +92,7 @@ class TransactionStore extends MappedStore<ITransaction> {
       })
     )
     makeObservable(this, {
-      sorted: computed
+      sorted: computed,
     })
   }
 
@@ -100,26 +110,39 @@ class TransactionStore extends MappedStore<ITransaction> {
 
   filterByAccounts(accounts: TAccountUUID[]) {
     const accountSet = new Set(accounts)
-    return (row: ITransaction) => accountSet.has(row.from_account) || accountSet.has(row.to_account) || (isEmpty(row.from_account) && isEmpty(row.to_account))
+    return (row: ITransaction) =>
+      accountSet.has(row.from_account) ||
+      accountSet.has(row.to_account) ||
+      (isEmpty(row.from_account) && isEmpty(row.to_account))
   }
 
   viewAllWithAccounts(accounts: TAccountUUID[]) {
-    return this.sortTransactions(this.byPredicate(this.filterByAccounts(accounts)))
+    return this.sortTransactions(
+      this.byPredicate(this.filterByAccounts(accounts))
+    )
   }
 
   filterByTag(tag: string, accountsStore: AccountStore) {
-    return (row: ITransaction) => this.getAllTransactionTags(row, accountsStore).indexOf(tag) >= 0
+    return (row: ITransaction) =>
+      this.getAllTransactionTags(row, accountsStore).indexOf(tag) >= 0
   }
 
   viewAllWithTag(tag: string, accountsStore: AccountStore) {
-    return this.sortTransactions(this.byPredicate(this.filterByTag(tag, accountsStore)))
+    return this.sortTransactions(
+      this.byPredicate(this.filterByTag(tag, accountsStore))
+    )
   }
 
   viewAllNonPayees(accountsStore: AccountStore) {
-    return this.viewAllWithAccounts(accountsStore.allNonPayees.map((act) => act.account_uuid))
+    return this.viewAllWithAccounts(
+      accountsStore.allNonPayees.map((act) => act.account_uuid)
+    )
   }
 
-  getAllTransactionTags(transaction: ITransaction, accountsStore: AccountStore) {
+  getAllTransactionTags(
+    transaction: ITransaction,
+    accountsStore: AccountStore
+  ) {
     const from_acct = accountsStore.accountTags(transaction.from_account)
     const to_acct = accountsStore.accountTags(transaction.to_account)
     return [...from_acct, ...to_acct, ...transaction.tags]
@@ -127,6 +150,5 @@ class TransactionStore extends MappedStore<ITransaction> {
 }
 
 const isTransaction = isEntityType<ITransaction>(EntityType.TRANSACTION)
-
 
 export { TransactionStore, TransactionStore as default, isTransaction }

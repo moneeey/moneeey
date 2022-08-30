@@ -14,7 +14,7 @@ function App(): React.ReactElement {
   const [moneeeyStore] = React.useState(new MoneeeyStore())
 
   return (
-    <div className='App'>
+    <div className="App">
       <MoneeeyStoreProvider value={moneeeyStore}>
         <TagsHighlightProvider>
           <AppMenu />

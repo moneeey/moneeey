@@ -5,15 +5,15 @@ import MoneeeyStore from '../shared/MoneeeyStore'
 import { currentDateTime } from '../utils/Date'
 import { uuid } from '../utils/Utils'
 
-export type TCurrencyUUID = string;
+export type TCurrencyUUID = string
 
 export interface ICurrency extends IBaseEntity {
-  currency_uuid: TCurrencyUUID;
-  name: string;
-  short: string;
-  suffix: string;
-  prefix: string;
-  decimals: number;
+  currency_uuid: TCurrencyUUID
+  name: string
+  short: string
+  suffix: string
+  prefix: string
+  decimals: number
 }
 
 export class CurrencyStore extends MappedStore<ICurrency> {
@@ -21,24 +21,26 @@ export class CurrencyStore extends MappedStore<ICurrency> {
     super(
       moneeeyStore,
       (c) => c.currency_uuid,
-      () => ({
-        entity_type: EntityType.CURRENCY,
-        currency_uuid: uuid(),
-        name: '',
-        short: '',
-        prefix: '',
-        suffix: '',
-        decimals: 2,
-        updated: currentDateTime(),
-        created: currentDateTime(),
-      } as ICurrency),
+      () =>
+        ({
+          entity_type: EntityType.CURRENCY,
+          currency_uuid: uuid(),
+          name: '',
+          short: '',
+          prefix: '',
+          suffix: '',
+          decimals: 2,
+          updated: currentDateTime(),
+          created: currentDateTime(),
+        } as ICurrency),
       () => ({
         name: {
           title: 'Name',
           field: 'name',
           required: true,
           validate: (value: string) => {
-            if (value.length < 2) return { valid: false, error: 'Please type a name' }
+            if (value.length < 2)
+              return { valid: false, error: 'Please type a name' }
             return { valid: true }
           },
           index: 0,
@@ -81,7 +83,8 @@ export class CurrencyStore extends MappedStore<ICurrency> {
           index: 6,
           editor: EditorType.DATE,
         },
-      }))
+      })
+    )
   }
 
   findByName(name: string) {
@@ -97,7 +100,7 @@ export class CurrencyStore extends MappedStore<ICurrency> {
       currency.prefix +
       value.toLocaleString(undefined, {
         maximumFractionDigits: currency.decimals,
-        minimumFractionDigits: currency.decimals
+        minimumFractionDigits: currency.decimals,
       }) +
       currency.suffix
     )

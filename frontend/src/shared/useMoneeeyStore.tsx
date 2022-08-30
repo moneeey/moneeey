@@ -7,6 +7,14 @@ export default function useMoneeeyStore(): MoneeeyStore {
   return React.useContext(MoneeeyContext)
 }
 
-export function MoneeeyStoreProvider({ value, children }: { value: MoneeeyStore; children: ReactNode }) {
-  return <MoneeeyContext.Provider value={value}>{children}</MoneeeyContext.Provider>
+export function MoneeeyStoreProvider({
+  value,
+  children,
+}: {
+  value: MoneeeyStore
+  children: ReactNode
+}) {
+  return (
+    <MoneeeyContext.Provider value={value}>{children}</MoneeeyContext.Provider>
+  )
 }

@@ -5,19 +5,19 @@ import { uuid } from '../utils/Utils'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { TCurrencyUUID } from './Currency'
 
-export type TBudgetUUID = string;
+export type TBudgetUUID = string
 
 interface IBudgetEnvelope {
-  starting: TDate;
-  ending: TDate;
-  allocated: TMonetary;
+  starting: TDate
+  ending: TDate
+  allocated: TMonetary
 }
 
 export interface IBudget extends IBaseEntity {
-  budget_uuid: TBudgetUUID;
-  currency_uuid: TCurrencyUUID;
-  name: string;
-  envelopes: IBudgetEnvelope[];
+  budget_uuid: TBudgetUUID
+  currency_uuid: TCurrencyUUID
+  name: string
+  envelopes: IBudgetEnvelope[]
 }
 
 export class BudgetStore extends MappedStore<IBudget> {

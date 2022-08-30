@@ -1,8 +1,8 @@
 import { Alert } from 'antd'
 
 interface StatusProps {
-  type?: 'error' | 'success' | 'info' | 'warning';
-  message?: string;
+  type?: 'error' | 'success' | 'info' | 'warning'
+  message?: string
 }
 
 const Status = (props: StatusProps) => {

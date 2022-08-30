@@ -6,29 +6,36 @@ import { useDropzone, FileRejection } from 'react-dropzone'
 import { AccountSelector } from '../../components/editor/AccountEditor'
 import { TAccountUUID } from '../../entities/Account'
 import ConfigStore from '../../entities/Config'
-import { FileUploaderMode, ImportConfig, ImportInput, ImportTask } from '../../shared/import/ImportContent'
+import {
+  FileUploaderMode,
+  ImportConfig,
+  ImportInput,
+  ImportTask,
+} from '../../shared/import/ImportContent'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { TDateFormat } from '../../utils/Date'
 import Messages from '../../utils/Messages'
 
-
 export interface FileUploaderProps {
-  onFile: (input: ImportInput) => void;
-  error: string | false;
+  onFile: (input: ImportInput) => void
+  error: string | false
 }
 
 function FileUploader({ onFile, error }: FileUploaderProps) {
-  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
-    console.log('FileUploader onDrop', { acceptedFiles, rejectedFiles })
-    acceptedFiles.forEach(async f => {
-      const mode = last(f.name.split('.')) || 'txt'
-      onFile({
-        name: f.name,
-        mode: mode as FileUploaderMode,
-        contents: f,
+  const onDrop = useCallback(
+    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+      console.log('FileUploader onDrop', { acceptedFiles, rejectedFiles })
+      acceptedFiles.forEach(async (f) => {
+        const mode = last(f.name.split('.')) || 'txt'
+        onFile({
+          name: f.name,
+          mode: mode as FileUploaderMode,
+          contents: f,
+        })
       })
-    })
-  }, [onFile])
+    },
+    [onFile]
+  )
 
   const disabled = !!error
 
@@ -45,10 +52,19 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
 
   return (
     <>
-      <div className={`uploadArea${disabled ? 'Disabled' : 'Enabled'}`} {...getRootProps()}>
+      <div
+        className={`uploadArea${disabled ? 'Disabled' : 'Enabled'}`}
+        {...getRootProps()}
+      >
         <input {...getInputProps()} />
-        <p><strong>{error}</strong></p>
-        <p>{isDragActive ? Messages.import.drop_here : Messages.import.click_or_drop_here}</p>
+        <p>
+          <strong>{error}</strong>
+        </p>
+        <p>
+          {isDragActive
+            ? Messages.import.drop_here
+            : Messages.import.click_or_drop_here}
+        </p>
         <p>{Messages.import.supported_formats}</p>
       </div>
     </>
@@ -56,29 +72,38 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
 }
 
 interface ReferenceAccountSelectorProps {
-  referenceAccount: TAccountUUID;
-  onReferenceAccount: (account: TAccountUUID) => void;
+  referenceAccount: TAccountUUID
+  onReferenceAccount: (account: TAccountUUID) => void
 }
 
-export const ReferenceAccountSelector = observer(({ referenceAccount, onReferenceAccount }: ReferenceAccountSelectorProps) => {
-  const moneeeyStore = useMoneeeyStore()
-  return (
-    <AccountSelector 
-      account={referenceAccount}
-      accounts={moneeeyStore.accounts.allNonPayees}
-      onSelect={(value) => onReferenceAccount(value)}
-    />
-  )
-})
+export const ReferenceAccountSelector = observer(
+  ({ referenceAccount, onReferenceAccount }: ReferenceAccountSelectorProps) => {
+    const moneeeyStore = useMoneeeyStore()
+    return (
+      <AccountSelector
+        account={referenceAccount}
+        accounts={moneeeyStore.accounts.allNonPayees}
+        onSelect={(value) => onReferenceAccount(value)}
+      />
+    )
+  }
+)
 
-function ImportStarter({ onTask, configuration }: { onTask: Dispatch<ImportTask>, configuration: ConfigStore }) {
+function ImportStarter({
+  onTask,
+  configuration,
+}: {
+  onTask: Dispatch<ImportTask>
+  configuration: ConfigStore
+}) {
   const [config, setConfig] = useState({
     dateFormat: configuration.main.date_format,
     decimalSeparator: configuration.main.decimal_separator,
     referenceAccount: '',
   } as ImportConfig)
 
-  const error = isEmpty(config.referenceAccount) && Messages.import.select_reference_account
+  const error =
+    isEmpty(config.referenceAccount) && Messages.import.select_reference_account
   const onFile = (input: ImportInput) => {
     onTask({ input, config })
   }
@@ -91,17 +116,38 @@ function ImportStarter({ onTask, configuration }: { onTask: Dispatch<ImportTask>
           <h3>{Messages.import.configuration}</h3>
           <Input.Group className="referenceAccount">
             {Messages.util.reference_account}
-            <ReferenceAccountSelector referenceAccount={config.referenceAccount} onReferenceAccount={referenceAccount => setConfig(config => ({ ...config, referenceAccount }))} />
+            <ReferenceAccountSelector
+              referenceAccount={config.referenceAccount}
+              onReferenceAccount={(referenceAccount) =>
+                setConfig((config) => ({ ...config, referenceAccount }))
+              }
+            />
           </Input.Group>
           <Input.Group>
             {Messages.util.date_format}
-            <Input type='text' placeholder={TDateFormat} value={config.dateFormat}
-              onChange={({ target: { value } }: ChangeEvent<HTMLInputElement>) => setConfig(config => ({ ...config, dateFormat: value }))} />
+            <Input
+              type="text"
+              placeholder={TDateFormat}
+              value={config.dateFormat}
+              onChange={({
+                target: { value },
+              }: ChangeEvent<HTMLInputElement>) =>
+                setConfig((config) => ({ ...config, dateFormat: value }))
+              }
+            />
           </Input.Group>
           <Input.Group>
             {Messages.util.decimal_separator}
-            <Input type='text' placeholder={'. or ,'} value={config.decimalSeparator}
-              onChange={({ target: { value } }: ChangeEvent<HTMLInputElement>) => setConfig(config => ({ ...config, decimalSeparator: value }))} />
+            <Input
+              type="text"
+              placeholder={'. or ,'}
+              value={config.decimalSeparator}
+              onChange={({
+                target: { value },
+              }: ChangeEvent<HTMLInputElement>) =>
+                setConfig((config) => ({ ...config, decimalSeparator: value }))
+              }
+            />
           </Input.Group>
         </section>
         <FileUploader onFile={onFile} error={error} />

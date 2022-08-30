@@ -6,10 +6,13 @@ export function uuid() {
 }
 
 export function tokenize(text: string | undefined) {
-  return (text||'').toLowerCase().split(/[\W\d]/)
+  return (text || '').toLowerCase().split(/[\W\d]/)
 }
 
-export async function asyncTimeout<R>(fn: () => R | Promise<R>, delay: number): Promise<R> {
+export async function asyncTimeout<R>(
+  fn: () => R | Promise<R>,
+  delay: number
+): Promise<R> {
   return await new Promise((resolve) => {
     setTimeout(() => {
       resolve(fn())
@@ -19,7 +22,13 @@ export async function asyncTimeout<R>(fn: () => R | Promise<R>, delay: number): 
 
 export async function asyncProcess<T, State>(
   values: T[],
-  fn: (chnk: T[], state: State, chunks: T[][], tasks: number, tasksTotal: number) => void,
+  fn: (
+    chnk: T[],
+    state: State,
+    chunks: T[][],
+    tasks: number,
+    tasksTotal: number
+  ) => void,
   state: State,
   chunkSize = 20,
   chunkThrottle = 2
@@ -28,7 +37,10 @@ export async function asyncProcess<T, State>(
   const tasksTotal = chunks.length
   while (chunks.length > 0) {
     const chunk = chunks.shift()
-    await asyncTimeout(() => fn(chunk || [], state, chunks, chunks.length, tasksTotal), chunkThrottle)
+    await asyncTimeout(
+      () => fn(chunk || [], state, chunks, chunks.length, tasksTotal),
+      chunkThrottle
+    )
   }
   return state
 }

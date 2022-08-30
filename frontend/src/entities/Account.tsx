@@ -8,20 +8,20 @@ import MappedStore from '../shared/MappedStore'
 import { uuid } from '../utils/Utils'
 import MoneeeyStore from '../shared/MoneeeyStore'
 
-export type TAccountUUID = string;
+export type TAccountUUID = string
 
 export enum AccountType {
   CHECKING = 'CHECKING',
   CREDIT_CARD = 'CREDIT_CARD',
-  PAYEE = 'PAYEE'
+  PAYEE = 'PAYEE',
 }
 
 export interface IAccount extends IBaseEntity {
-  account_uuid: TAccountUUID;
-  currency_uuid: TCurrencyUUID;
-  name: string;
-  created: TDate;
-  type: AccountType;
+  account_uuid: TAccountUUID
+  currency_uuid: TCurrencyUUID
+  name: string
+  created: TDate
+  type: AccountType
 }
 
 export class AccountStore extends MappedStore<IAccount> {
@@ -45,7 +45,8 @@ export class AccountStore extends MappedStore<IAccount> {
           field: 'name',
           required: true,
           validate: (value: string) => {
-            if (value.length < 2) return { valid: false, error: 'Please type a name' }
+            if (value.length < 2)
+              return { valid: false, error: 'Please type a name' }
             return { valid: true }
           },
           index: 0,

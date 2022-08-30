@@ -11,29 +11,41 @@ import { Row } from '../TableEditor'
 import { BaseSelectEditor } from './BaseSelectEditor'
 import { EditorProps } from './EditorProps'
 
-export const CurrencyEditor = observer(<EntityType,>(props: EditorProps<EntityType, TCurrencyUUID, TCurrencyUUID>) => {
-  const { currencies } = useMoneeeyStore()
-  const entity = props.store.byUuid(props.entityId)
-  return (
-    <BaseSelectEditor
-      {...{
-        ...props,
-        value: entity?.[props.field.field],
-        rev: entity?._rev,
-        options: _(currencies.all)
-          .map((currency) => ({ label: currency.name, value: currency.currency_uuid }))
-          .value(),
-        ComposedProps: () => ({}),
-        ComposedInput: Select
-      }}
-    />
-  )
-})
+export const CurrencyEditor = observer(
+  <EntityType,>(
+    props: EditorProps<EntityType, TCurrencyUUID, TCurrencyUUID>
+  ) => {
+    const { currencies } = useMoneeeyStore()
+    const entity = props.store.byUuid(props.entityId)
+    return (
+      <BaseSelectEditor
+        {...{
+          ...props,
+          value: entity?.[props.field.field],
+          rev: entity?._rev,
+          options: _(currencies.all)
+            .map((currency) => ({
+              label: currency.name,
+              value: currency.currency_uuid,
+            }))
+            .value(),
+          ComposedProps: () => ({}),
+          ComposedInput: Select,
+        }}
+      />
+    )
+  }
+)
 
-export const CurrencySorter = <EntityType extends IBaseEntity,>(store: MappedStore<EntityType>, field: keyof EntityType, moneeeyStore: MoneeeyStore) =>
+export const CurrencySorter =
+  <EntityType extends IBaseEntity>(
+    store: MappedStore<EntityType>,
+    field: keyof EntityType,
+    moneeeyStore: MoneeeyStore
+  ) =>
   (a?: Row, b?: Row, asc?: boolean): number => {
-    const entityA = store.byUuid(a?.entityId||'')
-    const entityB = store.byUuid(b?.entityId||'')
+    const entityA = store.byUuid(a?.entityId || '')
+    const entityB = store.byUuid(b?.entityId || '')
     const av = moneeeyStore.currencies.nameForUuid('' + entityA?.[field] || '')
     const bv = moneeeyStore.currencies.nameForUuid('' + entityB?.[field] || '')
     return asc ? av.localeCompare(bv) : bv.localeCompare(av)

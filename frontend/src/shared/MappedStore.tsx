@@ -6,13 +6,16 @@ import { currentDateTime } from '../utils/Date'
 import { IBaseEntity } from './Entity'
 import MoneeeyStore from './MoneeeyStore'
 
-type UUIDGetter<T> = (item: T) => string;
+type UUIDGetter<T> = (item: T) => string
 
 type RecordMap<T, V> = {
   [P in Exclude<keyof T, 'toString'>]?: V
 }
 
-export type SchemaFactory<T extends IBaseEntity> = () => RecordMap<T, FieldProps<never>>;
+export type SchemaFactory<T extends IBaseEntity> = () => RecordMap<
+  T,
+  FieldProps<never>
+>
 
 export default class MappedStore<T extends IBaseEntity> {
   public readonly itemsByUuid = new Map<string, T>()
@@ -21,7 +24,12 @@ export default class MappedStore<T extends IBaseEntity> {
   public readonly factory: () => T
   public readonly moneeeyStore: MoneeeyStore
 
-  constructor(moneeeyStore: MoneeeyStore, getUuid: UUIDGetter<T>, factory: () => T, schema: SchemaFactory<T>) {
+  constructor(
+    moneeeyStore: MoneeeyStore,
+    getUuid: UUIDGetter<T>,
+    factory: () => T,
+    schema: SchemaFactory<T>
+  ) {
     this.getUuid = getUuid
     this.schema = schema
     this.factory = factory
@@ -42,7 +50,9 @@ export default class MappedStore<T extends IBaseEntity> {
       ...item,
       _id: item.entity_type + '-' + uuid,
       created: item.created || currentDateTime(),
-      updated: options.setUpdated ? currentDateTime() : item.updated || currentDateTime(),
+      updated: options.setUpdated
+        ? currentDateTime()
+        : item.updated || currentDateTime(),
     })
   }
 
@@ -53,11 +63,11 @@ export default class MappedStore<T extends IBaseEntity> {
   }
 
   hasKey(uuid: string | undefined) {
-    return !isEmpty(uuid) && this.itemsByUuid.has(uuid||'')
+    return !isEmpty(uuid) && this.itemsByUuid.has(uuid || '')
   }
 
   byUuid(uuid: string | undefined) {
-    return !isEmpty(uuid) ? this.itemsByUuid.get(uuid||'') : undefined
+    return !isEmpty(uuid) ? this.itemsByUuid.get(uuid || '') : undefined
   }
 
   byPredicate(predicate: (item: T) => boolean) {

@@ -13,7 +13,7 @@ export default class ManagementStore {
       post: action,
       start: action,
       checkLoggedIn: action,
-      complete: action
+      complete: action,
     })
 
     this.loadFromSession()
@@ -33,21 +33,29 @@ export default class ManagementStore {
     const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(body),
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
     })
     return await response.json()
   }
 
   async start(email: string) {
     this.email = email
-    const { success, auth_code } = await this.post('/auth/start', { email: this.email })
+    const { success, auth_code } = await this.post('/auth/start', {
+      email: this.email,
+    })
     this.auth_code = auth_code
     this.saveToSession()
     return success
   }
 
   async checkLoggedIn() {
-    const { success } = await this.post('/auth/check', { email: this.email, auth_code: this.auth_code })
+    const { success } = await this.post('/auth/check', {
+      email: this.email,
+      auth_code: this.auth_code,
+    })
     this.loggedIn = success
     return success
   }
@@ -56,7 +64,11 @@ export default class ManagementStore {
     this.email = email
     this.auth_code = auth_code
     this.saveToSession()
-    const { success, error } = await this.post('/auth/complete', { email, auth_code, confirm_code })
+    const { success, error } = await this.post('/auth/complete', {
+      email,
+      auth_code,
+      confirm_code,
+    })
     this.loggedIn = success
     return { success, error }
   }

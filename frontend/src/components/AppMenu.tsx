@@ -31,38 +31,59 @@ export const AppMenu = observer(() => {
   }
   return (
     <Menu
-      mode='horizontal'
-      triggerSubMenuAction='click'
+      mode="horizontal"
+      triggerSubMenuAction="click"
       items={[
         {
           key: 'dashboard',
           label: 'Dashboard',
           icon: <DashboardOutlined />,
-          onClick: () => navigation.navigate(HomeRoute.url())
+          onClick: () => navigation.navigate(HomeRoute.url()),
         },
         {
           key: 'transactions',
           label: 'Transactions',
           icon: <DollarOutlined />,
           children: [
-            ...accounts
-              .allNonPayees
+            ...accounts.allNonPayees
               .sort((a, b) => a.currency_uuid?.localeCompare(b.currency_uuid))
               .map((acct) => ({
                 key: 'account_' + acct._id,
-                label: <span><Typography.Text type='secondary'>{getAccountCurrency(acct)}</Typography.Text> {acct.name}</span>,
-                onClick: () => navigation.navigate(AccountRoute.accountUrl(acct))
+                label: (
+                  <span>
+                    <Typography.Text type="secondary">
+                      {getAccountCurrency(acct)}
+                    </Typography.Text>{' '}
+                    {acct.name}
+                  </span>
+                ),
+                onClick: () =>
+                  navigation.navigate(AccountRoute.accountUrl(acct)),
               })),
-            { key: 'unassigned', label: 'Unassigned', onClick: () => navigation.navigate(AccountRoute.url({ account_name: '-' })) },
-            { key: 'import', label: 'Import', onClick: () => navigation.navigate(ImportRoute.url()) },
-          ]
+            {
+              key: 'unassigned',
+              label: 'Unassigned',
+              onClick: () =>
+                navigation.navigate(AccountRoute.url({ account_name: '-' })),
+            },
+            {
+              key: 'import',
+              label: 'Import',
+              onClick: () => navigation.navigate(ImportRoute.url()),
+            },
+          ],
         },
-        { key: 'budget', label: 'Budget', icon: <MailOutlined />, onClick: () => navigation.navigate(BudgetRoute.url()) },
+        {
+          key: 'budget',
+          label: 'Budget',
+          icon: <MailOutlined />,
+          onClick: () => navigation.navigate(BudgetRoute.url()),
+        },
         {
           key: 'reports',
           label: 'Reports',
           icon: <AreaChartOutlined />,
-          onClick: () => navigation.navigate(ReportsRoute.url())
+          onClick: () => navigation.navigate(ReportsRoute.url()),
         },
         {
           key: 'settings',
@@ -72,33 +93,38 @@ export const AppMenu = observer(() => {
             {
               key: 'settings_currencies',
               label: 'Currencies',
-              onClick: () => navigation.navigate(CurrencySettingsRoute.url())
+              onClick: () => navigation.navigate(CurrencySettingsRoute.url()),
             },
-            { key: 'settings_payees', label: 'Payees', onClick: () => navigation.navigate(PayeeSettingsRoute.url()) },
+            {
+              key: 'settings_payees',
+              label: 'Payees',
+              onClick: () => navigation.navigate(PayeeSettingsRoute.url()),
+            },
             {
               key: 'settings_accounts',
               label: 'Accounts',
-              onClick: () => navigation.navigate(AccountSettingsRoute.url())
+              onClick: () => navigation.navigate(AccountSettingsRoute.url()),
             },
             {
               key: 'settings_general',
               label: 'Settings',
-              onClick: () => navigation.navigate(SettingsRoute.url())
+              onClick: () => navigation.navigate(SettingsRoute.url()),
             },
-          ]
+          ],
         },
         {
           key: 'sync',
           label: persistence.status,
           icon:
             persistence.status === Status.ONLINE ? (
-              <CheckCircleTwoTone twoToneColor='green' />
+              <CheckCircleTwoTone twoToneColor="green" />
             ) : (
-              <WarningTwoTone twoToneColor='red' />
+              <WarningTwoTone twoToneColor="red" />
             ),
-          onClick: () => navigation.navigate(HomeRoute.url())
-        }
-      ]}></Menu>
+          onClick: () => navigation.navigate(HomeRoute.url()),
+        },
+      ]}
+    ></Menu>
   )
 })
 

@@ -5,13 +5,17 @@ import { AccountStore, AccountType, IAccount } from '../entities/Account'
 import { CurrencyStore } from '../entities/Currency'
 
 interface AccountSettingsProps {
-  accounts: AccountStore;
-  currencies: CurrencyStore;
-  type: AccountType;
+  accounts: AccountStore
+  currencies: CurrencyStore
+  type: AccountType
 }
 
 const AccountTable = observer(({ accounts, type }: AccountSettingsProps) => (
-  <TableEditor store={accounts} schemaFilter={(row: IAccount) => row.type === type} factory={() => ({...accounts.factory(), type })} />
+  <TableEditor
+    store={accounts}
+    schemaFilter={(row: IAccount) => row.type === type}
+    factory={() => ({ ...accounts.factory(), type })}
+  />
 ))
 
 export { AccountTable, AccountTable as default }

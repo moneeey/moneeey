@@ -1,13 +1,13 @@
 const Messages = {
   landing: {
     failed: 'Login failed, please try again',
-    welcome: 'Please check your email.'
+    welcome: 'Please check your email.',
   },
   login: {
     completed: 'Welcome, please wait...',
     auth_code: 'Bad authentication code, please try again',
     confirm_code: 'Bad confirm code, please try again',
-    code_expired: 'Confirm code expired, please try again'
+    code_expired: 'Confirm code expired, please try again',
   },
   import: {
     processing: 'Importing...',
@@ -25,12 +25,16 @@ const Messages = {
     decimal_separator: 'Decimal separator:',
   },
   settings: {
-    backup_loading: (percentage: number) => `Loading your backup data, please wait... ${percentage}%`,
-    restore_loading: (percentage: number) => `Restoring your backup data, please wait... ${percentage}%`,
-    restore_data_placeholder: 'Paste your restore data here and click "Restore data" again',
+    backup_loading: (percentage: number) =>
+      `Loading your backup data, please wait... ${percentage}%`,
+    restore_loading: (percentage: number) =>
+      `Restoring your backup data, please wait... ${percentage}%`,
+    restore_data_placeholder:
+      'Paste your restore data here and click "Restore data" again',
     clear_data_token: 'DELETE EVERYTHING',
-    clear_data_placeholder: 'Type "DELETE EVERYTHING" in this text area and hit "Clear data" again to delete everything and start from zero.',
-    create_entity: (entity: string) => `Create ${entity}`
+    clear_data_placeholder:
+      'Type "DELETE EVERYTHING" in this text area and hit "Clear data" again to delete everything and start from zero.',
+    create_entity: (entity: string) => `Create ${entity}`,
   },
   budget: {
     next: 'Next',

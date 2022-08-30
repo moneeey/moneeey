@@ -8,7 +8,8 @@ module.exports = {
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:react/jsx-runtime'
+    'plugin:react/jsx-runtime',
+    'plugin:prettier/recommended'
   ],
   'parser': '@typescript-eslint/parser',
   'parserOptions': {
@@ -20,12 +21,12 @@ module.exports = {
   },
   'plugins': [
     'react',
-    '@typescript-eslint'
+    '@typescript-eslint',
+    'prettier'
   ],
   'rules': {
     'indent': [
-      'error',
-      2
+      'off'
     ],
     'linebreak-style': [
       'error',

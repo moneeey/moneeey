@@ -8,9 +8,9 @@ import { currentDateTime, TDateFormat } from '../utils/Date'
 import { TCurrencyUUID } from './Currency'
 
 export interface IConfig extends IBaseEntity {
-  date_format: string;
-  decimal_separator: string;
-  default_currency: TCurrencyUUID;
+  date_format: string
+  decimal_separator: string
+  default_currency: TCurrencyUUID
 }
 
 export class ConfigStore extends MappedStore<IConfig> {
@@ -18,14 +18,15 @@ export class ConfigStore extends MappedStore<IConfig> {
     super(
       moneeeyStore,
       () => 'CONFIG',
-      () => ({
-        entity_type: EntityType.CONFIG,
-        date_format: TDateFormat,
-        decimal_separator: ',',
-        default_currency: '',
-        updated: currentDateTime(),
-        created: currentDateTime(),
-      } as IConfig),
+      () =>
+        ({
+          entity_type: EntityType.CONFIG,
+          date_format: TDateFormat,
+          decimal_separator: ',',
+          default_currency: '',
+          updated: currentDateTime(),
+          created: currentDateTime(),
+        } as IConfig),
       () => ({
         date_format: {
           title: 'Date format',
@@ -45,7 +46,8 @@ export class ConfigStore extends MappedStore<IConfig> {
           index: 2,
           editor: EditorType.CURRENCY,
         },
-      }))
+      })
+    )
 
     makeObservable(this, {
       loaded: computed,

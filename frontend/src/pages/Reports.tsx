@@ -1,7 +1,13 @@
 import { Column, Line } from '@ant-design/charts'
 import { DownOutlined } from '@ant-design/icons'
 import { Button, Dropdown, Menu } from 'antd'
-import { startOfDay, startOfMonth, startOfQuarter, startOfWeek, startOfYear } from 'date-fns'
+import {
+  startOfDay,
+  startOfMonth,
+  startOfQuarter,
+  startOfWeek,
+  startOfYear,
+} from 'date-fns'
 import _ from 'lodash'
 import React from 'react'
 
@@ -15,12 +21,12 @@ import { ITransaction } from '../entities/Transaction'
 import { asyncProcess } from '../utils/Utils'
 
 interface AsyncProcessTransactions {
-  accounts: TAccountUUID[];
-  fn: (transaction: ITransaction, stt: ReportAsyncState) => void;
-  period: PeriodGroup;
-  moneeeyStore: MoneeeyStore;
-  setRows: (t: ITransaction[]) => void;
-  setProgress: (v: number) => void;
+  accounts: TAccountUUID[]
+  fn: (transaction: ITransaction, stt: ReportAsyncState) => void
+  period: PeriodGroup
+  moneeeyStore: MoneeeyStore
+  setRows: (t: ITransaction[]) => void
+  setProgress: (v: number) => void
 }
 
 async function asyncProcessTransactionsForAccounts({
@@ -29,7 +35,7 @@ async function asyncProcessTransactionsForAccounts({
   period,
   moneeeyStore,
   setRows,
-  setProgress
+  setProgress,
 }: AsyncProcessTransactions) {
   const transactions = moneeeyStore.transactions.viewAllWithAccounts(accounts)
   const processed = await asyncProcess(
@@ -40,24 +46,51 @@ async function asyncProcessTransactionsForAccounts({
     },
     { moneeeyStore, data: new Map(), period }
   )
-  setRows(moneeeyStore.transactions.sortTransactions([...processed.data.values()]))
+  setRows(
+    moneeeyStore.transactions.sortTransactions([...processed.data.values()])
+  )
   setProgress(0)
 }
 
 interface PeriodGroup {
-  label: string;
-  groupFn: (_date: Date) => Date;
-  formatter: (_date: Date) => string;
-  order: number;
+  label: string
+  groupFn: (_date: Date) => Date
+  formatter: (_date: Date) => string
+  order: number
 }
 
 const noopFormatter = <T,>(o: T): string => '' + o
 const PeriodGroups: { [_name: string]: PeriodGroup } = {
-  Day: { label: 'Day', groupFn: startOfDay, formatter: noopFormatter, order: 0 },
-  Week: { label: 'Week', groupFn: startOfWeek, formatter: noopFormatter, order: 1 },
-  Month: { label: 'Month', groupFn: startOfMonth, formatter: noopFormatter, order: 2 },
-  Quarter: { label: 'Quarter', groupFn: startOfQuarter, formatter: noopFormatter, order: 3 },
-  Year: { label: 'Year', groupFn: startOfYear, formatter: noopFormatter, order: 4 }
+  Day: {
+    label: 'Day',
+    groupFn: startOfDay,
+    formatter: noopFormatter,
+    order: 0,
+  },
+  Week: {
+    label: 'Week',
+    groupFn: startOfWeek,
+    formatter: noopFormatter,
+    order: 1,
+  },
+  Month: {
+    label: 'Month',
+    groupFn: startOfMonth,
+    formatter: noopFormatter,
+    order: 2,
+  },
+  Quarter: {
+    label: 'Quarter',
+    groupFn: startOfQuarter,
+    formatter: noopFormatter,
+    order: 3,
+  },
+  Year: {
+    label: 'Year',
+    groupFn: startOfYear,
+    formatter: noopFormatter,
+    order: 4,
+  },
 }
 
 function dateToPeriod(period: PeriodGroup, date: TDate) {
@@ -66,10 +99,10 @@ function dateToPeriod(period: PeriodGroup, date: TDate) {
 
 export function DateGroupingSelector({
   setPeriod,
-  period
+  period,
 }: {
-  setPeriod: (newPeriod: PeriodGroup) => void;
-  period: PeriodGroup;
+  setPeriod: (newPeriod: PeriodGroup) => void
+  period: PeriodGroup
 }) {
   return (
     <Dropdown
@@ -85,8 +118,13 @@ export function DateGroupingSelector({
             .value()}
         </Menu>
       }
-      trigger={['click']}>
-      <Button type='link' className='ant-dropdown-link' onClick={(e) => e.preventDefault()}>
+      trigger={['click']}
+    >
+      <Button
+        type="link"
+        className="ant-dropdown-link"
+        onClick={(e) => e.preventDefault()}
+      >
         {period.label} <DownOutlined />
       </Button>
     </Dropdown>
@@ -94,19 +132,26 @@ export function DateGroupingSelector({
 }
 
 interface ReportDataPoint {
-  date: TDate;
-  balance: TMonetary;
-  label: string;
+  date: TDate
+  balance: TMonetary
+  label: string
 }
-type ReportDataMap = Map<string, ReportDataPoint>;
+type ReportDataMap = Map<string, ReportDataPoint>
 interface ReportAsyncState {
-  moneeeyStore: MoneeeyStore;
-  period: PeriodGroup;
-  data: ReportDataMap;
+  moneeeyStore: MoneeeyStore
+  period: PeriodGroup
+  data: ReportDataMap
 }
 
-const balanceGrowthProcess = (transaction: ITransaction, stt: ReportAsyncState) => {
-  const addBalanceToData = (acct: TAccountUUID, value: TMonetary, date: TDate) => {
+const balanceGrowthProcess = (
+  transaction: ITransaction,
+  stt: ReportAsyncState
+) => {
+  const addBalanceToData = (
+    acct: TAccountUUID,
+    value: TMonetary,
+    date: TDate
+  ) => {
     const account = stt.moneeeyStore.accounts.byUuid(acct)
     if (!account || account.type === AccountType.PAYEE) return
     const group_date = dateToPeriod(stt.period, date)
@@ -115,8 +160,16 @@ const balanceGrowthProcess = (transaction: ITransaction, stt: ReportAsyncState) 
     const balance = prev_balance + value
     stt.data.set(key, { date: group_date, balance, label: account.name })
   }
-  addBalanceToData(transaction.from_account, -transaction.from_value, transaction.date)
-  addBalanceToData(transaction.to_account, transaction.to_value, transaction.date)
+  addBalanceToData(
+    transaction.from_account,
+    -transaction.from_value,
+    transaction.date
+  )
+  addBalanceToData(
+    transaction.to_account,
+    transaction.to_value,
+    transaction.date
+  )
 }
 
 export function BalanceGrowthReport() {
@@ -125,14 +178,16 @@ export function BalanceGrowthReport() {
   const [progress, setProgress] = React.useState(0)
   const moneeeyStore = useMoneeeyStore()
   React.useEffect(() => {
-    const personal_accounts = moneeeyStore.accounts.allNonPayees.map((act) => act.account_uuid)
+    const personal_accounts = moneeeyStore.accounts.allNonPayees.map(
+      (act) => act.account_uuid
+    )
     asyncProcessTransactionsForAccounts({
       accounts: personal_accounts,
       fn: balanceGrowthProcess,
       period,
       moneeeyStore,
       setRows,
-      setProgress
+      setProgress,
     })
   }, [moneeeyStore, period, setProgress, setRows])
 
@@ -152,16 +207,16 @@ export function BalanceGrowthReport() {
               label: {
                 formatter: (x) => {
                   return period.formatter(parseDate(x))
-                }
-              }
+                },
+              },
             },
             seriesField: 'label',
             connectNulls: true,
             smooth: true,
             point: {
               size: 5,
-              shape: 'diamond'
-            }
+              shape: 'diamond',
+            },
           }}
         />
       </Loading>
@@ -169,8 +224,15 @@ export function BalanceGrowthReport() {
   )
 }
 
-const tagExpensesProcess = (transaction: ITransaction, stt: ReportAsyncState) => {
-  const sumTransactionTagExpenses = (account_uuid: TAccountUUID, transaction: ITransaction, value: number) => {
+const tagExpensesProcess = (
+  transaction: ITransaction,
+  stt: ReportAsyncState
+) => {
+  const sumTransactionTagExpenses = (
+    account_uuid: TAccountUUID,
+    transaction: ITransaction,
+    value: number
+  ) => {
     const account = stt.moneeeyStore.accounts.byUuid(account_uuid)
     const is_payee = account?.type === AccountType.PAYEE
     const payee_tags = (!is_payee && account?.tags) || []
@@ -184,12 +246,20 @@ const tagExpensesProcess = (transaction: ITransaction, stt: ReportAsyncState) =>
       stt.data.set(group, {
         date: group_date,
         balance,
-        label: tag
+        label: tag,
       })
     })
   }
-  sumTransactionTagExpenses(transaction.from_account, transaction, transaction.from_value)
-  sumTransactionTagExpenses(transaction.to_account, transaction, transaction.to_value)
+  sumTransactionTagExpenses(
+    transaction.from_account,
+    transaction,
+    transaction.from_value
+  )
+  sumTransactionTagExpenses(
+    transaction.to_account,
+    transaction,
+    transaction.to_value
+  )
 }
 
 export function TagExpensesReport() {
@@ -199,14 +269,16 @@ export function TagExpensesReport() {
   const [progress, setProgress] = React.useState(0)
 
   React.useEffect(() => {
-    const payee_accounts = moneeeyStore.accounts.allPayees.map((act) => act.account_uuid)
+    const payee_accounts = moneeeyStore.accounts.allPayees.map(
+      (act) => act.account_uuid
+    )
     asyncProcessTransactionsForAccounts({
       accounts: payee_accounts,
       fn: tagExpensesProcess,
       period,
       moneeeyStore,
       setRows,
-      setProgress
+      setProgress,
     })
   }, [moneeeyStore, period, setProgress, setRows])
 
@@ -221,7 +293,7 @@ export function TagExpensesReport() {
             height: 400,
             xField: 'date',
             yField: 'balance',
-            seriesField: 'label'
+            seriesField: 'label',
           }}
         />
       </Loading>

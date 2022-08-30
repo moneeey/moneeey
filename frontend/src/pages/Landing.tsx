@@ -35,12 +35,16 @@ export default function Landing() {
 
   useEffect(() => {
     if (searchParams.has('confirm_code')) {
-      (async () => {
+      ;(async () => {
         const email = searchParams.get('email') || ''
         const auth_code = searchParams.get('auth_code') || ''
         const confirm_code = searchParams.get('confirm_code') || ''
         setSearchParams({})
-        const { success, error } = await management.complete(email, auth_code, confirm_code)
+        const { success, error } = await management.complete(
+          email,
+          auth_code,
+          confirm_code
+        )
         if (!success && error) {
           let message
           if (error === 'code_expired') {
@@ -61,7 +65,7 @@ export default function Landing() {
   }, [searchParams, setSearchParams, management])
 
   return (
-    <section className='landing'>
+    <section className="landing">
       <h1>Welcome to Moneeey!</h1>
       <ul>
         <li>Own your data</li>
@@ -71,10 +75,10 @@ export default function Landing() {
         <li>Freedom to host own CouchDb</li>
         <li>Powered by PouchDB, CouchDB, React, Typescript</li>
       </ul>
-      <Space direction='vertical'>
+      <Space direction="vertical">
         <Input
-          type='text'
-          placeholder='Email'
+          type="text"
+          placeholder="Email"
           value={email}
           onChange={({ target: { value } }) => setEmail(value.toLowerCase())}
         />

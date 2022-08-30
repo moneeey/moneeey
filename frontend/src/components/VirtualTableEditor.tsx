@@ -9,11 +9,11 @@ import { VariableSizeGrid as Grid } from 'react-window'
 
 const VirtualTable = (props: Parameters<typeof Table>[0]) => {
   const { columns } = props
-  const scroll = { x:  '100vw', y: 500 }
+  const scroll = { x: '100vw', y: 500 }
   const [tableWidth, setTableWidth] = useState(0)
 
   const widthColumnCount = columns!.filter(({ width }) => !width).length
-  const mergedColumns = columns!.map(column => {
+  const mergedColumns = columns!.map((column) => {
     if (column.width) {
       return column
     }
@@ -53,7 +53,10 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
 
   useEffect(() => resetVirtualGrid, [tableWidth])
 
-  const renderVirtualList = (rawData: object[], { scrollbarSize, ref, onScroll }: any) => {
+  const renderVirtualList = (
+    rawData: object[],
+    { scrollbarSize, ref, onScroll }: any
+  ) => {
     ref.current = connectObject
     const totalHeight = rawData.length * 54
 
@@ -81,17 +84,22 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
           rowIndex,
           style,
         }: {
-          columnIndex: number;
-          rowIndex: number;
-          style: React.CSSProperties;
+          columnIndex: number
+          rowIndex: number
+          style: React.CSSProperties
         }) => (
           <div
             className={classNames('virtual-table-cell', {
-              'virtual-table-cell-last': columnIndex === mergedColumns.length - 1,
+              'virtual-table-cell-last':
+                columnIndex === mergedColumns.length - 1,
             })}
             style={style}
           >
-            {(rawData[rowIndex] as any)[(mergedColumns as any)[columnIndex].dataIndex]}
+            {
+              (rawData[rowIndex] as any)[
+                (mergedColumns as any)[columnIndex].dataIndex
+              ]
+            }
           </div>
         )}
       </Grid>
@@ -109,9 +117,11 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
         className={'virtual-table ' + props.className}
         columns={mergedColumns}
         pagination={false}
-        components={{
-          body: renderVirtualList,
-        } as any}
+        components={
+          {
+            body: renderVirtualList,
+          } as any
+        }
       />
     </ResizeObserver>
   )

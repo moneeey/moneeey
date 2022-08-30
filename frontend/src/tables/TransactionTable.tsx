@@ -6,15 +6,21 @@ import CurrencyStore from '../entities/Currency'
 import TransactionStore, { ITransaction } from '../entities/Transaction'
 
 interface TransactionSettingsProps {
-  transactions: TransactionStore;
-  accounts: AccountStore;
-  currencies: CurrencyStore;
-  schemaFilter: (row: ITransaction) => boolean;
-  referenceAccount: TAccountUUID;
+  transactions: TransactionStore
+  accounts: AccountStore
+  currencies: CurrencyStore
+  schemaFilter: (row: ITransaction) => boolean
+  referenceAccount: TAccountUUID
 }
 
-const TransactionTable = observer(({ transactions, schemaFilter }: TransactionSettingsProps) => (
-  <TableEditor store={transactions} schemaFilter={schemaFilter} factory={() => transactions.factory()} />
-))
+const TransactionTable = observer(
+  ({ transactions, schemaFilter }: TransactionSettingsProps) => (
+    <TableEditor
+      store={transactions}
+      schemaFilter={schemaFilter}
+      factory={() => transactions.factory()}
+    />
+  )
+)
 
 export { TransactionTable, TransactionTable as default }

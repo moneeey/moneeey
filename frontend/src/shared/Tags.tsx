@@ -11,7 +11,7 @@ export default class TagsStore {
       register: action,
     })
   }
- 
+
   get all() {
     return Array.from(this.available).sort()
   }

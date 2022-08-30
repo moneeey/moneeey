@@ -15,17 +15,23 @@ import { MemoEditor } from './editor/MemoEditor'
 import { NumberEditor, NumberSorter } from './editor/NumberEditor'
 import { TagEditor } from './editor/TagEditor'
 import { TextEditor, TextSorter } from './editor/TextEditor'
-import { TransactionValueEditor, TransactionValueSorter } from './editor/TransactionValueEditor'
+import {
+  TransactionValueEditor,
+  TransactionValueSorter,
+} from './editor/TransactionValueEditor'
 import VirtualTable from './VirtualTableEditor'
 
 interface TableEditorProps<T extends IBaseEntity> {
-  store: MappedStore<T>;
-  schemaFilter?: (row: T) => boolean;
-  factory: () => T;
-  creatable?: boolean;
+  store: MappedStore<T>
+  schemaFilter?: (row: T) => boolean
+  factory: () => T
+  creatable?: boolean
 }
 
-const EditorTypeToEditor: Record<EditorType, (pros: EditorProps<unknown, unknown, unknown>) => JSX.Element> = {
+const EditorTypeToEditor: Record<
+  EditorType,
+  (pros: EditorProps<unknown, unknown, unknown>) => JSX.Element
+> = {
   [EditorType.TEXT]: TextEditor,
   [EditorType.NUMBER]: NumberEditor,
   [EditorType.DATE]: DateEditor,
@@ -37,7 +43,11 @@ const EditorTypeToEditor: Record<EditorType, (pros: EditorProps<unknown, unknown
 }
 
 type SortRow = (a: Row, b: Row, asc: boolean) => number
-type SortFn = <TEditorType extends IBaseEntity>(store: MappedStore<TEditorType>, field: keyof TEditorType, moneeeyStore: MoneeeyStore) => false | SortRow
+type SortFn = <TEditorType extends IBaseEntity>(
+  store: MappedStore<TEditorType>,
+  field: keyof TEditorType,
+  moneeeyStore: MoneeeyStore
+) => false | SortRow
 
 const EditorTypeToSorter: Record<EditorType, SortFn> = {
   [EditorType.TEXT]: TextSorter,
@@ -61,55 +71,79 @@ const EditorTypeToWidth: Record<EditorType, number | undefined> = {
   [EditorType.MEMO]: undefined,
 }
 
-
 export type Row = {
-  entityId: string;
+  entityId: string
 }
 
 export const TableEditor = observer(
-  <T extends IBaseEntity>({ schemaFilter, store, factory, creatable }: TableEditorProps<T>) => {
-
+  <T extends IBaseEntity>({
+    schemaFilter,
+    store,
+    factory,
+    creatable,
+  }: TableEditorProps<T>) => {
     const moneeeyStore = useMoneeeyStore()
 
-    const entities = useMemo(() => store.ids
-      .map(id => store.byUuid(id) as T)
-      .filter(row => !schemaFilter || schemaFilter(row))
-      .map(row => store.getUuid(row))
-      .concat(creatable !== false ? ['new'] : [])
-      .map(entityId => ({ entityId })), [store, store.ids, schemaFilter])
+    const entities = useMemo(
+      () =>
+        store.ids
+          .map((id) => store.byUuid(id) as T)
+          .filter((row) => !schemaFilter || schemaFilter(row))
+          .map((row) => store.getUuid(row))
+          .concat(creatable !== false ? ['new'] : [])
+          .map((entityId) => ({ entityId })),
+      [store, store.ids, schemaFilter]
+    )
 
-    const columns: ColumnType<Row>[] = useMemo(() => compact(values(store.schema()))
-      .sort((a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index)
-      .map((props: FieldProps<never>): ColumnType<Row> => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const Editor = EditorTypeToEditor[props.editor] as unknown as any
-        const sorter = EditorTypeToSorter[props.editor](store, props.field as keyof T, moneeeyStore)
-        const width = EditorTypeToWidth[props.editor]
-        return {
-          width: width || props.width,
-          title: props.title,
-          dataIndex: props.field,
-          defaultSortOrder: props.defaultSortOrder,
-          sorter: sorter ? (a, b, sortOrder) => sorter(a, b, sortOrder === 'ascend') : undefined,
-          render: (_value: unknown, { entityId }: Row): React.ReactNode => {
-            const key = entityId + '_' + props.field
-            const onUpdate = action((value: unknown, additional: object = {}) =>
-              store.merge({
-                ...(store.byUuid(entityId) || factory()),
-                [props.field]: value,
-                ...additional
-              } as T)
+    const columns: ColumnType<Row>[] = useMemo(
+      () =>
+        compact(values(store.schema()))
+          .sort(
+            (a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index
+          )
+          .map((props: FieldProps<never>): ColumnType<Row> => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const Editor = EditorTypeToEditor[props.editor] as unknown as any
+            const sorter = EditorTypeToSorter[props.editor](
+              store,
+              props.field as keyof T,
+              moneeeyStore
             )
+            const width = EditorTypeToWidth[props.editor]
+            return {
+              width: width || props.width,
+              title: props.title,
+              dataIndex: props.field,
+              defaultSortOrder: props.defaultSortOrder,
+              sorter: sorter
+                ? (a, b, sortOrder) => sorter(a, b, sortOrder === 'ascend')
+                : undefined,
+              render: (_value: unknown, { entityId }: Row): React.ReactNode => {
+                const key = entityId + '_' + props.field
+                const onUpdate = action(
+                  (value: unknown, additional: object = {}) =>
+                    store.merge({
+                      ...(store.byUuid(entityId) || factory()),
+                      [props.field]: value,
+                      ...additional,
+                    } as T)
+                )
 
-            return <Editor {...{ store, entityId, key, field: props, onUpdate }} />
-          }
-        }
-      }), [store])
+                return (
+                  <Editor
+                    {...{ store, entityId, key, field: props, onUpdate }}
+                  />
+                )
+              },
+            }
+          }),
+      [store]
+    )
 
     return (
       <VirtualTable
-        rowKey='entityId'
-        className='tableEditor'
+        rowKey="entityId"
+        className="tableEditor"
         columns={columns as ColumnType<object>[]}
         dataSource={entities}
         pagination={false}

@@ -5,7 +5,7 @@ import { HomeRoute } from './HomeRouter'
 import { IAppParameters, IRouteParameters, Route } from './Route'
 
 interface ITagsRoute extends IRouteParameters {
-  tag: string;
+  tag: string
 }
 
 class TagsRouter extends Route<ITagsRoute> {
@@ -14,12 +14,23 @@ class TagsRouter extends Route<ITagsRoute> {
     this.parent?.addChild(this)
   }
 
-  render({ app, parameters}: { app: IAppParameters, parameters: ITagsRoute }) {
+  render({ app, parameters }: { app: IAppParameters; parameters: ITagsRoute }) {
     const { transactions, accounts, currencies } = app.moneeeyStore
     const filterByTag = transactions.filterByTag(parameters.tag, accounts)
     const schemaFilter = (row: ITransaction) => filterByTag(row)
     const referenceAccount = ''
-    return <TransactionTable {...{ transactions, accounts, currencies, schemaFilter, referenceAccount, tag: parameters.tag }} />
+    return (
+      <TransactionTable
+        {...{
+          transactions,
+          accounts,
+          currencies,
+          schemaFilter,
+          referenceAccount,
+          tag: parameters.tag,
+        }}
+      />
+    )
   }
 
   tagsUrl(tag: string) {
