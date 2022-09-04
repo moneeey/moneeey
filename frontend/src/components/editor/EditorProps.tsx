@@ -14,6 +14,9 @@ export enum EditorType {
   TAG = 'TAG',
   MEMO = 'MEMO',
   TRANSACTION_VALUE = 'TRANSACTION_VALUE',
+  LABEL = 'LABEL',
+  BUDGET_REMAINING = 'BUDGET_REMAINING',
+  BUDGET_ALLOCATED = 'BUDGET_ALLOCATED',
 }
 
 export interface FieldProps<ValueEditorType> {
@@ -35,3 +38,5 @@ export interface EditorProps<TEntityType, ValueEditorType, ValueEntityType> {
   store: MappedStore<any>
   onUpdate: (value: ValueEntityType, additional: object) => TEntityType
 }
+
+export const NoSorter = (): false => false

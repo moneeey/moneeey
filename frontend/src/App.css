@@ -52,6 +52,9 @@
   border: 0;
 }
 
+.tableEditor .ant-table-column-title {
+  font-weight: bold;
+}
 .tableEditor .importUnchanged,
 .tableEditor .importUnchanged .ant-select-selection-item {
   color: gray;

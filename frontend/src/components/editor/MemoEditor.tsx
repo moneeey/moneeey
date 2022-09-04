@@ -4,6 +4,7 @@ import { ChangeEvent, useState } from 'react'
 import { TagsMemo } from '../Tags'
 import { BaseEditor } from './BaseEditor'
 import { EditorProps } from './EditorProps'
+import { TextSorter } from './TextEditor'
 
 export const MemoEditor = observer(
   <EntityType,>(props: EditorProps<EntityType, string, string>) => {
@@ -48,3 +49,5 @@ export const MemoEditor = observer(
     )
   }
 )
+
+export const MemoSorter = TextSorter

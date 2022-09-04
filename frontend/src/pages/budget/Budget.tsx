@@ -1,51 +1,70 @@
-import { Button, Drawer, Form, Input, Select, Space, Typography } from 'antd'
+import {
+  Button,
+  Card,
+  Checkbox,
+  Drawer,
+  Form,
+  Input,
+  Select,
+  Space,
+} from 'antd'
 import { map, range } from 'lodash'
 import { observer } from 'mobx-react'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { TableEditor } from '../../components/TableEditor'
 import { IBudget } from '../../entities/Budget'
+import { TCurrencyUUID } from '../../entities/Currency'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
-import { formatDateMonth, startOfMonthOffset } from '../../utils/Date'
+import {
+  formatDate,
+  formatDateMonth,
+  startOfMonthOffset,
+} from '../../utils/Date'
 import Messages from '../../utils/Messages'
+
+interface PeriodProps {
+  startingDate: Date
+  setEditing: Dispatch<SetStateAction<IBudget | undefined>>
+  showArchived: boolean
+}
 
 const BudgetPeriods = ({
   startingDate,
   setEditing,
-}: {
-  startingDate: Date
-  setEditing: Dispatch<SetStateAction<IBudget | undefined>>
-}) => (
-  <section className="periods">
+  showArchived,
+}: PeriodProps) => (
+  <Space className="periods">
     {map(range(-1, 3), (offset) => (
       <BudgetPeriod
         key={offset}
         startingDate={startOfMonthOffset(startingDate, offset)}
         setEditing={setEditing}
+        showArchived={showArchived}
       />
     ))}
-  </section>
+  </Space>
 )
 
 const BudgetPeriod = observer(
-  ({
-    startingDate,
-    setEditing,
-  }: {
-    startingDate: Date
-    setEditing: Dispatch<SetStateAction<IBudget | undefined>>
-  }) => {
+  ({ startingDate, setEditing, showArchived }: PeriodProps) => {
     const { budget } = useMoneeeyStore()
+    const starting = formatDate(startingDate)
+    useEffect(() => {
+      budget.makeEnvelopes(starting)
+    }, [startingDate])
+    const onNewBudget = () => setEditing(budget.factory())
     return (
-      <section className="period">
-        <p>{formatDateMonth(startingDate)}</p>
-        {budget.all.map((b) => (
-          <p key={b.budget_uuid}>
-            {b.name}{' '}
-            <Typography.Link onClick={() => setEditing(b)}>
-              Edit
-            </Typography.Link>
-          </p>
-        ))}
-      </section>
+      <Card className="period" title={formatDateMonth(startingDate)}>
+        <TableEditor
+          store={budget.envelopes}
+          factory={budget.envelopes.factory}
+          creatable={false}
+          schemaFilter={(b) =>
+            b.starting === starting && (!b.budget.archived || showArchived)
+          }
+        />
+        <Button onClick={onNewBudget}>{Messages.budget.new}</Button>
+      </Card>
     )
   }
 )
@@ -57,7 +76,7 @@ const BudgetEditor = ({
   editing?: IBudget
   setEditing: Dispatch<SetStateAction<IBudget | undefined>>
 }) => {
-  const { budget, tags } = useMoneeeyStore()
+  const { budget, tags, currencies } = useMoneeeyStore()
 
   const onClose = () => setEditing(undefined)
   const onSave = () => {
@@ -86,25 +105,48 @@ const BudgetEditor = ({
         </Space>
       }
     >
-      <Form>
-        <Form.Item label="Name">
+      <Form layout="vertical">
+        <Form.Item label={Messages.util.name}>
           <Input
             type="text"
-            placeholder="Name"
+            placeholder={Messages.util.name}
             value={editing.name}
             onChange={({ target: { value: name } }) =>
               setEditing({ ...editing, name })
             }
           />
         </Form.Item>
-        <Form.Item label="Tags">
+        <Form.Item label={Messages.util.currency}>
+          <Select
+            placeholder={Messages.util.currency}
+            options={currencies.all.map((c) => ({
+              label: c.name,
+              value: c.currency_uuid,
+            }))}
+            value={editing.currency_uuid}
+            onChange={(currency_uuid: TCurrencyUUID) =>
+              setEditing({ ...editing, currency_uuid })
+            }
+          />
+        </Form.Item>
+        <Form.Item label={Messages.util.tags}>
           <Select
             mode="tags"
-            placeholder="Tags"
+            placeholder={Messages.util.tags}
             options={tags.all.map((t) => ({ label: t, value: t }))}
             value={editing.tags}
             onChange={(tags: string[]) => setEditing({ ...editing, tags })}
           />
+        </Form.Item>
+        <Form.Item>
+          <Checkbox
+            value={editing.archived}
+            onChange={({ target: { checked: archived } }) =>
+              setEditing({ ...editing, archived })
+            }
+          >
+            {Messages.util.archived}
+          </Checkbox>
         </Form.Item>
       </Form>
     </Drawer>
@@ -118,7 +160,7 @@ const MonthDateSelector = ({
   setDate: Dispatch<SetStateAction<Date>>
   date: Date
 }) => (
-  <Space className="control">
+  <>
     <Button onClick={() => setDate(startOfMonthOffset(date, -1))}>
       {Messages.budget.prev}
     </Button>
@@ -126,7 +168,7 @@ const MonthDateSelector = ({
     <Button onClick={() => setDate(startOfMonthOffset(date, +1))}>
       {Messages.budget.next}
     </Button>
-  </Space>
+  </>
 )
 
 const Budget = observer(() => {
@@ -134,14 +176,24 @@ const Budget = observer(() => {
     startOfMonthOffset(new Date(), 0)
   )
   const [editing, setEditing] = useState<IBudget | undefined>(undefined)
+  const [showArchived, setShowArchived] = useState(false)
   const { budget } = useMoneeeyStore()
-  const onNewBudget = () => setEditing(budget.factory())
   return (
     <section className="budgetArea">
-      <MonthDateSelector date={startingDate} setDate={setStartingDate} />
-      <BudgetPeriods startingDate={startingDate} setEditing={setEditing} />
+      <Space className="control">
+        <MonthDateSelector date={startingDate} setDate={setStartingDate} />
+        <Checkbox
+          onChange={({ target: { checked } }) => setShowArchived(checked)}
+        >
+          {Messages.budget.show_archived}
+        </Checkbox>
+      </Space>
+      <BudgetPeriods
+        startingDate={startingDate}
+        setEditing={setEditing}
+        showArchived={showArchived}
+      />
       <BudgetEditor editing={editing} setEditing={setEditing} />
-      <Button onClick={onNewBudget}>{Messages.budget.new}</Button>
     </section>
   )
 })

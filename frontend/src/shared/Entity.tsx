@@ -14,6 +14,7 @@ export enum EntityType {
   BUDGET = 'BUDGET',
   CURRENCY = 'CURRENCY',
   CONFIG = 'CONFIG',
+  VIRTUAL_BUDGET_ENVELOPE = 'VIRTUAL_BUDGET_ENVELOPE',
 }
 
 export interface IBaseCouchEntity {

@@ -9,12 +9,21 @@ import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
 import { AccountEditor, AccountSorter } from './editor/AccountEditor'
+import {
+  BudgetAllocatedEditor,
+  BudgetAllocatedSorter,
+} from './editor/BudgetAllocatedEditor'
+import {
+  BudgetRemainingEditor,
+  BudgetRemainingSorter,
+} from './editor/BudgetRemainingEditor'
 import { CurrencyEditor, CurrencySorter } from './editor/CurrencyEditor'
 import { DateEditor, DateSorter } from './editor/DateEditor'
 import { EditorProps, EditorType, FieldProps } from './editor/EditorProps'
-import { MemoEditor } from './editor/MemoEditor'
+import { LabelEditor, LabelSorter } from './editor/LabelEditor'
+import { MemoEditor, MemoSorter } from './editor/MemoEditor'
 import { NumberEditor, NumberSorter } from './editor/NumberEditor'
-import { TagEditor } from './editor/TagEditor'
+import { TagEditor, TagSorter } from './editor/TagEditor'
 import { TextEditor, TextSorter } from './editor/TextEditor'
 import {
   TransactionValueEditor,
@@ -29,20 +38,6 @@ interface TableEditorProps<T extends IBaseEntity> {
   creatable?: boolean
 }
 
-const EditorTypeToEditor: Record<
-  EditorType,
-  (pros: EditorProps<unknown, unknown, unknown>) => JSX.Element
-> = {
-  [EditorType.TEXT]: TextEditor,
-  [EditorType.NUMBER]: NumberEditor,
-  [EditorType.DATE]: DateEditor,
-  [EditorType.ACCOUNT]: AccountEditor,
-  [EditorType.CURRENCY]: CurrencyEditor,
-  [EditorType.TAG]: TagEditor,
-  [EditorType.MEMO]: MemoEditor,
-  [EditorType.TRANSACTION_VALUE]: TransactionValueEditor,
-}
-
 type SortRow = (a: Row, b: Row, asc: boolean) => number
 type SortFn = <TEditorType extends IBaseEntity>(
   store: MappedStore<TEditorType>,
@@ -50,26 +45,69 @@ type SortFn = <TEditorType extends IBaseEntity>(
   moneeeyStore: MoneeeyStore
 ) => false | SortRow
 
-const EditorTypeToSorter: Record<EditorType, SortFn> = {
-  [EditorType.TEXT]: TextSorter,
-  [EditorType.NUMBER]: NumberSorter,
-  [EditorType.DATE]: DateSorter,
-  [EditorType.ACCOUNT]: AccountSorter,
-  [EditorType.CURRENCY]: CurrencySorter,
-  [EditorType.TAG]: () => false,
-  [EditorType.MEMO]: TextSorter,
-  [EditorType.TRANSACTION_VALUE]: TransactionValueSorter,
-}
-
-const EditorTypeToWidth: Record<EditorType, number | undefined> = {
-  [EditorType.DATE]: 142,
-  [EditorType.TRANSACTION_VALUE]: 320,
-  [EditorType.TEXT]: undefined,
-  [EditorType.NUMBER]: undefined,
-  [EditorType.ACCOUNT]: undefined,
-  [EditorType.CURRENCY]: undefined,
-  [EditorType.TAG]: undefined,
-  [EditorType.MEMO]: undefined,
+const EditorTypeConfig: Record<
+  EditorType,
+  {
+    render: (pros: EditorProps<unknown, unknown, unknown>) => JSX.Element
+    sorter: SortFn
+    width: number | undefined
+  }
+> = {
+  [EditorType.TEXT]: {
+    render: TextEditor,
+    sorter: TextSorter,
+    width: undefined,
+  },
+  [EditorType.NUMBER]: {
+    render: NumberEditor,
+    sorter: NumberSorter,
+    width: undefined,
+  },
+  [EditorType.DATE]: {
+    render: DateEditor,
+    sorter: DateSorter,
+    width: 142,
+  },
+  [EditorType.ACCOUNT]: {
+    render: AccountEditor,
+    sorter: AccountSorter,
+    width: undefined,
+  },
+  [EditorType.CURRENCY]: {
+    render: CurrencyEditor,
+    sorter: CurrencySorter,
+    width: undefined,
+  },
+  [EditorType.TAG]: {
+    render: TagEditor,
+    sorter: TagSorter,
+    width: undefined,
+  },
+  [EditorType.MEMO]: {
+    render: MemoEditor,
+    sorter: MemoSorter,
+    width: undefined,
+  },
+  [EditorType.TRANSACTION_VALUE]: {
+    render: TransactionValueEditor,
+    sorter: TransactionValueSorter,
+    width: 320,
+  },
+  [EditorType.LABEL]: {
+    render: LabelEditor,
+    sorter: LabelSorter,
+    width: undefined,
+  },
+  BUDGET_REMAINING: {
+    render: BudgetRemainingEditor,
+    sorter: BudgetRemainingSorter,
+    width: undefined,
+  },
+  BUDGET_ALLOCATED: {
+    render: BudgetAllocatedEditor,
+    sorter: BudgetAllocatedSorter,
+    width: undefined,
+  },
 }
 
 export type Row = {
@@ -103,14 +141,15 @@ export const TableEditor = observer(
             (a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index
           )
           .map((props: FieldProps<never>): ColumnType<Row> => {
+            const config = EditorTypeConfig[props.editor]
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const Editor = EditorTypeToEditor[props.editor] as unknown as any
-            const sorter = EditorTypeToSorter[props.editor](
+            const Editor = config.render as unknown as any
+            const sorter = config.sorter(
               store,
               props.field as keyof T,
               moneeeyStore
             )
-            const width = EditorTypeToWidth[props.editor]
+            const width = config.width
             return {
               width: width || props.width,
               title: props.title,

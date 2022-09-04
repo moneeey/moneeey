@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 
 import { BaseSelectEditor } from './BaseSelectEditor'
-import { EditorProps } from './EditorProps'
+import { EditorProps, NoSorter } from './EditorProps'
 
 export const TagEditor = observer(
   <EntityType,>(props: EditorProps<EntityType, string[], string[]>) => {
@@ -45,3 +45,5 @@ export const TagEditor = observer(
     )
   }
 )
+
+export const TagSorter = NoSorter

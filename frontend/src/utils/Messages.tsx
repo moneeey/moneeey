@@ -20,7 +20,11 @@ const Messages = {
     select_reference_account: 'Please select reference account',
   },
   util: {
+    name: 'Name',
+    tags: 'Tags',
+    archived: 'Archived',
     close: 'Close',
+    currency: 'Currency',
     date_format: 'Date format:',
     reference_account: 'Reference account:',
     decimal_separator: 'Decimal separator:',
@@ -42,6 +46,7 @@ const Messages = {
     next: 'Next',
     prev: 'Prev',
     save: 'Save',
+    show_archived: 'Show archived',
   },
 }
 export default Messages
