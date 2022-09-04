@@ -27,7 +27,7 @@
 .tableEditor tr:nth-child(2n) td .ant-picker,
 .tableEditor tr:nth-child(2n) td .ant-input-affix-wrapper,
 .tableEditor tr:nth-child(2n) td .ant-input-group-addon {
-  background-color: #f1f5fd;;
+  background-color: #212224;
 }
 
 .tableEditor .accountEditor {
@@ -141,13 +141,6 @@
 .budgetArea .periods {
   display: flex;
   justify-content: space-around;
-}
-
-.budgetArea .editor {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  max-width: 30em;
 }
 
 .budgetArea .editor .ant-select {

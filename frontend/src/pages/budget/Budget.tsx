@@ -50,7 +50,7 @@ const BudgetEditor = observer(
       setEditing(budget.byUuid(budget_uuid) || editing)
     }, [budget_uuid, setEditing])
     return (
-      <Form className="editor">
+      <Form>
         <Form.Item label="Name">
           <Input
             type="text"
