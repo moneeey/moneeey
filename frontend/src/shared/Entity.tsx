@@ -30,7 +30,9 @@ export interface IBaseEntity extends IBaseCouchEntity {
   created?: TDateTime
 }
 
-export function isEntityType<TEntityType>(entity_type: EntityType) {
+export function isEntityType<
+  TEntityType extends { entity_type?: EntityType | undefined }
+>(entity_type: EntityType) {
   return function (object: {
     entity_type?: EntityType
   }): object is TEntityType {

@@ -11,9 +11,8 @@ import { asyncProcess, uuid } from '../utils/Utils'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { TCurrencyUUID } from './Currency'
 import { EditorType } from '../components/editor/EditorProps'
-import { computed, makeObservable, observable } from 'mobx'
+import { makeObservable, observable } from 'mobx'
 import _, { debounce, values } from 'lodash'
-import { StatTimer } from 'pdfjs-dist/types/src/display/display_utils'
 
 export type TBudgetUUID = string
 

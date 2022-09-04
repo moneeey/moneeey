@@ -5,7 +5,6 @@ interface validation {
   error?: string
 }
 
-
 export enum EditorType {
   TEXT = 'TEXT',
   NUMBER = 'NUMBER',
