@@ -1,4 +1,3 @@
-import { Space } from 'antd'
 import { ColumnType } from 'antd/lib/table'
 import { compact, values } from 'lodash'
 import { action } from 'mobx'
@@ -17,10 +16,12 @@ import {
   BudgetRemainingEditor,
   BudgetRemainingSorter,
 } from './editor/BudgetRemainingEditor'
+import { BudgetUsedEditor, BudgetUsedSorter } from './editor/BudgetUsedEditor'
 import { CurrencyEditor, CurrencySorter } from './editor/CurrencyEditor'
 import { DateEditor, DateSorter } from './editor/DateEditor'
 import { EditorProps, EditorType, FieldProps } from './editor/EditorProps'
 import { LabelEditor, LabelSorter } from './editor/LabelEditor'
+import { LinkEditor, LinkSorter } from './editor/LinkEditor'
 import { MemoEditor, MemoSorter } from './editor/MemoEditor'
 import { NumberEditor, NumberSorter } from './editor/NumberEditor'
 import { TagEditor, TagSorter } from './editor/TagEditor'
@@ -31,11 +32,12 @@ import {
 } from './editor/TransactionValueEditor'
 import VirtualTable from './VirtualTableEditor'
 
-interface TableEditorProps<T extends IBaseEntity> {
+interface TableEditorProps<T extends IBaseEntity, Context> {
   store: MappedStore<T>
   schemaFilter?: (row: T) => boolean
   factory: () => T
   creatable?: boolean
+  context?: Context
 }
 
 type SortRow = (a: Row, b: Row, asc: boolean) => number
@@ -98,14 +100,24 @@ const EditorTypeConfig: Record<
     sorter: LabelSorter,
     width: undefined,
   },
-  BUDGET_REMAINING: {
+  [EditorType.LINK]: {
+    render: LinkEditor,
+    sorter: LinkSorter,
+    width: undefined,
+  },
+  [EditorType.BUDGET_REMAINING]: {
     render: BudgetRemainingEditor,
     sorter: BudgetRemainingSorter,
     width: undefined,
   },
-  BUDGET_ALLOCATED: {
+  [EditorType.BUDGET_ALLOCATED]: {
     render: BudgetAllocatedEditor,
     sorter: BudgetAllocatedSorter,
+    width: undefined,
+  },
+  [EditorType.BUDGET_USED]: {
+    render: BudgetUsedEditor,
+    sorter: BudgetUsedSorter,
     width: undefined,
   },
 }
@@ -120,7 +132,8 @@ export const TableEditor = observer(
     store,
     factory,
     creatable,
-  }: TableEditorProps<T>) => {
+    context,
+  }: TableEditorProps<T, unknown>) => {
     const moneeeyStore = useMoneeeyStore()
 
     const entities = useMemo(
@@ -171,7 +184,14 @@ export const TableEditor = observer(
 
                 return (
                   <Editor
-                    {...{ store, entityId, key, field: props, onUpdate }}
+                    {...{
+                      store,
+                      entityId,
+                      key,
+                      field: props,
+                      onUpdate,
+                      context,
+                    }}
                   />
                 )
               },

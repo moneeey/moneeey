@@ -5,6 +5,7 @@ interface validation {
   error?: string
 }
 
+
 export enum EditorType {
   TEXT = 'TEXT',
   NUMBER = 'NUMBER',
@@ -17,6 +18,8 @@ export enum EditorType {
   LABEL = 'LABEL',
   BUDGET_REMAINING = 'BUDGET_REMAINING',
   BUDGET_ALLOCATED = 'BUDGET_ALLOCATED',
+  LINK = 'LINK',
+  BUDGET_USED = 'BUDGET_USED',
 }
 
 export interface FieldProps<ValueEditorType> {
@@ -36,6 +39,7 @@ export interface EditorProps<TEntityType, ValueEditorType, ValueEntityType> {
   field: FieldProps<ValueEditorType>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   store: MappedStore<any>
+  context?: unknown
   onUpdate: (value: ValueEntityType, additional: object) => TEntityType
 }
 

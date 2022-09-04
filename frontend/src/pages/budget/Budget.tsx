@@ -12,7 +12,7 @@ import { map, range } from 'lodash'
 import { observer } from 'mobx-react'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { TableEditor } from '../../components/TableEditor'
-import { IBudget } from '../../entities/Budget'
+import { BudgetEnvelope, IBudget } from '../../entities/Budget'
 import { TCurrencyUUID } from '../../entities/Currency'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import {
@@ -62,6 +62,7 @@ const BudgetPeriod = observer(
           schemaFilter={(b) =>
             b.starting === starting && (!b.budget.archived || showArchived)
           }
+          context={{ name: (env: BudgetEnvelope) => setEditing(env.budget) }}
         />
         <Button onClick={onNewBudget}>{Messages.budget.new}</Button>
       </Card>
@@ -177,7 +178,6 @@ const Budget = observer(() => {
   )
   const [editing, setEditing] = useState<IBudget | undefined>(undefined)
   const [showArchived, setShowArchived] = useState(false)
-  const { budget } = useMoneeeyStore()
   return (
     <section className="budgetArea">
       <Space className="control">

@@ -1,11 +1,19 @@
-import { currentDateTime, TDate } from '../utils/Date'
+import {
+  currentDateTime,
+  formatDate,
+  parseDate,
+  startOfMonthOffset,
+  TDate,
+} from '../utils/Date'
 import { EntityType, IBaseEntity, TMonetary } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
-import { uuid } from '../utils/Utils'
+import { asyncProcess, uuid } from '../utils/Utils'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { TCurrencyUUID } from './Currency'
 import { EditorType } from '../components/editor/EditorProps'
-import { makeObservable, observable } from 'mobx'
+import { computed, makeObservable, observable } from 'mobx'
+import _, { debounce, values } from 'lodash'
+import { StatTimer } from 'pdfjs-dist/types/src/display/display_utils'
 
 export type TBudgetUUID = string
 
@@ -27,26 +35,28 @@ const BudgetEnvelopeKey = (budget: IBudget, starting: TDate) =>
 
 export class BudgetEnvelope implements IBaseEntity {
   entity_type: EntityType = EntityType.VIRTUAL_BUDGET_ENVELOPE
+  _rev: string
   tags = []
   name: string
   envelope_uuid: string
   starting: TDate
   allocated: TMonetary
-  remaining: TMonetary
+  used: TMonetary
   budget: IBudget
 
   constructor(budget: IBudget, starting: TDate) {
     makeObservable(this, {
       allocated: observable,
-      remaining: observable,
+      used: observable,
     })
 
     this.budget = budget
     this.envelope_uuid = BudgetEnvelopeKey(budget, starting)
     this.starting = starting
     this.allocated = 0
-    this.remaining = 0
+    this.used = 0
     this.name = budget.name
+    this._rev = this.budget._rev || ''
   }
 }
 
@@ -58,7 +68,7 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
       () => ({} as unknown as BudgetEnvelope),
       () => ({
         name: {
-          editor: EditorType.LABEL,
+          editor: EditorType.LINK,
           field: 'name',
           index: 0,
           title: 'Budget',
@@ -69,10 +79,16 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
           index: 1,
           title: 'Allocated',
         },
+        used: {
+          editor: EditorType.BUDGET_USED,
+          field: 'used',
+          index: 2,
+          title: 'Used',
+        },
         remaining: {
           editor: EditorType.BUDGET_REMAINING,
           field: 'remaining',
-          index: 2,
+          index: 3,
           title: 'Remaining',
         },
       })
@@ -141,6 +157,7 @@ export class BudgetStore extends MappedStore<IBudget> {
   setAllocation(entity: IBudget, starting: TDate, allocated: number) {
     const envelope = this.envelopes.getEnvelope(entity, starting)
     envelope.allocated = allocated
+    this.envelopes.merge(envelope)
 
     const realEnvelope = this.getRealEnvelope(entity, starting)
     realEnvelope.allocated = allocated
@@ -149,7 +166,46 @@ export class BudgetStore extends MappedStore<IBudget> {
 
   makeEnvelopes(starting: TDate) {
     this.all.forEach((budget) => this.getEnvelope(budget, starting))
+    this.calculateRemaining()
   }
+
+  findBudgetsFor(tags: string[]) {
+    return this.all.filter((budget) => {
+      return _.every(budget.tags, (tag) => _.includes(tags, tag))
+    })
+  }
+
+  calculateRemaining = debounce(async () => {
+    const { transactions, accounts } = this.moneeeyStore
+    console.time('Budget.calculateRemaining')
+    const usage = await asyncProcess(
+      transactions.all,
+      (chunk, state) =>
+        chunk.forEach((transaction) => {
+          const starting = formatDate(
+            startOfMonthOffset(parseDate(transaction.date), 0)
+          )
+          const budgets = this.findBudgetsFor(
+            transactions.getAllTransactionTags(transaction, accounts)
+          )
+          budgets.forEach((budget) => {
+            const envelope = this.getEnvelope(budget, starting)
+            state[envelope.envelope_uuid] = {
+              envelope,
+              usage:
+                (state[envelope.envelope_uuid]?.usage || 0) +
+                transaction.from_value,
+            }
+          })
+        }),
+      {} as Record<string, { usage: number; envelope: BudgetEnvelope }>,
+      100,
+      50
+    )
+    console.timeEnd('Budget.calculateRemaining')
+    console.log('Budget.calculateRemaining', { usage })
+    values(usage).map(({ envelope, usage }) => (envelope.used = usage))
+  }, 500)
 }
 
 export default BudgetStore
