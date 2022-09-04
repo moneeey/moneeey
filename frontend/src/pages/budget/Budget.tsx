@@ -1,23 +1,37 @@
-import { Button, Form, Input, Select, Typography } from 'antd'
-import { add, startOfMonth } from 'date-fns'
+import { Button, Drawer, Form, Input, Select, Space, Typography } from 'antd'
 import { map, range } from 'lodash'
 import { observer } from 'mobx-react'
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
-import { TBudgetUUID } from '../../entities/Budget'
+import { Dispatch, SetStateAction, useState } from 'react'
+import { IBudget } from '../../entities/Budget'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
-import { formatDateMonth } from '../../utils/Date'
+import { formatDateMonth, startOfMonthOffset } from '../../utils/Date'
 import Messages from '../../utils/Messages'
 
-const startOfMonthOffset = (date: Date, offset: number) =>
-  startOfMonth(add(date, { months: offset }))
+const BudgetPeriods = ({
+  startingDate,
+  setEditing,
+}: {
+  startingDate: Date
+  setEditing: Dispatch<SetStateAction<IBudget | undefined>>
+}) => (
+  <section className="periods">
+    {map(range(-1, 3), (offset) => (
+      <BudgetPeriod
+        key={offset}
+        startingDate={startOfMonthOffset(startingDate, offset)}
+        setEditing={setEditing}
+      />
+    ))}
+  </section>
+)
 
 const BudgetPeriod = observer(
   ({
     startingDate,
-    setEditingBudget,
+    setEditing,
   }: {
     startingDate: Date
-    setEditingBudget: Dispatch<SetStateAction<TBudgetUUID>>
+    setEditing: Dispatch<SetStateAction<IBudget | undefined>>
   }) => {
     const { budget } = useMoneeeyStore()
     return (
@@ -26,7 +40,7 @@ const BudgetPeriod = observer(
         {budget.all.map((b) => (
           <p key={b.budget_uuid}>
             {b.name}{' '}
-            <Typography.Link onClick={() => setEditingBudget(b.budget_uuid)}>
+            <Typography.Link onClick={() => setEditing(b)}>
               Edit
             </Typography.Link>
           </p>
@@ -36,20 +50,42 @@ const BudgetPeriod = observer(
   }
 )
 
-const BudgetEditor = observer(
-  ({
-    budget_uuid,
-    setEditingBudget,
-  }: {
-    budget_uuid?: TBudgetUUID
-    setEditingBudget: Dispatch<SetStateAction<TBudgetUUID>>
-  }) => {
-    const { budget, tags } = useMoneeeyStore()
-    const [editing, setEditing] = useState(() => budget.factory())
-    useEffect(() => {
-      setEditing(budget.byUuid(budget_uuid) || editing)
-    }, [budget_uuid, setEditing])
-    return (
+const BudgetEditor = ({
+  editing,
+  setEditing,
+}: {
+  editing?: IBudget
+  setEditing: Dispatch<SetStateAction<IBudget | undefined>>
+}) => {
+  const { budget, tags } = useMoneeeyStore()
+
+  const onClose = () => setEditing(undefined)
+  const onSave = () => {
+    if (editing) {
+      budget.merge(editing)
+      setEditing(undefined)
+    }
+  }
+
+  return !editing ? (
+    <div />
+  ) : (
+    <Drawer
+      className="editor"
+      title={editing.name || ''}
+      width={500}
+      placement="right"
+      onClose={onClose}
+      open={true}
+      extra={
+        <Space>
+          <Button onClick={onClose}>{Messages.util.close}</Button>
+          <Button onClick={onSave} type="primary">
+            {Messages.budget.save}
+          </Button>
+        </Space>
+      }
+    >
       <Form>
         <Form.Item label="Name">
           <Input
@@ -65,60 +101,47 @@ const BudgetEditor = observer(
           <Select
             mode="tags"
             placeholder="Tags"
+            options={tags.all.map((t) => ({ label: t, value: t }))}
             value={editing.tags}
             onChange={(tags: string[]) => setEditing({ ...editing, tags })}
-            options={tags.all.map((t) => ({ label: t, value: t }))}
           />
         </Form.Item>
-        <Form.Item>
-          <Button
-            onClick={() => {
-              budget.merge(editing)
-              setEditing(budget.factory())
-              setEditingBudget('')
-            }}
-          >
-            {Messages.budget.save}
-          </Button>
-        </Form.Item>
       </Form>
-    )
-  }
+    </Drawer>
+  )
+}
+
+const MonthDateSelector = ({
+  setDate,
+  date,
+}: {
+  setDate: Dispatch<SetStateAction<Date>>
+  date: Date
+}) => (
+  <Space className="control">
+    <Button onClick={() => setDate(startOfMonthOffset(date, -1))}>
+      {Messages.budget.prev}
+    </Button>
+    {formatDateMonth(date)}
+    <Button onClick={() => setDate(startOfMonthOffset(date, +1))}>
+      {Messages.budget.next}
+    </Button>
+  </Space>
 )
 
 const Budget = observer(() => {
   const [startingDate, setStartingDate] = useState(() =>
     startOfMonthOffset(new Date(), 0)
   )
-  const [editingBudget, setEditingBudget] = useState('')
+  const [editing, setEditing] = useState<IBudget | undefined>(undefined)
+  const { budget } = useMoneeeyStore()
+  const onNewBudget = () => setEditing(budget.factory())
   return (
     <section className="budgetArea">
-      <section className="control">
-        <Button
-          onClick={() => setStartingDate(startOfMonthOffset(startingDate, -1))}
-        >
-          {Messages.budget.prev}
-        </Button>
-        {formatDateMonth(startingDate)}
-        <Button
-          onClick={() => setStartingDate(startOfMonthOffset(startingDate, +1))}
-        >
-          {Messages.budget.next}
-        </Button>
-      </section>
-      <section className="periods">
-        {map(range(-1, 3), (offset) => (
-          <BudgetPeriod
-            key={offset}
-            startingDate={startOfMonthOffset(startingDate, offset)}
-            setEditingBudget={setEditingBudget}
-          />
-        ))}
-      </section>
-      <BudgetEditor
-        budget_uuid={editingBudget}
-        setEditingBudget={setEditingBudget}
-      />
+      <MonthDateSelector date={startingDate} setDate={setStartingDate} />
+      <BudgetPeriods startingDate={startingDate} setEditing={setEditing} />
+      <BudgetEditor editing={editing} setEditing={setEditing} />
+      <Button onClick={onNewBudget}>{Messages.budget.new}</Button>
     </section>
   )
 })

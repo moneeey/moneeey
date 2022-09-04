@@ -17,6 +17,7 @@ export interface IBudget extends IBaseEntity {
   budget_uuid: TBudgetUUID
   currency_uuid: TCurrencyUUID
   name: string
+  archived: boolean
   envelopes: IBudgetEnvelope[]
 }
 
@@ -34,6 +35,7 @@ export class BudgetStore extends MappedStore<IBudget> {
         envelopes: [],
         created: currentDateTime(),
         updated: currentDateTime(),
+        archived: false,
       }),
       () => ({})
     )

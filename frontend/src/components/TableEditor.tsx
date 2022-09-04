@@ -1,3 +1,4 @@
+import { Space } from 'antd'
 import { ColumnType } from 'antd/lib/table'
 import { compact, values } from 'lodash'
 import { action } from 'mobx'

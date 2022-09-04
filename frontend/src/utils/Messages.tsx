@@ -20,6 +20,7 @@ const Messages = {
     select_reference_account: 'Please select reference account',
   },
   util: {
+    close: 'Close',
     date_format: 'Date format:',
     reference_account: 'Reference account:',
     decimal_separator: 'Decimal separator:',
@@ -37,6 +38,7 @@ const Messages = {
     create_entity: (entity: string) => `Create ${entity}`,
   },
   budget: {
+    new: 'New budget',
     next: 'Next',
     prev: 'Prev',
     save: 'Save',

@@ -81,6 +81,16 @@ export class AccountStore extends MappedStore<IAccount> {
     })
   }
 
+  merge(
+    item: IAccount,
+    options: { setUpdated: boolean } = { setUpdated: true }
+  ) {
+    super.merge(item, options)
+    if (item.type !== AccountType.PAYEE) {
+      this.moneeeyStore.tags.register(item.name)
+    }
+  }
+
   get allPayees() {
     return this.all.filter((acct) => acct.type === AccountType.PAYEE)
   }
@@ -99,7 +109,7 @@ export class AccountStore extends MappedStore<IAccount> {
 
   accountTags(account_uuid: TAccountUUID) {
     const acct = this.byUuid(account_uuid)
-    if (acct) return acct.tags
+    if (acct) return [...acct.tags, acct.name]
     return []
   }
 

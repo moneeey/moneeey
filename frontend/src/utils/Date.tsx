@@ -5,6 +5,8 @@ import {
   parse,
   isLastDayOfMonth as _isLastDayOfMonth,
   isFirstDayOfMonth as _isFirstDayOfMonth,
+  startOfMonth,
+  add,
 } from 'date-fns'
 
 export type TDate = string
@@ -36,3 +38,6 @@ export const isValidDate = (date: Date) => isValid(date)
 
 export const compareDates = (a: TDate, b: TDate) =>
   parseDate(a).getTime() - parseDate(b).getTime()
+
+export const startOfMonthOffset = (date: Date, offset: number) =>
+  startOfMonth(add(date, { months: offset }))
