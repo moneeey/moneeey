@@ -28,29 +28,29 @@ import Messages from '../../utils/Messages'
 interface PeriodProps {
   startingDate: Date
   setEditing: Dispatch<SetStateAction<IBudget | undefined>>
-  showArchived: boolean
+  viewArchived: boolean
 }
 
 const BudgetPeriods = ({
   startingDate,
   setEditing,
-  showArchived,
-  months,
-}: PeriodProps & { months: number }) => (
-  <Space className="periods">
-    {map(range(-1, months), (offset) => (
+  viewArchived,
+  viewMonths,
+}: PeriodProps & { viewMonths: number }) => (
+  <div className="periods">
+    {map(range(0, viewMonths), (offset) => (
       <BudgetPeriod
         key={offset}
         startingDate={startOfMonthOffset(startingDate, offset)}
         setEditing={setEditing}
-        showArchived={showArchived}
+        viewArchived={viewArchived}
       />
     ))}
-  </Space>
+  </div>
 )
 
 const BudgetPeriod = observer(
-  ({ startingDate, setEditing, showArchived }: PeriodProps) => {
+  ({ startingDate, setEditing, viewArchived }: PeriodProps) => {
     const { budget } = useMoneeeyStore()
     const starting = formatDate(startingDate)
     useEffect(() => {
@@ -64,7 +64,7 @@ const BudgetPeriod = observer(
           factory={budget.envelopes.factory}
           creatable={false}
           schemaFilter={(b) =>
-            b.starting === starting && (!b.budget.archived || showArchived)
+            b.starting === starting && (!b.budget.archived || viewArchived)
           }
           context={{ name: (env: BudgetEnvelope) => setEditing(env.budget) }}
         />
@@ -165,7 +165,7 @@ const MonthDateSelector = ({
   setDate: Dispatch<SetStateAction<Date>>
   date: Date
 }) => (
-  <>
+  <Space>
     <Button onClick={() => setDate(startOfMonthOffset(date, -1))}>
       {Messages.budget.prev}
     </Button>
@@ -173,16 +173,18 @@ const MonthDateSelector = ({
     <Button onClick={() => setDate(startOfMonthOffset(date, +1))}>
       {Messages.budget.next}
     </Button>
-  </>
+  </Space>
 )
 
 const Budget = observer(() => {
+  const { config } = useMoneeeyStore()
   const [startingDate, setStartingDate] = useState(() =>
     startOfMonthOffset(new Date(), 0)
   )
   const [editing, setEditing] = useState<IBudget | undefined>(undefined)
-  const [showArchived, setShowArchived] = useState(false)
-  const [months, setMonths] = useState(3)
+
+  const viewMonths = config.main?.view_months || 3
+  const viewArchived = config.main?.view_archived === true
   return (
     <section className="budgetArea">
       <Space className="control">
@@ -191,11 +193,14 @@ const Budget = observer(() => {
         {Messages.budget.show_months}
         <InputNumber
           placeholder={Messages.budget.show_months}
-          value={months}
-          onChange={(val) => setMonths(val)}
+          value={viewMonths}
+          onChange={(val) => config.merge({ ...config.main, view_months: val })}
         />
         <Checkbox
-          onChange={({ target: { checked } }) => setShowArchived(checked)}
+          checked={viewArchived}
+          onChange={({ target: { checked } }) =>
+            config.merge({ ...config.main, view_archived: checked })
+          }
         >
           {Messages.budget.show_archived}
         </Checkbox>
@@ -203,8 +208,8 @@ const Budget = observer(() => {
       <BudgetPeriods
         startingDate={startingDate}
         setEditing={setEditing}
-        showArchived={showArchived}
-        months={months}
+        viewArchived={viewArchived}
+        viewMonths={viewMonths}
       />
       <BudgetEditor editing={editing} setEditing={setEditing} />
     </section>

@@ -55,7 +55,7 @@
   border: 0;
 }
 
-.tableEditor .ant-table-cell th,
+.tableEditor .ant-table-cell,
 .tableEditor .ant-table-column-title {
   font-weight: bold;
 }
@@ -154,15 +154,22 @@
   display: flex;
   justify-content: space-around;
   flex-wrap: wrap;
-    margin-right: 1em;
+  padding-right: 1em;
   }
   
-  .budgetArea .periods .period {
-    margin-left: 1em;
-    min-width: 300px;
-    max-width: 22vw;
+.budgetArea .periods .period {
+  min-width: 340px;
+    max-width: 540px;
+    margin-bottom: 1em;
 }
 
+.budgetArea .period .ant-card-body {
+  padding: 0 0 1em 0;
+}
+
+.budgetArea .period .tableEditor {
+  padding: 0 0 1em 0;
+}
 .budgetArea .editor .ant-select {
   width: 100%;
 }

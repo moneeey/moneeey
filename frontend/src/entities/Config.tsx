@@ -11,6 +11,8 @@ export interface IConfig extends IBaseEntity {
   date_format: string
   decimal_separator: string
   default_currency: TCurrencyUUID
+  view_months: number
+  view_archived: boolean
 }
 
 export class ConfigStore extends MappedStore<IConfig> {
@@ -24,6 +26,8 @@ export class ConfigStore extends MappedStore<IConfig> {
           date_format: TDateFormat,
           decimal_separator: ',',
           default_currency: '',
+          view_months: 3,
+          view_archived: false,
           updated: currentDateTime(),
           created: currentDateTime(),
         } as IConfig),
@@ -65,7 +69,7 @@ export class ConfigStore extends MappedStore<IConfig> {
   }
 
   init() {
-    if (!this.loaded) this.merge(this.factory())
+    this.merge({ ...this.factory(), ...this.all[0] }, { setUpdated: false })
   }
 }
 
