@@ -1,5 +1,5 @@
 import useMoneeeyStore from '../shared/useMoneeeyStore'
-import { BalanceGrowthReport } from './Reports'
+import { WealthGrowReport } from './Reports'
 import TransactionTable from '../tables/TransactionTable'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { observer } from 'mobx-react'
@@ -39,7 +39,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <BalanceGrowthReport />
+      <WealthGrowReport />
       <RecentTransactions moneeyStore={moneeeyStore} />
     </div>
   )

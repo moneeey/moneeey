@@ -1,4 +1,4 @@
-import { Column, Line } from '@ant-design/charts'
+import { Column } from '@ant-design/charts'
 import { DownOutlined } from '@ant-design/icons'
 import { Button, Dropdown, Menu } from 'antd'
 import {
@@ -12,7 +12,13 @@ import _ from 'lodash'
 import React from 'react'
 
 import { AccountType, TAccountUUID } from '../entities/Account'
-import { formatDate, parseDate, TDate } from '../utils/Date'
+import {
+  formatDate,
+  formatDateAs,
+  parseDate,
+  TDate,
+  TDateFormat,
+} from '../utils/Date'
 import { TMonetary } from '../shared/Entity'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
@@ -60,17 +66,20 @@ interface PeriodGroup {
 }
 
 const noopFormatter = <T,>(o: T): string => '' + o
+const patternFormatter = (pattern: string) => (date: Date) =>
+  formatDateAs(formatDate(date), pattern)
+
 const PeriodGroups: { [_name: string]: PeriodGroup } = {
   Day: {
     label: 'Day',
     groupFn: startOfDay,
-    formatter: noopFormatter,
+    formatter: patternFormatter(TDateFormat),
     order: 0,
   },
   Week: {
     label: 'Week',
     groupFn: startOfWeek,
-    formatter: noopFormatter,
+    formatter: patternFormatter('yyyy ww'),
     order: 1,
   },
   Month: {
@@ -143,7 +152,7 @@ interface ReportAsyncState {
   data: ReportDataMap
 }
 
-const balanceGrowthProcess = (
+const accountBalanceReport = (
   transaction: ITransaction,
   stt: ReportAsyncState
 ) => {
@@ -172,7 +181,7 @@ const balanceGrowthProcess = (
   )
 }
 
-export function BalanceGrowthReport() {
+export function AccountBalanceReport() {
   const [period, setPeriod] = React.useState(PeriodGroups.Week)
   const [rows, setRows] = React.useState([] as ITransaction[])
   const [progress, setProgress] = React.useState(0)
@@ -183,7 +192,7 @@ export function BalanceGrowthReport() {
     )
     asyncProcessTransactionsForAccounts({
       accounts: personal_accounts,
-      fn: balanceGrowthProcess,
+      fn: accountBalanceReport,
       period,
       moneeeyStore,
       setRows,
@@ -193,23 +202,15 @@ export function BalanceGrowthReport() {
 
   return (
     <>
-      <h2>Balance Growth</h2>
+      <h2>Account Balance</h2>
       <DateGroupingSelector setPeriod={setPeriod} period={period} />
       <Loading loading={progress !== 0} progress={progress}>
-        <Line
+        <Column
           {...{
             data: rows,
             height: 400,
-            //xField: "date",
             yField: 'balance',
-            xAxis: {
-              field: 'date',
-              label: {
-                formatter: (x) => {
-                  return period.formatter(parseDate(x))
-                },
-              },
-            },
+            xField: 'date',
             seriesField: 'label',
             connectNulls: true,
             smooth: true,
@@ -241,7 +242,7 @@ const tagExpensesProcess = (
       const group_date = dateToPeriod(stt.period, transaction.date)
       const group = group_date + tag
       const prev_balance = (stt.data.get(group) || {}).balance || 0
-      const delta = is_payee ? -value : value
+      const delta = is_payee ? value : -value
       const balance = prev_balance + delta
       stt.data.set(group, {
         date: group_date,
@@ -301,11 +302,85 @@ export function TagExpensesReport() {
   )
 }
 
+const wealthGrowProcess = (
+  transaction: ITransaction,
+  stt: ReportAsyncState
+) => {
+  const addBalanceToData = (
+    acct: TAccountUUID,
+    value: TMonetary,
+    date: TDate
+  ) => {
+    const account = stt.moneeeyStore.accounts.byUuid(acct)
+    if (!account || account.type === AccountType.PAYEE) return
+    const group_date = dateToPeriod(stt.period, date)
+    const key = group_date + account.account_uuid
+    const prev_balance = (stt.data.get(key) || {}).balance || 0
+    const balance = prev_balance + value
+    stt.data.set(key, { date: group_date, balance, label: 'Wealth' })
+  }
+  addBalanceToData(
+    transaction.from_account,
+    -transaction.from_value,
+    transaction.date
+  )
+  addBalanceToData(
+    transaction.to_account,
+    transaction.to_value,
+    transaction.date
+  )
+}
+
+export function WealthGrowReport() {
+  const [period, setPeriod] = React.useState(PeriodGroups.Week)
+  const [rows, setRows] = React.useState([] as ITransaction[])
+  const [progress, setProgress] = React.useState(0)
+  const moneeeyStore = useMoneeeyStore()
+  React.useEffect(() => {
+    const personal_accounts = moneeeyStore.accounts.allNonPayees.map(
+      (act) => act.account_uuid
+    )
+    asyncProcessTransactionsForAccounts({
+      accounts: personal_accounts,
+      fn: wealthGrowProcess,
+      period,
+      moneeeyStore,
+      setRows,
+      setProgress,
+    })
+  }, [moneeeyStore, period, setProgress, setRows])
+
+  return (
+    <>
+      <h2>Wealth Grow</h2>
+      <DateGroupingSelector setPeriod={setPeriod} period={period} />
+      <Loading loading={progress !== 0} progress={progress}>
+        <Column
+          {...{
+            data: rows,
+            height: 400,
+            yField: 'balance',
+            xField: 'date',
+            seriesField: 'label',
+            connectNulls: true,
+            smooth: true,
+            point: {
+              size: 5,
+              shape: 'diamond',
+            },
+          }}
+        />
+      </Loading>
+    </>
+  )
+}
+
 export function Reports() {
   return (
     <>
-      <BalanceGrowthReport />
+      <AccountBalanceReport />
       <TagExpensesReport />
+      <WealthGrowReport />
     </>
   )
 }

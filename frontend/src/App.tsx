@@ -10,20 +10,25 @@ import { TagsHighlightProvider } from './components/Tags'
 import { HomeRoute } from './routes/HomeRouter'
 import MoneeeyStore from './shared/MoneeeyStore'
 import { MoneeeyStoreProvider } from './shared/useMoneeeyStore'
+import { observer } from 'mobx-react'
 
-function App(): React.ReactElement {
+export const App = observer(() => {
   const [moneeeyStore] = React.useState(new MoneeeyStore())
 
   return (
     <div className="App">
       <MoneeeyStoreProvider value={moneeeyStore}>
-        <TagsHighlightProvider>
-          <AppMenu />
-          <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
-        </TagsHighlightProvider>
+        {moneeeyStore.config.loaded ? (
+          <TagsHighlightProvider>
+            <AppMenu />
+            <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
+          </TagsHighlightProvider>
+        ) : (
+          <p>Loading...</p>
+        )}
       </MoneeeyStoreProvider>
     </div>
   )
-}
+})
 
 export default App

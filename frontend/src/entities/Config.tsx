@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash'
-import { action, computed, makeObservable } from 'mobx'
+import { action, computed, makeObservable, observable } from 'mobx'
 import { EditorType } from '../components/editor/EditorProps'
 import { IBaseEntity, EntityType } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
@@ -16,6 +16,8 @@ export interface IConfig extends IBaseEntity {
 }
 
 export class ConfigStore extends MappedStore<IConfig> {
+  loaded = false
+
   constructor(moneeeyStore: MoneeeyStore) {
     super(
       moneeeyStore,
@@ -54,7 +56,7 @@ export class ConfigStore extends MappedStore<IConfig> {
     )
 
     makeObservable(this, {
-      loaded: computed,
+      loaded: observable,
       main: computed,
       init: action,
     })
@@ -64,12 +66,9 @@ export class ConfigStore extends MappedStore<IConfig> {
     return this.all[0]
   }
 
-  get loaded(): boolean {
-    return !isEmpty(this.all)
-  }
-
   init() {
-    this.merge({ ...this.factory(), ...this.all[0] }, { setUpdated: false })
+    if (isEmpty(this.all)) this.merge(this.factory())
+    this.loaded = true
   }
 }
 
