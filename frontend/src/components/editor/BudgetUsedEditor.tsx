@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react'
-import { BudgetEnvelope } from '../../entities/Budget'
+import { BudgetEnvelope } from '../../entities/BudgetEnvelope'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { EditorProps, NoSorter } from './EditorProps'
 import { NumberEditor } from './NumberEditor'

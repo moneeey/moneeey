@@ -46,6 +46,7 @@ const Messages = {
     next: 'Next',
     prev: 'Prev',
     save: 'Save',
+    show_months: 'Visible months',
     show_archived: 'Show archived',
   },
 }

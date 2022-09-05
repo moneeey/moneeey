@@ -2,9 +2,11 @@ import {
   Button,
   Card,
   Checkbox,
+  Divider,
   Drawer,
   Form,
   Input,
+  InputNumber,
   Select,
   Space,
 } from 'antd'
@@ -12,7 +14,8 @@ import { map, range } from 'lodash'
 import { observer } from 'mobx-react'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { TableEditor } from '../../components/TableEditor'
-import { BudgetEnvelope, IBudget } from '../../entities/Budget'
+import { IBudget } from '../../entities/Budget'
+import { BudgetEnvelope } from '../../entities/BudgetEnvelope'
 import { TCurrencyUUID } from '../../entities/Currency'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import {
@@ -32,9 +35,10 @@ const BudgetPeriods = ({
   startingDate,
   setEditing,
   showArchived,
-}: PeriodProps) => (
+  months,
+}: PeriodProps & { months: number }) => (
   <Space className="periods">
-    {map(range(-1, 3), (offset) => (
+    {map(range(-1, months), (offset) => (
       <BudgetPeriod
         key={offset}
         startingDate={startOfMonthOffset(startingDate, offset)}
@@ -178,10 +182,18 @@ const Budget = observer(() => {
   )
   const [editing, setEditing] = useState<IBudget | undefined>(undefined)
   const [showArchived, setShowArchived] = useState(false)
+  const [months, setMonths] = useState(3)
   return (
     <section className="budgetArea">
       <Space className="control">
         <MonthDateSelector date={startingDate} setDate={setStartingDate} />
+        <div className="divider" />
+        {Messages.budget.show_months}
+        <InputNumber
+          placeholder={Messages.budget.show_months}
+          value={months}
+          onChange={(val) => setMonths(val)}
+        />
         <Checkbox
           onChange={({ target: { checked } }) => setShowArchived(checked)}
         >
@@ -192,6 +204,7 @@ const Budget = observer(() => {
         startingDate={startingDate}
         setEditing={setEditing}
         showArchived={showArchived}
+        months={months}
       />
       <BudgetEditor editing={editing} setEditing={setEditing} />
     </section>

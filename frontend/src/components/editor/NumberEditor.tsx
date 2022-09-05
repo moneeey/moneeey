@@ -13,18 +13,22 @@ interface PrefixSuffix {
   suffix?: string
 }
 
-export const NumberEditor = observer(
+interface ValueRev {
+  value: number
+  rev: string
+}
+
+export const BaseNumberEditor = observer(
   <EntityType,>(
-    props: EditorProps<EntityType, number, number> & PrefixSuffix
+    props: EditorProps<EntityType, number, number> & PrefixSuffix & ValueRev
   ) => {
     const { prefix, suffix } = props
-    const entity = props.store.byUuid(props.entityId)
     return (
       <BaseEditor
         {...{
           ...props,
-          value: entity?.[props.field.field],
-          rev: entity?._rev,
+          value: props.value,
+          rev: props.rev,
           ComposedInput: Input,
           ComposedProps: (
             onChange: (
@@ -39,6 +43,21 @@ export const NumberEditor = observer(
               onChange(parseInt(value), parseInt(value), {}),
           }),
         }}
+      />
+    )
+  }
+)
+
+export const NumberEditor = observer(
+  <EntityType,>(
+    props: EditorProps<EntityType, number, number> & PrefixSuffix
+  ) => {
+    const entity = props.store.byUuid(props.entityId)
+    return (
+      <BaseNumberEditor
+        {...props}
+        value={entity?.[props.field.field]}
+        rev={entity?._rev || ''}
       />
     )
   }

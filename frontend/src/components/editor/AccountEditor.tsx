@@ -26,7 +26,10 @@ const AccountEditorBase = observer(
   <EntityType,>(props: AccountEditorBaseProps<EntityType>) => {
     const { accounts } = useMoneeeyStore()
     const [adding, setAdding] = useState('')
-    const tags = accounts.accountTags(props.value)
+    const currentAccount = accounts.byUuid(props.value)?.name || ''
+    const tags = accounts
+      .accountTags(props.value)
+      .filter((t) => t !== currentAccount)
     const TagsComponent =
       props.field.field === 'from_account' ? TagsFrom : TagsTo
     const addPrefix = 'ADD_'

@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react'
-import { BudgetEnvelope } from '../../entities/Budget'
+import { BudgetEnvelope } from '../../entities/BudgetEnvelope'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { EditorProps, NoSorter } from './EditorProps'
-import { NumberEditor } from './NumberEditor'
+import { BaseNumberEditor } from './NumberEditor'
 
 export const BudgetRemainingEditor = observer(
   <EntityType,>(props: EditorProps<EntityType, number, number>) => {
@@ -14,7 +14,7 @@ export const BudgetRemainingEditor = observer(
 
     return (
       <div className={remaining >= 0 ? '' : 'negative'}>
-        <NumberEditor
+        <BaseNumberEditor
           {...{
             ...props,
             field: { ...props.field, readOnly: true },
