@@ -7,10 +7,10 @@ import { BaseNumberEditor } from './NumberEditor'
 export const BudgetRemainingEditor = observer(
   <EntityType,>(props: EditorProps<EntityType, number, number>) => {
     const entity = props.store.byUuid(props.entityId) as BudgetEnvelope
-    const { currencies } = useMoneeeyStore()
+    const { currencies, budget } = useMoneeeyStore()
     const currency = currencies.byUuid(entity.budget.currency_uuid)
 
-    const remaining = entity.allocated - entity.used
+    const remaining = budget.getRemaining(entity)
 
     return (
       <div className={remaining >= 0 ? '' : 'negative'}>

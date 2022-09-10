@@ -94,6 +94,27 @@ export class BudgetStore extends MappedStore<IBudget> {
     })
   }
 
+  getRemaining(envelope: BudgetEnvelope): number {
+    const previousEnvelopeStarting = startOfMonthOffset(
+      parseDate(envelope.starting),
+      -1
+    )
+
+    const hasPreviousTransaction =
+      this.moneeeyStore.transactions.oldest_dt.getTime() <
+      previousEnvelopeStarting.getTime()
+
+    const previousEnvelope = hasPreviousTransaction
+      ? this.getEnvelope(envelope.budget, formatDate(previousEnvelopeStarting))
+      : null
+
+    const previousValue = previousEnvelope
+      ? this.getRemaining(previousEnvelope)
+      : 0
+
+    return envelope.allocated - envelope.used + previousValue
+  }
+
   calculateRemaining = debounce(async () => {
     const { transactions, accounts } = this.moneeeyStore
     console.time('Budget.calculateRemaining')

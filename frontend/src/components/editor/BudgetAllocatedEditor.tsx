@@ -18,9 +18,12 @@ export const BudgetAllocatedEditor = observer(
           prefix: currency?.prefix,
           suffix: currency?.suffix,
           value: entity.allocated,
-          onUpdate: (value: number) => {
-            budget.setAllocation(entity.budget, entity.starting, value)
-          },
+          onUpdate: (value: number) =>
+            budget.setAllocation(
+              entity.budget,
+              entity.starting,
+              isNaN(value) ? 0 : value
+            ),
         }}
       />
     )

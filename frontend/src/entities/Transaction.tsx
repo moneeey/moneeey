@@ -1,10 +1,11 @@
-import { computed, makeObservable } from 'mobx'
+import { computed, makeObservable, observable } from 'mobx'
 
 import { AccountStore, TAccountUUID } from './Account'
 import {
   compareDates,
   currentDate,
   currentDateTime,
+  parseDate,
   TDate,
 } from '../utils/Date'
 import { uuid } from '../utils/Utils'
@@ -34,6 +35,9 @@ export interface ITransaction extends IBaseEntity {
 }
 
 class TransactionStore extends MappedStore<ITransaction> {
+  oldest_dt: Date = new Date()
+  newest_dt: Date = new Date()
+
   constructor(moneeeyStore: MoneeeyStore) {
     super(
       moneeeyStore,
@@ -94,7 +98,25 @@ class TransactionStore extends MappedStore<ITransaction> {
     )
     makeObservable(this, {
       sorted: computed,
+      oldest_dt: observable,
+      newest_dt: observable,
     })
+  }
+
+  merge(
+    item: ITransaction,
+    options: { setUpdated: boolean } = { setUpdated: true }
+  ) {
+    super.merge(item, options)
+    if (!isEmpty(item.date)) {
+      const dt = parseDate(item.date)
+      if (dt) {
+        if (dt.getTime() > this.newest_dt.getTime())
+          this.newest_dt = new Date(dt)
+        if (dt.getTime() < this.oldest_dt.getTime())
+          this.oldest_dt = new Date(dt)
+      }
+    }
   }
 
   sortTransactions(transactions: ITransaction[]): ITransaction[] {
