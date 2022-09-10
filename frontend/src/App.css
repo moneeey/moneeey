@@ -55,7 +55,7 @@
   border: 0;
 }
 
-.tableEditor .ant-table-cell,
+.tableEditor .ant-table-cell th,
 .tableEditor .ant-table-column-title {
   font-weight: bold;
 }

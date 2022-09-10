@@ -14,7 +14,7 @@ const AccountTable = observer(({ accounts, type }: AccountSettingsProps) => (
   <TableEditor
     store={accounts}
     schemaFilter={(row: IAccount) => row.type === type}
-    factory={() => ({ ...accounts.factory(), type })}
+    factory={(id?: string) => ({ ...accounts.factory(id), type })}
   />
 ))
 

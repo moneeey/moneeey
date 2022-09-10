@@ -35,11 +35,11 @@ export class BudgetStore extends MappedStore<IBudget> {
     super(
       moneeeyStore,
       (a: IBudget) => a.budget_uuid,
-      () => ({
+      (id?: string) => ({
         entity_type: EntityType.BUDGET,
         name: '',
         currency_uuid: '',
-        budget_uuid: uuid(),
+        budget_uuid: id || uuid(),
         tags: [],
         envelopes: [],
         created: currentDateTime(),

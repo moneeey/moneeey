@@ -121,7 +121,7 @@ export default class PersistenceStore {
     store: MappedStore<EntityType>,
     item: EntityType
   ) {
-    console.log('Sync will persist', { item })
+    console.log('Sync will persist', { uuid: store.getUuid(item), item })
     this.syncables.push({ store: store as never, uuid: store.getUuid(item) })
     if (item && item._id) this.entries[item._id] = item
     this._commit()

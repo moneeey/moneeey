@@ -2,7 +2,7 @@ import { ColumnType } from 'antd/lib/table'
 import { compact, values } from 'lodash'
 import { action } from 'mobx'
 import { observer } from 'mobx-react'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { IBaseEntity } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
@@ -35,7 +35,7 @@ import VirtualTable from './VirtualTableEditor'
 interface TableEditorProps<T extends IBaseEntity, Context> {
   store: MappedStore<T>
   schemaFilter?: (row: T) => boolean
-  factory: () => T
+  factory: (id?: string) => T
   creatable?: boolean
   context?: Context
 }
@@ -136,15 +136,25 @@ export const TableEditor = observer(
   }: TableEditorProps<T, unknown>) => {
     const moneeeyStore = useMoneeeyStore()
 
+    const [newEntityId, setNewEntityId] = useState(() =>
+      store.getUuid(store.factory())
+    )
+
     const entities = useMemo(
       () =>
         store.ids
           .map((id) => store.byUuid(id) as T)
           .filter((row) => !schemaFilter || schemaFilter(row))
           .map((row) => store.getUuid(row))
-          .concat(creatable !== false ? ['new'] : [])
+          .map((entityId) => {
+            if (entityId === newEntityId) {
+              setTimeout(() => setNewEntityId(store.getUuid(factory())), 500)
+            }
+            return entityId
+          })
+          .concat(creatable !== false ? [newEntityId] : [])
           .map((entityId) => ({ entityId })),
-      [store, store.ids, schemaFilter]
+      [store, store.ids, schemaFilter, newEntityId]
     )
 
     const columns: ColumnType<Row>[] = useMemo(
@@ -176,7 +186,7 @@ export const TableEditor = observer(
                 const onUpdate = action(
                   (value: unknown, additional: object = {}) =>
                     store.merge({
-                      ...(store.byUuid(entityId) || factory()),
+                      ...(store.byUuid(entityId) || factory(entityId)),
                       [props.field]: value,
                       ...additional,
                     } as T)

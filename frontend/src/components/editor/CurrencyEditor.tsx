@@ -25,7 +25,12 @@ export const CurrencyEditor = observer(
           rev: entity?._rev,
           options: _(currencies.all)
             .map((currency) => ({
-              label: currency.name,
+              label: (
+                <span>
+                  <b>{currency.short}</b> {currency.name}
+                </span>
+              ),
+              labelText: `${currency.short} ${currency.name}`,
               value: currency.currency_uuid,
             }))
             .value(),

@@ -21,13 +21,13 @@ export default class MappedStore<T extends IBaseEntity> {
   public readonly itemsByUuid = new Map<string, T>()
   public readonly getUuid: UUIDGetter<T>
   public readonly schema: () => RecordMap<T, FieldProps<never>>
-  public readonly factory: () => T
+  public readonly factory: (id?: string) => T
   public readonly moneeeyStore: MoneeeyStore
 
   constructor(
     moneeeyStore: MoneeeyStore,
     getUuid: UUIDGetter<T>,
-    factory: () => T,
+    factory: (id?: string) => T,
     schema: SchemaFactory<T>
   ) {
     this.getUuid = getUuid
@@ -48,6 +48,7 @@ export default class MappedStore<T extends IBaseEntity> {
     this.moneeeyStore.tags.registerAll(item.tags)
     this.itemsByUuid.set(uuid, {
       ...item,
+      entity_type: this.factory().entity_type,
       _id: item.entity_type + '-' + uuid,
       created: item.created || currentDateTime(),
       updated: options.setUpdated

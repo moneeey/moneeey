@@ -29,10 +29,10 @@ export class AccountStore extends MappedStore<IAccount> {
     super(
       moneeeyStore,
       (a: IAccount) => a.account_uuid,
-      () => ({
+      (id?: string) => ({
         entity_type: EntityType.ACCOUNT,
         name: '',
-        account_uuid: uuid(),
+        account_uuid: id || uuid(),
         tags: [],
         currency_uuid: moneeeyStore.currencies.all[0]?.currency_uuid,
         type: AccountType.CHECKING,

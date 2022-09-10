@@ -18,7 +18,7 @@ const TransactionTable = observer(
     <TableEditor
       store={transactions}
       schemaFilter={schemaFilter}
-      factory={() => transactions.factory()}
+      factory={transactions.factory}
     />
   )
 )

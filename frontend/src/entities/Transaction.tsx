@@ -37,9 +37,9 @@ class TransactionStore extends MappedStore<ITransaction> {
     super(
       moneeeyStore,
       (t) => t.transaction_uuid,
-      () => ({
+      (id?: string) => ({
         entity_type: EntityType.TRANSACTION,
-        transaction_uuid: uuid(),
+        transaction_uuid: id || uuid(),
         date: currentDate(),
         from_account: '',
         to_account: '',

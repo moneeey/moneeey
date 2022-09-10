@@ -30,6 +30,7 @@ export default class MoneeeyStore {
       this.persistence.monitor(this.budget, EntityType.BUDGET)
       this.persistence.monitor(this.config, EntityType.CONFIG)
       this.config.init()
+      this.currencies.addDefaults()
     })
   }
 }
