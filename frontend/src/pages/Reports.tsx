@@ -25,6 +25,7 @@ import useMoneeeyStore from '../shared/useMoneeeyStore'
 import Loading from '../components/Loading'
 import { ITransaction } from '../entities/Transaction'
 import { asyncProcess } from '../utils/Utils'
+import Messages from '../utils/Messages'
 
 interface AsyncProcessTransactions {
   accounts: TAccountUUID[]
@@ -71,31 +72,31 @@ const patternFormatter = (pattern: string) => (date: Date) =>
 
 const PeriodGroups: { [_name: string]: PeriodGroup } = {
   Day: {
-    label: 'Day',
+    label: Messages.util.day,
     groupFn: startOfDay,
     formatter: patternFormatter(TDateFormat),
     order: 0,
   },
   Week: {
-    label: 'Week',
+    label: Messages.util.week,
     groupFn: startOfWeek,
     formatter: patternFormatter('yyyy ww'),
     order: 1,
   },
   Month: {
-    label: 'Month',
+    label: Messages.util.month,
     groupFn: startOfMonth,
     formatter: noopFormatter,
     order: 2,
   },
   Quarter: {
-    label: 'Quarter',
+    label: Messages.util.quarter,
     groupFn: startOfQuarter,
     formatter: noopFormatter,
     order: 3,
   },
   Year: {
-    label: 'Year',
+    label: Messages.util.year,
     groupFn: startOfYear,
     formatter: noopFormatter,
     order: 4,
@@ -202,7 +203,7 @@ export function AccountBalanceReport() {
 
   return (
     <>
-      <h2>Account Balance</h2>
+      <h2>{Messages.reports.account_balance}</h2>
       <DateGroupingSelector setPeriod={setPeriod} period={period} />
       <Loading loading={progress !== 0} progress={progress}>
         <Column
@@ -285,7 +286,7 @@ export function TagExpensesReport() {
 
   return (
     <>
-      <h2>Tag Expenses</h2>
+      <h2>{Messages.reports.tag_expenses}</h2>
       <DateGroupingSelector setPeriod={setPeriod} period={period} />
       <Loading loading={progress !== 0} progress={progress}>
         <Column
@@ -352,7 +353,7 @@ export function WealthGrowReport() {
 
   return (
     <>
-      <h2>Wealth Grow</h2>
+      <h2>{Messages.reports.wealth_growth}</h2>
       <DateGroupingSelector setPeriod={setPeriod} period={period} />
       <Loading loading={progress !== 0} progress={progress}>
         <Column

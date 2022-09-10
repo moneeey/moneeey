@@ -7,6 +7,7 @@ import { EntityType, IBaseEntity } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import { uuid } from '../utils/Utils'
 import MoneeeyStore from '../shared/MoneeeyStore'
+import Messages from '../utils/Messages'
 
 export type TAccountUUID = string
 
@@ -45,7 +46,7 @@ export class AccountStore extends MappedStore<IAccount> {
       }),
       () => ({
         name: {
-          title: 'Name',
+          title: Messages.util.name,
           field: 'name',
           required: true,
           validate: (value: string) => {
@@ -57,32 +58,32 @@ export class AccountStore extends MappedStore<IAccount> {
           editor: EditorType.TEXT,
         },
         currency_uuid: {
-          title: 'Currency',
+          title: Messages.util.currency,
           field: 'currency_uuid',
           required: true,
           editor: EditorType.CURRENCY,
           index: 1,
         },
         tags: {
-          title: 'Tags',
+          title: Messages.util.tags,
           field: 'tags',
           index: 2,
           editor: EditorType.TAG,
         },
         offbudget: {
-          title: 'Off-Budget',
+          title: Messages.account.offbudget,
           field: 'offbudget',
           index: 3,
           editor: EditorType.CHECKBOX,
         },
         archived: {
-          title: 'Archived',
+          title: Messages.util.archived,
           field: 'archived',
           index: 4,
           editor: EditorType.CHECKBOX,
         },
         created: {
-          title: 'Created',
+          title: Messages.util.created,
           field: 'created',
           readOnly: true,
           index: 5,

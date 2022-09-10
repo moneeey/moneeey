@@ -5,6 +5,7 @@ import { IBaseEntity, EntityType, TMonetary } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { currentDateTime } from '../utils/Date'
+import Messages from '../utils/Messages'
 import { uuid } from '../utils/Utils'
 
 export type TCurrencyUUID = string
@@ -37,7 +38,7 @@ export class CurrencyStore extends MappedStore<ICurrency> {
         } as ICurrency),
       () => ({
         name: {
-          title: 'Name',
+          title: Messages.util.name,
           field: 'name',
           required: true,
           validate: (value: string) => {
@@ -49,37 +50,37 @@ export class CurrencyStore extends MappedStore<ICurrency> {
           editor: EditorType.TEXT,
         },
         short: {
-          title: 'Short name',
+          title: Messages.currencies.short,
           field: 'short',
           index: 1,
           editor: EditorType.TEXT,
         },
         prefix: {
-          title: 'Prefix',
+          title: Messages.currencies.prefix,
           field: 'prefix',
           index: 2,
           editor: EditorType.TEXT,
         },
         suffix: {
-          title: 'Suffix',
+          title: Messages.currencies.suffix,
           field: 'suffix',
           index: 3,
           editor: EditorType.TEXT,
         },
         decimals: {
-          title: 'Decimals',
+          title: Messages.currencies.decimals,
           field: 'decimals',
           index: 4,
           editor: EditorType.NUMBER,
         },
         tags: {
-          title: 'Tags',
+          title: Messages.util.tags,
           field: 'tags',
           index: 5,
           editor: EditorType.TAG,
         },
         created: {
-          title: 'Created',
+          title: Messages.util.created,
           field: 'created',
           readOnly: true,
           index: 6,

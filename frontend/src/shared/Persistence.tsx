@@ -7,8 +7,8 @@ import { EntityType, IBaseEntity } from './Entity'
 import MappedStore from './MappedStore'
 
 export enum Status {
-  ONLINE = 'Online',
-  OFFLINE = 'Offline',
+  ONLINE = 'ONLINE',
+  OFFLINE = 'OFFLINE',
 }
 
 export default class PersistenceStore {

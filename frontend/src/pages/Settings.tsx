@@ -51,9 +51,7 @@ export default function Settings() {
             setContent(Messages.settings.restore_loading(percentage))
           }
         )
-        setContent(
-          [...errors, '', 'Reload your page to refresh stores'].join('\n')
-        )
+        setContent([...errors, '', Messages.settings.reload_page].join('\n'))
         setBackupRestoreState(BackupRestoreState.COMPLETED)
       })()
     } else if (!actionsDisabled) {
@@ -66,7 +64,7 @@ export default function Settings() {
     if (backupRestoreState === BackupRestoreState.CLEAR_INPUT) {
       if (content === Messages.settings.clear_data_token) {
         moneeeyStore.persistence.truncateAll()
-        setContent('Reload your page')
+        setContent(Messages.settings.reload_page)
       }
     } else if (!actionsDisabled) {
       setBackupRestoreState(BackupRestoreState.CLEAR_INPUT)
@@ -79,7 +77,7 @@ export default function Settings() {
       <ConfigTable config={moneeeyStore.config} />
       <p>
         <Button onClick={onBackupData} disabled={actionsDisabled}>
-          Export data
+          {Messages.settings.export_data}
         </Button>
         <Button
           onClick={onRestoreData}
@@ -88,7 +86,7 @@ export default function Settings() {
             backupRestoreState !== BackupRestoreState.RESTORE_INPUT
           }
         >
-          Restore data
+          {Messages.settings.import_data}
         </Button>
         <Button
           onClick={onClearData}
@@ -97,7 +95,7 @@ export default function Settings() {
             backupRestoreState !== BackupRestoreState.CLEAR_INPUT
           }
         >
-          Clear data
+          {Messages.settings.clear_all}
         </Button>
         {backupRestoreState !== BackupRestoreState.IDLE && (
           <Input.TextArea

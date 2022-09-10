@@ -4,6 +4,7 @@ import TransactionTable from '../tables/TransactionTable'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { observer } from 'mobx-react'
 import { ITransaction } from '../entities/Transaction'
+import Messages from '../utils/Messages'
 
 const RecentTransactions = observer(
   ({
@@ -18,7 +19,7 @@ const RecentTransactions = observer(
     const referenceAccount = ''
     return (
       <>
-        <b>Recent Transactions</b>
+        <b>{Messages.dashboard.recent_transactions}</b>
         <TransactionTable
           {...{
             transactions,

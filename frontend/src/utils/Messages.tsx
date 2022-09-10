@@ -1,4 +1,23 @@
+import { Status } from '../shared/Persistence'
+
 const Messages = {
+  menu: {
+    dashboard: 'Dashboard',
+    transactions: 'Transactions',
+    unassigned: 'Unassigned',
+    import: 'Import',
+    budget: 'Budget',
+    reports: 'Reports',
+    settings: 'Settings',
+    currencies: 'Currencies',
+    payees: 'Payees',
+    accounts: 'Accounts',
+    preferences: 'Preferences',
+    sync: {
+      [Status.ONLINE]: 'Online',
+      [Status.OFFLINE]: 'Offline',
+    },
+  },
   landing: {
     failed: 'Login failed, please try again',
     welcome: 'Please check your email.',
@@ -18,18 +37,36 @@ const Messages = {
     new_import: 'New import',
     configuration: 'Configuration',
     select_reference_account: 'Please select reference account',
+    updated: 'Updated',
+    unchanged: 'Unchanged',
+    import_transactions: 'Import transactions',
+    changed_description: (from_value: string, to_value: string) =>
+      `Changed from\n${from_value}\nto\n${to_value}`,
   },
   util: {
     name: 'Name',
     tags: 'Tags',
     archived: 'Archived',
     close: 'Close',
+    created: 'Created',
     currency: 'Currency',
-    date_format: 'Date format:',
-    reference_account: 'Reference account:',
-    decimal_separator: 'Decimal separator:',
+    date: 'Date',
+    date_format: 'Date format',
+    loading: 'Loading...',
+    day: 'Day',
+    week: 'Week',
+    month: 'Month',
+    quarter: 'Quarter',
+    year: 'Year',
   },
   settings: {
+    reload_page: 'Reload your page',
+    export_data: 'Export data',
+    import_data: 'Import data',
+    clear_all: 'Clear all data',
+    default_currency: 'Default currency',
+    reference_account: 'Reference account',
+    decimal_separator: 'Decimal separator',
     backup_loading: (percentage: number) =>
       `Loading your backup data, please wait... ${percentage}%`,
     restore_loading: (percentage: number) =>
@@ -47,7 +84,30 @@ const Messages = {
     prev: 'Prev',
     save: 'Save',
     show_months: 'Visible months',
-    show_archived: 'Show archived',
+    show_archived: 'Show archived budgets',
+  },
+  account: {
+    offbudget: 'Off-Budget',
+  },
+  currencies: {
+    short: 'Short name',
+    prefix: 'Prefix',
+    suffix: 'Suffix',
+    decimals: 'Decimals',
+  },
+  transactions: {
+    amount: 'Amount',
+    memo: 'Memo',
+    from_account: 'From',
+    to_account: 'To',
+  },
+  dashboard: {
+    recent_transactions: 'Recent transactions',
+  },
+  reports: {
+    account_balance: 'Account balance',
+    tag_expenses: 'Tag expenses',
+    wealth_growth: 'Wealth growth',
   },
 }
 export default Messages

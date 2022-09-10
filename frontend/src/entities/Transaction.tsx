@@ -18,6 +18,7 @@ import {
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { isEmpty } from 'lodash'
+import Messages from '../utils/Messages'
 
 export type TTransactionUUID = string
 
@@ -52,38 +53,38 @@ class TransactionStore extends MappedStore<ITransaction> {
       }),
       () => ({
         date: {
-          title: 'Date',
+          title: Messages.util.date,
           field: 'date',
           index: 0,
           editor: EditorType.DATE,
           defaultSortOrder: 'ascend',
         },
         from_account: {
-          title: 'From',
+          title: Messages.transactions.from_account,
           field: 'from_account',
           index: 1,
           editor: EditorType.ACCOUNT,
         },
         to_account: {
-          title: 'To',
+          title: Messages.transactions.to_account,
           field: 'to_account',
           index: 2,
           editor: EditorType.ACCOUNT,
         },
         memo: {
-          title: 'Memo',
+          title: Messages.transactions.memo,
           field: 'memo',
           index: 3,
           editor: EditorType.MEMO,
         },
         from_value: {
-          title: 'Value',
+          title: Messages.transactions.amount,
           field: 'from_value',
           index: 4,
           editor: EditorType.TRANSACTION_VALUE,
         },
         created: {
-          title: 'Created',
+          title: Messages.util.created,
           field: 'created',
           readOnly: true,
           index: 7,

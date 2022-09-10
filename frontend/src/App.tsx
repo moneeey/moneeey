@@ -11,6 +11,7 @@ import { HomeRoute } from './routes/HomeRouter'
 import MoneeeyStore from './shared/MoneeeyStore'
 import { MoneeeyStoreProvider } from './shared/useMoneeeyStore'
 import { observer } from 'mobx-react'
+import Messages from './utils/Messages'
 
 export const App = observer(() => {
   const [moneeeyStore] = React.useState(new MoneeeyStore())
@@ -24,7 +25,7 @@ export const App = observer(() => {
             <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
           </TagsHighlightProvider>
         ) : (
-          <p>Loading...</p>
+          <p>{Messages.util.loading}</p>
         )}
       </MoneeeyStoreProvider>
     </div>

@@ -192,6 +192,7 @@ const Budget = observer(() => {
         {Messages.budget.show_months}
         <InputNumber
           min={1}
+          max={24}
           placeholder={Messages.budget.show_months}
           value={viewMonths}
           onChange={(val) => config.merge({ ...config.main, view_months: val })}

@@ -115,7 +115,7 @@ function ImportStarter({
         <section className="importSettings">
           <h3>{Messages.import.configuration}</h3>
           <Input.Group className="referenceAccount">
-            {Messages.util.reference_account}
+            {Messages.settings.reference_account}
             <ReferenceAccountSelector
               referenceAccount={config.referenceAccount}
               onReferenceAccount={(referenceAccount) =>
@@ -137,7 +137,7 @@ function ImportStarter({
             />
           </Input.Group>
           <Input.Group>
-            {Messages.util.decimal_separator}
+            {Messages.settings.decimal_separator}
             <Input
               type="text"
               placeholder={'. or ,'}

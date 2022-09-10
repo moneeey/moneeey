@@ -7,6 +7,7 @@ import { TAccountUUID } from '../../entities/Account'
 import { ITransaction } from '../../entities/Transaction'
 import { ImportResult, ImportTask } from '../../shared/import/ImportContent'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
+import Messages from '../../utils/Messages'
 
 function ImportProcessResult({
   task,
@@ -73,19 +74,19 @@ function ImportProcessResult({
         rowKey="transaction_uuid"
         pagination={false}
         columns={[
-          { dataIndex: 'date', title: 'Date' },
+          { dataIndex: 'date', title: Messages.util.date },
           {
             dataIndex: 'from_account',
-            title: 'From',
+            title: Messages.transactions.from_account,
             render: accountRender('from_account'),
           },
           {
             dataIndex: 'to_account',
-            title: 'To',
+            title: Messages.transactions.to_account,
             render: accountRender('to_account'),
           },
-          { dataIndex: 'memo', title: 'Memo' },
-          { dataIndex: 'from_value', title: 'Value' },
+          { dataIndex: 'memo', title: Messages.transactions.memo },
+          { dataIndex: 'from_value', title: Messages.transactions.amount },
         ].map((col) => ({
           ...col,
           render: (value: any, row: ITransaction) => {
@@ -105,13 +106,15 @@ function ImportProcessResult({
                       ? moneeeyStore.accounts.nameForUuid(value)
                       : '' + value
                   const changed = format(originalValue) !== format(value)
-                  mode = changed ? 'Updated' : 'Unchanged'
+                  mode = changed
+                    ? Messages.import.updated
+                    : Messages.import.unchanged
                   title = changed
-                    ? 'Changed from \n' +
-                      format(originalValue) +
-                      '\nto\n' +
-                      format(value)
-                    : 'Unchanged'
+                    ? Messages.import.changed_description(
+                        format(originalValue),
+                        format(value)
+                      )
+                    : Messages.import.unchanged
                 }
               }
             }
@@ -132,7 +135,7 @@ function ImportProcessResult({
         }))}
       />
       <Button type="primary" onClick={onImport}>
-        Import transactions
+        {Messages.import.import_transactions}
       </Button>
     </>
   )

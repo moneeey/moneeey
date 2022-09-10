@@ -22,6 +22,7 @@ import useMoneeeyStore from '../shared/useMoneeeyStore'
 import { ImportRoute } from '../routes/ImportRoute'
 import { SettingsRoute } from '../routes/SettingsRoute'
 import { BudgetRoute } from '../routes/BudgetRoute'
+import Messages from '../utils/Messages'
 
 export const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore()
@@ -36,13 +37,13 @@ export const AppMenu = observer(() => {
       items={[
         {
           key: 'dashboard',
-          label: 'Dashboard',
+          label: Messages.menu.dashboard,
           icon: <DashboardOutlined />,
           onClick: () => navigation.navigate(HomeRoute.url()),
         },
         {
           key: 'transactions',
-          label: 'Transactions',
+          label: Messages.menu.transactions,
           icon: <DollarOutlined />,
           children: [
             ...accounts.allNonPayees
@@ -63,59 +64,59 @@ export const AppMenu = observer(() => {
               })),
             {
               key: 'unassigned',
-              label: 'Unassigned',
+              label: Messages.menu.unassigned,
               onClick: () =>
                 navigation.navigate(AccountRoute.url({ account_name: '-' })),
             },
             {
               key: 'import',
-              label: 'Import',
+              label: Messages.menu.import,
               onClick: () => navigation.navigate(ImportRoute.url()),
             },
           ],
         },
         {
           key: 'budget',
-          label: 'Budget',
+          label: Messages.menu.budget,
           icon: <MailOutlined />,
           onClick: () => navigation.navigate(BudgetRoute.url()),
         },
         {
           key: 'reports',
-          label: 'Reports',
+          label: Messages.menu.reports,
           icon: <AreaChartOutlined />,
           onClick: () => navigation.navigate(ReportsRoute.url()),
         },
         {
           key: 'settings',
-          label: 'Settings',
+          label: Messages.menu.settings,
           icon: <SettingOutlined />,
           children: [
             {
               key: 'settings_currencies',
-              label: 'Currencies',
+              label: Messages.menu.currencies,
               onClick: () => navigation.navigate(CurrencySettingsRoute.url()),
             },
             {
               key: 'settings_payees',
-              label: 'Payees',
+              label: Messages.menu.payees,
               onClick: () => navigation.navigate(PayeeSettingsRoute.url()),
             },
             {
               key: 'settings_accounts',
-              label: 'Accounts',
+              label: Messages.menu.accounts,
               onClick: () => navigation.navigate(AccountSettingsRoute.url()),
             },
             {
               key: 'settings_general',
-              label: 'Settings',
+              label: Messages.menu.preferences,
               onClick: () => navigation.navigate(SettingsRoute.url()),
             },
           ],
         },
         {
           key: 'sync',
-          label: persistence.status,
+          label: Messages.menu.sync[persistence.status],
           icon:
             persistence.status === Status.ONLINE ? (
               <CheckCircleTwoTone twoToneColor="green" />

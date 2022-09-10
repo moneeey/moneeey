@@ -5,6 +5,7 @@ import { IBaseEntity, EntityType } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { currentDateTime, TDateFormat } from '../utils/Date'
+import Messages from '../utils/Messages'
 import { TCurrencyUUID } from './Currency'
 
 export interface IConfig extends IBaseEntity {
@@ -35,19 +36,19 @@ export class ConfigStore extends MappedStore<IConfig> {
         } as IConfig),
       () => ({
         date_format: {
-          title: 'Date format',
+          title: Messages.util.date_format,
           field: 'date_format',
           index: 0,
           editor: EditorType.TEXT,
         },
         decimal_separator: {
-          title: 'Decimal Separator',
+          title: Messages.settings.decimal_separator,
           field: 'decimal_separator',
           index: 1,
           editor: EditorType.TEXT,
         },
         default_currency: {
-          title: 'Default Currency',
+          title: Messages.settings.default_currency,
           field: 'default_currency',
           index: 2,
           editor: EditorType.CURRENCY,
