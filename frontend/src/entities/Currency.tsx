@@ -147,6 +147,22 @@ export class CurrencyStore extends MappedStore<ICurrency> {
       addDefault({...this.factory(), name: 'Russian ruble', short: 'RUB', prefix: '', suffix: '₽', decimals: 20 })
       addDefault({...this.factory(), name: 'South African rand', short: 'ZAR', prefix: 'R', suffix: '', decimals: 2 })
       addDefault({...this.factory(), name: 'Turkish lira', short: 'TRY', prefix: '₺', suffix: '', decimals: 2 })
+      addDefault({
+        ...this.factory(),
+        name: 'Bitcoin',
+        short: 'BTC',
+        prefix: '₿',
+        suffix: '',
+        decimals: 8,
+      })
+      addDefault({
+        ...this.factory(),
+        name: 'Etherium',
+        short: 'ETH',
+        prefix: 'Ξ',
+        suffix: '',
+        decimals: 8,
+      })
     }
   }
 }
