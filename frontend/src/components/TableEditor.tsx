@@ -17,6 +17,7 @@ import {
   BudgetRemainingSorter,
 } from './editor/BudgetRemainingEditor'
 import { BudgetUsedEditor, BudgetUsedSorter } from './editor/BudgetUsedEditor'
+import { CheckboxEditor, CheckboxSorter } from './editor/CheckboxEditor'
 import { CurrencyEditor, CurrencySorter } from './editor/CurrencyEditor'
 import { DateEditor, DateSorter } from './editor/DateEditor'
 import { EditorProps, EditorType, FieldProps } from './editor/EditorProps'
@@ -64,6 +65,11 @@ const EditorTypeConfig: Record<
     render: NumberEditor,
     sorter: NumberSorter,
     width: undefined,
+  },
+  [EditorType.CHECKBOX]: {
+    render: CheckboxEditor,
+    sorter: CheckboxSorter,
+    width: 100,
   },
   [EditorType.DATE]: {
     render: DateEditor,

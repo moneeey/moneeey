@@ -191,6 +191,7 @@ const Budget = observer(() => {
         <div className="divider" />
         {Messages.budget.show_months}
         <InputNumber
+          min={1}
           placeholder={Messages.budget.show_months}
           value={viewMonths}
           onChange={(val) => config.merge({ ...config.main, view_months: val })}

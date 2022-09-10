@@ -98,7 +98,11 @@ export class BudgetStore extends MappedStore<IBudget> {
     const { transactions, accounts } = this.moneeeyStore
     console.time('Budget.calculateRemaining')
     const usage = await asyncProcess(
-      transactions.all,
+      transactions.all.filter(
+        (t) =>
+          !accounts.isOffBudget(t.from_account) &&
+          !accounts.isOffBudget(t.to_account)
+      ),
       (chunk, state) =>
         chunk.forEach((transaction) => {
           const starting = formatDate(

@@ -22,6 +22,8 @@ export interface IAccount extends IBaseEntity {
   name: string
   created: TDate
   type: AccountType
+  offbudget: boolean
+  archived: boolean
 }
 
 export class AccountStore extends MappedStore<IAccount> {
@@ -34,6 +36,8 @@ export class AccountStore extends MappedStore<IAccount> {
         name: '',
         account_uuid: id || uuid(),
         tags: [],
+        offbudget: false,
+        archived: false,
         currency_uuid: moneeeyStore.currencies.all[0]?.currency_uuid,
         type: AccountType.CHECKING,
         created: currentDateTime(),
@@ -65,11 +69,23 @@ export class AccountStore extends MappedStore<IAccount> {
           index: 2,
           editor: EditorType.TAG,
         },
+        offbudget: {
+          title: 'Off-Budget',
+          field: 'offbudget',
+          index: 3,
+          editor: EditorType.CHECKBOX,
+        },
+        archived: {
+          title: 'Archived',
+          field: 'archived',
+          index: 4,
+          editor: EditorType.CHECKBOX,
+        },
         created: {
           title: 'Created',
           field: 'created',
           readOnly: true,
-          index: 3,
+          index: 5,
           editor: EditorType.DATE,
         },
       })
@@ -117,6 +133,18 @@ export class AccountStore extends MappedStore<IAccount> {
     const acct = this.byUuid(account_uuid)
     if (acct) return acct.name
     return ''
+  }
+
+  isArchived(account_uuid: TAccountUUID): boolean {
+    const acct = this.byUuid(account_uuid)
+    if (acct) return acct.archived === true
+    return true
+  }
+
+  isOffBudget(account_uuid: TAccountUUID): boolean {
+    const acct = this.byUuid(account_uuid)
+    if (acct) return acct.offbudget === true
+    return true
   }
 }
 

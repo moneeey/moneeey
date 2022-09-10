@@ -19,6 +19,7 @@ export enum EditorType {
   BUDGET_ALLOCATED = 'BUDGET_ALLOCATED',
   LINK = 'LINK',
   BUDGET_USED = 'BUDGET_USED',
+  CHECKBOX = 'CHECKBOX',
 }
 
 export interface FieldProps<ValueEditorType> {

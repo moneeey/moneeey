@@ -46,6 +46,7 @@ export const AppMenu = observer(() => {
           icon: <DollarOutlined />,
           children: [
             ...accounts.allNonPayees
+              .filter((t) => t.archived !== true)
               .sort((a, b) => a.currency_uuid?.localeCompare(b.currency_uuid))
               .map((acct) => ({
                 key: 'account_' + acct._id,
