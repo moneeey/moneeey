@@ -107,6 +107,7 @@ const Messages = {
   },
   reports: {
     account_balance: 'Account balance',
+    payee_balance: 'Payee balance',
     tag_expenses: 'Tag expenses',
     wealth_growth: 'Wealth growth',
   },

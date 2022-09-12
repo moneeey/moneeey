@@ -53,12 +53,17 @@ export function BaseReport({
   )
 }
 
-export function BaseColumnChart({ rows }: { rows: ReportDataPoint[] }) {
+export function BaseColumnChart({
+  rows,
+  chartProps,
+}: {
+  rows: ReportDataPoint[]
+  chartProps?: object
+}) {
   return (
     <Column
       {...{
         data: rows,
-        height: 400,
         yField: 'value',
         xField: 'x',
         seriesField: 'y',
@@ -68,6 +73,7 @@ export function BaseColumnChart({ rows }: { rows: ReportDataPoint[] }) {
           size: 5,
           shape: 'diamond',
         },
+        ...chartProps,
       }}
     />
   )
