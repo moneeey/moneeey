@@ -114,6 +114,7 @@ const Messages = {
     wealth: 'Wealth',
     income: 'Income',
     expense: 'Expense',
+    include_accounts: 'Include accounts: ',
   },
 }
 export default Messages

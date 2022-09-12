@@ -1,8 +1,10 @@
 import { Column, Line } from '@ant-design/charts'
+import { Checkbox } from 'antd'
 import { ReactElement, useEffect, useState } from 'react'
 import Loading from '../../components/Loading'
 import { IAccount } from '../../entities/Account'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
+import Messages from '../../utils/Messages'
 import { DateGroupingSelector } from './DateGroupingSelector'
 import {
   PeriodGroups,
@@ -25,6 +27,7 @@ export function BaseReport({
   chartFn,
 }: BaseReportProps) {
   const [rows, setRows] = useState([] as ReportDataPoint[])
+  const [selectedAccounts, setSelectedAccounts] = useState(accounts)
   const [period, setPeriod] = useState(PeriodGroups.Month)
   const [progress, setProgress] = useState(0)
   const moneeeyStore = useMoneeeyStore()
@@ -32,7 +35,7 @@ export function BaseReport({
     ;(async () => {
       const rows = await asyncProcessTransactionsForAccounts({
         moneeeyStore,
-        accounts: accounts.map((act) => act.account_uuid),
+        accounts: selectedAccounts.map((act) => act.account_uuid),
         processFn,
         period,
         setProgress,
@@ -40,7 +43,7 @@ export function BaseReport({
       setProgress(0)
       setRows(rows)
     })()
-  }, [moneeeyStore, period, accounts])
+  }, [moneeeyStore, period, selectedAccounts])
 
   return (
     <>
@@ -49,6 +52,28 @@ export function BaseReport({
       <Loading loading={progress !== 0} progress={progress}>
         {chartFn(rows)}
       </Loading>
+      <section className="includedAccountsArea">
+        {Messages.reports.include_accounts}
+        {accounts.map((account) => (
+          <Checkbox
+            key={account.account_uuid}
+            checked={
+              !!selectedAccounts.find(
+                (act) => act.account_uuid === account.account_uuid
+              )
+            }
+            onChange={({ target: { checked } }) =>
+              setSelectedAccounts(
+                selectedAccounts
+                  .filter((act) => act.account_uuid !== account.account_uuid)
+                  .concat(checked ? [account] : [])
+              )
+            }
+          >
+            {account.name}
+          </Checkbox>
+        ))}
+      </section>
     </>
   )
 }
