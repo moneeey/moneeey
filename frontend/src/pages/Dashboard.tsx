@@ -1,10 +1,10 @@
 import useMoneeeyStore from '../shared/useMoneeeyStore'
-import { WealthGrowReport } from './Reports'
 import TransactionTable from '../tables/TransactionTable'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { observer } from 'mobx-react'
 import { ITransaction } from '../entities/Transaction'
 import Messages from '../utils/Messages'
+import { WealthGrowReport } from './report/WealthGrowReport'
 
 const RecentTransactions = observer(
   ({

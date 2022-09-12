@@ -46,6 +46,11 @@ export const AppMenu = observer(() => {
           label: Messages.menu.transactions,
           icon: <DollarOutlined />,
           children: [
+            {
+              key: 'import',
+              label: Messages.menu.import,
+              onClick: () => navigation.navigate(ImportRoute.url()),
+            },
             ...accounts.allNonPayees
               .filter((t) => t.archived !== true)
               .sort((a, b) => a.currency_uuid?.localeCompare(b.currency_uuid))
@@ -67,11 +72,6 @@ export const AppMenu = observer(() => {
               label: Messages.menu.unassigned,
               onClick: () =>
                 navigation.navigate(AccountRoute.url({ account_name: '-' })),
-            },
-            {
-              key: 'import',
-              label: Messages.menu.import,
-              onClick: () => navigation.navigate(ImportRoute.url()),
             },
           ],
         },

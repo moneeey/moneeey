@@ -1,3 +1,4 @@
+import { Tabs } from 'antd'
 import { observer } from 'mobx-react'
 import { useState } from 'react'
 import { ImportTask } from '../../shared/import/ImportContent'
@@ -22,9 +23,13 @@ const Import = observer(() => {
           configuration={config}
         />
       )}
-      {processing.map((task) => (
-        <ImportProcess key={task.input.name} task={task} />
-      ))}
+      <Tabs>
+        {processing.map((task) => (
+          <Tabs.TabPane tab={task.input.name} key={task.input.name}>
+            <ImportProcess task={task} />
+          </Tabs.TabPane>
+        ))}
+      </Tabs>
     </div>
   )
 })
