@@ -1,14 +1,14 @@
 import { AccountType, TAccountUUID } from '../../entities/Account'
-import { compareDates, TDate } from '../../utils/Date'
-import { TMonetary } from '../../shared/Entity'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { ITransaction } from '../../entities/Transaction'
 import Messages from '../../utils/Messages'
 import { dateToPeriod, PeriodGroup, ReportDataMap } from './ReportUtils'
-import { BaseReport, BaseLineChart } from './BaseReport'
+import { BaseReport, BaseColumnChart } from './BaseReport'
 import MoneeeyStore from '../../shared/MoneeeyStore'
+import { TMonetary } from '../../shared/Entity'
+import { TDate } from '../../utils/Date'
 
-const wealthGrowProcess = (
+const incomeVsExpensesProcess = (
   moneeeyStore: MoneeeyStore,
   transaction: ITransaction,
   period: PeriodGroup,
@@ -20,16 +20,25 @@ const wealthGrowProcess = (
     date: TDate
   ) => {
     const account = moneeeyStore.accounts.byUuid(acct)
-    if (!account || account.type === AccountType.PAYEE) return
+    if (!account) return
+
+    let kind = ''
+    if (account.type === AccountType.PAYEE && value < 0) {
+      kind = Messages.reports.expense
+    }
+    if (account.type !== AccountType.PAYEE && value > 0) {
+      kind = Messages.reports.income
+    }
+    if (kind === '') return
     const group_date = dateToPeriod(period, date)
-    const key = group_date + account.account_uuid
+    const key = group_date + kind
     const prev_balance = (data.get(key) || {}).value || 0
     const balance = prev_balance + value
-    data.set(key, { x: group_date, value: balance, y: Messages.reports.wealth })
+    data.set(key, { x: group_date, value: balance, y: kind })
   }
   addBalanceToData(
     transaction.from_account,
-    -transaction.from_value,
+    transaction.from_value,
     transaction.date
   )
   addBalanceToData(
@@ -39,22 +48,15 @@ const wealthGrowProcess = (
   )
 }
 
-export function WealthGrowReport() {
+export function IncomeVsExpensesReport() {
   const { accounts } = useMoneeeyStore()
 
   return (
     <BaseReport
       accounts={accounts.allPayees}
-      processFn={wealthGrowProcess}
-      title={Messages.reports.wealth_growth}
-      chartFn={(rows) => {
-        const sorted = rows.sort((a, b) => compareDates(a.x, b.x))
-        const sumWithPreviousBalances = sorted.map((cur, index) => {
-          cur.value += index > 0 ? sorted[index - 1].value : 0
-          return cur
-        })
-        return <BaseLineChart rows={sumWithPreviousBalances} />
-      }}
+      processFn={incomeVsExpensesProcess}
+      title={Messages.reports.income_vs_expenses}
+      chartFn={(rows) => <BaseColumnChart rows={rows} />}
     />
   )
 }

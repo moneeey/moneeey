@@ -1,4 +1,4 @@
-import { Column } from '@ant-design/charts'
+import { Column, Line } from '@ant-design/charts'
 import { ReactElement, useEffect, useState } from 'react'
 import Loading from '../../components/Loading'
 import { IAccount } from '../../entities/Account'
@@ -69,10 +69,28 @@ export function BaseColumnChart({
         seriesField: 'y',
         connectNulls: true,
         smooth: true,
-        point: {
-          size: 5,
-          shape: 'diamond',
-        },
+        ...chartProps,
+      }}
+    />
+  )
+}
+
+export function BaseLineChart({
+  rows,
+  chartProps,
+}: {
+  rows: ReportDataPoint[]
+  chartProps?: object
+}) {
+  return (
+    <Line
+      {...{
+        data: rows,
+        yField: 'value',
+        xField: 'x',
+        seriesField: 'y',
+        connectNulls: true,
+        smooth: true,
         ...chartProps,
       }}
     />

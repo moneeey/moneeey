@@ -1,6 +1,7 @@
 import { Tabs } from 'antd'
 import Messages from '../../utils/Messages'
 import { AccountBalanceReport } from './AccountBalanceReport'
+import { IncomeVsExpensesReport } from './IncomeVsExpensesReport'
 import { PayeeBalanceReport } from './PayeeBalanceReport'
 import { TagExpensesReport } from './TagExpensesReport'
 import { WealthGrowReport } from './WealthGrowReport'
@@ -24,6 +25,11 @@ export function Reports() {
             label: Messages.reports.tag_expenses,
             key: Messages.reports.tag_expenses,
             children: <TagExpensesReport />,
+          },
+          {
+            label: Messages.reports.income_vs_expenses,
+            key: Messages.reports.income_vs_expenses,
+            children: <IncomeVsExpensesReport />,
           },
           {
             label: Messages.reports.wealth_growth,

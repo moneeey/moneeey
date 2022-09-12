@@ -110,6 +110,10 @@ const Messages = {
     payee_balance: 'Payee balance',
     tag_expenses: 'Tag expenses',
     wealth_growth: 'Wealth growth',
+    income_vs_expenses: 'Income vs Expenses',
+    wealth: 'Wealth',
+    income: 'Income',
+    expense: 'Expense',
   },
 }
 export default Messages
