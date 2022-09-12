@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import { useState } from 'react'
 import { ImportTask } from '../../shared/import/ImportContent'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
+import Messages from '../../utils/Messages'
 import ImportProcess from './ImportProcessor'
 import ImportStarter from './ImportStarter'
 
@@ -12,24 +13,32 @@ const Import = observer(() => {
 
   return (
     <div className="importArea">
-      {config.loaded && (
-        <ImportStarter
-          onTask={(task) =>
-            setProcessing([
-              ...processing.filter((p) => p.input.name !== task.input.name),
-              task,
-            ])
-          }
-          configuration={config}
-        />
-      )}
-      <Tabs>
-        {processing.map((task) => (
-          <Tabs.TabPane tab={task.input.name} key={task.input.name}>
-            <ImportProcess task={task} />
-          </Tabs.TabPane>
-        ))}
-      </Tabs>
+      <Tabs
+        items={[
+          {
+            label: Messages.import.start,
+            key: Messages.import.start,
+            children: (
+              <ImportStarter
+                onTask={(task) =>
+                  setProcessing([
+                    ...processing.filter(
+                      (p) => p.input.name !== task.input.name
+                    ),
+                    task,
+                  ])
+                }
+                configuration={config}
+              />
+            ),
+          },
+          ...processing.map((task) => ({
+            key: task.input.name,
+            label: task.input.name,
+            children: <ImportProcess task={task} />,
+          })),
+        ]}
+      />
     </div>
   )
 })

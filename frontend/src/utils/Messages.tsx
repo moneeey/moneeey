@@ -29,6 +29,7 @@ const Messages = {
     code_expired: 'Confirm code expired, please try again',
   },
   import: {
+    start: 'New import',
     processing: 'Importing...',
     drop_here: 'Drop the files here ...',
     click_or_drop_here: 'Drag and drop files here, or click to select files',

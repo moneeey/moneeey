@@ -14,56 +14,52 @@ import {
   TDate,
   TDateFormat,
 } from '../../utils/Date'
-import { TMonetary } from '../../shared/Entity'
 import MoneeeyStore from '../../shared/MoneeeyStore'
 import { ITransaction } from '../../entities/Transaction'
 import { asyncProcess } from '../../utils/Utils'
 import Messages from '../../utils/Messages'
+import { TMonetary } from '../../shared/Entity'
 
 export interface AsyncProcessTransactions {
-  accounts: TAccountUUID[]
-  fn: (transaction: ITransaction, stt: ReportAsyncState) => void
-  period: PeriodGroup
   moneeeyStore: MoneeeyStore
-  setRows: (t: ITransaction[]) => void
+  processFn: AsyncProcessTransactionFn
+  accounts: TAccountUUID[]
+  period: PeriodGroup
   setProgress: (v: number) => void
 }
 
-export interface ReportDataPoint {
-  date: TDate
-  balance: TMonetary
-  label: string
-}
+export type AsyncProcessTransactionFn = (
+  moneeeyStore: MoneeeyStore,
+  transaction: ITransaction,
+  period: PeriodGroup,
+  data: ReportDataMap
+) => void
 
 export type ReportDataMap = Map<string, ReportDataPoint>
 
-export interface ReportAsyncState {
-  moneeeyStore: MoneeeyStore
-  period: PeriodGroup
-  data: ReportDataMap
+export interface ReportDataPoint {
+  x: TDate
+  y: string
+  value: TMonetary
 }
 
 export async function asyncProcessTransactionsForAccounts({
-  accounts,
-  fn,
-  period,
   moneeeyStore,
-  setRows,
+  accounts,
+  processFn,
+  period,
   setProgress,
 }: AsyncProcessTransactions) {
   const transactions = moneeeyStore.transactions.viewAllWithAccounts(accounts)
   const processed = await asyncProcess(
     transactions,
-    (chunk, stt, _chunks, tasks, tasksTotal) => {
+    (chunk, data, _chunks, tasks, tasksTotal) => {
       setProgress(((tasksTotal - tasks) / tasksTotal) * 100)
-      chunk.forEach((t) => fn(t, stt))
+      chunk.forEach((t) => processFn(moneeeyStore, t, period, data))
     },
-    { moneeeyStore, data: new Map(), period }
+    new Map() as ReportDataMap
   )
-  setRows(
-    moneeeyStore.transactions.sortTransactions([...processed.data.values()])
-  )
-  setProgress(0)
+  return Array.from(processed.values())
 }
 
 export interface PeriodGroup {

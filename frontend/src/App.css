@@ -113,6 +113,9 @@
   display: inline-flex;
 }
 
+.importArea {
+  padding: 1em;
+}
 .importArea ul {
   list-style: none;
 }
@@ -180,4 +183,7 @@
 
 .budgetArea .control .divider {
   width: 10em;
+}
+.reportsArea {
+  padding: 1em;
 }
