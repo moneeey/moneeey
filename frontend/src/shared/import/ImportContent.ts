@@ -1,4 +1,4 @@
-import { isEmpty } from 'lodash'
+import { includes, isEmpty } from 'lodash'
 import { TAccountUUID } from '../../entities/Account'
 import { ITransaction, TTransactionUUID } from '../../entities/Transaction'
 import {
@@ -114,7 +114,7 @@ export function importTransaction(
   const existing = importer.findForImportId(import_id)
   if (existing) {
     transaction.transaction_uuid = existing.transaction_uuid
-    if (existing.memo !== transaction.memo) {
+    if ((existing.memo || '').indexOf(transaction.memo) === -1) {
       transaction.memo = existing.memo + ';' + transaction.memo
     }
     transaction.tags = existing.tags

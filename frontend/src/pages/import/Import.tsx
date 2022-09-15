@@ -34,7 +34,23 @@ const Import = observer(() => {
           },
           ...processing.map((task) => ({
             key: task.input.name,
-            label: task.input.name,
+            label: (
+              <span>
+                {task.input.name}{' '}
+                <span
+                  className="importTaskClose"
+                  onClick={() =>
+                    setProcessing((prevProcessing) =>
+                      prevProcessing.filter(
+                        (p) => p.input.name !== task.input.name
+                      )
+                    )
+                  }
+                >
+                  X
+                </span>
+              </span>
+            ),
             children: <ImportProcess task={task} />,
           })),
         ]}

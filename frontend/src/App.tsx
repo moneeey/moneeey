@@ -1,5 +1,4 @@
 import './App.css'
-// import 'antd/dist/antd.css'
 import 'antd/dist/antd.dark.css'
 
 import React from 'react'

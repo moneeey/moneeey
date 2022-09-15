@@ -187,3 +187,11 @@
 .reportsArea {
   padding: 1em;
 }
+.importTaskClose {
+  color: white;
+  cursor: pointer;
+}
+
+.importTaskClose:hover {
+  color: white;
+}

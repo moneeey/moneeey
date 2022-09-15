@@ -27,6 +27,7 @@ function ImportProcessResult({
       }
       return (
         <AccountSelector
+          clearable
           account={account_uuid}
           accounts={compact([
             ...map(

@@ -20,6 +20,7 @@ interface AccountEditorBaseProps<EntityType>
   value: TAccountUUID
   rev?: string
   entity?: EntityType
+  clearable?: boolean
 }
 
 const AccountEditorBase = observer(
@@ -35,14 +36,14 @@ const AccountEditorBase = observer(
     const addPrefix = 'ADD_'
     const options = uniqBy(
       compact([
-        !isEmpty(adding) && {
-          label: Messages.settings.create_entity(adding),
-          value: addPrefix + adding,
-        },
         ...map(props.accounts, (account) => ({
           label: account.name,
           value: account.account_uuid,
         })),
+        !isEmpty(adding) && {
+          label: Messages.settings.create_entity(adding),
+          value: addPrefix + adding,
+        },
       ]),
       'value'
     )
@@ -68,6 +69,10 @@ const AccountEditorBase = observer(
               ) =>
                 option?.label.toLowerCase().includes(inputValue.toLowerCase()),
               onSearch: (value: string) => setAdding(value),
+              allowClear: props.clearable === true,
+              onClear: () => {
+                onChange('', '')
+              },
               onSelect: (value?: string) => {
                 if (value?.startsWith(addPrefix)) {
                   const account = {
@@ -107,14 +112,17 @@ interface AccountSelectorProps {
   account: TAccountUUID
   accounts: IAccount[]
   onSelect: (account: TAccountUUID) => void
+  clearable?: boolean
 }
 
 export const AccountSelector = ({
   account,
   accounts,
   onSelect,
+  clearable,
 }: AccountSelectorProps) => (
   <AccountEditorBase
+    clearable={clearable}
     accounts={accounts}
     value={account}
     entityId={account}

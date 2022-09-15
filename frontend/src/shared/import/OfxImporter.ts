@@ -55,7 +55,7 @@ export function ofxImport(): ProcessContentFn {
       )
       const date = formatDateFmt(datets, data.config.dateFormat)
       const value = t['TRNAMT']
-      const other = map(t, (value, key) => key + ' ' + value + ' ').join(' ')
+      const other = t['MEMO']
       return `${date}${SEP}${value}${SEP}${other}`
     })
     console.log('ofxImport lines', { lines })
