@@ -1,5 +1,5 @@
 import { Input, Select } from 'antd'
-import { compact, head, isEmpty, map } from 'lodash'
+import { compact, head, isEmpty, map, uniqBy } from 'lodash'
 import { observer } from 'mobx-react'
 import { useState } from 'react'
 import { AccountType, IAccount, TAccountUUID } from '../../entities/Account'
@@ -33,16 +33,19 @@ const AccountEditorBase = observer(
     const TagsComponent =
       props.field.field === 'from_account' ? TagsFrom : TagsTo
     const addPrefix = 'ADD_'
-    const options = compact([
-      !isEmpty(adding) && {
-        label: Messages.settings.create_entity(adding),
-        value: addPrefix + adding,
-      },
-      ...map(props.accounts, (account) => ({
-        label: account.name,
-        value: account.account_uuid,
-      })),
-    ])
+    const options = uniqBy(
+      compact([
+        !isEmpty(adding) && {
+          label: Messages.settings.create_entity(adding),
+          value: addPrefix + adding,
+        },
+        ...map(props.accounts, (account) => ({
+          label: account.name,
+          value: account.account_uuid,
+        })),
+      ]),
+      'value'
+    )
     return (
       <Input.Group compact className="accountEditor">
         <BaseSelectEditor

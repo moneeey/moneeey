@@ -1,4 +1,4 @@
-import { head, shuffle } from 'lodash'
+import { head, isEmpty, shuffle } from 'lodash'
 import { ITransaction } from '../../entities/Transaction'
 import { TDateFormat } from '../../utils/Date'
 import { asyncProcess } from '../../utils/Utils'
@@ -18,12 +18,27 @@ export async function txtImportFromLines(
   moneeeyStore: MoneeeyStore,
   data: ImportTask,
   onProgress: ProcessProgressFn,
-  lines: string[]
+  lines: string[],
+  separator = ''
 ): Promise<ImportResult> {
+  if (isEmpty(lines)) {
+    return Promise.resolve({
+      errors: [
+        {
+          data: '',
+          description: 'Empty',
+        },
+      ],
+      transactions: [],
+      recommended_accounts: {},
+    })
+  }
   const { importer } = moneeeyStore
   onProgress(1, 3)
   const first10 = lines.slice(0, 10)
-  const sep = findSeparator(first10.join('\n'))
+  const sep = !isEmpty(separator)
+    ? separator
+    : findSeparator(first10.join('\n'))
   const columns = findColumns(
     (head(shuffle(first10)) || '').split(sep),
     data.config.dateFormat || TDateFormat

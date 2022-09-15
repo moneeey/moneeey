@@ -21,8 +21,8 @@ const Import = observer(() => {
             children: (
               <ImportStarter
                 onTask={(task) =>
-                  setProcessing([
-                    ...processing.filter(
+                  setProcessing((prevProcessing) => [
+                    ...prevProcessing.filter(
                       (p) => p.input.name !== task.input.name
                     ),
                     task,

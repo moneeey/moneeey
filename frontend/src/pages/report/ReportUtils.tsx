@@ -73,6 +73,10 @@ export const noopFormatter = <T,>(o: T): string => '' + o
 export const patternFormatter = (pattern: string) => (date: Date) =>
   formatDateAs(formatDate(date), pattern)
 
+export function dateToPeriod(period: PeriodGroup, date: TDate) {
+  return formatDate(period.groupFn(parseDate(date)))
+}
+
 export const PeriodGroups: { [_name: string]: PeriodGroup } = {
   Day: {
     label: Messages.util.day,
@@ -104,8 +108,4 @@ export const PeriodGroups: { [_name: string]: PeriodGroup } = {
     formatter: noopFormatter,
     order: 4,
   },
-}
-
-export function dateToPeriod(period: PeriodGroup, date: TDate) {
-  return formatDate(period.groupFn(parseDate(date)))
 }

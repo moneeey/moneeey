@@ -25,7 +25,7 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       console.log('FileUploader onDrop', { acceptedFiles, rejectedFiles })
-      acceptedFiles.forEach(async (f) => {
+      acceptedFiles.forEach((f) => {
         const mode = last(f.name.split('.')) || 'txt'
         onFile({
           name: f.name,
