@@ -1,9 +1,10 @@
-import express, { Application } from 'express';
+import http from 'http';
+import express from 'express';
 
 import { defaultRoutes, authRoutes, storageRoutes } from './routes';
 import { PORT } from './core/config';
 
-const app: Application = express();
+const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -12,11 +13,19 @@ app.get('/', defaultRoutes);
 app.use('/auth', authRoutes);
 app.use('/storage', storageRoutes);
 
+const server = http.createServer(app)
+
+const terminateServer = () => server.close(() => console.info('Server terminated'));
+
+process.on('SIGINT', terminateServer);
+
+process.on('SIGTERM', terminateServer);
+
 const main = () => {
   try {
-    app.listen(PORT, (): void => console.info(`Listening successfully on port ${PORT}`));
-  } catch (error: any) {
-    console.error(`Error occurred: ${error.message}`);
+    server.listen(PORT, () => console.info(`Listening successfully on port ${PORT}`));
+  } catch ({ message }) {
+    console.error(`Error occurred: ${message}`);
   }
 };
 
