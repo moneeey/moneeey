@@ -102,13 +102,15 @@ export class CurrencyStore extends MappedStore<ICurrency> {
 
   format(currency: ICurrency, value: TMonetary) {
     return (
-      currency.prefix +
-      value.toLocaleString(undefined, {
-        maximumFractionDigits: currency.decimals,
-        minimumFractionDigits: currency.decimals,
-      }) +
-      currency.suffix
+      currency.prefix + this.formatAmount(currency, value) + currency.suffix
     )
+  }
+
+  formatAmount(currency: ICurrency, value: TMonetary) {
+    return value.toLocaleString(undefined, {
+      maximumFractionDigits: currency.decimals,
+      minimumFractionDigits: currency.decimals,
+    })
   }
 
   formatByUuid(currency_uuid: TCurrencyUUID, value: TMonetary) {

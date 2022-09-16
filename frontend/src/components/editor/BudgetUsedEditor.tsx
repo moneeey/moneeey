@@ -18,7 +18,12 @@ export const BudgetUsedEditor = observer(
           rev: entity?._rev,
           prefix: currency?.prefix,
           suffix: currency?.suffix,
-          value: entity.used,
+          value: currency
+            ? (currencies.formatAmount(
+                currency,
+                entity.used
+              ) as unknown as number)
+            : entity.used,
         }}
       />
     )

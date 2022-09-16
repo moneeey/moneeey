@@ -21,7 +21,12 @@ export const BudgetRemainingEditor = observer(
             rev: entity?._rev,
             prefix: currency?.prefix,
             suffix: currency?.suffix,
-            value: remaining,
+            value: currency
+              ? (currencies.formatAmount(
+                  currency,
+                  remaining
+                ) as unknown as number)
+              : remaining,
           }}
         />
       </div>
