@@ -6,6 +6,8 @@ import { StatusProps, Status } from '../components/Status'
 import Messages from '../utils/Messages'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
 
+import './Landing.less'
+
 export default function Landing() {
   const { management } = useMoneeeyStore()
   const [email, setEmail] = React.useState('')

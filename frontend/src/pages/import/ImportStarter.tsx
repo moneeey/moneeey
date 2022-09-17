@@ -16,6 +16,8 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { TDateFormat } from '../../utils/Date'
 import Messages from '../../utils/Messages'
 
+import './ImportStarter.less'
+
 export interface FileUploaderProps {
   onFile: (input: ImportInput) => void
   error: string | false
@@ -53,7 +55,7 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
   return (
     <>
       <div
-        className={`uploadArea${disabled ? 'Disabled' : 'Enabled'}`}
+        className={`importArea${disabled ? 'Disabled' : 'Enabled'}`}
         {...getRootProps()}
       >
         <input {...getInputProps()} />

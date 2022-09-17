@@ -24,6 +24,8 @@ import {
 } from '../../utils/Date'
 import Messages from '../../utils/Messages'
 
+import './Budget.less'
+
 interface PeriodProps {
   startingDate: Date
   setEditing: Dispatch<SetStateAction<IBudget | undefined>>

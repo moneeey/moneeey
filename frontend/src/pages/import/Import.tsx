@@ -7,6 +7,8 @@ import Messages from '../../utils/Messages'
 import ImportProcess from './ImportProcessor'
 import ImportStarter from './ImportStarter'
 
+import './Import.less'
+
 const Import = observer(() => {
   const [processing, setProcessing] = useState([] as ImportTask[])
   const { config } = useMoneeeyStore()

@@ -1,6 +1,3 @@
-import './App.css'
-import 'antd/dist/antd.dark.css'
-
 import React from 'react'
 
 import AppMenu from './components/AppMenu'
@@ -11,6 +8,10 @@ import MoneeeyStore from './shared/MoneeeyStore'
 import { MoneeeyStoreProvider } from './shared/useMoneeeyStore'
 import { observer } from 'mobx-react'
 import Messages from './utils/Messages'
+
+import 'antd/dist/antd.dark.css'
+
+import './App.less'
 
 export const App = observer(() => {
   const [moneeeyStore] = React.useState(new MoneeeyStore())

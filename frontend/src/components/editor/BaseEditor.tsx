@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 
 import { EditorProps } from './EditorProps'
 
+import './BaseEditor.less'
+
 type OnChange<EntityType, ValueEditorType, ValueEntityType> = (
   value?: ValueEntityType,
   editorValue?: ValueEditorType,
@@ -71,7 +73,7 @@ export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
         }}
       />
       {error && (
-        <Typography.Text className="tableEditor-feedback" type="danger">
+        <Typography.Text className="baseEditor-error" type="danger">
           {error}
         </Typography.Text>
       )}

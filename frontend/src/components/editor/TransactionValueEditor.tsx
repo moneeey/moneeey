@@ -4,6 +4,8 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { EditorProps } from './EditorProps'
 import { NumberEditor, NumberSorter } from './NumberEditor'
 
+import './TransactionValueEditor.less'
+
 export const TransactionValueEditor = observer(
   <EntityType,>(props: EditorProps<EntityType, number, number>) => {
     const entity = props.store.byUuid(props.entityId) as ITransaction
@@ -37,7 +39,7 @@ export const TransactionValueEditor = observer(
       )
     } else {
       return (
-        <div className="transactionMultiEditor">
+        <div className="transactionValueEditor">
           <NumberEditor
             {...{
               ...props,
