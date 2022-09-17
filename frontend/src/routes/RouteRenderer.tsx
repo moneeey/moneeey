@@ -1,13 +1,6 @@
 import _ from 'lodash'
 import { observer } from 'mobx-react'
-import {
-  BrowserRouter,
-  Route,
-  Routes,
-  useNavigate,
-  useParams,
-} from 'react-router-dom'
-import Modals from '../components/modal/Modals'
+import { Route, Routes, useParams } from 'react-router-dom'
 
 import { IAppParameters, IRouteParameters, Route as MyRoute } from './Route'
 
@@ -33,26 +26,6 @@ const RouteElem = observer(
   }
 )
 
-const Navigator = ({ app }: { app: IAppParameters }) => {
-  const navigateTo = useNavigate()
-  const Navigate = observer(() => {
-    const toUrl = '' + app.moneeeyStore.navigation.navigateTo
-    if (toUrl && toUrl !== '') {
-      app.moneeeyStore.navigation.navigate('')
-      setTimeout(() => {
-        navigateTo(toUrl)
-      }, 1)
-    }
-    return <div />
-  })
-  return (
-    <>
-      <Navigate />
-      <Modals />
-    </>
-  )
-}
-
 const RouteRenderer = observer(
   <IParameters extends IRouteParameters>({
     root_route,
@@ -75,18 +48,15 @@ const RouteRenderer = observer(
     const routes = mapRoute({ route: root_route, path: root_route.path })
 
     return (
-      <BrowserRouter>
-        <Routes>
-          {routes.map((route) => (
-            <Route
-              key={route.path}
-              path={route.path}
-              element={<RouteElem route={route.route} app={app} />}
-            />
-          ))}
-        </Routes>
-        <Navigator app={app} />
-      </BrowserRouter>
+      <Routes>
+        {routes.map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={<RouteElem route={route.route} app={app} />}
+          />
+        ))}
+      </Routes>
     )
   }
 )
