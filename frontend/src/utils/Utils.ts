@@ -44,3 +44,28 @@ export async function asyncProcess<T, State>(
   }
   return state
 }
+
+export enum StorageKind {
+  PERMANENT,
+  SESSION,
+}
+
+export function getStorage(
+  key: string,
+  defaault: string,
+  storage: StorageKind
+) {
+  if (storage === StorageKind.PERMANENT) {
+    return window.localStorage.getItem(key) || defaault
+  } else if (storage === StorageKind.SESSION) {
+    return window.sessionStorage.getItem(key) || defaault
+  }
+}
+
+export function setStorage(key: string, value: string, storage: StorageKind) {
+  if (storage === StorageKind.PERMANENT) {
+    window.localStorage.setItem(key, value)
+  } else if (storage === StorageKind.SESSION) {
+    window.sessionStorage.setItem(key, value)
+  }
+}

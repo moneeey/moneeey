@@ -13,6 +13,7 @@ const Messages = {
     payees: 'Payees',
     accounts: 'Accounts',
     preferences: 'Preferences',
+    landing: 'Landing',
     sync: {
       [Status.ONLINE]: 'Online',
       [Status.OFFLINE]: 'Offline',
@@ -21,12 +22,21 @@ const Messages = {
   landing: {
     failed: 'Login failed, please try again',
     welcome: 'Please check your email.',
+    messages: [
+      'Personal Finance is necessary for people to grow',
+      'Knowledge is key for success',
+      'Finance independence is freedom',
+      'Privacy and private, with encryption from end to end',
+      'Export your data, your data is yours',
+    ],
   },
   login: {
     completed: 'Welcome, please wait...',
     auth_code: 'Bad authentication code, please try again',
     confirm_code: 'Bad confirm code, please try again',
     code_expired: 'Confirm code expired, please try again',
+    login_or_signup: 'Login or Signup',
+    email: 'Email',
   },
   import: {
     start: 'New import',
@@ -59,6 +69,8 @@ const Messages = {
     month: 'Month',
     quarter: 'Quarter',
     year: 'Year',
+    ok: 'Ok',
+    cancel: 'Cancel',
   },
   settings: {
     reload_page: 'Reload your page',
@@ -115,6 +127,10 @@ const Messages = {
     income: 'Income',
     expense: 'Expense',
     include_accounts: 'Include accounts: ',
+  },
+  modal: {
+    landing: 'Welcome to Moneeey',
+    start_tour: 'Start Tour',
   },
 }
 export default Messages

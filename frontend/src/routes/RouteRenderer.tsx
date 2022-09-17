@@ -7,6 +7,7 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom'
+import Modals from '../components/modal/Modals'
 
 import { IAppParameters, IRouteParameters, Route as MyRoute } from './Route'
 
@@ -44,7 +45,12 @@ const Navigator = ({ app }: { app: IAppParameters }) => {
     }
     return <div />
   })
-  return <Navigate />
+  return (
+    <>
+      <Navigate />
+      <Modals />
+    </>
+  )
 }
 
 const RouteRenderer = observer(

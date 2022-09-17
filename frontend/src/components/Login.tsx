@@ -6,14 +6,14 @@ import { StatusProps, Status } from '../components/Status'
 import Messages from '../utils/Messages'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
 
-export default function Landing() {
+export default function Login() {
   const { management } = useMoneeeyStore()
   const [email, setEmail] = React.useState('')
   const [disabled, setDisabled] = React.useState(false)
   const [status, setStatus] = React.useState<StatusProps>()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const onRegisterOrLogin = async () => {
+  const onLoginOrSignup = async () => {
     setDisabled(true)
     setStatus({})
     if (await management.start(email)) {
@@ -65,28 +65,17 @@ export default function Landing() {
   }, [searchParams, setSearchParams, management])
 
   return (
-    <section className="landing">
-      <h1>Welcome to Moneeey!</h1>
-      <ul>
-        <li>Own your data</li>
-        <li>E2E encryption since v0</li>
-        <li>Data always clustered into 2 to 4 different locations</li>
-        <li>Freedom to export all data</li>
-        <li>Freedom to host own CouchDb</li>
-        <li>Powered by PouchDB, CouchDB, React, Typescript</li>
-      </ul>
-      <Space direction="vertical">
-        <Input
-          type="text"
-          placeholder="Email"
-          value={email}
-          onChange={({ target: { value } }) => setEmail(value.toLowerCase())}
-        />
-        <Button disabled={disabled} onClick={onRegisterOrLogin}>
-          Create account / Login
-        </Button>
-        <Status {...status} />
-      </Space>
-    </section>
+    <Space direction="vertical">
+      <Input
+        type="text"
+        placeholder={Messages.login.email}
+        value={email}
+        onChange={({ target: { value } }) => setEmail(value.toLowerCase())}
+      />
+      <Button disabled={disabled} onClick={onLoginOrSignup}>
+        {Messages.login.login_or_signup}
+      </Button>
+      <Status {...status} />
+    </Space>
   )
 }
