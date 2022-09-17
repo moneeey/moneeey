@@ -17,8 +17,6 @@ export interface IConfig extends IBaseEntity {
 }
 
 export class ConfigStore extends MappedStore<IConfig> {
-  loaded = false
-
   constructor(moneeeyStore: MoneeeyStore) {
     super(
       moneeeyStore,
@@ -57,7 +55,6 @@ export class ConfigStore extends MappedStore<IConfig> {
     )
 
     makeObservable(this, {
-      loaded: observable,
       main: computed,
       init: action,
     })
@@ -69,7 +66,6 @@ export class ConfigStore extends MappedStore<IConfig> {
 
   init() {
     if (isEmpty(this.all)) this.merge(this.factory())
-    this.loaded = true
   }
 }
 

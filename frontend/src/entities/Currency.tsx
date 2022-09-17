@@ -33,6 +33,7 @@ export class CurrencyStore extends MappedStore<ICurrency> {
           prefix: '',
           suffix: '',
           decimals: 2,
+          tags: [],
           updated: currentDateTime(),
           created: currentDateTime(),
         } as ICurrency),

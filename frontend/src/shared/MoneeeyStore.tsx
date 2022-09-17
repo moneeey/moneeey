@@ -1,3 +1,4 @@
+import { makeObservable, observable } from 'mobx'
 import AccountStore from '../entities/Account'
 import BudgetStore from '../entities/Budget'
 import ConfigStore from '../entities/Config'
@@ -11,6 +12,7 @@ import PersistenceStore from './Persistence'
 import TagsStore from './Tags'
 
 export default class MoneeeyStore {
+  loaded = false
   tags = new TagsStore()
   navigation = new NavigationStore()
   accounts = new AccountStore(this)
@@ -23,6 +25,8 @@ export default class MoneeeyStore {
   config = new ConfigStore(this)
 
   constructor() {
+    makeObservable(this, { loaded: observable })
+
     this.persistence.load().then(() => {
       this.persistence.monitor(this.accounts, EntityType.ACCOUNT)
       this.persistence.monitor(this.currencies, EntityType.CURRENCY)
@@ -31,6 +35,7 @@ export default class MoneeeyStore {
       this.persistence.monitor(this.config, EntityType.CONFIG)
       this.config.init()
       this.currencies.addDefaults()
+      this.loaded = true
     })
   }
 }

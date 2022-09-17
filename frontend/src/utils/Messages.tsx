@@ -132,5 +132,25 @@ const Messages = {
     landing: 'Welcome to Moneeey',
     start_tour: 'Start Tour',
   },
+  tour: {
+    edit_currencies: `The first step to archive your financial freedom is to let us know what currencies are you working with.
+
+      We already added the top 20 most used currencies from 2020.`,
+    create_accounts: `Now that we know the currencies we are having, it's time to tell us what are your accounts:
+      credit cards, checking accounts, investment accounts...`,
+    create_budgets: `It's time to budget your Moneeey!  Budgets are like envelopes you put part of your income.
+
+      You should create budgets for things like:
+      home/mortage, car maintenance, utilities, entertainment...`,
+    insert_transactions: `When we have our budgets, it's time to start inserting our transactions!
+
+      When Moneeey know your transactions, it will be capable of generating reports, calculating budget usage/remainings
+      and help you grow your finances!`,
+    import: `Inserting transactions manually can be quite boring...  So we allow you to import from common bank formats!
+
+      When importing a transaction, we will try our best to guess which payees those transactions are related to.
+
+      The more transactions Moneeey have, the smarter it becomes!`,
+  },
 }
 export default Messages

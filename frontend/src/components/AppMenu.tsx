@@ -72,7 +72,7 @@ export const AppMenu = observer(() => {
               key: 'unassigned',
               label: Messages.menu.unassigned,
               onClick: () =>
-                navigation.navigate(AccountRoute.url({ account_name: '-' })),
+                navigation.navigate(AccountRoute.accountUrlForUnclassified()),
             },
           ],
         },
