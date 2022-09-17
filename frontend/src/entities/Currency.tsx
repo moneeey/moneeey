@@ -123,6 +123,12 @@ export class CurrencyStore extends MappedStore<ICurrency> {
     return (currency && currency.name) || ''
   }
 
+  currencyTags(currency_uuid: TCurrencyUUID) {
+    const curr = this.byUuid(currency_uuid)
+    if (curr) return [...curr.tags]
+    return []
+  }
+
   addDefaults() {
     const addDefault = (currency: ICurrency) => {
       currency.currency_uuid = `${currency.name}_${currency.short}`

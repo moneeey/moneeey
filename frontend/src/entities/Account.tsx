@@ -126,7 +126,12 @@ export class AccountStore extends MappedStore<IAccount> {
 
   accountTags(account_uuid: TAccountUUID) {
     const acct = this.byUuid(account_uuid)
-    if (acct) return [...acct.tags, acct.name]
+    if (acct) {
+      const currencyTags = this.moneeeyStore.currencies.currencyTags(
+        acct.currency_uuid
+      )
+      return [acct.name, ...acct.tags, ...currencyTags]
+    }
     return []
   }
 
