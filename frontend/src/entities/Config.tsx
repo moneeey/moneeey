@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash'
-import { action, computed, makeObservable, observable } from 'mobx'
+import { action, computed, makeObservable } from 'mobx'
 import { EditorType } from '../components/editor/EditorProps'
 import { IBaseEntity, EntityType } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'

@@ -4,14 +4,12 @@ import { TableEditor } from '../components/TableEditor'
 import ConfigStore from '../entities/Config'
 
 const ConfigTable = observer(({ config }: { config: ConfigStore }) => {
-  return config.loaded ? (
+  return (
     <TableEditor
       store={config}
       factory={() => config.factory()}
       creatable={false}
     />
-  ) : (
-    <p>Loading...</p>
   )
 })
 
