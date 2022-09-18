@@ -45,20 +45,27 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
     onDrop,
     disabled,
     multiple: true,
+    useFsAccessApi: false,
     accept: {
       'text/plain': ['.txt', '.csv'],
       'application/x-ofx': ['.ofx'],
       // 'application/x-pdf': ['.pdf'],
     },
+    onError(e) {
+      console.error('FileUploader error', e)
+    },
   })
+
+  const inputProps = getInputProps()
 
   return (
     <>
       <div
         className={`importArea${disabled ? 'Disabled' : 'Enabled'}`}
+        onClick={inputProps.onClick}
         {...getRootProps()}
       >
-        <input {...getInputProps()} />
+        <input {...inputProps} />
         <p>
           <strong>{error}</strong>
         </p>

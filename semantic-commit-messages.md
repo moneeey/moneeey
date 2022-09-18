@@ -6,7 +6,7 @@ Format: `<type>(<scope>): <subject>`
 
 ## Example
 
-```
+```raw
 feat: add hat wobble
 ^--^  ^------------^
 |     |
