@@ -4,6 +4,8 @@ services:
   frontend:
     build: ./docker
     restart: unless-stopped
+    depends_on:
+      - backend
     volumes:
       - ./frontend:/app
     ports:
@@ -12,6 +14,8 @@ services:
   backend:
     build: ./docker
     restart: unless-stopped
+    depends_on:
+      - couchdb
     volumes:
       - ./sample.env:/run/secret/prod.env:ro
       - ./backend:/app
