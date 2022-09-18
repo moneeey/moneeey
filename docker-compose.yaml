@@ -9,12 +9,12 @@ services:
     ports:
       - '4270:4270'
 
-  management:
+  backend:
     build: ./docker
     restart: unless-stopped
     volumes:
       - ./sample.env:/run/secret/prod.env:ro
-      - ./management:/app
+      - ./backend:/app
     ports:
       - '4269:4269'
 
