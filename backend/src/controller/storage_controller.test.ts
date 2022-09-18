@@ -1,14 +1,20 @@
 /* eslint-disable import/first */
 import dotenv from 'dotenv';
-dotenv.config({ path: './sample.env' });
+dotenv.config({ path: "../sample.env" });
 
-import { tick, uuid } from '../core';
-import { pouch_db } from '../core/pouch';
-import { ConsoleMock, ConsoleMockType, mockDb, mockDbType, mock_utils } from '../core/test_utils';
-import { IDatabaseLevel } from '../entities';
-import StorageController from './storage_controller';
+import { tick, uuid } from "../core";
+import { pouch_db } from "../core/pouch";
+import {
+  ConsoleMock,
+  ConsoleMockType,
+  mockDb,
+  mockDbType,
+  mock_utils,
+} from "../core/test_utils";
+import { IDatabaseLevel } from "../entities";
+import StorageController from "./storage_controller";
 
-describe('storage_controller', () => {
+describe("storage_controller", () => {
   let storageController: StorageController;
   let logger: ConsoleMockType;
   let mainDb: mockDbType;
@@ -31,322 +37,344 @@ describe('storage_controller', () => {
 
   const connectedToMain = {
     connect: [
-      'https://your-couchdb.com/moneeeey',
+      "http://couchdb:5984/moneeeey",
       {
-        auth: { password: 'samplecouchdbpass', username: 'samplecouchdbuser' }
-      }
-    ]
+        auth: { password: "dev", username: "dev" },
+      },
+    ],
   };
 
-  describe('create', () => {
-    it('success first database', async () => {
+  describe("create", () => {
+    it("success first database", async () => {
       mainDb.spy.mockResolvedValueOnce({}).mockResolvedValueOnce({});
       expect(
         await storageController.create(
           {
-            _id: 'user-' + uuid(),
+            _id: "user-" + uuid(),
             auth: [],
             databases: [],
-            email: 'moneeey@baroni.tech',
+            email: "moneeey@baroni.tech",
             updated: tick(),
-            created: tick()
+            created: tick(),
           },
-          'my first database'
+          "my first database"
         )
-      ).toEqual({ database_id: 'user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003' });
+      ).toEqual({
+        database_id:
+          "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+      });
       expect(mainDb.history).toEqual([
         {
           connect: [
-            'https://your-couchdb.com/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003',
+            "http://couchdb:5984/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
             {
               auth: {
-                password: 'samplecouchdbpass',
-                username: 'samplecouchdbuser'
-              }
-            }
-          ]
+                password: "dev",
+                username: "dev",
+              },
+            },
+          ],
         },
         {
           put: [
             {
-              _id: 'STORAGE_OWNER',
-              email: 'moneeey@baroni.tech',
-              description: 'my first database',
-              userId: 'user-UUIDUUID-dcf7-6969-a608-420123450000'
-            }
-          ]
+              _id: "STORAGE_OWNER",
+              email: "moneeey@baroni.tech",
+              description: "my first database",
+              userId: "user-UUIDUUID-dcf7-6969-a608-420123450000",
+            },
+          ],
         },
         connectedToMain,
         {
           put: [
             {
-              _id: 'user-UUIDUUID-dcf7-6969-a608-420123450000',
+              _id: "user-UUIDUUID-dcf7-6969-a608-420123450000",
               auth: [],
               created: 123450002,
               databases: [
                 {
                   created: 123450004,
-                  description: 'my first database',
-                  database_id: 'user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003',
+                  description: "my first database",
+                  database_id:
+                    "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
                   level: 20,
-                  updated: 123450005
-                }
+                  updated: 123450005,
+                },
               ],
-              email: 'moneeey@baroni.tech',
-              updated: 123450001
-            }
-          ]
-        }
+              email: "moneeey@baroni.tech",
+              updated: 123450001,
+            },
+          ],
+        },
       ]);
       expect(logger.history).toEqual([
         {
           debug: [
-            'storage - trying to create database',
-            { database: 'user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003' }
-          ]
+            "storage - trying to create database",
+            {
+              database:
+                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+            },
+          ],
         },
         {
           info: [
-            'storage - successfuly created storage',
-            { database: 'user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003' }
-          ]
-        }
+            "storage - successfuly created storage",
+            {
+              database:
+                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+            },
+          ],
+        },
       ]);
     });
 
-    it('success second database', async () => {
+    it("success second database", async () => {
       mainDb.spy.mockResolvedValueOnce({}).mockResolvedValueOnce({});
       expect(
         await storageController.create(
           {
-            _id: 'user-' + uuid(),
+            _id: "user-" + uuid(),
             auth: [],
             databases: [
               {
                 created: tick(),
-                description: 'my first database',
-                database_id: 'user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003',
+                description: "my first database",
+                database_id:
+                  "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
                 level: 20,
-                updated: tick()
-              }
+                updated: tick(),
+              },
             ],
-            email: 'moneeey@baroni.tech',
+            email: "moneeey@baroni.tech",
             updated: tick(),
-            created: tick()
+            created: tick(),
           },
-          'my second database'
+          "my second database"
         )
-      ).toEqual({ database_id: 'user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005' });
+      ).toEqual({
+        database_id:
+          "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+      });
       expect(mainDb.history).toEqual([
         {
           connect: [
-            'https://your-couchdb.com/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005',
+            "http://couchdb:5984/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
             {
               auth: {
-                password: 'samplecouchdbpass',
-                username: 'samplecouchdbuser'
-              }
-            }
-          ]
+                password: "dev",
+                username: "dev",
+              },
+            },
+          ],
         },
         {
           put: [
             {
-              _id: 'STORAGE_OWNER',
-              description: 'my second database',
-              email: 'moneeey@baroni.tech',
-              userId: 'user-UUIDUUID-dcf7-6969-a608-420123450000'
-            }
-          ]
+              _id: "STORAGE_OWNER",
+              description: "my second database",
+              email: "moneeey@baroni.tech",
+              userId: "user-UUIDUUID-dcf7-6969-a608-420123450000",
+            },
+          ],
         },
         connectedToMain,
         {
           put: [
             {
-              _id: 'user-UUIDUUID-dcf7-6969-a608-420123450000',
+              _id: "user-UUIDUUID-dcf7-6969-a608-420123450000",
               auth: [],
               created: 123450004,
               databases: [
                 {
                   created: 123450001,
-                  database_id: 'user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003',
-                  description: 'my first database',
+                  database_id:
+                    "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+                  description: "my first database",
                   level: 20,
-                  updated: 123450002
+                  updated: 123450002,
                 },
                 {
                   created: 123450006,
-                  database_id: 'user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005',
-                  description: 'my second database',
+                  database_id:
+                    "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+                  description: "my second database",
                   level: 20,
-                  updated: 123450007
-                }
+                  updated: 123450007,
+                },
               ],
-              email: 'moneeey@baroni.tech',
-              updated: 123450003
-            }
-          ]
-        }
+              email: "moneeey@baroni.tech",
+              updated: 123450003,
+            },
+          ],
+        },
       ]);
       expect(logger.history).toEqual([
         {
           debug: [
-            'storage - trying to create database',
-            { database: 'user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005' }
-          ]
+            "storage - trying to create database",
+            {
+              database:
+                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+            },
+          ],
         },
         {
           info: [
-            'storage - successfuly created storage',
-            { database: 'user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005' }
-          ]
-        }
+            "storage - successfuly created storage",
+            {
+              database:
+                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+            },
+          ],
+        },
       ]);
     });
   });
 
-  describe('destroy', () => {
-    it('success', async () => {
+  describe("destroy", () => {
+    it("success", async () => {
       mainDb.spy.mockResolvedValueOnce({}).mockResolvedValueOnce({});
       expect(
         await storageController.destroy(
           {
-            _id: 'user-' + uuid(),
+            _id: "user-" + uuid(),
             auth: [],
             databases: [
               {
                 created: tick(),
-                database_id: 'existing-db-12345',
+                database_id: "existing-db-12345",
                 level: IDatabaseLevel.OWNER,
                 updated: tick(),
-                description: 'hello'
+                description: "hello",
               },
               {
                 created: tick(),
-                database_id: 'another-db-54321',
+                database_id: "another-db-54321",
                 level: IDatabaseLevel.USER,
                 updated: tick(),
-                description: 'world'
-              }
+                description: "world",
+              },
             ],
-            email: 'moneeey@baroni.tech',
+            email: "moneeey@baroni.tech",
             updated: tick(),
-            created: tick()
+            created: tick(),
           },
-          'existing-db-12345'
+          "existing-db-12345"
         )
       ).toEqual({ success: true });
       expect(mainDb.history).toEqual([
         {
           connect: [
-            'https://your-couchdb.com/existing-db-12345',
+            "http://couchdb:5984/existing-db-12345",
             {
               auth: {
-                password: 'samplecouchdbpass',
-                username: 'samplecouchdbuser'
-              }
-            }
-          ]
+                password: "dev",
+                username: "dev",
+              },
+            },
+          ],
         },
         {
-          destroy: []
+          destroy: [],
         },
         connectedToMain,
         {
           put: [
             {
-              _id: 'user-UUIDUUID-dcf7-6969-a608-420123450000',
+              _id: "user-UUIDUUID-dcf7-6969-a608-420123450000",
               auth: [],
               created: 123450006,
               databases: [
                 {
                   created: 123450003,
-                  description: 'world',
-                  database_id: 'another-db-54321',
+                  description: "world",
+                  database_id: "another-db-54321",
                   level: 10,
-                  updated: 123450004
-                }
+                  updated: 123450004,
+                },
               ],
-              email: 'moneeey@baroni.tech',
-              updated: 123450005
-            }
-          ]
-        }
+              email: "moneeey@baroni.tech",
+              updated: 123450005,
+            },
+          ],
+        },
       ]);
       expect(logger.history).toEqual([
         {
           info: [
-            'storage - will destroy',
+            "storage - will destroy",
             {
-              database: 'existing-db-12345',
-              user: 'moneeey@baroni.tech'
-            }
-          ]
+              database: "existing-db-12345",
+              user: "moneeey@baroni.tech",
+            },
+          ],
         },
         {
           info: [
-            'storage - destroyed',
+            "storage - destroyed",
             {
-              database: 'existing-db-12345',
-              user: 'moneeey@baroni.tech'
-            }
-          ]
+              database: "existing-db-12345",
+              user: "moneeey@baroni.tech",
+            },
+          ],
         },
         {
           info: [
-            'storage - user updated after destroying',
+            "storage - user updated after destroying",
             {
-              database: 'existing-db-12345',
-              user: 'moneeey@baroni.tech'
-            }
-          ]
-        }
+              database: "existing-db-12345",
+              user: "moneeey@baroni.tech",
+            },
+          ],
+        },
       ]);
     });
 
-    it('bad database id', async () => {
+    it("bad database id", async () => {
       expect(
         await storageController.destroy(
           {
-            _id: 'user-' + uuid(),
+            _id: "user-" + uuid(),
             auth: [],
             databases: [
               {
                 created: tick(),
-                database_id: 'existing-db-12345',
+                database_id: "existing-db-12345",
                 level: IDatabaseLevel.OWNER,
                 updated: tick(),
-                description: 'hello'
+                description: "hello",
               },
               {
                 created: tick(),
-                database_id: 'another-db-54321',
+                database_id: "another-db-54321",
                 level: IDatabaseLevel.USER,
                 updated: tick(),
-                description: 'world'
-              }
+                description: "world",
+              },
             ],
-            email: 'moneeey@baroni.tech',
+            email: "moneeey@baroni.tech",
             updated: tick(),
-            created: tick()
+            created: tick(),
           },
-          'not-my-db-98841'
+          "not-my-db-98841"
         )
       ).toEqual({
-        error: 'user_database_not_found',
-        success: false
+        error: "user_database_not_found",
+        success: false,
       });
       expect(mainDb.history).toEqual([]);
       expect(logger.history).toEqual([
         {
           error: [
-            'destroy - error_code',
+            "destroy - error_code",
             {
-              email: 'moneeey@baroni.tech',
-              error: 'user_database_not_found'
-            }
-          ]
-        }
+              email: "moneeey@baroni.tech",
+              error: "user_database_not_found",
+            },
+          ],
+        },
       ]);
     });
   });
