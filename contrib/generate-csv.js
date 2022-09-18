@@ -86,9 +86,9 @@ function generateTransactions(month) {
   const transactions = rand(5, 42);
   return Array.from({ length: transactions })
     .map(() => {
-      const payeeIdx = rand(0, payeesWithTheirFreq.length - 1)
+      const payeeIdx = rand(0, payeesWithTheirFreq.length - 1);
       const payee = payeesWithTheirFreq[payeeIdx];
-      const value = rand(payee.value_min*100, payee.value_max*100)/100;
+      const value = rand(payee.value_min * 100, payee.value_max * 100) / 100;
       const date = new Date(2022, 1 - month, rand(1, 28));
       const formatted = formatDate(date);
       return `${formatted};${payee.name};${value}`;
@@ -111,4 +111,4 @@ function generateFiles(dir) {
 
 const dir = "./generated-csv";
 resetDir(dir);
-generateFiles(dir)
+generateFiles(dir);

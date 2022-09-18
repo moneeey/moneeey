@@ -7,7 +7,7 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./frontend:/app
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/frontend:/app
     ports:
       - '4270:4270'
 
@@ -17,8 +17,8 @@ services:
     depends_on:
       - couchdb
     volumes:
-      - ./sample.env:/run/secret/prod.env:ro
-      - ./backend:/app
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/prod.env:ro
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app
     ports:
       - '4269:4269'
 
@@ -33,8 +33,8 @@ services:
       - '4369:4369'
       - '9100:9100'
     volumes:
-      - ./docker/couchdb_data:/opt/couchdb/data
-      - ./docker/couchdb.dev.ini:/opt/couchdb/etc/local.d/local.ini
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb_data:/opt/couchdb/data
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb.dev.ini:/opt/couchdb/etc/local.d/local.ini
 
   devmail:
     image: maildev/maildev:2.0.5
