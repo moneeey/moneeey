@@ -9,7 +9,7 @@ import { MoneeeyStoreProvider } from './shared/useMoneeeyStore'
 import { observer } from 'mobx-react'
 import Messages from './utils/Messages'
 
-import 'antd/dist/antd.dark.css'
+import 'antd/dist/antd.dark.less'
 
 import './App.less'
 
