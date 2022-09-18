@@ -1,9 +1,11 @@
 FROM node:16.17.0-alpine AS builder
 USER node
 WORKDIR /app
+RUN yarn global add typescript vite
 
 COPY package.json .
-RUN yarn install --production
+COPY yarn.lock .
+RUN yarn install
 
 COPY . /app
 RUN yarn build
@@ -12,6 +14,8 @@ RUN yarn build
 FROM node:16.17.0-alpine
 USER node
 WORKDIR /app
+LABEL org.opencontainers.image.description Moneeey backend image
+LABEL org.opencontainers.image.title: moneeey-backend
 
 COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/dist .
