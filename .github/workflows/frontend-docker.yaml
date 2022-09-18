@@ -13,7 +13,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}-frontend
 
 jobs:
-  build-frontend:
+  frontend-docker:
+    needs: frontend-test
     runs-on: ubuntu-latest
     permissions:
       contents: read

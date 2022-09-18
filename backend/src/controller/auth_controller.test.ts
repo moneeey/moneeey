@@ -1,6 +1,6 @@
 /* eslint-disable import/first */
 import dotenv from 'dotenv';
-dotenv.config({ path: './sample.env' });
+dotenv.config({ path: "../sample.env" });
 
 import { pouch_db } from '../core/pouch';
 import { ConsoleMock, ConsoleMockType, mockDb, mockDbType, mock_utils } from '../core/test_utils';
@@ -14,11 +14,11 @@ describe('auth_controller', () => {
 
   const connectedToMain = {
     connect: [
-      'https://your-couchdb.com/moneeeey',
+      "http://couchdb:5984/moneeeey",
       {
-        auth: { password: 'samplecouchdbpass', username: 'samplecouchdbuser' }
-      }
-    ]
+        auth: { password: "dev", username: "dev" },
+      },
+    ],
   };
 
   beforeEach(() => {
