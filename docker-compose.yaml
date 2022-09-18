@@ -1,20 +1,23 @@
-version: '2'
+version: '3'
+
 services:
   frontend:
-    build: ./frontend
+    build: ./docker
     restart: unless-stopped
     volumes:
       - ./frontend:/app
     ports:
       - '4270:4270'
+
   management:
-    build: ./management
+    build: ./docker
     restart: unless-stopped
     volumes:
-      - ./management/.env:/run/secret/prod.env:ro
-      - ./management/:/app
+      - ./sample.env:/run/secret/prod.env:ro
+      - ./management:/app
     ports:
       - '4269:4269'
+
   couchdb:
     image: couchdb:3.2
     restart: unless-stopped
@@ -26,13 +29,16 @@ services:
       - '4369:4369'
       - '9100:9100'
     volumes:
-      - couchdb_data:/opt/couchdb/data
+      - ./docker/couchdb_data:/opt/couchdb/data
+      - ./docker/couchdb.dev.ini:/opt/couchdb/etc/local.d/local.ini
+
   devmail:
     image: maildev/maildev:2.0.5
     restart: unless-stopped
     ports:
       - '1080:1080'
       - '1025:1025'
+
 volumes:
   couchdb_data:
     driver: local

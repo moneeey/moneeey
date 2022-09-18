@@ -6,6 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   server: {
     port: 4270,
+    host: '0.0.0.0',
   },
   plugins: [
     VitePWA({
