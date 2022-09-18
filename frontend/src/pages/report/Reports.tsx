@@ -6,6 +6,8 @@ import { PayeeBalanceReport } from './PayeeBalanceReport'
 import { TagExpensesReport } from './TagExpensesReport'
 import { WealthGrowReport } from './WealthGrowReport'
 
+import './Reports.less'
+
 export function Reports() {
   return (
     <section className="reportsArea">

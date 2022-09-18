@@ -1,6 +1,3 @@
-import './App.css'
-import 'antd/dist/antd.dark.css'
-
 import React from 'react'
 
 import AppMenu from './components/AppMenu'
@@ -15,6 +12,10 @@ import { BrowserRouter } from 'react-router-dom'
 import Modals from './components/modal/Modals'
 import { TagsHighlightProvider } from './components/Tags'
 import MoneeeyTourProvider from './components/Tour'
+
+import 'antd/dist/antd.dark.less'
+
+import './App.less'
 
 export const App = observer(() => {
   const [moneeeyStore] = React.useState(new MoneeeyStore())

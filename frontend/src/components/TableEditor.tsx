@@ -33,6 +33,8 @@ import {
 } from './editor/TransactionValueEditor'
 import VirtualTable from './VirtualTableEditor'
 
+import './TableEditor.less'
+
 interface TableEditorProps<T extends IBaseEntity, Context> {
   store: MappedStore<T>
   schemaFilter?: (row: T) => boolean
