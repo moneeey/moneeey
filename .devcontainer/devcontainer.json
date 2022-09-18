@@ -1,16 +1,12 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.245.0/containers/typescript-node
 {
-  "name": "Node.js & TypeScript",
-  "build": {
-    "dockerfile": "Dockerfile",
-    // Update 'VARIANT' to pick a Node version: 18, 16, 14.
-    // Append -bullseye or -buster to pin to an OS version.
-    // Use -bullseye variants on local on arm64/Apple Silicon.
-    "args": {
-      "VARIANT": "16-bullseye"
-    }
-  },
+  "name": "Moneeey",
+  "dockerComposeFile": ["../docker-compose.yaml", "./docker-compose.workspace.yaml"],
+  "service": "workspace",
+  "shutdownAction": "stopCompose",
+  "workspaceFolder": "/workspace",
+
   // Configure tool-specific properties.
   "customizations": {
     // Configure properties specific to VS Code.
@@ -38,7 +34,6 @@
     "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
   },
   "features": {
-    "docker-from-docker": "latest",
-    "git": "latest"
+    "docker-from-docker": "latest"
   }
 }
