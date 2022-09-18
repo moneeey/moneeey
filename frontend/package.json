@@ -14,7 +14,7 @@
     "@ant-design/charts": "^1.4.2",
     "@ant-design/icons": "^4.7.0",
     "@reactour/tour": "^3.1.4",
-    "antd": "^4.23.1",
+    "antd": "^4.23.2",
     "date-fns": "^2.29.3",
     "events": "^3.3.0",
     "lodash": "^4.17.21",
