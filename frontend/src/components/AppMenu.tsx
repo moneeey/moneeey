@@ -23,6 +23,7 @@ import { ImportRoute } from '../routes/ImportRoute'
 import { SettingsRoute } from '../routes/SettingsRoute'
 import { BudgetRoute } from '../routes/BudgetRoute'
 import Messages from '../utils/Messages'
+import { NavigationModal } from '../shared/Navigation'
 
 export const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore()
@@ -71,7 +72,7 @@ export const AppMenu = observer(() => {
               key: 'unassigned',
               label: Messages.menu.unassigned,
               onClick: () =>
-                navigation.navigate(AccountRoute.url({ account_name: '-' })),
+                navigation.navigate(AccountRoute.accountUrlForUnclassified()),
             },
           ],
         },
@@ -112,6 +113,11 @@ export const AppMenu = observer(() => {
               label: Messages.menu.preferences,
               onClick: () => navigation.navigate(SettingsRoute.url()),
             },
+            {
+              key: 'settings_landing',
+              label: Messages.menu.landing,
+              onClick: () => navigation.openModal(NavigationModal.LANDING),
+            },
           ],
         },
         {
@@ -123,7 +129,7 @@ export const AppMenu = observer(() => {
             ) : (
               <WarningTwoTone twoToneColor="red" />
             ),
-          onClick: () => navigation.navigate(HomeRoute.url()),
+          onClick: () => navigation.openModal(NavigationModal.SYNC),
         },
       ]}
     ></Menu>

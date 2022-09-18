@@ -70,6 +70,14 @@ class AccountRouter extends Route<IAccountRoute> {
   accountUrl(account: IAccount) {
     return this.url({ account_name: account.name })
   }
+
+  accountUrlForName(account_name: string) {
+    return this.url({ account_name })
+  }
+
+  accountUrlForUnclassified() {
+    return this.url({ account_name: '-' })
+  }
 }
 
 export const AccountRoute = new AccountRouter()

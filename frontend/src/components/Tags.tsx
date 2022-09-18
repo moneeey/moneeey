@@ -63,7 +63,7 @@ export function TagsTo({ tags }: ITagsProp) {
   return <TagsRenderer color={'to'} tags={tags} />
 }
 
-export function TagsHighlightProvider({ children }: { children: ReactNode[] }) {
+export function TagsHighlightProvider({ children }: { children: ReactNode }) {
   const [tag, setTag] = React.useState('')
   return (
     <HighlightTagContext.Provider value={{ tag, setTag }}>

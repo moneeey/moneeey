@@ -2,12 +2,16 @@ import React from 'react'
 
 import AppMenu from './components/AppMenu'
 import RouteRenderer from './routes/RouteRenderer'
-import { TagsHighlightProvider } from './components/Tags'
+import Navigator from './components/Navigator'
 import { HomeRoute } from './routes/HomeRouter'
 import MoneeeyStore from './shared/MoneeeyStore'
 import { MoneeeyStoreProvider } from './shared/useMoneeeyStore'
 import { observer } from 'mobx-react'
 import Messages from './utils/Messages'
+import { BrowserRouter } from 'react-router-dom'
+import Modals from './components/modal/Modals'
+import { TagsHighlightProvider } from './components/Tags'
+import MoneeeyTourProvider from './components/Tour'
 
 import 'antd/dist/antd.dark.less'
 
@@ -18,16 +22,22 @@ export const App = observer(() => {
 
   return (
     <div className="App">
-      <MoneeeyStoreProvider value={moneeeyStore}>
-        {moneeeyStore.config.loaded ? (
-          <TagsHighlightProvider>
-            <AppMenu />
-            <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
-          </TagsHighlightProvider>
-        ) : (
-          <p>{Messages.util.loading}</p>
-        )}
-      </MoneeeyStoreProvider>
+      <BrowserRouter>
+        <MoneeeyStoreProvider value={moneeeyStore}>
+          {moneeeyStore.loaded ? (
+            <MoneeeyTourProvider>
+              <TagsHighlightProvider>
+                <AppMenu />
+                <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
+                <Navigator />
+                <Modals />
+              </TagsHighlightProvider>
+            </MoneeeyTourProvider>
+          ) : (
+            <p>{Messages.util.loading}</p>
+          )}
+        </MoneeeyStoreProvider>
+      </BrowserRouter>
     </div>
   )
 })
