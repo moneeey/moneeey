@@ -1,5 +1,4 @@
-[![frontend](https://github.com/moneeey/moneeey/actions/workflows/frontend.yaml/badge.svg)](https://github.com/moneeey/moneeey/actions/workflows/frontend.yaml)
-[![backend](https://github.com/moneeey/moneeey/actions/workflows/backend.yaml/badge.svg)](https://github.com/moneeey/moneeey/actions/workflows/backend.yaml)
+[![frontend](https://github.com/moneeey/moneeey/actions/workflows/CI.yaml/badge.svg)](https://github.com/moneeey/moneeey/actions/workflows/CI.yaml)
 
 # Welcome to Moneeey
 
