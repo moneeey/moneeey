@@ -10,7 +10,6 @@ RUN yarn install
 COPY . /app
 RUN yarn build
 
-
 FROM node:16.17.0-alpine
 USER node
 WORKDIR /app
