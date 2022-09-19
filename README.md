@@ -1,3 +1,6 @@
+[![frontend](https://github.com/moneeey/moneeey/actions/workflows/frontend.yaml/badge.svg)](https://github.com/moneeey/moneeey/actions/workflows/frontend.yaml)
+[![backend](https://github.com/moneeey/moneeey/actions/workflows/backend.yaml/badge.svg)](https://github.com/moneeey/moneeey/actions/workflows/backend.yaml)
+
 # Welcome to Moneeey
 
 Moneeey is an attempt to provide personal budgeting and financial services to
