@@ -13,8 +13,8 @@ RUN yarn build
 FROM node:16.17.0-alpine
 USER node
 WORKDIR /app
-LABEL org.opencontainers.image.description Moneeey backend image
-LABEL org.opencontainers.image.title: moneeey-backend
+LABEL org.opencontainers.image.description moneeey-backend
+LABEL org.opencontainers.image.title moneeey-backend
 
 COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/dist .

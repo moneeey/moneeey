@@ -3,7 +3,7 @@ name: CI/CD
 on: push
 
 jobs:
-  CI-CD:
+  CI:
     strategy:
       matrix:
         service: [backend, frontend]
@@ -35,7 +35,8 @@ jobs:
           frontend/node_modules
         key: ${{ runner.os }}-npm-${{ hashFiles('**/yarn.lock') }}
 
-    - run: yarn && yarn test
+    - run: yarn
+    - run: yarn test
 
     # Install the cosign tool except on PR
     # https://github.com/sigstore/cosign-installer
@@ -45,11 +46,20 @@ jobs:
       with:
         cosign-release: 'v1.9.0'
 
-
     # Workaround: https://github.com/docker/build-push-action/issues/461
     - name: Setup Docker buildx
       if: startsWith(github.ref, 'refs/tags/')
       uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
+
+    # Create cache for buildx
+    - name: Cache Docker layers
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
 
     # Login against a Docker registry except on PR
     # https://github.com/docker/login-action
@@ -82,6 +92,14 @@ jobs:
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+    # Save updated cache
+    - name: Write updated cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
     # Sign the resulting Docker image digest except on PRs.
     # This will only write to the public Rekor transparency log when the Docker
@@ -95,3 +113,23 @@ jobs:
       # This step uses the identity token to provision an ephemeral certificate
       # against the sigstore community Fulcio instance.
       run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+
+  CD:
+    runs-on: [self-hosted]
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: CI
+    env:
+      FRONTEND_IMAGE: ghcr.io/${{ github.repository }}-frontend:${{ github.ref_name }}
+      BACKEND_IMAGE: ghcr.io/${{ github.repository }}-backend:${{ github.ref_name }}
+    permissions:
+      contents: read
+      packages: read
+    steps:
+    - name: deploy
+      run: |
+        cd ~/moneeey && \
+        curl https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/docker-compose.prod.yaml > docker-compose.yaml && \
+        sed -i 's@FRONTEND_IMAGE@${{ env.FRONTEND_IMAGE }}@' docker-compose.yaml && \
+        sed -i 's@BACKEND_IMAGE@${{ env.BACKEND_IMAGE }}@' docker-compose.yaml && \
+        docker-compose up --remove-orphans -d
+

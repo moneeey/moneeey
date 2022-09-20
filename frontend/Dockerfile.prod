@@ -14,8 +14,8 @@ FROM busybox:1.35
 RUN adduser -D www
 USER www
 WORKDIR /app
-LABEL org.opencontainers.image.description Moneeey frontend image
-LABEL org.opencontainers.image.title: moneeey-frontend
+LABEL org.opencontainers.image.description moneeey-frontend
+LABEL org.opencontainers.image.title moneeey-frontend
 
 COPY --from=builder --chown=node:node /app/dist .
 
