@@ -9,9 +9,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', defaultRoutes);
-app.use('/auth', authRoutes);
-app.use('/storage', storageRoutes);
+app.get("/api/", defaultRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/storage", storageRoutes);
 
 const server = http.createServer(app)
 

@@ -1,0 +1,53 @@
+version: '3.3'
+
+services:
+  traefik:
+    image: traefik:2.7.3
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ~/moneeey/acme.json:/acme.json
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.email=moneeey@baroni.tech"
+      - "--certificatesresolvers.le.acme.storage=/acme.json"
+      - "--certificatesresolvers.le.acme.httpchallenge=true"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+
+  frontend:
+    image: FRONTEND_IMAGE
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moneeey_frontend.rule=Host(`moneeey.io`) && !PathPrefix(`/api`)"
+      - "traefik.http.routers.moneeey_frontend.tls.certresolver=le"
+    depends_on:
+      - backend
+
+  backend:
+    image: BACKEND_IMAGE
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moneeey_backend.rule=Host(`moneeey.io`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.moneeey_backend.tls.certresolver=le"
+    depends_on:
+      - couchdb
+    volumes:
+      - ~/moneeey/env:/run/secret/prod.env:ro
+
+  couchdb:
+    image: couchdb:3.2
+    restart: unless-stopped
+    environment:
+      - COUCHDB_USER=prod
+      - COUCHDB_PASSWORD=prod
+    volumes:
+      - ~/moneeey/couchdb_data:/opt/couchdb/data
+      - ~/moneeey/couchdb.prod.ini:/opt/couchdb/etc/local.d/local.ini
