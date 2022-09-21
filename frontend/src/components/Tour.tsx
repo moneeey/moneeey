@@ -1,5 +1,6 @@
-import { StepType, TourProvider, useTour } from '@reactour/tour'
-import { ReactNode } from 'react'
+import { StepType, TourProps, TourProvider, useTour } from '@reactour/tour'
+import { isEmpty } from 'lodash'
+import { MutableRefObject, ReactNode, useRef } from 'react'
 import { AccountRoute } from '../routes/AccountRoute'
 import { AccountSettingsRoute } from '../routes/AccountSettingsRoute'
 import { BudgetRoute } from '../routes/BudgetRoute'
@@ -9,7 +10,10 @@ import MoneeeyStore from '../shared/MoneeeyStore'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
 import Messages from '../utils/Messages'
 
-function TourSteps({ navigation }: MoneeeyStore): StepType[] {
+function TourSteps(
+  { navigation, accounts }: MoneeeyStore,
+  tourRef: MutableRefObject<TourProps | undefined>
+): StepType[] {
   const navigateTo = (url: string) => navigation.navigate(url)
   const highlight = (area: string) => ({
     selector: area,
@@ -30,7 +34,13 @@ function TourSteps({ navigation }: MoneeeyStore): StepType[] {
     {
       ...highlight('.budgetArea'),
       content: content(Messages.tour.create_budgets),
-      action: () => navigateTo(BudgetRoute.url()),
+      action: () => {
+        if (isEmpty(accounts.all) && tourRef.current) {
+          tourRef.current.setCurrentStep(tourRef.current.currentStep - 1)
+        } else {
+          navigateTo(BudgetRoute.url())
+        }
+      },
     },
     {
       ...highlight('.tableEditor'),
@@ -42,6 +52,11 @@ function TourSteps({ navigation }: MoneeeyStore): StepType[] {
       content: content(Messages.tour.import),
       action: () => navigateTo(ImportRoute.url()),
     },
+    {
+      ...highlight('.importArea'),
+      content: content(Messages.tour.your_turn),
+      action: () => navigateTo(AccountRoute.accountUrlForUnclassified()),
+    },
   ]
 }
 
@@ -51,9 +66,14 @@ const MoneeeyTourProvider = ({
   children: ReactNode | ReactNode[]
 }) => {
   const moneeeyStore = useMoneeeyStore()
+  const tourRef = useRef<TourProps>()
+  const TourRefHolder = () => {
+    tourRef.current = useTour()
+    return <>{children}</>
+  }
   return (
     <TourProvider
-      steps={TourSteps(moneeeyStore)}
+      steps={TourSteps(moneeeyStore, tourRef)}
       styles={{
         popover: (base) => ({
           ...base,
@@ -67,7 +87,7 @@ const MoneeeyTourProvider = ({
         }),
       }}
     >
-      {children}
+      <TourRefHolder />
     </TourProvider>
   )
 }
@@ -75,7 +95,10 @@ const MoneeeyTourProvider = ({
 const useMoneeeyTour = () => {
   const tour = useTour()
   return {
-    open: () => tour.setIsOpen(true),
+    open: () => {
+      tour.setCurrentStep(0)
+      tour.setIsOpen(true)
+    },
   }
 }
 
