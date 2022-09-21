@@ -151,6 +151,9 @@ const Messages = {
       When importing a transaction, we will try our best to guess which payees those transactions are related to.
 
       The more transactions Moneeey have, the smarter it becomes!`,
+    your_turn: `Now it's your turn!
+
+      Time to insert some transactions!`,
   },
 }
 export default Messages
