@@ -15,9 +15,7 @@ function TourSteps({ navigation }: MoneeeyStore): StepType[] {
     selector: area,
     resizeObservables: [area],
   })
-  const content = (text: string) => (
-    <p style={{ color: 'black', whiteSpace: 'pre-wrap' }}>{text}</p>
-  )
+  const content = (text: string) => <>{text}</>
   return [
     {
       ...highlight('.tableEditor'),
@@ -57,9 +55,15 @@ const MoneeeyTourProvider = ({
     <TourProvider
       steps={TourSteps(moneeeyStore)}
       styles={{
+        popover: (base) => ({
+          ...base,
+          backgroundColor: '#141414',
+          color: '#FAFAFA',
+          whiteSpace: 'pre-wrap',
+        }),
         maskWrapper: (base) => ({
           ...base,
-          color: '#AFAFAF',
+          backgroundColor: 'transparent',
         }),
       }}
     >
