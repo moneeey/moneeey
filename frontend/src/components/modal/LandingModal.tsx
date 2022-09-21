@@ -12,7 +12,6 @@ function LandingModal() {
   const tour = useMoneeeyTour()
   useEffect(() => {
     if (getStorage('show_landing', 'true', StorageKind.PERMANENT) === 'true') {
-      setStorage('show_landing', 'false', StorageKind.PERMANENT)
       navigation.openModal(NavigationModal.LANDING)
     }
   }, [])
@@ -21,6 +20,7 @@ function LandingModal() {
       modalId={NavigationModal.LANDING}
       title={Messages.modal.landing}
       onSubmit={() => {
+        setStorage('show_landing', 'false', StorageKind.PERMANENT)
         navigation.closeModal()
         tour.open()
       }}
