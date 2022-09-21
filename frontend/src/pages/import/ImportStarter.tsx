@@ -1,5 +1,5 @@
 import { Input } from 'antd'
-import { isEmpty, last } from 'lodash'
+import { head, isEmpty, last } from 'lodash'
 import { observer } from 'mobx-react'
 import { ChangeEvent, Dispatch, useCallback, useState } from 'react'
 import { useDropzone, FileRejection } from 'react-dropzone'
@@ -105,11 +105,15 @@ function ImportStarter({
   onTask: Dispatch<ImportTask>
   configuration: ConfigStore
 }) {
-  const [config, setConfig] = useState({
-    dateFormat: configuration.main.date_format,
-    decimalSeparator: configuration.main.decimal_separator,
-    referenceAccount: '',
-  } as ImportConfig)
+  const { accounts } = useMoneeeyStore()
+  const [config, setConfig] = useState(
+    () =>
+      ({
+        dateFormat: configuration.main.date_format,
+        decimalSeparator: configuration.main.decimal_separator,
+        referenceAccount: head(accounts.allNonPayees)?.account_uuid || '',
+      } as ImportConfig)
+  )
 
   const error =
     isEmpty(config.referenceAccount) && Messages.import.select_reference_account
@@ -159,7 +163,7 @@ function ImportStarter({
             />
           </Input.Group>
         </section>
-        <FileUploader onFile={onFile} error={error} />
+        {!error && <FileUploader onFile={onFile} error={error} />}
       </section>
     </>
   )
