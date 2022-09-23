@@ -1,4 +1,4 @@
-import { Modal } from 'antd'
+import { Modal, ButtonProps } from 'antd'
 import { observer } from 'mobx-react'
 import { ReactElement } from 'react'
 import { NavigationModal } from '../../shared/Navigation'
@@ -33,6 +33,11 @@ const BaseModal = observer(
         okText={okText || Messages.util.ok}
         onCancel={() => navigation.closeModal()}
         cancelText={cancelText || Messages.util.cancel}
+        okButtonProps={
+          {
+            ['data-test-id']: 'abc',
+          } as ButtonProps
+        }
       >
         {children}
       </Modal>
