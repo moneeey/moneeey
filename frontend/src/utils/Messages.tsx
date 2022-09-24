@@ -35,7 +35,7 @@ const Messages = {
     auth_code: 'Bad authentication code, please try again',
     confirm_code: 'Bad confirm code, please try again',
     code_expired: 'Confirm code expired, please try again',
-    login_or_signup: 'Login or Signup',
+    login_or_signup: 'Login or Sign up',
     email: 'Email',
   },
   import: {
@@ -136,22 +136,22 @@ const Messages = {
     edit_currencies: `The first step to archive your financial freedom is to let us know what currencies are you working with.
 
       We already added the top 20 most used currencies from 2020.`,
-    create_accounts: `Now that we know the currencies we are having, it's time to tell us what are your accounts:
+    create_accounts: `Now that we know the currencies we are having, it is time to tell us what are your accounts:
       credit cards, checking accounts, investment accounts...`,
-    create_budgets: `It's time to budget your Moneeey!  Budgets are like envelopes you put part of your income.
+    create_budgets: `It is time to budget your Moneeey!  Budgets are like envelopes you put part of your income.
 
       You should create budgets for things like:
-      home/mortage, car maintenance, utilities, entertainment...`,
-    insert_transactions: `When we have our budgets, it's time to start inserting our transactions!
+      home/mortgage, car maintenance, utilities, entertainment...`,
+    insert_transactions: `When we have our budgets, it is time to start inserting our transactions!
 
-      When Moneeey know your transactions, it will be capable of generating reports, calculating budget usage/remainings
+      When Moneeey know your transactions, it will be capable of generating reports, calculating budget usage/remaining
       and help you grow your finances!`,
     import: `Inserting transactions manually can be quite boring...  So we allow you to import from common bank formats!
 
       When importing a transaction, we will try our best to guess which payees those transactions are related to.
 
       The more transactions Moneeey have, the smarter it becomes!`,
-    your_turn: `Now it's your turn!
+    your_turn: `Now it is your turn!
 
       Time to insert some transactions!`,
   },
