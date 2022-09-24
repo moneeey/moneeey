@@ -1,4 +1,7 @@
 /// <reference types="cypress" />
+
+import '@this-dot/cypress-indexeddb'
+
 // ***********************************************
 // This example commands.ts shows you how to
 // create various custom commands and overwrite

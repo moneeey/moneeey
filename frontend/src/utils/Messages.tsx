@@ -156,4 +156,5 @@ const Messages = {
       Time to insert some transactions!`,
   },
 }
+
 export default Messages
