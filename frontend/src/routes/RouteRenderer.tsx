@@ -9,22 +9,11 @@ interface IMappedRoute {
   route: MyRoute<IRouteParameters>
 }
 
-const RouteElem = observer(
-  ({
-    route,
-    app,
-  }: {
-    route: MyRoute<IRouteParameters>
-    app: IAppParameters
-  }) => {
-    const parameters = _.reduce(
-      useParams(),
-      (accum, value, key) => ({ ...accum, [key]: value }),
-      {}
-    )
-    return <>{route.render({ parameters, app })}</>
-  }
-)
+const RouteElem = observer(({ route, app }: { route: MyRoute<IRouteParameters>; app: IAppParameters }) => {
+  const parameters = _.reduce(useParams(), (accum, value, key) => ({ ...accum, [key]: value }), {})
+
+  return <>{route.render({ parameters, app })}</>
+})
 
 const RouteRenderer = observer(
   <IParameters extends IRouteParameters>({
@@ -34,15 +23,11 @@ const RouteRenderer = observer(
     root_route: MyRoute<IParameters>
     app: IAppParameters
   }) => {
-    const mapRoute = ({
-      route,
-      path: parentPath,
-    }: IMappedRoute): IMappedRoute[] => {
+    const mapRoute = ({ route, path: parentPath }: IMappedRoute): IMappedRoute[] => {
       const path = (parentPath + route.path).replace(/\/+/g, '/')
-      const children = route.children.map((child) =>
-        mapRoute({ route: child, path })
-      )
+      const children = route.children.map((child) => mapRoute({ route: child, path }))
       const current: IMappedRoute = { path, route }
+
       return [..._.flatten(children), current]
     }
     const routes = mapRoute({ route: root_route, path: root_route.path })
@@ -50,11 +35,7 @@ const RouteRenderer = observer(
     return (
       <Routes>
         {routes.map((route) => (
-          <Route
-            key={route.path}
-            path={route.path}
-            element={<RouteElem route={route.route} app={app} />}
-          />
+          <Route key={route.path} path={route.path} element={<RouteElem route={route.route} app={app} />} />
         ))}
       </Routes>
     )

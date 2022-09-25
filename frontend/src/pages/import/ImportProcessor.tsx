@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+
 import {
   FileUploaderMode,
   ImportResult,
@@ -6,28 +7,25 @@ import {
   ProcessContentFn,
   ProcessProgressFn,
 } from '../../shared/import/ImportContent'
-import { pdfImport } from '../../shared/import/PdfImporter'
-import { txtImport } from '../../shared/import/TxtImporter'
-import { ofxImport } from '../../shared/import/OfxImporter'
+import pdfImport from '../../shared/import/PdfImporter'
+import txtImport from '../../shared/import/TxtImporter'
+import ofxImport from '../../shared/import/OfxImporter'
 import MoneeeyStore from '../../shared/MoneeeyStore'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import Messages from '../../utils/Messages'
+
 import { ImportProcessResult } from './ImportProcessResult'
 
 export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
   txt: txtImport(),
-  csv: function (
-    moneeeyStore: MoneeeyStore,
-    data: ImportTask,
-    onProgress: ProcessProgressFn
-  ): Promise<ImportResult> {
-    return ContentProcessor['txt'](moneeeyStore, data, onProgress)
+  csv(moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
+    return ContentProcessor.txt(moneeeyStore, data, onProgress)
   },
   pdf: pdfImport(),
   ofx: ofxImport(),
 }
 
-function ImportProcess({ task }: { task: ImportTask }) {
+const ImportProcess = function ({ task }: { task: ImportTask }) {
   const [progress, setProgress] = useState(0)
   const [result, setResult] = useState<ImportResult>({
     errors: [],
@@ -37,6 +35,7 @@ function ImportProcess({ task }: { task: ImportTask }) {
   const moneeeyStore = useMoneeeyStore()
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;(async () => {
       const processor = ContentProcessor[task.input.mode]
       if (processor) {
@@ -61,8 +60,7 @@ function ImportProcess({ task }: { task: ImportTask }) {
   return (
     <>
       <h4>
-        {Messages.import.processing} <strong>{task.input.mode}</strong>{' '}
-        {task.input.name} ({progress}%)
+        {Messages.import.processing} <strong>{task.input.mode}</strong> {task.input.name} ({progress}%)
       </h4>
       {result && <ImportProcessResult {...{ task, result, setResult }} />}
     </>

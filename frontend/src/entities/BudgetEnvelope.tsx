@@ -1,9 +1,11 @@
 import { makeObservable, observable } from 'mobx'
+
 import { EditorType } from '../components/editor/EditorProps'
-import { IBaseEntity, EntityType, TMonetary } from '../shared/Entity'
+import { EntityType, IBaseEntity, TMonetary } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import { TDate } from '../utils/Date'
+
 import { IBudget } from './Budget'
 
 const BudgetEnvelopeKey = (budget: IBudget, starting: TDate) =>
@@ -11,13 +13,21 @@ const BudgetEnvelopeKey = (budget: IBudget, starting: TDate) =>
 
 export class BudgetEnvelope implements IBaseEntity {
   entity_type: EntityType = EntityType.VIRTUAL_BUDGET_ENVELOPE
+
   _rev: string
+
   tags = []
+
   name: string
+
   envelope_uuid: string
+
   starting: TDate
+
   allocated: TMonetary
+
   used: TMonetary
+
   budget: IBudget
 
   constructor(budget: IBudget, starting: TDate) {
@@ -77,10 +87,9 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
       return this.byUuid(key) as BudgetEnvelope
     }
     const envelope = new BudgetEnvelope(entity, starting)
-    envelope.allocated =
-      entity.envelopes.find((envelop) => envelop.starting === starting)
-        ?.allocated || 0
+    envelope.allocated = entity.envelopes.find((envelop) => envelop.starting === starting)?.allocated || 0
     this.merge(envelope)
+
     return envelope
   }
 }

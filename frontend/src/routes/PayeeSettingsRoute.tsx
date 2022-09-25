@@ -1,6 +1,7 @@
 import { AccountTable } from '../tables/AccountTable'
 import { AccountType } from '../entities/Account'
-import { HomeRoute } from './HomeRouter'
+
+import HomeRoute from './HomeRouter'
 import { IAppParameters, IRouteParameters, Route } from './Route'
 
 type IPayeeSettingsRoute = IRouteParameters

@@ -1,26 +1,28 @@
 import { head, isEmpty, shuffle } from 'lodash'
+
 import { ITransaction } from '../../entities/Transaction'
 import { TDateFormat } from '../../utils/Date'
 import { asyncProcess } from '../../utils/Utils'
 import MoneeeyStore from '../MoneeeyStore'
+
 import {
-  ProcessContentFn,
-  ImportTask,
-  ProcessProgressFn,
   ImportResult,
-  findSeparator,
+  ImportTask,
+  ProcessContentFn,
+  ProcessProgressFn,
   findColumns,
-  retrieveColumns,
+  findSeparator,
   importTransaction,
+  retrieveColumns,
 } from './ImportContent'
 
-export async function txtImportFromLines(
+const txtImportFromLines = (
   moneeeyStore: MoneeeyStore,
   data: ImportTask,
   onProgress: ProcessProgressFn,
   lines: string[],
   separator = ''
-): Promise<ImportResult> {
+): Promise<ImportResult> => {
   if (isEmpty(lines)) {
     return Promise.resolve({
       errors: [
@@ -36,21 +38,14 @@ export async function txtImportFromLines(
   const { importer } = moneeeyStore
   onProgress(1, 3)
   const first10 = lines.slice(0, 10)
-  const sep = !isEmpty(separator)
-    ? separator
-    : findSeparator(first10.join('\n'))
-  const columns = findColumns(
-    (head(shuffle(first10)) || '').split(sep),
-    data.config.dateFormat || TDateFormat
-  )
-  console.log('txtImportFromLines', { sep, columns, first10 })
+  const sep = isEmpty(separator) ? findSeparator(first10.join('\n')) : separator
+  const columns = findColumns((head(shuffle(first10)) || '').split(sep), data.config.dateFormat || TDateFormat)
   if (columns.dateIndex === -1 || columns.valueIndex === -1) {
     return Promise.resolve({
       errors: [
         {
           data: first10.join('\n'),
-          description:
-            (columns.dateIndex === -1 ? 'Date' : 'Value') + ' column not found',
+          description: `${columns.dateIndex === -1 ? 'Date' : 'Value'} column not found`,
         },
       ],
       transactions: [],
@@ -58,10 +53,10 @@ export async function txtImportFromLines(
     })
   }
   onProgress(2, 3)
-  const tokenMap = importer.tokenMap
+  const { tokenMap } = importer
   onProgress(3, 3)
 
-  return await asyncProcess<string, ImportResult>(
+  return asyncProcess<string, ImportResult>(
     lines,
     (chunk, stt, _chunks, tasks, tasksTotal) => {
       onProgress(tasks, tasksTotal)
@@ -71,20 +66,13 @@ export async function txtImportFromLines(
         if (tokens.length < 2) {
           stt.errors.push({
             data: line,
-            description: 'Not enough tokens: ' + tokens.join(','),
+            description: `Not enough tokens: ${tokens.join(',')}`,
           })
+
           return
         }
-        const { value, date, other } = retrieveColumns(
-          tokens,
-          columns,
-          dateFormat || TDateFormat
-        )
-        const accounts = importer.findAccountsForTokens(
-          referenceAccount,
-          tokenMap,
-          other
-        )
+        const { value, date, other } = retrieveColumns(tokens, columns, dateFormat || TDateFormat)
+        const accounts = importer.findAccountsForTokens(referenceAccount, tokenMap, other)
         const other_account = accounts[0] || ''
         const transaction: ITransaction = importTransaction(
           date,
@@ -108,17 +96,15 @@ export async function txtImportFromLines(
   )
 }
 
-export function txtImport(): ProcessContentFn {
-  return async function (
-    moneeeyStore: MoneeeyStore,
-    data: ImportTask,
-    onProgress: ProcessProgressFn
-  ): Promise<ImportResult> {
+const txtImport = (): ProcessContentFn =>
+  async function (moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
     onProgress(1, 3)
     const text = (await data.input.contents.text()).replace('\r', '')
     onProgress(2, 3)
     const lines = text.split('\n')
     onProgress(3, 3)
+
     return txtImportFromLines(moneeeyStore, data, onProgress, lines)
   }
-}
+
+export { txtImport, txtImport as default, txtImportFromLines }

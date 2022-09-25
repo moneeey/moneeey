@@ -2,9 +2,11 @@ import { AccountType, TAccountUUID } from '../../entities/Account'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { ITransaction } from '../../entities/Transaction'
 import Messages from '../../utils/Messages'
-import { dateToPeriod, PeriodGroup, ReportDataMap } from './ReportUtils'
-import { BaseReport, BaseColumnChart } from './BaseReport'
+
 import MoneeeyStore from '../../shared/MoneeeyStore'
+
+import { PeriodGroup, ReportDataMap, dateToPeriod } from './ReportUtils'
+import { BaseColumnChart, BaseReport } from './BaseReport'
 
 const tagExpensesProcess = (
   moneeeyStore: MoneeeyStore,
@@ -12,11 +14,7 @@ const tagExpensesProcess = (
   period: PeriodGroup,
   data: ReportDataMap
 ) => {
-  const sumTransactionTagExpenses = (
-    account_uuid: TAccountUUID,
-    transaction: ITransaction,
-    value: number
-  ) => {
+  const sumTransactionTagExpenses = (account_uuid: TAccountUUID, value: number) => {
     const account = moneeeyStore.accounts.byUuid(account_uuid)
     const is_payee = account?.type === AccountType.PAYEE
     const payee_tags = (!is_payee && account?.tags) || []
@@ -34,19 +32,11 @@ const tagExpensesProcess = (
       })
     })
   }
-  sumTransactionTagExpenses(
-    transaction.from_account,
-    transaction,
-    transaction.from_value
-  )
-  sumTransactionTagExpenses(
-    transaction.to_account,
-    transaction,
-    transaction.to_value
-  )
+  sumTransactionTagExpenses(transaction.from_account, transaction.from_value)
+  sumTransactionTagExpenses(transaction.to_account, transaction.to_value)
 }
 
-export function TagExpensesReport() {
+const TagExpensesReport = function () {
   const { accounts } = useMoneeeyStore()
 
   return (
@@ -58,3 +48,5 @@ export function TagExpensesReport() {
     />
   )
 }
+
+export default TagExpensesReport

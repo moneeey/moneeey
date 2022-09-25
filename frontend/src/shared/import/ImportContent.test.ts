@@ -43,42 +43,28 @@ describe('ImportContent', () => {
     })
 
     it('findColumns with dd/MM/yyyy and dot decimal separator', () => {
-      expect(
-        findColumns(['Hello World', '23.11', '23/12/2022'], 'dd/MM/yyyy')
-      ).toEqual({
+      expect(findColumns(['Hello World', '23.11', '23/12/2022'], 'dd/MM/yyyy')).toEqual({
         valueIndex: 1,
         dateIndex: 2,
       })
     })
 
     it('findColumns with MM-dd-yyyy and comma decimal separator', () => {
-      expect(
-        findColumns(
-          ['23,11', 'Hello World', '12-23-2022', 'other', 'useless', 'data'],
-          'MM-dd-yyyy'
-        )
-      ).toEqual({
+      expect(findColumns(['23,11', 'Hello World', '12-23-2022', 'other', 'useless', 'data'], 'MM-dd-yyyy')).toEqual({
         valueIndex: 0,
         dateIndex: 2,
       })
     })
 
     it('findColumns no amount', () => {
-      expect(
-        findColumns(
-          ['Hello World', 'not an amount', '23/12/2022'],
-          'dd/MM/yyyy'
-        )
-      ).toEqual({
+      expect(findColumns(['Hello World', 'not an amount', '23/12/2022'], 'dd/MM/yyyy')).toEqual({
         valueIndex: -1,
         dateIndex: 2,
       })
     })
 
     it('findColumns no date', () => {
-      expect(
-        findColumns(['Hello World', '42,69', '23x12x2022'], 'dd/MM/yyyy')
-      ).toEqual({
+      expect(findColumns(['Hello World', '42,69', '23x12x2022'], 'dd/MM/yyyy')).toEqual({
         valueIndex: 1,
         dateIndex: -1,
       })
@@ -86,15 +72,7 @@ describe('ImportContent', () => {
 
     it('findColumns unrelated number', () => {
       expect(
-        findColumns(
-          [
-            'Hello World',
-            'I helped 123,87 friends to do 321.98 things',
-            '42,69',
-            '23/12/2022',
-          ],
-          'dd/MM/yyyy'
-        )
+        findColumns(['Hello World', 'I helped 123,87 friends to do 321.98 things', '42,69', '23/12/2022'], 'dd/MM/yyyy')
       ).toEqual({
         valueIndex: 2,
         dateIndex: 3,
@@ -107,11 +85,7 @@ describe('ImportContent', () => {
         dateIndex: 2,
       }
       expect(
-        retrieveColumns(
-          ['Hello World', '42,69', '23/12/2022', 'something', '123141', 'else'],
-          indexes,
-          'dd/MM/yyyy'
-        )
+        retrieveColumns(['Hello World', '42,69', '23/12/2022', 'something', '123141', 'else'], indexes, 'dd/MM/yyyy')
       ).toEqual({
         value: 42.69,
         date: '2022-12-23',

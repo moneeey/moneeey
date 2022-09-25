@@ -1,3 +1,4 @@
+import { IBaseEntity } from '../../shared/Entity'
 import MappedStore from '../../shared/MappedStore'
 
 interface validation {
@@ -34,11 +35,10 @@ export interface FieldProps<ValueEditorType> {
   validate?: (value: ValueEditorType) => validation
 }
 
-export interface EditorProps<TEntityType, ValueEditorType, ValueEntityType> {
+export interface EditorProps<TEntityType extends IBaseEntity, ValueEditorType, ValueEntityType> {
   entityId?: string
   field: FieldProps<ValueEditorType>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  store: MappedStore<any>
+  store: MappedStore<TEntityType>
   context?: unknown
   onUpdate: (value: ValueEntityType, additional: object) => TEntityType
 }

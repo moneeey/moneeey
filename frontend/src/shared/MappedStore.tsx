@@ -3,6 +3,7 @@ import { action, computed, makeObservable, observable } from 'mobx'
 
 import { FieldProps } from '../components/editor/EditorProps'
 import { currentDateTime } from '../utils/Date'
+
 import { IBaseEntity } from './Entity'
 import MoneeeyStore from './MoneeeyStore'
 
@@ -12,16 +13,17 @@ type RecordMap<T, V> = {
   [P in Exclude<keyof T, 'toString'>]?: V
 }
 
-export type SchemaFactory<T extends IBaseEntity> = () => RecordMap<
-  T,
-  FieldProps<never>
->
+export type SchemaFactory<T extends IBaseEntity> = () => RecordMap<T, FieldProps<never>>
 
 export default class MappedStore<T extends IBaseEntity> {
   public readonly itemsByUuid = new Map<string, T>()
+
   public readonly getUuid: UUIDGetter<T>
+
   public readonly schema: () => RecordMap<T, FieldProps<never>>
+
   public readonly factory: (id?: string) => T
+
   public readonly moneeeyStore: MoneeeyStore
 
   constructor(
@@ -49,11 +51,9 @@ export default class MappedStore<T extends IBaseEntity> {
     this.itemsByUuid.set(uuid, {
       ...item,
       entity_type: this.factory().entity_type,
-      _id: item.entity_type + '-' + uuid,
+      _id: `${item.entity_type}-${uuid}`,
       created: item.created || currentDateTime(),
-      updated: options.setUpdated
-        ? currentDateTime()
-        : item.updated || currentDateTime(),
+      updated: options.setUpdated ? currentDateTime() : item.updated || currentDateTime(),
     })
   }
 
@@ -67,8 +67,8 @@ export default class MappedStore<T extends IBaseEntity> {
     return !isEmpty(uuid) && this.itemsByUuid.has(uuid || '')
   }
 
-  byUuid(uuid: string | undefined) {
-    return !isEmpty(uuid) ? this.itemsByUuid.get(uuid || '') : undefined
+  byUuid(uuid: string | undefined): T | undefined {
+    return isEmpty(uuid) ? undefined : this.itemsByUuid.get(uuid || '')
   }
 
   byPredicate(predicate: (item: T) => boolean) {

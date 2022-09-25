@@ -1,9 +1,11 @@
 import { Tabs } from 'antd'
 import { observer } from 'mobx-react'
 import { useState } from 'react'
+
 import { ImportTask } from '../../shared/import/ImportContent'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import Messages from '../../utils/Messages'
+
 import ImportProcess from './ImportProcessor'
 import ImportStarter from './ImportStarter'
 
@@ -14,7 +16,7 @@ const Import = observer(() => {
   const { config } = useMoneeeyStore()
 
   return (
-    <div className="importArea">
+    <div className='importArea'>
       <Tabs
         items={[
           {
@@ -24,9 +26,7 @@ const Import = observer(() => {
               <ImportStarter
                 onTask={(task) =>
                   setProcessing((prevProcessing) => [
-                    ...prevProcessing.filter(
-                      (p) => p.input.name !== task.input.name
-                    ),
+                    ...prevProcessing.filter((p) => p.input.name !== task.input.name),
                     task,
                   ])
                 }
@@ -40,15 +40,10 @@ const Import = observer(() => {
               <span>
                 {task.input.name}{' '}
                 <span
-                  className="importTaskClose"
+                  className='importTaskClose'
                   onClick={() =>
-                    setProcessing((prevProcessing) =>
-                      prevProcessing.filter(
-                        (p) => p.input.name !== task.input.name
-                      )
-                    )
-                  }
-                >
+                    setProcessing((prevProcessing) => prevProcessing.filter((p) => p.input.name !== task.input.name))
+                  }>
                   X
                 </span>
               </span>

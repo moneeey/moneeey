@@ -1,16 +1,12 @@
-import {
-  currentDateTime,
-  formatDate,
-  parseDate,
-  startOfMonthOffset,
-  TDate,
-} from '../utils/Date'
+import _, { debounce, values } from 'lodash'
+
+import { TDate, currentDateTime, formatDate, parseDate, startOfMonthOffset } from '../utils/Date'
 import { EntityType, IBaseEntity, TMonetary } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import { asyncProcess, uuid } from '../utils/Utils'
 import MoneeeyStore from '../shared/MoneeeyStore'
+
 import { TCurrencyUUID } from './Currency'
-import _, { debounce, values } from 'lodash'
 import { BudgetEnvelope, BudgetEnvelopeStore } from './BudgetEnvelope'
 
 export type TBudgetUUID = string
@@ -57,16 +53,14 @@ export class BudgetStore extends MappedStore<IBudget> {
   }
 
   getRealEnvelope(entity: IBudget, starting: TDate) {
-    const existing = entity.envelopes.find(
-      (envelope) => (envelope.starting = starting)
-    )
+    const existing = entity.envelopes.find((envelope) => (envelope.starting = starting))
     if (existing) {
       return existing
-    } else {
-      const envelope = { starting, allocated: 0 }
-      entity.envelopes.push(envelope)
-      return envelope
     }
+    const envelope = { starting, allocated: 0 }
+    entity.envelopes.push(envelope)
+
+    return envelope
   }
 
   getEnvelope(entity: IBudget, starting: TDate) {
@@ -95,50 +89,32 @@ export class BudgetStore extends MappedStore<IBudget> {
   }
 
   getRemaining(envelope: BudgetEnvelope): number {
-    const previousEnvelopeStarting = startOfMonthOffset(
-      parseDate(envelope.starting),
-      -1
-    )
+    const previousEnvelopeStarting = startOfMonthOffset(parseDate(envelope.starting), -1)
 
     const hasPreviousTransaction =
-      this.moneeeyStore.transactions.oldest_dt.getTime() <
-      previousEnvelopeStarting.getTime()
+      this.moneeeyStore.transactions.oldest_dt.getTime() < previousEnvelopeStarting.getTime()
 
-    const previousEnvelope = hasPreviousTransaction
-      ? this.getEnvelope(envelope.budget, formatDate(previousEnvelopeStarting))
-      : null
+    const previousEnvelope =
+      hasPreviousTransaction && this.getEnvelope(envelope.budget, formatDate(previousEnvelopeStarting))
 
-    const previousValue = previousEnvelope
-      ? this.getRemaining(previousEnvelope)
-      : 0
+    const previousValue = previousEnvelope ? this.getRemaining(previousEnvelope) : 0
 
     return envelope.allocated - envelope.used + previousValue
   }
 
   calculateRemaining = debounce(async () => {
     const { transactions, accounts } = this.moneeeyStore
-    console.time('Budget.calculateRemaining')
-    const usage = await asyncProcess(
-      transactions.all.filter(
-        (t) =>
-          !accounts.isOffBudget(t.from_account) &&
-          !accounts.isOffBudget(t.to_account)
-      ),
+    const usages = await asyncProcess(
+      transactions.all.filter((t) => !accounts.isOffBudget(t.from_account) && !accounts.isOffBudget(t.to_account)),
       (chunk, state) =>
         chunk.forEach((transaction) => {
-          const starting = formatDate(
-            startOfMonthOffset(parseDate(transaction.date), 0)
-          )
-          const budgets = this.findBudgetsFor(
-            transactions.getAllTransactionTags(transaction, accounts)
-          )
+          const starting = formatDate(startOfMonthOffset(parseDate(transaction.date), 0))
+          const budgets = this.findBudgetsFor(transactions.getAllTransactionTags(transaction, accounts))
           budgets.forEach((budget) => {
             const envelope = this.getEnvelope(budget, starting)
             state[envelope.envelope_uuid] = {
               envelope,
-              usage:
-                (state[envelope.envelope_uuid]?.usage || 0) -
-                transaction.from_value,
+              usage: (state[envelope.envelope_uuid]?.usage || 0) - transaction.from_value,
             }
           })
         }),
@@ -146,9 +122,7 @@ export class BudgetStore extends MappedStore<IBudget> {
       100,
       50
     )
-    console.timeEnd('Budget.calculateRemaining')
-    console.log('Budget.calculateRemaining', { usage })
-    values(usage).map(({ envelope, usage }) => (envelope.used = usage))
+    values(usages).map(({ envelope, usage }) => (envelope.used = usage))
   }, 500)
 }
 

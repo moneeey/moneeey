@@ -1,11 +1,13 @@
 import { isEmpty } from 'lodash'
 import { action, computed, makeObservable } from 'mobx'
+
 import { EditorType } from '../components/editor/EditorProps'
-import { IBaseEntity, EntityType } from '../shared/Entity'
+import { EntityType, IBaseEntity } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
-import { currentDateTime, TDateFormat } from '../utils/Date'
+import { TDateFormat, currentDateTime } from '../utils/Date'
 import Messages from '../utils/Messages'
+
 import { TCurrencyUUID } from './Currency'
 
 export interface IConfig extends IBaseEntity {
@@ -65,7 +67,9 @@ export class ConfigStore extends MappedStore<IConfig> {
   }
 
   init() {
-    if (isEmpty(this.all)) this.merge(this.factory())
+    if (isEmpty(this.all)) {
+      this.merge(this.factory())
+    }
   }
 }
 

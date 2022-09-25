@@ -2,10 +2,13 @@ import { observer } from 'mobx-react'
 
 import TransactionTable from '../tables/TransactionTable'
 import { IAccount } from '../entities/Account'
-import { HomeRoute } from './HomeRouter'
-import { IAppParameters, IRouteParameters, Route } from './Route'
+
 import MoneeeyStore from '../shared/MoneeeyStore'
+
 import { ITransaction } from '../entities/Transaction'
+
+import HomeRoute from './HomeRouter'
+import { IAppParameters, IRouteParameters, Route, slugify } from './Route'
 
 interface IAccountRoute extends IRouteParameters {
   account_name: string
@@ -13,23 +16,17 @@ interface IAccountRoute extends IRouteParameters {
 
 interface AccountTransactionProps {
   account_name: string
-  slug: (value: string) => string
   moneeyStore: MoneeeyStore
 }
 
 const AccountTransactions = observer(
-  ({
-    slug,
-    account_name,
-    moneeyStore: { transactions, accounts, currencies },
-  }: AccountTransactionProps) => {
-    const account = accounts.find(
-      (acc: IAccount) => slug(acc.name) === account_name
-    )
+  ({ account_name, moneeyStore: { transactions, accounts, currencies } }: AccountTransactionProps) => {
+    const account = accounts.find((acc: IAccount) => slugify(acc.name) === account_name)
     const account_uuid = account?.account_uuid || ''
     const filterByAccount = transactions.filterByAccounts([account_uuid])
     const schemaFilter = (row: ITransaction) => filterByAccount(row)
     const referenceAccount = account_uuid
+
     return (
       <TransactionTable
         {...{
@@ -51,20 +48,8 @@ class AccountRouter extends Route<IAccountRoute> {
     this.parent?.addChild(this)
   }
 
-  render = ({
-    app,
-    parameters,
-  }: {
-    app: IAppParameters
-    parameters: IAccountRoute
-  }) => {
-    return (
-      <AccountTransactions
-        slug={this.slug}
-        account_name={parameters.account_name}
-        moneeyStore={app.moneeeyStore}
-      />
-    )
+  render = ({ app, parameters }: { app: IAppParameters; parameters: IAccountRoute }) => {
+    return <AccountTransactions account_name={parameters.account_name} moneeyStore={app.moneeeyStore} />
   }
 
   accountUrl(account: IAccount) {
@@ -80,4 +65,5 @@ class AccountRouter extends Route<IAccountRoute> {
   }
 }
 
-export const AccountRoute = new AccountRouter()
+const AccountRoute = new AccountRouter()
+export { AccountRoute as default }
