@@ -7,7 +7,7 @@ import { IAccount } from '../../entities/Account'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import Messages from '../../utils/Messages'
 
-import { DateGroupingSelector } from './DateGroupingSelector'
+import DateGroupingSelector from './DateGroupingSelector'
 import {
   AsyncProcessTransactionFn,
   PeriodGroups,

@@ -12,6 +12,8 @@ const BudgetEnvelopeKey = (budget: IBudget, starting: TDate) =>
   `${starting}_${budget.budget_uuid}_${budget.currency_uuid}`
 
 export class BudgetEnvelope implements IBaseEntity {
+  [k: string]: unknown
+
   entity_type: EntityType = EntityType.VIRTUAL_BUDGET_ENVELOPE
 
   _rev: string
@@ -51,7 +53,9 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
     super(
       moneeeyStore,
       (b) => b.envelope_uuid,
-      () => ({} as unknown as BudgetEnvelope),
+      () => {
+        throw new Error('This factory should never been used!')
+      },
       () => ({
         name: {
           editor: EditorType.LINK,

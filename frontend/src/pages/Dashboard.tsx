@@ -6,7 +6,7 @@ import MoneeeyStore from '../shared/MoneeeyStore'
 import { ITransaction } from '../entities/Transaction'
 import Messages from '../utils/Messages'
 
-import { WealthGrowReport } from './report/WealthGrowReport'
+import WealthGrowReport from './report/WealthGrowReport'
 
 const RecentTransactions = observer(
   ({ moneeyStore: { transactions, accounts, currencies } }: { moneeyStore: MoneeeyStore }) => {

@@ -46,7 +46,8 @@ type SortFn = <TEditorType extends IBaseEntity>(
 const EditorTypeConfig: Record<
   EditorType,
   {
-    render: (pros: EditorProps<unknown, unknown, unknown>) => JSX.Element
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    render: (pros: EditorProps<any, any, any>) => JSX.Element
     sorter: SortFn
     width: number | undefined
   }
