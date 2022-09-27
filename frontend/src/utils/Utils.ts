@@ -13,26 +13,29 @@ const asyncTimeout = function <R>(fn: () => R | Promise<R>, delay: number): Prom
   })
 }
 
-const asyncProcess = async function <T, State>(
+const asyncProcess = async function <T, R>(
   values: T[],
-  fn: (chnk: T[], state: State, chunks: T[][], tasks: number, tasksTotal: number) => void,
-  state: State,
-  chunkSize = 20,
-  chunkThrottle = 2
-): Promise<State> {
-  const chunks = chunk(values, chunkSize)
-  const tasksTotal = chunks.length
-  const tasks: Array<() => void> = []
-  while (chunks.length > 0) {
-    const chnk = chunks.shift()
-    tasks.push(() => fn(chnk || [], state, chunks, chunks.length, tasksTotal))
+  fn: (chnk: T[], state: R, percentage: number) => void,
+  options: {
+    state?: R
+    chunkSize?: number
+    chunkThrottle?: number
   }
+): Promise<R> {
+  const chunks = chunk(values, options.chunkSize)
+  const tasksTotal = chunks.length
+  const state = options.state || ({} as R)
+
   const process = async () => {
-    const task = tasks.pop()
-    if (task) {
-      await asyncTimeout(() => task(), chunkThrottle)
-      await process()
+    const chnk = chunks.shift()
+    if (!chnk) {
+      return
     }
+    await asyncTimeout(
+      () => fn(chnk || [], state, Math.round((1 - chunks.length / tasksTotal) * 10000) / 100),
+      options.chunkThrottle || 20
+    )
+    await process()
   }
   await process()
 

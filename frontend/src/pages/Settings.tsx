@@ -1,4 +1,3 @@
-/* eslint-disable semi-style */
 import { Button, Input } from 'antd'
 import { useState } from 'react'
 
@@ -23,31 +22,27 @@ export default function Settings() {
   const actionsDisabled =
     backupRestoreState !== BackupRestoreState.IDLE && backupRestoreState !== BackupRestoreState.COMPLETED
 
-  const onBackupData = () => {
+  const onBackupData = async () => {
     if (!actionsDisabled) {
       setBackupRestoreState(BackupRestoreState.BACKUP_LOADING)
       setContent(Messages.settings.backup_loading(0))
-      ;(async () => {
-        const { data } = await moneeeyStore.persistence.exportAll((percentage) => {
-          setContent(Messages.settings.backup_loading(percentage))
-        })
-        setContent(data)
-        setBackupRestoreState(BackupRestoreState.COMPLETED)
-      })()
+      const data = await moneeeyStore.persistence.exportAll((percentage) => {
+        setContent(Messages.settings.backup_loading(percentage))
+      })
+      setContent(data)
+      setBackupRestoreState(BackupRestoreState.COMPLETED)
     }
   }
-  const onRestoreData = () => {
+  const onRestoreData = async () => {
     if (backupRestoreState === BackupRestoreState.RESTORE_INPUT) {
       setBackupRestoreState(BackupRestoreState.RESTORE_LOADING)
-      ;(async () => {
-        const input = content
-        setContent(Messages.settings.restore_loading(0))
-        const { errors } = await moneeeyStore.persistence.restoreAll(input, (percentage) => {
-          setContent(Messages.settings.restore_loading(percentage))
-        })
-        setContent([...errors, '', Messages.settings.reload_page].join('\n'))
-        setBackupRestoreState(BackupRestoreState.COMPLETED)
-      })()
+      const input = content
+      setContent(Messages.settings.restore_loading(0))
+      const { errors } = await moneeeyStore.persistence.restoreAll(input, (percentage) => {
+        setContent(Messages.settings.restore_loading(percentage))
+      })
+      setContent([...errors, '', Messages.settings.reload_page].join('\n'))
+      setBackupRestoreState(BackupRestoreState.COMPLETED)
     } else if (!actionsDisabled) {
       setBackupRestoreState(BackupRestoreState.RESTORE_INPUT)
       setContent(Messages.settings.restore_data_placeholder)

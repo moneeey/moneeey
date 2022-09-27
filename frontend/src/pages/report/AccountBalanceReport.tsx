@@ -13,8 +13,8 @@ import { PeriodGroup, ReportDataMap, dateToPeriod } from './ReportUtils'
 import { BaseColumnChart, BaseReport } from './BaseReport'
 
 export const baseAccountBalanceReport =
-  (fromIsPositive: boolean, filter: (account: IAccount) => boolean) =>
-  (moneeeyStore: MoneeeyStore, transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => {
+  (moneeeyStore: MoneeeyStore, fromIsPositive: boolean, filter: (account: IAccount) => boolean) =>
+  (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => {
     const addBalanceToData = (acct: TAccountUUID, value: TMonetary, date: TDate) => {
       const account = moneeeyStore.accounts.byUuid(acct)
       if (!account || !filter(account)) {
@@ -38,15 +38,17 @@ export const baseAccountBalanceReport =
     )
   }
 
-export const accountBalanceReport = baseAccountBalanceReport(false, (account) => account.type !== AccountType.PAYEE)
+export const accountBalanceReport = (moneeeyStore: MoneeeyStore) =>
+  baseAccountBalanceReport(moneeeyStore, false, (account) => account.type !== AccountType.PAYEE)
 
 const AccountBalanceReport = observer(() => {
-  const { accounts } = useMoneeeyStore()
+  const moneeeyStore = useMoneeeyStore()
+  const { accounts } = moneeeyStore
 
   return (
     <BaseReport
       accounts={accounts.allNonPayees}
-      processFn={accountBalanceReport}
+      processFn={accountBalanceReport(moneeeyStore)}
       title={Messages.reports.account_balance}
       chartFn={(rows) => <BaseColumnChart rows={rows} />}
     />

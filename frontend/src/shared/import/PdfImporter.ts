@@ -18,7 +18,7 @@ const pdfImport = function (): ProcessContentFn {
     const preloadSteps = 8
     let loadStep = 1
     const step = (totalTasks = preloadSteps) => {
-      onProgress(loadStep, totalTasks)
+      onProgress(loadStep / totalTasks)
       loadStep += 1
     }
     step()
@@ -46,7 +46,7 @@ const pdfImport = function (): ProcessContentFn {
     const lines = pdfTxt.split(new RegExp(pattern))
     step()
 
-    return txtImportFromLines(moneeeyStore, data, onProgress, lines)
+    return txtImportFromLines({ moneeeyStore, data, onProgress, lines })
   }
 }
 

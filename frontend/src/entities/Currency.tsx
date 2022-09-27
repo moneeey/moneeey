@@ -22,10 +22,9 @@ export interface ICurrency extends IBaseEntity {
 
 export class CurrencyStore extends MappedStore<ICurrency> {
   constructor(moneeeyStore: MoneeeyStore) {
-    super(
-      moneeeyStore,
-      (c) => c.currency_uuid,
-      (id?: string) =>
+    super(moneeeyStore, {
+      getUuid: (c) => c.currency_uuid,
+      factory: (id?: string) =>
         ({
           entity_type: EntityType.CURRENCY,
           currency_uuid: id || uuid(),
@@ -38,7 +37,7 @@ export class CurrencyStore extends MappedStore<ICurrency> {
           updated: currentDateTime(),
           created: currentDateTime(),
         } as ICurrency),
-      () => ({
+      schema: () => ({
         name: {
           title: Messages.util.name,
           field: 'name',
@@ -90,8 +89,8 @@ export class CurrencyStore extends MappedStore<ICurrency> {
           index: 6,
           editor: EditorType.DATE,
         },
-      })
-    )
+      }),
+    })
 
     makeObservable(this, { addDefaults: action })
   }

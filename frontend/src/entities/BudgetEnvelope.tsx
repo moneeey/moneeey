@@ -50,13 +50,12 @@ export class BudgetEnvelope implements IBaseEntity {
 
 export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
   constructor(moneeeyStore: MoneeeyStore) {
-    super(
-      moneeeyStore,
-      (b) => b.envelope_uuid,
-      () => {
+    super(moneeeyStore, {
+      getUuid: (b) => b.envelope_uuid,
+      factory: () => {
         throw new Error('This factory should never been used!')
       },
-      () => ({
+      schema: () => ({
         name: {
           editor: EditorType.LINK,
           field: 'name',
@@ -81,8 +80,8 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
           index: 3,
           title: 'Remaining',
         },
-      })
-    )
+      }),
+    })
   }
 
   getEnvelope(entity: IBudget, starting: TDate) {

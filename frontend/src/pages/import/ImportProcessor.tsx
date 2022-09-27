@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 
 import {
   FileUploaderMode,
@@ -25,6 +25,25 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
   ofx: ofxImport(),
 }
 
+const process = async ({
+  moneeeyStore,
+  task,
+  processor,
+  setProgress,
+  setResult,
+}: {
+  moneeeyStore: MoneeeyStore
+  task: ImportTask
+  processor?: ProcessContentFn
+  setProgress: Dispatch<SetStateAction<number>>
+  setResult: Dispatch<SetStateAction<ImportResult>>
+}) => {
+  const onProgress = (percentage: number) => setProgress(percentage)
+  if (processor) {
+    setResult(await processor(moneeeyStore, task, onProgress))
+  }
+}
+
 const ImportProcess = function ({ task }: { task: ImportTask }) {
   const [progress, setProgress] = useState(0)
   const [result, setResult] = useState<ImportResult>({
@@ -35,26 +54,8 @@ const ImportProcess = function ({ task }: { task: ImportTask }) {
   const moneeeyStore = useMoneeeyStore()
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;(async () => {
-      const processor = ContentProcessor[task.input.mode]
-      if (processor) {
-        const onProgress = (tasks: number, tasksTotal: number) =>
-          setProgress(Math.round((1 - tasks / tasksTotal) * 10000) / 100)
-        setResult(await processor(moneeeyStore, task, onProgress))
-      } else {
-        setResult({
-          errors: [
-            {
-              data: task.input.name,
-              description: Messages.import.unknown_mode(task.input.mode),
-            },
-          ],
-          transactions: [],
-          recommended_accounts: {},
-        })
-      }
-    })()
+    const processor = ContentProcessor[task.input.mode]
+    process({ moneeeyStore, task, processor, setProgress, setResult })
   }, [task])
 
   return (

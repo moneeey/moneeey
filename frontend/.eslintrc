@@ -56,7 +56,7 @@
     "dot-notation": "error",
     "eqeqeq": "error",
     "func-style": "error",
-    "max-params": ["error", 7],
+    "max-params": "error",
     "no-alert": "error",
     "no-bitwise": "error",
     "no-caller": "error",

@@ -31,10 +31,9 @@ class TransactionStore extends MappedStore<ITransaction> {
   newest_dt: Date = new Date()
 
   constructor(moneeeyStore: MoneeeyStore) {
-    super(
-      moneeeyStore,
-      (t) => t.transaction_uuid,
-      (id?: string) => ({
+    super(moneeeyStore, {
+      getUuid: (t) => t.transaction_uuid,
+      factory: (id?: string) => ({
         entity_type: EntityType.TRANSACTION,
         transaction_uuid: id || uuid(),
         date: currentDate(),
@@ -47,7 +46,7 @@ class TransactionStore extends MappedStore<ITransaction> {
         updated: currentDateTime(),
         created: currentDateTime(),
       }),
-      () => ({
+      schema: () => ({
         date: {
           title: Messages.util.date,
           field: 'date',
@@ -86,8 +85,8 @@ class TransactionStore extends MappedStore<ITransaction> {
           index: 7,
           editor: EditorType.DATE,
         },
-      })
-    )
+      }),
+    })
     makeObservable(this, {
       sorted: computed,
       oldest_dt: observable,

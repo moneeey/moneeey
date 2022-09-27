@@ -20,10 +20,9 @@ export interface IConfig extends IBaseEntity {
 
 export class ConfigStore extends MappedStore<IConfig> {
   constructor(moneeeyStore: MoneeeyStore) {
-    super(
-      moneeeyStore,
-      () => 'CONFIG',
-      () =>
+    super(moneeeyStore, {
+      getUuid: () => 'CONFIG',
+      factory: () =>
         ({
           entity_type: EntityType.CONFIG,
           date_format: TDateFormat,
@@ -34,7 +33,7 @@ export class ConfigStore extends MappedStore<IConfig> {
           updated: currentDateTime(),
           created: currentDateTime(),
         } as IConfig),
-      () => ({
+      schema: () => ({
         date_format: {
           title: Messages.util.date_format,
           field: 'date_format',
@@ -53,8 +52,8 @@ export class ConfigStore extends MappedStore<IConfig> {
           index: 2,
           editor: EditorType.CURRENCY,
         },
-      })
-    )
+      }),
+    })
 
     makeObservable(this, {
       main: computed,

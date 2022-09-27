@@ -16,12 +16,7 @@ export interface AsyncProcessTransactions {
   setProgress: (v: number) => void
 }
 
-export type AsyncProcessTransactionFn = (
-  moneeeyStore: MoneeeyStore,
-  transaction: ITransaction,
-  period: PeriodGroup,
-  data: ReportDataMap
-) => void
+export type AsyncProcessTransactionFn = (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => void
 
 export type ReportDataMap = Map<string, ReportDataPoint>
 
@@ -41,11 +36,11 @@ export const asyncProcessTransactionsForAccounts = async function ({
   const transactions = moneeeyStore.transactions.viewAllWithAccounts(accounts)
   const processed = await asyncProcess(
     transactions,
-    (chunk, data, _chunks, tasks, tasksTotal) => {
-      setProgress(((tasksTotal - tasks) / tasksTotal) * 100)
-      chunk.forEach((t) => processFn(moneeeyStore, t, period, data))
+    (chunk, data, percentage) => {
+      setProgress(percentage)
+      chunk.forEach((t) => processFn(t, period, data))
     },
-    new Map() as ReportDataMap
+    { state: new Map() as ReportDataMap }
   )
 
   return Array.from(processed.values())

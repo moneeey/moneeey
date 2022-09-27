@@ -46,7 +46,7 @@ const ofxImport = function (): ProcessContentFn {
     const SEP = '@'
     let loadStep = 1
     const step = () => {
-      onProgress(loadStep, preloadSteps)
+      onProgress(loadStep / preloadSteps)
       loadStep += 1
     }
     step()
@@ -71,7 +71,7 @@ const ofxImport = function (): ProcessContentFn {
       return ''
     })
 
-    return txtImportFromLines(moneeeyStore, data, onProgress, lines, SEP)
+    return txtImportFromLines({ moneeeyStore, data, onProgress, lines, separator: SEP })
   }
 }
 

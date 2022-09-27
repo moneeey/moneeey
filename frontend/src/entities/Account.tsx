@@ -31,10 +31,9 @@ export interface IAccount extends IBaseEntity {
 
 export class AccountStore extends MappedStore<IAccount> {
   constructor(moneeeyStore: MoneeeyStore) {
-    super(
-      moneeeyStore,
-      (a: IAccount) => a.account_uuid,
-      (id?: string) => ({
+    super(moneeeyStore, {
+      getUuid: (a: IAccount) => a.account_uuid,
+      factory: (id?: string) => ({
         entity_type: EntityType.ACCOUNT,
         name: '',
         account_uuid: id || uuid(),
@@ -46,7 +45,7 @@ export class AccountStore extends MappedStore<IAccount> {
         created: currentDateTime(),
         updated: currentDateTime(),
       }),
-      () => ({
+      schema: () => ({
         name: {
           title: Messages.util.name,
           field: 'name',
@@ -93,8 +92,8 @@ export class AccountStore extends MappedStore<IAccount> {
           index: 5,
           editor: EditorType.DATE,
         },
-      })
-    )
+      }),
+    })
 
     makeObservable(this, {
       allPayees: computed,

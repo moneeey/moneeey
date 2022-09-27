@@ -38,7 +38,7 @@ export interface ImportResult {
   recommended_accounts: Record<TTransactionUUID, TAccountUUID[]>
 }
 
-export type ProcessProgressFn = (tasks: number, total: number) => void
+export type ProcessProgressFn = (percentage: number) => void
 export type ProcessContentFn = (
   moneeeyStore: MoneeeyStore,
   data: ImportTask,
@@ -79,14 +79,21 @@ export const retrieveColumns = (tokens: string[], columns: ReturnType<typeof fin
   }
 }
 
-export const importTransaction = function (
-  date: string,
-  line: string,
-  value: number,
-  referenceAccount: TAccountUUID,
-  other_account: TAccountUUID,
+export const importTransaction = function ({
+  date,
+  line,
+  value,
+  referenceAccount,
+  other_account,
+  importer,
+}: {
+  date: string
+  line: string
+  value: number
+  referenceAccount: TAccountUUID
+  other_account: TAccountUUID
   importer: Importer
-) {
+}) {
   const transaction: ITransaction = {
     entity_type: EntityType.TRANSACTION,
     transaction_uuid: uuid(),

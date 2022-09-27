@@ -168,17 +168,17 @@ export default class PersistenceStore {
     })
   }
 
-  exportAll(onProgress: (perc: number) => void) {
-    return asyncProcess(
-      values(this.entries),
-      (chunk, result, _chunks, tasks, tasksTotal) => {
-        onProgress(Math.round((tasks / tasksTotal) * 100))
-        result.data = `${result.data + chunk.map((entity) => JSON.stringify(toJS(entity))).join('\n')}\n`
-      },
-      { data: '' },
-      10,
-      50
-    )
+  async exportAll(onProgress: (perc: number) => void) {
+    return (
+      await asyncProcess(
+        values(this.entries),
+        (chunk, state, percentage) => {
+          onProgress(percentage)
+          state.result = `${state.result + chunk.map((entity) => JSON.stringify(toJS(entity))).join('\n')}\n`
+        },
+        { state: { result: '' }, chunkSize: 100, chunkThrottle: 50 }
+      )
+    ).result
   }
 
   restoreEntity(entity: { entity_type?: string }) {
@@ -197,8 +197,8 @@ export default class PersistenceStore {
 
     return asyncProcess(
       entries,
-      (chunk, result, _chunks, tasks, tasksTotal) => {
-        onProgress(Math.round((tasks / tasksTotal) * 100))
+      (chunk, result, percentage) => {
+        onProgress(percentage)
         chunk.forEach((line) => {
           try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -210,9 +210,7 @@ export default class PersistenceStore {
           }
         })
       },
-      { errors: [] as string[] },
-      10,
-      50
+      { state: { errors: [] as string[] }, chunkSize: 100, chunkThrottle: 50 }
     )
   }
 

@@ -28,13 +28,15 @@ export default class MappedStore<T extends IBaseEntity> {
 
   constructor(
     moneeeyStore: MoneeeyStore,
-    getUuid: UUIDGetter<T>,
-    factory: (id?: string) => T,
-    schema: SchemaFactory<T>
+    config: {
+      getUuid: UUIDGetter<T>
+      factory: (id?: string) => T
+      schema: SchemaFactory<T>
+    }
   ) {
-    this.getUuid = getUuid
-    this.schema = schema
-    this.factory = factory
+    this.getUuid = config.getUuid
+    this.schema = config.schema
+    this.factory = config.factory
     this.moneeeyStore = moneeeyStore
     makeObservable(this, {
       itemsByUuid: observable,

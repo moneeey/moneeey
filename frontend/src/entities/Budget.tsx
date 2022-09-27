@@ -28,10 +28,10 @@ export class BudgetStore extends MappedStore<IBudget> {
   private _envelopes: BudgetEnvelopeStore
 
   constructor(moneeeyStore: MoneeeyStore) {
-    super(
-      moneeeyStore,
-      (a: IBudget) => a.budget_uuid,
-      (id?: string) => ({
+    super(moneeeyStore, {
+      getUuid: (a: IBudget) => a.budget_uuid,
+
+      factory: (id?: string) => ({
         entity_type: EntityType.BUDGET,
         name: '',
         currency_uuid: '',
@@ -42,8 +42,8 @@ export class BudgetStore extends MappedStore<IBudget> {
         updated: currentDateTime(),
         archived: false,
       }),
-      () => ({})
-    )
+      schema: () => ({}),
+    })
 
     this._envelopes = new BudgetEnvelopeStore(moneeeyStore)
   }
@@ -118,9 +118,7 @@ export class BudgetStore extends MappedStore<IBudget> {
             }
           })
         }),
-      {} as Record<string, { usage: number; envelope: BudgetEnvelope }>,
-      100,
-      50
+      { state: {} as Record<string, { usage: number; envelope: BudgetEnvelope }>, chunkSize: 100, chunkThrottle: 50 }
     )
     values(usages).map(({ envelope, usage }) => (envelope.used = usage))
   }, 500)
