@@ -1,7 +1,8 @@
 import { ITransaction } from '../entities/Transaction'
 
 import TransactionTable from '../tables/TransactionTable'
-import { HomeRoute } from './HomeRouter'
+
+import HomeRoute from './HomeRouter'
 import { IAppParameters, IRouteParameters, Route } from './Route'
 
 interface ITagsRoute extends IRouteParameters {
@@ -19,6 +20,7 @@ class TagsRouter extends Route<ITagsRoute> {
     const filterByTag = transactions.filterByTag(parameters.tag, accounts)
     const schemaFilter = (row: ITransaction) => filterByTag(row)
     const referenceAccount = ''
+
     return (
       <TransactionTable
         {...{
@@ -38,4 +40,5 @@ class TagsRouter extends Route<ITagsRoute> {
   }
 }
 
-export const TagsRoute = new TagsRouter()
+const TagsRoute = new TagsRouter()
+export { TagsRoute as default }

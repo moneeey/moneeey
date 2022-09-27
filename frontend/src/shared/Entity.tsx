@@ -1,12 +1,6 @@
-import { v4 as uuidv4 } from 'uuid'
-
 import { TDateTime } from '../utils/Date'
 
-export const generateUuid = () => uuidv4()
 export type TMonetary = number
-
-export const randomRange = (minn: number, maxx: number) =>
-  Math.random() * (maxx - minn) + minn
 
 export enum EntityType {
   ACCOUNT = 'ACCOUNT',
@@ -24,18 +18,17 @@ export interface IBaseCouchEntity {
 }
 
 export interface IBaseEntity extends IBaseCouchEntity {
+  [k: string]: unknown
   entity_type: EntityType
   tags: string[]
   updated?: TDateTime
   created?: TDateTime
 }
 
-export function isEntityType<
-  TEntityType extends { entity_type?: EntityType | undefined }
->(entity_type: EntityType) {
-  return function (object: {
-    entity_type?: EntityType
-  }): object is TEntityType {
+const isEntityType = function <TEntityType extends { entity_type?: EntityType | undefined }>(entity_type: EntityType) {
+  return function (object: { entity_type?: EntityType }): object is TEntityType {
     return object?.entity_type === entity_type
   }
 }
+
+export { isEntityType }

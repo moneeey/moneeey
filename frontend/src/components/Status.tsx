@@ -9,6 +9,7 @@ const Status = (props: StatusProps) => {
   if (props.message) {
     return <Alert type={props.type} message={props.message} />
   }
+
   return null
 }
 

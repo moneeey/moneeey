@@ -1,16 +1,18 @@
 import { Tabs } from 'antd'
+
 import Messages from '../../utils/Messages'
-import { AccountBalanceReport } from './AccountBalanceReport'
-import { IncomeVsExpensesReport } from './IncomeVsExpensesReport'
-import { PayeeBalanceReport } from './PayeeBalanceReport'
-import { TagExpensesReport } from './TagExpensesReport'
-import { WealthGrowReport } from './WealthGrowReport'
+
+import AccountBalanceReport from './AccountBalanceReport'
+import IncomeVsExpensesReport from './IncomeVsExpensesReport'
+import PayeeBalanceReport from './PayeeBalanceReport'
+import TagExpensesReport from './TagExpensesReport'
+import WealthGrowReport from './WealthGrowReport'
 
 import './Reports.less'
 
-export function Reports() {
+const Reports = function () {
   return (
-    <section className="reportsArea">
+    <section className='reportsArea'>
       <Tabs
         items={[
           {
@@ -43,3 +45,5 @@ export function Reports() {
     </section>
   )
 }
+
+export default Reports

@@ -1,5 +1,6 @@
 import Import from '../pages/import/Import'
-import { HomeRoute } from './HomeRouter'
+
+import HomeRoute from './HomeRouter'
 import { IRouteParameters, Route } from './Route'
 
 type IImportRoute = IRouteParameters
@@ -15,4 +16,5 @@ class ImportRouter extends Route<IImportRoute> {
   }
 }
 
-export const ImportRoute = new ImportRouter()
+const ImportRoute = new ImportRouter()
+export { ImportRoute as default }

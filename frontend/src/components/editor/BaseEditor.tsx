@@ -1,6 +1,8 @@
 import { Typography } from 'antd'
 import { useEffect, useState } from 'react'
 
+import { IBaseEntity } from '../../shared/Entity'
+
 import { EditorProps } from './EditorProps'
 
 import './BaseEditor.less'
@@ -11,18 +13,16 @@ type OnChange<EntityType, ValueEditorType, ValueEntityType> = (
   additional?: Partial<EntityType>
 ) => void
 
-export interface BaseEditorProps<EntityType, ValueEditorType, ValueEntityType>
+export interface BaseEditorProps<EntityType extends IBaseEntity, ValueEditorType, ValueEntityType>
   extends EditorProps<EntityType, ValueEditorType, ValueEntityType> {
   value: ValueEditorType
   rev: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ComposedInput: any
-  ComposedProps: (
-    onChange: OnChange<EntityType, ValueEditorType, ValueEntityType>
-  ) => object
+  ComposedProps: (onChange: OnChange<EntityType, ValueEditorType, ValueEntityType>) => object
 }
 
-export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
+export const BaseEditor = function <EntityType extends IBaseEntity, ValueEditorType, ValueEntityType>({
   ComposedInput,
   ComposedProps,
   value,
@@ -32,26 +32,21 @@ export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
 }: BaseEditorProps<EntityType, ValueEditorType, ValueEntityType>) {
   const [currentValue, setCurrentValue] = useState(value)
   const [error, setError] = useState('')
-  const onChange = (
-    entityValue?: ValueEntityType,
-    editorValue?: ValueEditorType,
-    additional: object = {}
-  ) => {
+  const onChange = (entityValue?: ValueEntityType, editorValue?: ValueEditorType, additional: object = {}) => {
     const newValue = (editorValue || entityValue) as ValueEditorType
     setCurrentValue(newValue)
     setError('')
     if (validate) {
-      const { valid, error } = validate(newValue)
+      const { valid, error: newError } = validate(newValue)
       if (!valid) {
-        setError(error || '')
+        setError(newError || '')
+
         return
       }
     }
-    onUpdate &&
-      onUpdate(
-        (entityValue || editorValue) as unknown as ValueEntityType,
-        additional
-      )
+    if (onUpdate) {
+      onUpdate((entityValue || editorValue) as unknown as ValueEntityType, additional)
+    }
   }
   useEffect(() => {
     setCurrentValue(value)
@@ -73,7 +68,7 @@ export function BaseEditor<EntityType, ValueEditorType, ValueEntityType>({
         }}
       />
       {error && (
-        <Typography.Text className="baseEditor-error" type="danger">
+        <Typography.Text className='baseEditor-error' type='danger'>
           {error}
         </Typography.Text>
       )}

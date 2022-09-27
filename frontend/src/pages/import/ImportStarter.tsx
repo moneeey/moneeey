@@ -2,16 +2,12 @@ import { Input } from 'antd'
 import { head, isEmpty, last } from 'lodash'
 import { observer } from 'mobx-react'
 import { ChangeEvent, Dispatch, useCallback, useState } from 'react'
-import { useDropzone, FileRejection } from 'react-dropzone'
+import { useDropzone } from 'react-dropzone'
+
 import { AccountSelector } from '../../components/editor/AccountEditor'
 import { TAccountUUID } from '../../entities/Account'
 import ConfigStore from '../../entities/Config'
-import {
-  FileUploaderMode,
-  ImportConfig,
-  ImportInput,
-  ImportTask,
-} from '../../shared/import/ImportContent'
+import { FileUploaderMode, ImportConfig, ImportInput, ImportTask } from '../../shared/import/ImportContent'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { TDateFormat } from '../../utils/Date'
 import Messages from '../../utils/Messages'
@@ -23,10 +19,9 @@ export interface FileUploaderProps {
   error: string | false
 }
 
-function FileUploader({ onFile, error }: FileUploaderProps) {
+const FileUploader = function ({ onFile, error }: FileUploaderProps) {
   const onDrop = useCallback(
-    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
-      console.log('FileUploader onDrop', { acceptedFiles, rejectedFiles })
+    (acceptedFiles: File[]) => {
       acceptedFiles.forEach((f) => {
         const mode = last(f.name.split('.')) || 'txt'
         onFile({
@@ -39,7 +34,7 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
     [onFile]
   )
 
-  const disabled = !!error
+  const disabled = Boolean(error)
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -49,10 +44,8 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
     accept: {
       'text/plain': ['.txt', '.csv'],
       'application/x-ofx': ['.ofx'],
+
       // 'application/x-pdf': ['.pdf'],
-    },
-    onError(e) {
-      console.error('FileUploader error', e)
     },
   })
 
@@ -63,17 +56,12 @@ function FileUploader({ onFile, error }: FileUploaderProps) {
       <div
         className={`importArea${disabled ? 'Disabled' : 'Enabled'}`}
         onClick={inputProps.onClick}
-        {...getRootProps()}
-      >
+        {...getRootProps()}>
         <input {...inputProps} />
         <p>
           <strong>{error}</strong>
         </p>
-        <p>
-          {isDragActive
-            ? Messages.import.drop_here
-            : Messages.import.click_or_drop_here}
-        </p>
+        <p>{isDragActive ? Messages.import.drop_here : Messages.import.click_or_drop_here}</p>
         <p>{Messages.import.supported_formats}</p>
       </div>
     </>
@@ -88,6 +76,7 @@ interface ReferenceAccountSelectorProps {
 export const ReferenceAccountSelector = observer(
   ({ referenceAccount, onReferenceAccount }: ReferenceAccountSelectorProps) => {
     const moneeeyStore = useMoneeeyStore()
+
     return (
       <AccountSelector
         account={referenceAccount}
@@ -98,7 +87,7 @@ export const ReferenceAccountSelector = observer(
   }
 )
 
-function ImportStarter({
+const ImportStarter = function ({
   onTask,
   configuration,
 }: {
@@ -115,8 +104,7 @@ function ImportStarter({
       } as ImportConfig)
   )
 
-  const error =
-    isEmpty(config.referenceAccount) && Messages.import.select_reference_account
+  const error = isEmpty(config.referenceAccount) && Messages.import.select_reference_account
   const onFile = (input: ImportInput) => {
     onTask({ input, config })
   }
@@ -124,41 +112,37 @@ function ImportStarter({
   return (
     <>
       <h2>{Messages.import.new_import}</h2>
-      <section className="importStarter">
-        <section className="importSettings">
+      <section className='importStarter'>
+        <section className='importSettings'>
           <h3>{Messages.import.configuration}</h3>
-          <Input.Group className="referenceAccount">
+          <Input.Group className='referenceAccount'>
             {Messages.settings.reference_account}
             <ReferenceAccountSelector
               referenceAccount={config.referenceAccount}
               onReferenceAccount={(referenceAccount) =>
-                setConfig((config) => ({ ...config, referenceAccount }))
+                setConfig((currentConfig) => ({ ...currentConfig, referenceAccount }))
               }
             />
           </Input.Group>
           <Input.Group>
             {Messages.util.date_format}
             <Input
-              type="text"
+              type='text'
               placeholder={TDateFormat}
               value={config.dateFormat}
-              onChange={({
-                target: { value },
-              }: ChangeEvent<HTMLInputElement>) =>
-                setConfig((config) => ({ ...config, dateFormat: value }))
+              onChange={({ target: { value } }: ChangeEvent<HTMLInputElement>) =>
+                setConfig((currentConfig) => ({ ...currentConfig, dateFormat: value }))
               }
             />
           </Input.Group>
           <Input.Group>
             {Messages.settings.decimal_separator}
             <Input
-              type="text"
+              type='text'
               placeholder={'. or ,'}
               value={config.decimalSeparator}
-              onChange={({
-                target: { value },
-              }: ChangeEvent<HTMLInputElement>) =>
-                setConfig((config) => ({ ...config, decimalSeparator: value }))
+              onChange={({ target: { value } }: ChangeEvent<HTMLInputElement>) =>
+                setConfig((currentConfig) => ({ ...currentConfig, decimalSeparator: value }))
               }
             />
           </Input.Group>

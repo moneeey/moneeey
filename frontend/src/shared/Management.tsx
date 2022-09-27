@@ -2,7 +2,9 @@ import { action, makeObservable, observable } from 'mobx'
 
 export default class ManagementStore {
   auth_code = ''
+
   email = ''
+
   loggedIn = false
 
   constructor() {
@@ -29,7 +31,7 @@ export default class ManagementStore {
     window.sessionStorage.setItem('email', this.email)
   }
 
-  async post(url: string, body: object) {
+  async post<T>(url: string, body: object) {
     const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(body),
@@ -38,25 +40,28 @@ export default class ManagementStore {
         Accept: 'application/json',
       },
     })
-    return await response.json()
+
+    return (await response.json()) as T
   }
 
   async start(email: string) {
     this.email = email
-    const { success, auth_code } = await this.post('/auth/start', {
+    const { success, auth_code } = await this.post<{ success: boolean; auth_code: string }>('/auth/start', {
       email: this.email,
     })
     this.auth_code = auth_code
     this.saveToSession()
+
     return success
   }
 
   async checkLoggedIn() {
-    const { success } = await this.post('/auth/check', {
+    const { success } = await this.post<{ success: boolean }>('/auth/check', {
       email: this.email,
       auth_code: this.auth_code,
     })
     this.loggedIn = success
+
     return success
   }
 
@@ -64,12 +69,13 @@ export default class ManagementStore {
     this.email = email
     this.auth_code = auth_code
     this.saveToSession()
-    const { success, error } = await this.post('/auth/complete', {
+    const { success, error } = await this.post<{ success: boolean; error: string }>('/auth/complete', {
       email,
       auth_code,
       confirm_code,
     })
     this.loggedIn = success
+
     return { success, error }
   }
 }

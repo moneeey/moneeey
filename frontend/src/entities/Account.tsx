@@ -1,13 +1,15 @@
 import { computed, makeObservable } from 'mobx'
 
 import { EditorType } from '../components/editor/EditorProps'
-import { TCurrencyUUID } from './Currency'
-import { currentDateTime, TDate } from '../utils/Date'
+
+import { TDate, currentDateTime } from '../utils/Date'
 import { EntityType, IBaseEntity } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import { uuid } from '../utils/Utils'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import Messages from '../utils/Messages'
+
+import { TCurrencyUUID } from './Currency'
 
 export type TAccountUUID = string
 
@@ -29,10 +31,9 @@ export interface IAccount extends IBaseEntity {
 
 export class AccountStore extends MappedStore<IAccount> {
   constructor(moneeeyStore: MoneeeyStore) {
-    super(
-      moneeeyStore,
-      (a: IAccount) => a.account_uuid,
-      (id?: string) => ({
+    super(moneeeyStore, {
+      getUuid: (a: IAccount) => a.account_uuid,
+      factory: (id?: string) => ({
         entity_type: EntityType.ACCOUNT,
         name: '',
         account_uuid: id || uuid(),
@@ -44,14 +45,16 @@ export class AccountStore extends MappedStore<IAccount> {
         created: currentDateTime(),
         updated: currentDateTime(),
       }),
-      () => ({
+      schema: () => ({
         name: {
           title: Messages.util.name,
           field: 'name',
           required: true,
           validate: (value: string) => {
-            if (value.length < 2)
+            if (value.length < 2) {
               return { valid: false, error: 'Please type a name' }
+            }
+
             return { valid: true }
           },
           index: 0,
@@ -89,8 +92,8 @@ export class AccountStore extends MappedStore<IAccount> {
           index: 5,
           editor: EditorType.DATE,
         },
-      })
-    )
+      }),
+    })
 
     makeObservable(this, {
       allPayees: computed,
@@ -98,10 +101,7 @@ export class AccountStore extends MappedStore<IAccount> {
     })
   }
 
-  merge(
-    item: IAccount,
-    options: { setUpdated: boolean } = { setUpdated: true }
-  ) {
+  merge(item: IAccount, options: { setUpdated: boolean } = { setUpdated: true }) {
     super.merge(item, options)
     if (item.type !== AccountType.PAYEE) {
       this.moneeeyStore.tags.register(item.name)
@@ -127,29 +127,38 @@ export class AccountStore extends MappedStore<IAccount> {
   accountTags(account_uuid: TAccountUUID) {
     const acct = this.byUuid(account_uuid)
     if (acct) {
-      const currencyTags = this.moneeeyStore.currencies.currencyTags(
-        acct.currency_uuid
-      )
+      const currencyTags = this.moneeeyStore.currencies.currencyTags(acct.currency_uuid)
+
       return [acct.name, ...acct.tags, ...currencyTags]
     }
+
     return []
   }
 
   nameForUuid(account_uuid: TAccountUUID) {
     const acct = this.byUuid(account_uuid)
-    if (acct) return acct.name
+    if (acct) {
+      return acct.name
+    }
+
     return ''
   }
 
   isArchived(account_uuid: TAccountUUID): boolean {
     const acct = this.byUuid(account_uuid)
-    if (acct) return acct.archived === true
+    if (acct) {
+      return acct.archived === true
+    }
+
     return true
   }
 
   isOffBudget(account_uuid: TAccountUUID): boolean {
     const acct = this.byUuid(account_uuid)
-    if (acct) return acct.offbudget === true
+    if (acct) {
+      return acct.offbudget === true
+    }
+
     return true
   }
 }

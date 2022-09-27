@@ -1,6 +1,7 @@
 import { Input } from 'antd'
 import { observer } from 'mobx-react'
 import { ChangeEvent } from 'react'
+
 import { IBaseEntity } from '../../shared/Entity'
 import MappedStore from '../../shared/MappedStore'
 import { Row } from '../TableEditor'
@@ -14,15 +15,14 @@ interface PrefixSuffix {
 }
 
 interface ValueRev {
-  value: number
+  value: string
   rev: string
 }
 
 export const BaseNumberEditor = observer(
-  <EntityType,>(
-    props: EditorProps<EntityType, number, number> & PrefixSuffix & ValueRev
-  ) => {
+  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, string, number> & PrefixSuffix & ValueRev) => {
     const { prefix, suffix } = props
+
     return (
       <BaseEditor
         {...{
@@ -31,16 +31,12 @@ export const BaseNumberEditor = observer(
           rev: props.rev,
           ComposedInput: Input,
           ComposedProps: (
-            onChange: (
-              value?: number,
-              editorValue?: number,
-              additional?: Partial<EntityType>
-            ) => void
+            onChange: (value?: number, editorValue?: string, additional?: Partial<EntityType>) => void
           ) => ({
             prefix,
             suffix,
             onChange: ({ target: { value } }: ChangeEvent<HTMLInputElement>) =>
-              onChange(parseInt(value), parseInt(value), {}),
+              onChange(parseInt(value, 10), parseInt(value, 10).toString(), {}),
           }),
         }}
       />
@@ -49,14 +45,13 @@ export const BaseNumberEditor = observer(
 )
 
 export const NumberEditor = observer(
-  <EntityType,>(
-    props: EditorProps<EntityType, number, number> & PrefixSuffix
-  ) => {
+  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number | string, number> & PrefixSuffix) => {
     const entity = props.store.byUuid(props.entityId)
+
     return (
       <BaseNumberEditor
         {...props}
-        value={entity?.[props.field.field]}
+        value={(entity?.[props.field.field] as number).toString()}
         rev={entity?._rev || ''}
       />
     )
@@ -64,14 +59,12 @@ export const NumberEditor = observer(
 )
 
 export const NumberSorter =
-  <EntityType extends IBaseEntity>(
-    store: MappedStore<EntityType>,
-    field: keyof EntityType
-  ) =>
+  <EntityType extends IBaseEntity>(store: MappedStore<EntityType>, field: keyof EntityType) =>
   (a?: Row, b?: Row, asc?: boolean): number => {
     const entityA = store.byUuid(a?.entityId || '')
     const entityB = store.byUuid(b?.entityId || '')
-    const av = parseInt('' + entityA?.[field] || '')
-    const bv = parseInt('' + entityB?.[field] || '')
+    const av = entityA?.[field] as number
+    const bv = entityB?.[field] as number
+
     return asc ? av - bv : bv - av
   }

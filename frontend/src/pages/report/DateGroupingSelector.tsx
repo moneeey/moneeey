@@ -4,7 +4,7 @@ import _ from 'lodash'
 
 import { PeriodGroup, PeriodGroups } from './ReportUtils'
 
-export function DateGroupingSelector({
+const DateGroupingSelector = function ({
   setPeriod,
   period,
 }: {
@@ -25,15 +25,12 @@ export function DateGroupingSelector({
             .value()}
         </Menu>
       }
-      trigger={['click']}
-    >
-      <Button
-        type="link"
-        className="ant-dropdown-link"
-        onClick={(e) => e.preventDefault()}
-      >
+      trigger={['click']}>
+      <Button type='link' className='ant-dropdown-link' onClick={(e) => e.preventDefault()}>
         {period.label} <DownOutlined />
       </Button>
     </Dropdown>
   )
 }
+
+export default DateGroupingSelector

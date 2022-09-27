@@ -1,9 +1,11 @@
 import { makeObservable, observable } from 'mobx'
+
 import AccountStore from '../entities/Account'
 import BudgetStore from '../entities/Budget'
 import ConfigStore from '../entities/Config'
 import CurrencyStore from '../entities/Currency'
 import TransactionStore from '../entities/Transaction'
+
 import { EntityType } from './Entity'
 import Importer from './import/Importer'
 import ManagementStore from './Management'
@@ -13,15 +15,25 @@ import TagsStore from './Tags'
 
 export default class MoneeeyStore {
   loaded = false
+
   tags = new TagsStore()
+
   navigation = new NavigationStore()
+
   accounts = new AccountStore(this)
+
   transactions = new TransactionStore(this)
+
   currencies = new CurrencyStore(this)
+
   budget = new BudgetStore(this)
+
   persistence = new PersistenceStore()
+
   management = new ManagementStore()
+
   importer = new Importer(this)
+
   config = new ConfigStore(this)
 
   constructor() {

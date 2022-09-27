@@ -8,13 +8,15 @@ export enum NavigationModal {
 
 export default class NavigationStore {
   dateFormat = 'dd/MM/yyy'
-  _navigateToUrl = ''
-  _modal = NavigationModal.NONE
+
+  navigateToUrl = ''
+
+  currentModal = NavigationModal.NONE
 
   constructor() {
     makeObservable(this, {
-      _navigateToUrl: observable,
-      _modal: observable,
+      navigateToUrl: observable,
+      currentModal: observable,
       navigateTo: computed,
       navigate: action,
       modal: computed,
@@ -23,19 +25,19 @@ export default class NavigationStore {
   }
 
   navigate(url: string) {
-    this._navigateToUrl = url
+    this.navigateToUrl = url
   }
 
   get navigateTo() {
-    return this._navigateToUrl
+    return this.navigateToUrl
   }
 
   get modal() {
-    return this._modal
+    return this.currentModal
   }
 
   openModal(modal: NavigationModal) {
-    this._modal = modal
+    this.currentModal = modal
   }
 
   closeModal() {

@@ -1,13 +1,15 @@
 import { map } from 'lodash'
 import { useEffect } from 'react'
+
 import { NavigationModal } from '../../shared/Navigation'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import Messages from '../../utils/Messages'
-import { getStorage, setStorage, StorageKind } from '../../utils/Utils'
+import { StorageKind, getStorage, setStorage } from '../../utils/Utils'
 import { useMoneeeyTour } from '../Tour'
+
 import BaseModal from './BaseModal'
 
-function LandingModal() {
+const LandingModal = function () {
   const { navigation } = useMoneeeyStore()
   const tour = useMoneeeyTour()
   useEffect(() => {
@@ -15,6 +17,7 @@ function LandingModal() {
       navigation.openModal(NavigationModal.LANDING)
     }
   }, [])
+
   return (
     <BaseModal
       modalId={NavigationModal.LANDING}
@@ -25,8 +28,7 @@ function LandingModal() {
         tour.open()
       }}
       cancelText={Messages.util.close}
-      okText={Messages.modal.start_tour}
-    >
+      okText={Messages.modal.start_tour}>
       <ul>
         {map(Messages.landing.messages, (message) => (
           <li key={message}>{message}</li>
