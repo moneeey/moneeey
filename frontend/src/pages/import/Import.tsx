@@ -1,7 +1,7 @@
-import { Tabs } from 'antd'
 import { observer } from 'mobx-react'
 import { useState } from 'react'
 
+import Tabs from '../../components/base/Tabs'
 import { ImportTask } from '../../shared/import/ImportContent'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import Messages from '../../utils/Messages'

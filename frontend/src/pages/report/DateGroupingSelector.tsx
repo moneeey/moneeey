@@ -1,6 +1,8 @@
 import { DownOutlined } from '@ant-design/icons'
-import { Button, Dropdown, Menu } from 'antd'
+import { Dropdown, Menu } from 'antd'
 import _ from 'lodash'
+
+import { LinkButton } from '../../components/base/Button'
 
 import { PeriodGroup, PeriodGroups } from './ReportUtils'
 
@@ -26,9 +28,9 @@ const DateGroupingSelector = function ({
         </Menu>
       }
       trigger={['click']}>
-      <Button type='link' className='ant-dropdown-link' onClick={(e) => e.preventDefault()}>
+      <LinkButton className='ant-dropdown-link' onClick={(e) => e.preventDefault()}>
         {period.label} <DownOutlined />
-      </Button>
+      </LinkButton>
     </Dropdown>
   )
 }

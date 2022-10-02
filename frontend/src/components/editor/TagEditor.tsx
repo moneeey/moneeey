@@ -1,10 +1,10 @@
-import { Select } from 'antd'
 import _, { flattenDeep } from 'lodash'
 import { observer } from 'mobx-react'
 
 import { IBaseEntity } from '../../shared/Entity'
 
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
+import Select from '../base/Select'
 
 import BaseSelectEditor from './BaseSelectEditor'
 import { EditorProps, NoSorter } from './EditorProps'

@@ -59,6 +59,7 @@ const Messages = {
     archived: 'Archived',
     close: 'Close',
     created: 'Created',
+    delete: 'Delete',
     currency: 'Currency',
     date: 'Date',
     date_format: 'Date format',

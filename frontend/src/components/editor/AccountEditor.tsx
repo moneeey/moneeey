@@ -1,4 +1,3 @@
-import { Input, Select } from 'antd'
 import { compact, head, isEmpty, map, uniqBy } from 'lodash'
 import { observer } from 'mobx-react'
 import { useState } from 'react'
@@ -10,6 +9,7 @@ import MappedStore from '../../shared/MappedStore'
 import MoneeeyStore from '../../shared/MoneeeyStore'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import Messages from '../../utils/Messages'
+import Select from '../base/Select'
 import { Row } from '../TableEditor'
 import { TagsFrom, TagsTo } from '../Tags'
 
@@ -47,7 +47,7 @@ const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: Accou
   )
 
   return (
-    <Input.Group compact className='accountEditor'>
+    <div className='accountEditor'>
       <BaseSelectEditor
         {...{
           ...props,
@@ -89,7 +89,7 @@ const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: Accou
         }}
       />
       <TagsComponent tags={tags} />
-    </Input.Group>
+    </div>
   )
 })
 

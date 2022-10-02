@@ -1,4 +1,3 @@
-import { Select } from 'antd'
 import _ from 'lodash'
 import { observer } from 'mobx-react'
 
@@ -7,6 +6,7 @@ import { IBaseEntity } from '../../shared/Entity'
 import MappedStore from '../../shared/MappedStore'
 import MoneeeyStore from '../../shared/MoneeeyStore'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
+import Select from '../base/Select'
 import { Row } from '../TableEditor'
 
 import BaseSelectEditor from './BaseSelectEditor'
