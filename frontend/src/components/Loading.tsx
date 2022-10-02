@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-import './Loading'
+import './Loading.less'
 
 interface LoadingProps {
   loading: boolean
