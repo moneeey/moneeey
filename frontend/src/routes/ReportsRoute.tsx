@@ -1,5 +1,6 @@
-import { Reports } from '../pages/report/Reports'
-import { HomeRoute } from './HomeRouter'
+import Reports from '../pages/report/Reports'
+
+import HomeRoute from './HomeRouter'
 import { IRouteParameters, Route } from './Route'
 
 type IReportsRoute = IRouteParameters
@@ -15,4 +16,5 @@ class ReportsRouter extends Route<IReportsRoute> {
   }
 }
 
-export const ReportsRoute = new ReportsRouter()
+const ReportsRoute = new ReportsRouter()
+export { ReportsRoute as default }

@@ -1,3 +1,8 @@
+/* eslint-disable multiline-ternary */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/prop-types */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -32,6 +37,7 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
         if (gridRef.current) {
           return gridRef.current?.state?.scrollLeft
         }
+
         return null
       },
       set: (scrollLeft: number) => {
@@ -53,53 +59,36 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
 
   useEffect(() => resetVirtualGrid, [tableWidth])
 
-  const renderVirtualList = (
-    rawData: object[],
-    { scrollbarSize, ref, onScroll }: any
-  ) => {
+  const renderVirtualList = (rawData: object[], { scrollbarSize, ref, onScroll }: any) => {
     ref.current = connectObject
     const totalHeight = rawData.length * 54
 
     return (
       <Grid
         ref={gridRef}
-        className="virtual-grid"
+        className='virtual-grid'
         columnCount={mergedColumns.length}
         columnWidth={(index: number) => {
           const { width } = mergedColumns[index]
-          return totalHeight > scroll!.y! && index === mergedColumns.length - 1
+
+          return totalHeight > scroll.y && index === mergedColumns.length - 1
             ? (width as number) - scrollbarSize - 1
             : (width as number)
         }}
-        height={scroll!.y as number}
+        height={scroll.y}
         rowCount={rawData.length}
         rowHeight={() => 54}
         width={tableWidth}
         onScroll={({ scrollLeft }: { scrollLeft: number }) => {
           onScroll({ scrollLeft })
-        }}
-      >
-        {({
-          columnIndex,
-          rowIndex,
-          style,
-        }: {
-          columnIndex: number
-          rowIndex: number
-          style: React.CSSProperties
-        }) => (
+        }}>
+        {({ columnIndex, rowIndex, style }: { columnIndex: number; rowIndex: number; style: React.CSSProperties }) => (
           <div
             className={classNames('virtual-table-cell', {
-              'virtual-table-cell-last':
-                columnIndex === mergedColumns.length - 1,
+              'virtual-table-cell-last': columnIndex === mergedColumns.length - 1,
             })}
-            style={style}
-          >
-            {
-              (rawData[rowIndex] as any)[
-                (mergedColumns as any)[columnIndex].dataIndex
-              ]
-            }
+            style={style}>
+            {(rawData[rowIndex] as any)[(mergedColumns as any)[columnIndex].dataIndex]}
           </div>
         )}
       </Grid>
@@ -110,11 +99,10 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
     <ResizeObserver
       onResize={({ width }) => {
         setTableWidth(width)
-      }}
-    >
+      }}>
       <Table
         {...props}
-        className={'virtual-table ' + props.className}
+        className={`virtual-table ${props.className || ''}`}
         columns={mergedColumns}
         pagination={false}
         components={

@@ -3,19 +3,15 @@ import { compact, values } from 'lodash'
 import { action } from 'mobx'
 import { observer } from 'mobx-react'
 import React, { useMemo, useState } from 'react'
+
 import { IBaseEntity } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
+
 import { AccountEditor, AccountSorter } from './editor/AccountEditor'
-import {
-  BudgetAllocatedEditor,
-  BudgetAllocatedSorter,
-} from './editor/BudgetAllocatedEditor'
-import {
-  BudgetRemainingEditor,
-  BudgetRemainingSorter,
-} from './editor/BudgetRemainingEditor'
+import { BudgetAllocatedEditor, BudgetAllocatedSorter } from './editor/BudgetAllocatedEditor'
+import { BudgetRemainingEditor, BudgetRemainingSorter } from './editor/BudgetRemainingEditor'
 import { BudgetUsedEditor, BudgetUsedSorter } from './editor/BudgetUsedEditor'
 import { CheckboxEditor, CheckboxSorter } from './editor/CheckboxEditor'
 import { CurrencyEditor, CurrencySorter } from './editor/CurrencyEditor'
@@ -27,10 +23,7 @@ import { MemoEditor, MemoSorter } from './editor/MemoEditor'
 import { NumberEditor, NumberSorter } from './editor/NumberEditor'
 import { TagEditor, TagSorter } from './editor/TagEditor'
 import { TextEditor, TextSorter } from './editor/TextEditor'
-import {
-  TransactionValueEditor,
-  TransactionValueSorter,
-} from './editor/TransactionValueEditor'
+import { TransactionValueEditor, TransactionValueSorter } from './editor/TransactionValueEditor'
 import VirtualTable from './VirtualTableEditor'
 
 import './TableEditor.less'
@@ -53,7 +46,8 @@ type SortFn = <TEditorType extends IBaseEntity>(
 const EditorTypeConfig: Record<
   EditorType,
   {
-    render: (pros: EditorProps<unknown, unknown, unknown>) => JSX.Element
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    render: (pros: EditorProps<any, any, any>) => JSX.Element
     sorter: SortFn
     width: number | undefined
   }
@@ -135,18 +129,10 @@ export type Row = {
 }
 
 export const TableEditor = observer(
-  <T extends IBaseEntity>({
-    schemaFilter,
-    store,
-    factory,
-    creatable,
-    context,
-  }: TableEditorProps<T, unknown>) => {
+  <T extends IBaseEntity>({ schemaFilter, store, factory, creatable, context }: TableEditorProps<T, unknown>) => {
     const moneeeyStore = useMoneeeyStore()
 
-    const [newEntityId, setNewEntityId] = useState(() =>
-      store.getUuid(store.factory())
-    )
+    const [newEntityId, setNewEntityId] = useState(() => store.getUuid(store.factory()))
 
     const entities = useMemo(
       () =>
@@ -158,9 +144,10 @@ export const TableEditor = observer(
             if (entityId === newEntityId) {
               setTimeout(() => setNewEntityId(store.getUuid(factory())), 500)
             }
+
             return entityId
           })
-          .concat(creatable !== false ? [newEntityId] : [])
+          .concat(creatable === true ? [newEntityId] : [])
           .map((entityId) => ({ entityId })),
       [store, store.ids, schemaFilter, newEntityId]
     )
@@ -168,36 +155,28 @@ export const TableEditor = observer(
     const columns: ColumnType<Row>[] = useMemo(
       () =>
         compact(values(store.schema()))
-          .sort(
-            (a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index
-          )
+          .sort((a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index)
           .map((props: FieldProps<never>): ColumnType<Row> => {
             const config = EditorTypeConfig[props.editor]
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
             const Editor = config.render as unknown as any
-            const sorter = config.sorter(
-              store,
-              props.field as keyof T,
-              moneeeyStore
-            )
-            const width = config.width
+            const sorter = config.sorter(store, props.field as keyof T, moneeeyStore)
+            const { width } = config
+
             return {
               width: width || props.width,
               title: props.title,
               dataIndex: props.field,
               defaultSortOrder: props.defaultSortOrder,
-              sorter: sorter
-                ? (a, b, sortOrder) => sorter(a, b, sortOrder === 'ascend')
-                : undefined,
+              sorter: sorter ? (a, b, sortOrder) => sorter(a, b, sortOrder === 'ascend') : undefined,
               render: (_value: unknown, { entityId }: Row): React.ReactNode => {
-                const key = entityId + '_' + props.field
-                const onUpdate = action(
-                  (value: unknown, additional: object = {}) =>
-                    store.merge({
-                      ...(store.byUuid(entityId) || factory(entityId)),
-                      [props.field]: value,
-                      ...additional,
-                    } as T)
+                const key = `${entityId}_${props.field}`
+                const onUpdate = action((value: unknown, additional: object = {}) =>
+                  store.merge({
+                    ...(store.byUuid(entityId) || factory(entityId)),
+                    [props.field]: value,
+                    ...additional,
+                  } as T)
                 )
 
                 return (
@@ -220,8 +199,8 @@ export const TableEditor = observer(
 
     return (
       <VirtualTable
-        rowKey="entityId"
-        className="tableEditor"
+        rowKey='entityId'
+        className='tableEditor'
         columns={columns as ColumnType<object>[]}
         dataSource={entities}
         pagination={false}

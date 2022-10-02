@@ -10,18 +10,18 @@ import {
 import { Menu, Typography } from 'antd'
 import { observer } from 'mobx-react'
 
-import { AccountRoute } from '../routes/AccountRoute'
+import AccountRoute from '../routes/AccountRoute'
 import { AccountSettingsRoute } from '../routes/AccountSettingsRoute'
 import { CurrencySettingsRoute } from '../routes/CurrencySettingsRoute'
-import { HomeRoute } from '../routes/HomeRouter'
+import HomeRoute from '../routes/HomeRouter'
 import { PayeeSettingsRoute } from '../routes/PayeeSettingsRoute'
-import { ReportsRoute } from '../routes/ReportsRoute'
+import ReportsRoute from '../routes/ReportsRoute'
 import { IAccount } from '../entities/Account'
 import { Status } from '../shared/Persistence'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
-import { ImportRoute } from '../routes/ImportRoute'
-import { SettingsRoute } from '../routes/SettingsRoute'
-import { BudgetRoute } from '../routes/BudgetRoute'
+import ImportRoute from '../routes/ImportRoute'
+import SettingsRoute from '../routes/SettingsRoute'
+import BudgetRoute from '../routes/BudgetRoute'
 import Messages from '../utils/Messages'
 import { NavigationModal } from '../shared/Navigation'
 
@@ -29,12 +29,14 @@ export const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore()
   const getAccountCurrency = (account: IAccount) => {
     const curr = currencies.byUuid(account.currency_uuid)
+
     return curr?.short || curr?.name || '?'
   }
+
   return (
     <Menu
-      mode="horizontal"
-      triggerSubMenuAction="click"
+      mode='horizontal'
+      triggerSubMenuAction='click'
       items={[
         {
           key: 'dashboard',
@@ -56,23 +58,18 @@ export const AppMenu = observer(() => {
               .filter((t) => t.archived !== true)
               .sort((a, b) => a.currency_uuid?.localeCompare(b.currency_uuid))
               .map((acct) => ({
-                key: 'account_' + acct._id,
+                key: `account_${acct._id || ''}`,
                 label: (
                   <span>
-                    <Typography.Text type="secondary">
-                      {getAccountCurrency(acct)}
-                    </Typography.Text>{' '}
-                    {acct.name}
+                    <Typography.Text type='secondary'>{getAccountCurrency(acct)}</Typography.Text> {acct.name}
                   </span>
                 ),
-                onClick: () =>
-                  navigation.navigate(AccountRoute.accountUrl(acct)),
+                onClick: () => navigation.navigate(AccountRoute.accountUrl(acct)),
               })),
             {
               key: 'unassigned',
               label: Messages.menu.unassigned,
-              onClick: () =>
-                navigation.navigate(AccountRoute.accountUrlForUnclassified()),
+              onClick: () => navigation.navigate(AccountRoute.accountUrlForUnclassified()),
             },
           ],
         },
@@ -125,14 +122,13 @@ export const AppMenu = observer(() => {
           label: Messages.menu.sync[persistence.status],
           icon:
             persistence.status === Status.ONLINE ? (
-              <CheckCircleTwoTone twoToneColor="green" />
+              <CheckCircleTwoTone twoToneColor='green' />
             ) : (
-              <WarningTwoTone twoToneColor="red" />
+              <WarningTwoTone twoToneColor='red' />
             ),
           onClick: () => navigation.openModal(NavigationModal.SYNC),
         },
-      ]}
-    ></Menu>
+      ]}></Menu>
   )
 })
 

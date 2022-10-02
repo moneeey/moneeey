@@ -1,11 +1,13 @@
 import { isEmpty } from 'lodash'
 import { action, computed, makeObservable } from 'mobx'
+
 import { EditorType } from '../components/editor/EditorProps'
-import { IBaseEntity, EntityType } from '../shared/Entity'
+import { EntityType, IBaseEntity } from '../shared/Entity'
 import MappedStore from '../shared/MappedStore'
 import MoneeeyStore from '../shared/MoneeeyStore'
-import { currentDateTime, TDateFormat } from '../utils/Date'
+import { TDateFormat, currentDateTime } from '../utils/Date'
 import Messages from '../utils/Messages'
+
 import { TCurrencyUUID } from './Currency'
 
 export interface IConfig extends IBaseEntity {
@@ -18,10 +20,9 @@ export interface IConfig extends IBaseEntity {
 
 export class ConfigStore extends MappedStore<IConfig> {
   constructor(moneeeyStore: MoneeeyStore) {
-    super(
-      moneeeyStore,
-      () => 'CONFIG',
-      () =>
+    super(moneeeyStore, {
+      getUuid: () => 'CONFIG',
+      factory: () =>
         ({
           entity_type: EntityType.CONFIG,
           date_format: TDateFormat,
@@ -32,7 +33,7 @@ export class ConfigStore extends MappedStore<IConfig> {
           updated: currentDateTime(),
           created: currentDateTime(),
         } as IConfig),
-      () => ({
+      schema: () => ({
         date_format: {
           title: Messages.util.date_format,
           field: 'date_format',
@@ -51,8 +52,8 @@ export class ConfigStore extends MappedStore<IConfig> {
           index: 2,
           editor: EditorType.CURRENCY,
         },
-      })
-    )
+      }),
+    })
 
     makeObservable(this, {
       main: computed,
@@ -65,7 +66,9 @@ export class ConfigStore extends MappedStore<IConfig> {
   }
 
   init() {
-    if (isEmpty(this.all)) this.merge(this.factory())
+    if (isEmpty(this.all)) {
+      this.merge(this.factory())
+    }
   }
 }
 

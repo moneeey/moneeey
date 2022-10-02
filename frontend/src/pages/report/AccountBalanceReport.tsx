@@ -1,29 +1,25 @@
+import { observer } from 'mobx-react'
+
 import { AccountType, IAccount, TAccountUUID } from '../../entities/Account'
 import { TDate } from '../../utils/Date'
 import { TMonetary } from '../../shared/Entity'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
 import { ITransaction } from '../../entities/Transaction'
 import Messages from '../../utils/Messages'
-import { dateToPeriod, PeriodGroup, ReportDataMap } from './ReportUtils'
-import { BaseColumnChart, BaseReport } from './BaseReport'
+
 import MoneeeyStore from '../../shared/MoneeeyStore'
-import { observer } from 'mobx-react'
+
+import { PeriodGroup, ReportDataMap, dateToPeriod } from './ReportUtils'
+import { BaseColumnChart, BaseReport } from './BaseReport'
 
 export const baseAccountBalanceReport =
-  (fromIsPositive: boolean, filter: (account: IAccount) => boolean) =>
-  (
-    moneeeyStore: MoneeeyStore,
-    transaction: ITransaction,
-    period: PeriodGroup,
-    data: ReportDataMap
-  ) => {
-    const addBalanceToData = (
-      acct: TAccountUUID,
-      value: TMonetary,
-      date: TDate
-    ) => {
+  (moneeeyStore: MoneeeyStore, fromIsPositive: boolean, filter: (account: IAccount) => boolean) =>
+  (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => {
+    const addBalanceToData = (acct: TAccountUUID, value: TMonetary, date: TDate) => {
       const account = moneeeyStore.accounts.byUuid(acct)
-      if (!account || !filter(account)) return
+      if (!account || !filter(account)) {
+        return
+      }
       const group_date = dateToPeriod(period, date)
       const key = group_date + account.account_uuid
       const prev_balance = (data.get(key) || {}).value || 0
@@ -42,20 +38,21 @@ export const baseAccountBalanceReport =
     )
   }
 
-export const accountBalanceReport = baseAccountBalanceReport(
-  false,
-  (account) => account.type !== AccountType.PAYEE
-)
+export const accountBalanceReport = (moneeeyStore: MoneeeyStore) =>
+  baseAccountBalanceReport(moneeeyStore, false, (account) => account.type !== AccountType.PAYEE)
 
-export const AccountBalanceReport = observer(() => {
-  const { accounts } = useMoneeeyStore()
+const AccountBalanceReport = observer(() => {
+  const moneeeyStore = useMoneeeyStore()
+  const { accounts } = moneeeyStore
 
   return (
     <BaseReport
       accounts={accounts.allNonPayees}
-      processFn={accountBalanceReport}
+      processFn={accountBalanceReport(moneeeyStore)}
       title={Messages.reports.account_balance}
       chartFn={(rows) => <BaseColumnChart rows={rows} />}
     />
   )
 })
+
+export default AccountBalanceReport

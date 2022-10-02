@@ -1,29 +1,34 @@
 import { observer } from 'mobx-react'
+
 import { BudgetEnvelope } from '../../entities/BudgetEnvelope'
+import { IBaseEntity } from '../../shared/Entity'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
+
 import { EditorProps, NoSorter } from './EditorProps'
-import { NumberEditor } from './NumberEditor'
+import { BaseNumberEditor } from './NumberEditor'
 
 export const BudgetUsedEditor = observer(
-  <EntityType,>(props: EditorProps<EntityType, number, number>) => {
-    const entity = props.store.byUuid(props.entityId) as BudgetEnvelope
+  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, string, number>) => {
+    const entity = props.store.byUuid(props.entityId) as BudgetEnvelope | undefined
     const { currencies } = useMoneeeyStore()
-    const currency = currencies.byUuid(entity.budget.currency_uuid)
+    const currency = currencies.byUuid(entity?.budget.currency_uuid)
+
+    let value: string
+    if (currency) {
+      value = currencies.formatAmount(currency, entity?.used || 0)
+    } else {
+      value = (entity?.used || 0).toString()
+    }
 
     return (
-      <NumberEditor
+      <BaseNumberEditor
         {...{
           ...props,
+          value,
           field: { ...props.field, readOnly: true },
-          rev: entity?._rev,
+          rev: entity?._rev || '',
           prefix: currency?.prefix,
           suffix: currency?.suffix,
-          value: currency
-            ? (currencies.formatAmount(
-                currency,
-                entity.used
-              ) as unknown as number)
-            : entity.used,
         }}
       />
     )

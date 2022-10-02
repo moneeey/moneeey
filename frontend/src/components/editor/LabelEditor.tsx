@@ -1,12 +1,16 @@
 import { observer } from 'mobx-react'
 
+import { IBaseEntity } from '../../shared/Entity'
+
 import { EditorProps } from './EditorProps'
 import { TextSorter } from './TextEditor'
 
 export const LabelEditor = observer(
-  <EntityType,>(props: EditorProps<EntityType, string, string>) => {
+  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, string, string>) => {
     const entity = props.store.byUuid(props.entityId)
-    return <span>{entity?.[props.field.field]}</span>
+    const value = entity?.[props.field.field] as string
+
+    return <span>{value}</span>
   }
 )
 

@@ -1,19 +1,7 @@
-import {
-  startOfDay,
-  startOfMonth,
-  startOfQuarter,
-  startOfWeek,
-  startOfYear,
-} from 'date-fns'
+import { startOfDay, startOfMonth, startOfQuarter, startOfWeek, startOfYear } from 'date-fns'
 
 import { TAccountUUID } from '../../entities/Account'
-import {
-  formatDate,
-  formatDateAs,
-  parseDate,
-  TDate,
-  TDateFormat,
-} from '../../utils/Date'
+import { TDate, TDateFormat, formatDate, formatDateAs, parseDate } from '../../utils/Date'
 import MoneeeyStore from '../../shared/MoneeeyStore'
 import { ITransaction } from '../../entities/Transaction'
 import { asyncProcess } from '../../utils/Utils'
@@ -28,12 +16,7 @@ export interface AsyncProcessTransactions {
   setProgress: (v: number) => void
 }
 
-export type AsyncProcessTransactionFn = (
-  moneeeyStore: MoneeeyStore,
-  transaction: ITransaction,
-  period: PeriodGroup,
-  data: ReportDataMap
-) => void
+export type AsyncProcessTransactionFn = (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => void
 
 export type ReportDataMap = Map<string, ReportDataPoint>
 
@@ -43,7 +26,7 @@ export interface ReportDataPoint {
   value: TMonetary
 }
 
-export async function asyncProcessTransactionsForAccounts({
+export const asyncProcessTransactionsForAccounts = async function ({
   moneeeyStore,
   accounts,
   processFn,
@@ -53,12 +36,13 @@ export async function asyncProcessTransactionsForAccounts({
   const transactions = moneeeyStore.transactions.viewAllWithAccounts(accounts)
   const processed = await asyncProcess(
     transactions,
-    (chunk, data, _chunks, tasks, tasksTotal) => {
-      setProgress(((tasksTotal - tasks) / tasksTotal) * 100)
-      chunk.forEach((t) => processFn(moneeeyStore, t, period, data))
+    (chunk, data, percentage) => {
+      setProgress(percentage)
+      chunk.forEach((t) => processFn(t, period, data))
     },
-    new Map() as ReportDataMap
+    { state: new Map() as ReportDataMap }
   )
+
   return Array.from(processed.values())
 }
 
@@ -69,11 +53,11 @@ export interface PeriodGroup {
   order: number
 }
 
-export const noopFormatter = <T,>(o: T): string => '' + o
-export const patternFormatter = (pattern: string) => (date: Date) =>
-  formatDateAs(formatDate(date), pattern)
+// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+export const noopFormatter = <T,>(o: T): string => `${o}`
+export const patternFormatter = (pattern: string) => (date: Date) => formatDateAs(formatDate(date), pattern)
 
-export function dateToPeriod(period: PeriodGroup, date: TDate) {
+export const dateToPeriod = function (period: PeriodGroup, date: TDate) {
   return formatDate(period.groupFn(parseDate(date)))
 }
 

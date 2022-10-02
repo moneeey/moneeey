@@ -1,60 +1,53 @@
 import { chunk } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 
-export function uuid() {
-  return uuidv4()
-}
+const uuid = () => uuidv4()
 
-export function tokenize(text: string | undefined) {
-  return (text || '').toLowerCase().split(/[\W\d]/)
-}
+const tokenize = (text: string | undefined) => (text || '').toLowerCase().split(/[\W\d]/)
 
-export async function asyncTimeout<R>(
-  fn: () => R | Promise<R>,
-  delay: number
-): Promise<R> {
-  return await new Promise((resolve) => {
+const asyncTimeout = function <R>(fn: () => R | Promise<R>, delay: number): Promise<R> {
+  return new Promise((resolve) => {
     setTimeout(() => {
       resolve(fn())
     }, delay)
   })
 }
 
-export async function asyncProcess<T, State>(
+const asyncProcess = async function <T, R>(
   values: T[],
-  fn: (
-    chnk: T[],
-    state: State,
-    chunks: T[][],
-    tasks: number,
-    tasksTotal: number
-  ) => void,
-  state: State,
-  chunkSize = 20,
-  chunkThrottle = 2
-): Promise<State> {
-  const chunks = chunk(values, chunkSize)
-  const tasksTotal = chunks.length
-  while (chunks.length > 0) {
-    const chunk = chunks.shift()
-    await asyncTimeout(
-      () => fn(chunk || [], state, chunks, chunks.length, tasksTotal),
-      chunkThrottle
-    )
+  fn: (chnk: T[], state: R, percentage: number) => void,
+  options: {
+    state?: R
+    chunkSize?: number
+    chunkThrottle?: number
   }
+): Promise<R> {
+  const chunks = chunk(values, options.chunkSize)
+  const tasksTotal = chunks.length
+  const state = options.state || ({} as R)
+
+  const process = async () => {
+    const chnk = chunks.shift()
+    if (!chnk) {
+      return
+    }
+    await asyncTimeout(
+      () => fn(chnk || [], state, Math.round((1 - chunks.length / tasksTotal) * 10000) / 100),
+      options.chunkThrottle || 20
+    )
+    await process()
+  }
+  await process()
+
   return state
 }
 
-export enum StorageKind {
+enum StorageKind {
   PERMANENT,
   SESSION,
 }
 
-export function getStorage(
-  key: string,
-  defaault: string,
-  storage: StorageKind
-) {
+const getStorage = function (key: string, defaault: string, storage: StorageKind) {
   if (storage === StorageKind.PERMANENT) {
     return window.localStorage.getItem(key) || defaault
   } else if (storage === StorageKind.SESSION) {
@@ -62,10 +55,12 @@ export function getStorage(
   }
 }
 
-export function setStorage(key: string, value: string, storage: StorageKind) {
+const setStorage = function (key: string, value: string, storage: StorageKind) {
   if (storage === StorageKind.PERMANENT) {
     window.localStorage.setItem(key, value)
   } else if (storage === StorageKind.SESSION) {
     window.sessionStorage.setItem(key, value)
   }
 }
+
+export { uuid, tokenize, asyncProcess, getStorage, setStorage, StorageKind }

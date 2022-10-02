@@ -1,16 +1,17 @@
 import { StepType, TourProps, TourProvider, useTour } from '@reactour/tour'
 import { isEmpty } from 'lodash'
 import { MutableRefObject, ReactNode, useRef } from 'react'
-import { AccountRoute } from '../routes/AccountRoute'
+
+import AccountRoute from '../routes/AccountRoute'
 import { AccountSettingsRoute } from '../routes/AccountSettingsRoute'
-import { BudgetRoute } from '../routes/BudgetRoute'
+import BudgetRoute from '../routes/BudgetRoute'
 import { CurrencySettingsRoute } from '../routes/CurrencySettingsRoute'
-import { ImportRoute } from '../routes/ImportRoute'
+import ImportRoute from '../routes/ImportRoute'
 import MoneeeyStore from '../shared/MoneeeyStore'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
 import Messages from '../utils/Messages'
 
-function TourSteps(
+const TourSteps = function (
   { navigation, accounts }: MoneeeyStore,
   tourRef: MutableRefObject<TourProps | undefined>
 ): StepType[] {
@@ -20,6 +21,7 @@ function TourSteps(
     resizeObservables: [area],
   })
   const content = (text: string) => <>{text}</>
+
   return [
     {
       ...highlight('.tableEditor'),
@@ -60,17 +62,15 @@ function TourSteps(
   ]
 }
 
-const MoneeeyTourProvider = ({
-  children,
-}: {
-  children: ReactNode | ReactNode[]
-}) => {
+const MoneeeyTourProvider = ({ children }: { children: ReactNode | ReactNode[] }) => {
   const moneeeyStore = useMoneeeyStore()
   const tourRef = useRef<TourProps>()
   const TourRefHolder = () => {
     tourRef.current = useTour()
+
     return <>{children}</>
   }
+
   return (
     <TourProvider
       steps={TourSteps(moneeeyStore, tourRef)}
@@ -85,8 +85,7 @@ const MoneeeyTourProvider = ({
           ...base,
           backgroundColor: 'transparent',
         }),
-      }}
-    >
+      }}>
       <TourRefHolder />
     </TourProvider>
   )
@@ -94,6 +93,7 @@ const MoneeeyTourProvider = ({
 
 const useMoneeeyTour = () => {
   const tour = useTour()
+
   return {
     open: () => {
       tour.setCurrentStep(0)
@@ -102,9 +102,4 @@ const useMoneeeyTour = () => {
   }
 }
 
-export {
-  TourSteps,
-  useMoneeeyTour,
-  MoneeeyTourProvider,
-  MoneeeyTourProvider as default,
-}
+export { TourSteps, useMoneeeyTour, MoneeeyTourProvider, MoneeeyTourProvider as default }

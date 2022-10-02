@@ -1,5 +1,6 @@
 import { Button, Input } from 'antd'
 import { useState } from 'react'
+
 import useMoneeeyStore from '../shared/useMoneeeyStore'
 import ConfigTable from '../tables/ConfigTable'
 import Messages from '../utils/Messages'
@@ -14,46 +15,34 @@ enum BackupRestoreState {
 }
 
 export default function Settings() {
-  const [backupRestoreState, setBackupRestoreState] = useState(
-    BackupRestoreState.IDLE
-  )
+  const [backupRestoreState, setBackupRestoreState] = useState(BackupRestoreState.IDLE)
   const [content, setContent] = useState('')
   const moneeeyStore = useMoneeeyStore()
 
   const actionsDisabled =
-    backupRestoreState !== BackupRestoreState.IDLE &&
-    backupRestoreState !== BackupRestoreState.COMPLETED
+    backupRestoreState !== BackupRestoreState.IDLE && backupRestoreState !== BackupRestoreState.COMPLETED
 
-  const onBackupData = () => {
+  const onBackupData = async () => {
     if (!actionsDisabled) {
       setBackupRestoreState(BackupRestoreState.BACKUP_LOADING)
       setContent(Messages.settings.backup_loading(0))
-      ;(async () => {
-        const { data } = await moneeeyStore.persistence.exportAll(
-          (percentage) => {
-            setContent(Messages.settings.backup_loading(percentage))
-          }
-        )
-        setContent(data)
-        setBackupRestoreState(BackupRestoreState.COMPLETED)
-      })()
+      const data = await moneeeyStore.persistence.exportAll((percentage) => {
+        setContent(Messages.settings.backup_loading(percentage))
+      })
+      setContent(data)
+      setBackupRestoreState(BackupRestoreState.COMPLETED)
     }
   }
-  const onRestoreData = () => {
+  const onRestoreData = async () => {
     if (backupRestoreState === BackupRestoreState.RESTORE_INPUT) {
       setBackupRestoreState(BackupRestoreState.RESTORE_LOADING)
-      ;(async () => {
-        const input = content
-        setContent(Messages.settings.restore_loading(0))
-        const { errors } = await moneeeyStore.persistence.restoreAll(
-          input,
-          (percentage) => {
-            setContent(Messages.settings.restore_loading(percentage))
-          }
-        )
-        setContent([...errors, '', Messages.settings.reload_page].join('\n'))
-        setBackupRestoreState(BackupRestoreState.COMPLETED)
-      })()
+      const input = content
+      setContent(Messages.settings.restore_loading(0))
+      const { errors } = await moneeeyStore.persistence.restoreAll(input, (percentage) => {
+        setContent(Messages.settings.restore_loading(percentage))
+      })
+      setContent([...errors, '', Messages.settings.reload_page].join('\n'))
+      setBackupRestoreState(BackupRestoreState.COMPLETED)
     } else if (!actionsDisabled) {
       setBackupRestoreState(BackupRestoreState.RESTORE_INPUT)
       setContent(Messages.settings.restore_data_placeholder)
@@ -73,7 +62,7 @@ export default function Settings() {
   }
 
   return (
-    <section className="settingsArea">
+    <section className='settingsArea'>
       <ConfigTable config={moneeeyStore.config} />
       <p>
         <Button onClick={onBackupData} disabled={actionsDisabled}>
@@ -81,28 +70,16 @@ export default function Settings() {
         </Button>
         <Button
           onClick={onRestoreData}
-          disabled={
-            actionsDisabled &&
-            backupRestoreState !== BackupRestoreState.RESTORE_INPUT
-          }
-        >
+          disabled={actionsDisabled && backupRestoreState !== BackupRestoreState.RESTORE_INPUT}>
           {Messages.settings.import_data}
         </Button>
         <Button
           onClick={onClearData}
-          disabled={
-            actionsDisabled &&
-            backupRestoreState !== BackupRestoreState.CLEAR_INPUT
-          }
-        >
+          disabled={actionsDisabled && backupRestoreState !== BackupRestoreState.CLEAR_INPUT}>
           {Messages.settings.clear_all}
         </Button>
         {backupRestoreState !== BackupRestoreState.IDLE && (
-          <Input.TextArea
-            value={content}
-            onChange={({ target: { value } }) => setContent(value)}
-            rows={30}
-          />
+          <Input.TextArea value={content} onChange={({ target: { value } }) => setContent(value)} rows={30} />
         )}
       </p>
     </section>

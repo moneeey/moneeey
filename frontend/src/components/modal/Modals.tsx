@@ -1,6 +1,6 @@
 import LandingModal from './LandingModal'
 
-function Modals() {
+const Modals = function () {
   return (
     <>
       <LandingModal />

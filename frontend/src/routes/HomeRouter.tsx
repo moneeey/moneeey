@@ -1,4 +1,5 @@
 import Dashboard from '../pages/Dashboard'
+
 import { IRouteParameters, Route } from './Route'
 
 class HomeRouter extends Route<IRouteParameters> {
@@ -11,4 +12,5 @@ class HomeRouter extends Route<IRouteParameters> {
   }
 }
 
-export const HomeRoute = new HomeRouter()
+const HomeRoute = new HomeRouter()
+export { HomeRoute as default }

@@ -51,8 +51,7 @@ const Messages = {
     updated: 'Updated',
     unchanged: 'Unchanged',
     import_transactions: 'Import transactions',
-    changed_description: (from_value: string, to_value: string) =>
-      `Changed from\n${from_value}\nto\n${to_value}`,
+    changed_description: (from_value: string, to_value: string) => `Changed from\n${from_value}\nto\n${to_value}`,
   },
   util: {
     name: 'Name',
@@ -80,12 +79,9 @@ const Messages = {
     default_currency: 'Default currency',
     reference_account: 'Reference account',
     decimal_separator: 'Decimal separator',
-    backup_loading: (percentage: number) =>
-      `Loading your backup data, please wait... ${percentage}%`,
-    restore_loading: (percentage: number) =>
-      `Restoring your backup data, please wait... ${percentage}%`,
-    restore_data_placeholder:
-      'Paste your restore data here and click "Restore data" again',
+    backup_loading: (percentage: number) => `Loading your backup data, please wait... ${percentage}%`,
+    restore_loading: (percentage: number) => `Restoring your backup data, please wait... ${percentage}%`,
+    restore_data_placeholder: 'Paste your restore data here and click "Restore data" again',
     clear_data_token: 'DELETE EVERYTHING',
     clear_data_placeholder:
       'Type "DELETE EVERYTHING" in this text area and hit "Clear data" again to delete everything and start from zero.',
@@ -133,7 +129,8 @@ const Messages = {
     start_tour: 'Start Tour',
   },
   tour: {
-    edit_currencies: `The first step to archive your financial freedom is to let us know what currencies are you working with.
+    edit_currencies: `The first step to archive your financial freedom is to let us know what currencies
+      are you working with.
 
       We already added the top 20 most used currencies from 2020.`,
     create_accounts: `Now that we know the currencies we are having, it is time to tell us what are your accounts:

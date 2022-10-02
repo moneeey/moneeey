@@ -1,14 +1,15 @@
+// eslint-disable-next-line spaced-comment
 /// <reference types="cypress" />
 
 import '@this-dot/cypress-indexeddb'
 
 // ***********************************************
 // This example commands.ts shows you how to
-// create various custom commands and overwrite
-// existing commands.
+// Create various custom commands and overwrite
+// Existing commands.
 //
 // For more comprehensive examples of custom
-// commands please read more here:
+// Commands please read more here:
 // https://on.cypress.io/custom-commands
 // ***********************************************
 //
@@ -28,13 +29,13 @@ import '@this-dot/cypress-indexeddb'
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 //
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//       login(email: string, password: string): Chainable<void>
-//       drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
+// Declare global {
+//   Namespace Cypress {
+//     Interface Chainable {
+//       Login(email: string, password: string): Chainable<void>
+//       Drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
+//       Dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
+//       Visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
 //     }
 //   }
 // }
