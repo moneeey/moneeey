@@ -22,7 +22,7 @@ const asyncProcess = async function <T, R>(
     chunkThrottle?: number
   }
 ): Promise<R> {
-  const chunks = chunk(values, options.chunkSize)
+  const chunks = chunk(values, options.chunkSize || 50)
   const tasksTotal = chunks.length
   const state = options.state || ({} as R)
 
@@ -31,10 +31,8 @@ const asyncProcess = async function <T, R>(
     if (!chnk) {
       return
     }
-    await asyncTimeout(
-      () => fn(chnk || [], state, Math.round((1 - chunks.length / tasksTotal) * 10000) / 100),
-      options.chunkThrottle || 20
-    )
+    const percentage = Math.round((1 - chunks.length / tasksTotal) * 10000) / 100
+    await asyncTimeout(() => fn(chnk || [], state, percentage), options.chunkThrottle || 20)
     await process()
   }
   await process()
