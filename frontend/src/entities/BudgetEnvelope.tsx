@@ -52,9 +52,10 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
   constructor(moneeeyStore: MoneeeyStore) {
     super(moneeeyStore, {
       getUuid: (b) => b.envelope_uuid,
-      factory: () => {
-        throw new Error('This factory should never been used!')
-      },
+      factory: () =>
+        ({
+          entity_type: EntityType.VIRTUAL_BUDGET_ENVELOPE,
+        } as BudgetEnvelope),
       schema: () => ({
         name: {
           editor: EditorType.LINK,
