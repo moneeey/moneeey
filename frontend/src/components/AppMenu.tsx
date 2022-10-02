@@ -7,7 +7,6 @@ import {
   SettingOutlined,
   WarningTwoTone,
 } from '@ant-design/icons'
-import { Menu, Typography } from 'antd'
 import { observer } from 'mobx-react'
 
 import AccountRoute from '../routes/AccountRoute'
@@ -25,6 +24,9 @@ import BudgetRoute from '../routes/BudgetRoute'
 import Messages from '../utils/Messages'
 import { NavigationModal } from '../shared/Navigation'
 
+import Navbar from './base/Navbar'
+import { NormalText, SecondaryText } from './base/Text'
+
 export const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore()
   const getAccountCurrency = (account: IAccount) => {
@@ -34,9 +36,7 @@ export const AppMenu = observer(() => {
   }
 
   return (
-    <Menu
-      mode='horizontal'
-      triggerSubMenuAction='click'
+    <Navbar
       items={[
         {
           key: 'dashboard',
@@ -60,9 +60,9 @@ export const AppMenu = observer(() => {
               .map((acct) => ({
                 key: `account_${acct._id || ''}`,
                 label: (
-                  <span>
-                    <Typography.Text type='secondary'>{getAccountCurrency(acct)}</Typography.Text> {acct.name}
-                  </span>
+                  <NormalText>
+                    <SecondaryText>{getAccountCurrency(acct)}</SecondaryText> {acct.name}
+                  </NormalText>
                 ),
                 onClick: () => navigation.navigate(AccountRoute.accountUrl(acct)),
               })),
@@ -128,7 +128,8 @@ export const AppMenu = observer(() => {
             ),
           onClick: () => navigation.openModal(NavigationModal.SYNC),
         },
-      ]}></Menu>
+      ]}
+    />
   )
 })
 

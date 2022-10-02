@@ -1,8 +1,8 @@
-import { Checkbox } from 'antd'
 import { CheckboxChangeEvent } from 'antd/lib/checkbox'
 import { observer } from 'mobx-react'
 
 import { IBaseEntity } from '../../shared/Entity'
+import { Checkbox } from '../base/Input'
 
 import { BaseEditor } from './BaseEditor'
 import { EditorProps, NoSorter } from './EditorProps'

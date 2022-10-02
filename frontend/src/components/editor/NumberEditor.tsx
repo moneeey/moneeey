@@ -1,9 +1,9 @@
-import { Input } from 'antd'
 import { observer } from 'mobx-react'
 import { ChangeEvent } from 'react'
 
 import { IBaseEntity } from '../../shared/Entity'
 import MappedStore from '../../shared/MappedStore'
+import { Input } from '../base/Input'
 import { Row } from '../TableEditor'
 
 import { BaseEditor } from './BaseEditor'
@@ -33,6 +33,7 @@ export const BaseNumberEditor = observer(
           ComposedProps: (
             onChange: (value?: number, editorValue?: string, additional?: Partial<EntityType>) => void
           ) => ({
+            type: 'number',
             prefix,
             suffix,
             onChange: ({ target: { value } }: ChangeEvent<HTMLInputElement>) =>

@@ -1,7 +1,7 @@
-import { Input } from 'antd'
 import { observer } from 'mobx-react'
 import { ChangeEvent } from 'react'
 
+import { Input } from '../base/Input'
 import { IBaseEntity } from '../../shared/Entity'
 import MappedStore from '../../shared/MappedStore'
 import { Row } from '../TableEditor'

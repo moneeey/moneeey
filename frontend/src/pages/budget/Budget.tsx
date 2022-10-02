@@ -1,8 +1,12 @@
-import { Button, Card, Checkbox, Drawer, Form, Input, InputNumber, Select, Space } from 'antd'
+import { Card, Checkbox, Drawer, Form } from 'antd'
 import { map, range } from 'lodash'
 import { observer } from 'mobx-react'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 
+import { LinkButton, PrimaryButton, SecondaryButton } from '../../components/base/Button'
+import { Input } from '../../components/base/Input'
+import Select from '../../components/base/Select'
+import Space from '../../components/base/Space'
 import { TableEditor } from '../../components/TableEditor'
 import { IBudget } from '../../entities/Budget'
 import { BudgetEnvelope } from '../../entities/BudgetEnvelope'
@@ -54,7 +58,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived }: Perio
         schemaFilter={(b) => b.starting === starting && (!b.budget.archived || viewArchived)}
         context={{ name: (env: BudgetEnvelope) => setEditing(env.budget) }}
       />
-      <Button onClick={onNewBudget}>{Messages.budget.new}</Button>
+      <LinkButton onClick={onNewBudget}>{Messages.budget.new}</LinkButton>
     </Card>
   )
 })
@@ -90,10 +94,8 @@ const BudgetEditor = ({
       open={true}
       extra={
         <Space>
-          <Button onClick={onClose}>{Messages.util.close}</Button>
-          <Button onClick={onSave} type='primary'>
-            {Messages.budget.save}
-          </Button>
+          <SecondaryButton onClick={onClose}>{Messages.util.close}</SecondaryButton>
+          <PrimaryButton onClick={onSave}>{Messages.budget.save}</PrimaryButton>
         </Space>
       }>
       <Form layout='vertical'>
@@ -139,9 +141,9 @@ const BudgetEditor = ({
 
 const MonthDateSelector = ({ setDate, date }: { setDate: Dispatch<SetStateAction<Date>>; date: Date }) => (
   <Space>
-    <Button onClick={() => setDate(startOfMonthOffset(date, -1))}>{Messages.budget.prev}</Button>
+    <SecondaryButton onClick={() => setDate(startOfMonthOffset(date, -1))}>{Messages.budget.prev}</SecondaryButton>
     {formatDateMonth(date)}
-    <Button onClick={() => setDate(startOfMonthOffset(date, +1))}>{Messages.budget.next}</Button>
+    <SecondaryButton onClick={() => setDate(startOfMonthOffset(date, +1))}>{Messages.budget.next}</SecondaryButton>
   </Space>
 )
 
@@ -159,12 +161,12 @@ const Budget = observer(() => {
         <MonthDateSelector date={startingDate} setDate={setStartingDate} />
         <div className='divider' />
         {Messages.budget.show_months}
-        <InputNumber
+        <Input
           min={1}
           max={24}
           placeholder={Messages.budget.show_months}
           value={viewMonths}
-          onChange={(val) => config.merge({ ...config.main, view_months: val })}
+          onChange={({ target: { value } }) => config.merge({ ...config.main, view_months: parseInt(value, 10) })}
         />
         <Checkbox
           checked={viewArchived}

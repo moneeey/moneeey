@@ -1,9 +1,9 @@
-import { Input } from 'antd'
 import { head, isEmpty, last } from 'lodash'
 import { observer } from 'mobx-react'
 import { ChangeEvent, Dispatch, useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 
+import { Input } from '../../components/base/Input'
 import { AccountSelector } from '../../components/editor/AccountEditor'
 import { TAccountUUID } from '../../entities/Account'
 import ConfigStore from '../../entities/Config'
@@ -115,7 +115,7 @@ const ImportStarter = function ({
       <section className='importStarter'>
         <section className='importSettings'>
           <h3>{Messages.import.configuration}</h3>
-          <Input.Group className='referenceAccount'>
+          <div className='referenceAccount'>
             {Messages.settings.reference_account}
             <ReferenceAccountSelector
               referenceAccount={config.referenceAccount}
@@ -123,8 +123,8 @@ const ImportStarter = function ({
                 setConfig((currentConfig) => ({ ...currentConfig, referenceAccount }))
               }
             />
-          </Input.Group>
-          <Input.Group>
+          </div>
+          <div>
             {Messages.util.date_format}
             <Input
               type='text'
@@ -134,8 +134,8 @@ const ImportStarter = function ({
                 setConfig((currentConfig) => ({ ...currentConfig, dateFormat: value }))
               }
             />
-          </Input.Group>
-          <Input.Group>
+          </div>
+          <div>
             {Messages.settings.decimal_separator}
             <Input
               type='text'
@@ -145,7 +145,7 @@ const ImportStarter = function ({
                 setConfig((currentConfig) => ({ ...currentConfig, decimalSeparator: value }))
               }
             />
-          </Input.Group>
+          </div>
         </section>
         {!error && <FileUploader onFile={onFile} error={error} />}
       </section>

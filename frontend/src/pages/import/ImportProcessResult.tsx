@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable react/display-name */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Table, Typography } from 'antd'
+import { Table } from 'antd'
 import { compact, identity, isEmpty, isNumber, map } from 'lodash'
 import { Dispatch, SetStateAction } from 'react'
 
+import { PrimaryButton } from '../../components/base/Button'
+import { DangerText } from '../../components/base/Text'
 import { AccountSelector } from '../../components/editor/AccountEditor'
 import { TAccountUUID } from '../../entities/Account'
 import { ITransaction } from '../../entities/Transaction'
@@ -59,9 +61,9 @@ const ImportProcessResult = ({
     <>
       {map(result.errors, (err) => (
         <p>
-          <Typography.Text code key={err.description} type='danger' title={err.data}>
-            {err.description}
-          </Typography.Text>
+          <DangerText key={err.description}>
+            {err.data} {err.description}
+          </DangerText>
         </p>
       ))}
       <Table
@@ -119,9 +121,7 @@ const ImportProcessResult = ({
           },
         }))}
       />
-      <Button type='primary' onClick={onImport}>
-        {Messages.import.import_transactions}
-      </Button>
+      <PrimaryButton onClick={onImport}>{Messages.import.import_transactions}</PrimaryButton>
     </>
   )
 }

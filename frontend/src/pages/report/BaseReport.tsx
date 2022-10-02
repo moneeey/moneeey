@@ -1,7 +1,7 @@
 import { Column, Line } from '@ant-design/charts'
-import { Checkbox } from 'antd'
 import { ReactElement, useEffect, useState } from 'react'
 
+import { Checkbox } from '../../components/base/Input'
 import Loading from '../../components/Loading'
 import { IAccount } from '../../entities/Account'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'

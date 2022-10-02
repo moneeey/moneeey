@@ -1,8 +1,8 @@
-import { Input } from 'antd'
 import { observer } from 'mobx-react'
 import { ChangeEvent, useState } from 'react'
 
 import { IBaseEntity } from '../../shared/Entity'
+import { Input } from '../base/Input'
 
 import { TagsMemo } from '../Tags'
 
