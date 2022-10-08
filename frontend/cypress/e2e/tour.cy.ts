@@ -7,7 +7,7 @@ import '../support/cypress-indexeddb-namespace'
 describe('Tour spec', () => {
   before(() => {
     cy.clearIndexedDb('_pouch_moneeey')
-    cy.visit('http://localhost:4270')
+    cy.visit('http://local.moneeey.io')
   })
 
   it('Start tour', () => {
