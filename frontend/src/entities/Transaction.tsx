@@ -1,34 +1,34 @@
-import { computed, makeObservable, observable } from 'mobx'
+import { computed, makeObservable, observable } from 'mobx';
 
-import { isEmpty } from 'lodash'
+import { isEmpty } from 'lodash';
 
-import { TDate, compareDates, currentDate, currentDateTime, parseDate } from '../utils/Date'
-import { uuid } from '../utils/Utils'
-import { EditorType } from '../components/editor/EditorProps'
-import { EntityType, IBaseEntity, TMonetary, isEntityType } from '../shared/Entity'
-import MappedStore from '../shared/MappedStore'
-import MoneeeyStore from '../shared/MoneeeyStore'
-import Messages from '../utils/Messages'
+import { TDate, compareDates, currentDate, currentDateTime, parseDate } from '../utils/Date';
+import { uuid } from '../utils/Utils';
+import { EditorType } from '../components/editor/EditorProps';
+import { EntityType, IBaseEntity, TMonetary, isEntityType } from '../shared/Entity';
+import MappedStore from '../shared/MappedStore';
+import MoneeeyStore from '../shared/MoneeeyStore';
+import Messages from '../utils/Messages';
 
-import { AccountStore, TAccountUUID } from './Account'
+import { AccountStore, TAccountUUID } from './Account';
 
-export type TTransactionUUID = string
+export type TTransactionUUID = string;
 
 export interface ITransaction extends IBaseEntity {
-  transaction_uuid: TTransactionUUID
-  date: TDate
-  from_account: TAccountUUID
-  to_account: TAccountUUID
-  from_value: TMonetary
-  to_value: TMonetary
-  memo: string
-  import_data?: string
+  transaction_uuid: TTransactionUUID;
+  date: TDate;
+  from_account: TAccountUUID;
+  to_account: TAccountUUID;
+  from_value: TMonetary;
+  to_value: TMonetary;
+  memo: string;
+  import_data?: string;
 }
 
 class TransactionStore extends MappedStore<ITransaction> {
-  oldest_dt: Date = new Date()
+  oldest_dt: Date = new Date();
 
-  newest_dt: Date = new Date()
+  newest_dt: Date = new Date();
 
   constructor(moneeeyStore: MoneeeyStore) {
     super(moneeeyStore, {
@@ -86,74 +86,74 @@ class TransactionStore extends MappedStore<ITransaction> {
           editor: EditorType.DATE,
         },
       }),
-    })
+    });
     makeObservable(this, {
       sorted: computed,
       oldest_dt: observable,
       newest_dt: observable,
-    })
+    });
   }
 
   merge(item: ITransaction, options: { setUpdated: boolean } = { setUpdated: true }) {
-    super.merge(item, options)
+    super.merge(item, options);
     if (!isEmpty(item.date)) {
-      const dt = parseDate(item.date)
+      const dt = parseDate(item.date);
       if (dt) {
         if (dt.getTime() > this.newest_dt.getTime()) {
-          this.newest_dt = new Date(dt)
+          this.newest_dt = new Date(dt);
         }
         if (dt.getTime() < this.oldest_dt.getTime()) {
-          this.oldest_dt = new Date(dt)
+          this.oldest_dt = new Date(dt);
         }
       }
     }
   }
 
   sortTransactions(transactions: ITransaction[]): ITransaction[] {
-    return transactions.sort((a, b) => compareDates(a.date, b.date))
+    return transactions.sort((a, b) => compareDates(a.date, b.date));
   }
 
   get sorted() {
-    return this.sortTransactions(this.all)
+    return this.sortTransactions(this.all);
   }
 
   viewAllWithAccount(account: TAccountUUID) {
-    return this.viewAllWithAccounts([account])
+    return this.viewAllWithAccounts([account]);
   }
 
   filterByAccounts(accounts: TAccountUUID[]) {
-    const accountSet = new Set(accounts)
+    const accountSet = new Set(accounts);
 
     return (row: ITransaction) =>
       accountSet.has(row.from_account) ||
       accountSet.has(row.to_account) ||
-      (isEmpty(row.from_account) && isEmpty(row.to_account))
+      (isEmpty(row.from_account) && isEmpty(row.to_account));
   }
 
   viewAllWithAccounts(accounts: TAccountUUID[]) {
-    return this.sortTransactions(this.byPredicate(this.filterByAccounts(accounts)))
+    return this.sortTransactions(this.byPredicate(this.filterByAccounts(accounts)));
   }
 
   filterByTag(tag: string, accountsStore: AccountStore) {
-    return (row: ITransaction) => this.getAllTransactionTags(row, accountsStore).indexOf(tag) >= 0
+    return (row: ITransaction) => this.getAllTransactionTags(row, accountsStore).indexOf(tag) >= 0;
   }
 
   viewAllWithTag(tag: string, accountsStore: AccountStore) {
-    return this.sortTransactions(this.byPredicate(this.filterByTag(tag, accountsStore)))
+    return this.sortTransactions(this.byPredicate(this.filterByTag(tag, accountsStore)));
   }
 
   viewAllNonPayees(accountsStore: AccountStore) {
-    return this.viewAllWithAccounts(accountsStore.allNonPayees.map((act) => act.account_uuid))
+    return this.viewAllWithAccounts(accountsStore.allNonPayees.map((act) => act.account_uuid));
   }
 
   getAllTransactionTags(transaction: ITransaction, accountsStore: AccountStore) {
-    const from_acct = accountsStore.accountTags(transaction.from_account)
-    const to_acct = accountsStore.accountTags(transaction.to_account)
+    const from_acct = accountsStore.accountTags(transaction.from_account);
+    const to_acct = accountsStore.accountTags(transaction.to_account);
 
-    return [...from_acct, ...to_acct, ...transaction.tags]
+    return [...from_acct, ...to_acct, ...transaction.tags];
   }
 }
 
-const isTransaction = isEntityType<ITransaction>(EntityType.TRANSACTION)
+const isTransaction = isEntityType<ITransaction>(EntityType.TRANSACTION);
 
-export { TransactionStore, TransactionStore as default, isTransaction }
+export { TransactionStore, TransactionStore as default, isTransaction };

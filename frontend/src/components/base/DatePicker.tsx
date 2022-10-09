@@ -1,11 +1,7 @@
-import { DatePicker as AntdDatePicker, DatePickerProps } from 'antd'
+import { DatePicker as AntdDatePicker, DatePickerProps } from 'antd';
 
-import { WithDataTestId } from './Common'
+import { WithDataTestId } from './Common';
 
-const DatePicker = (props: DatePickerProps & WithDataTestId) => (
-  <div data-test-id={props['data-test-id']}>
-    <AntdDatePicker {...props} />
-  </div>
-)
+const DatePicker = (props: DatePickerProps & WithDataTestId) => <AntdDatePicker {...props} />;
 
-export { DatePicker as default }
+export { DatePicker as default };

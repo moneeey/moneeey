@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 import {
   FileUploaderMode,
@@ -6,24 +6,24 @@ import {
   ImportTask,
   ProcessContentFn,
   ProcessProgressFn,
-} from '../../shared/import/ImportContent'
-import pdfImport from '../../shared/import/PdfImporter'
-import txtImport from '../../shared/import/TxtImporter'
-import ofxImport from '../../shared/import/OfxImporter'
-import MoneeeyStore from '../../shared/MoneeeyStore'
-import useMoneeeyStore from '../../shared/useMoneeeyStore'
-import Messages from '../../utils/Messages'
+} from '../../shared/import/ImportContent';
+import pdfImport from '../../shared/import/PdfImporter';
+import txtImport from '../../shared/import/TxtImporter';
+import ofxImport from '../../shared/import/OfxImporter';
+import MoneeeyStore from '../../shared/MoneeeyStore';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import Messages from '../../utils/Messages';
 
-import { ImportProcessResult } from './ImportProcessResult'
+import { ImportProcessResult } from './ImportProcessResult';
 
 export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
   txt: txtImport(),
   csv(moneeeyStore: MoneeeyStore, data: ImportTask, onProgress: ProcessProgressFn): Promise<ImportResult> {
-    return ContentProcessor.txt(moneeeyStore, data, onProgress)
+    return ContentProcessor.txt(moneeeyStore, data, onProgress);
   },
   pdf: pdfImport(),
   ofx: ofxImport(),
-}
+};
 
 const process = async ({
   moneeeyStore,
@@ -32,31 +32,31 @@ const process = async ({
   setProgress,
   setResult,
 }: {
-  moneeeyStore: MoneeeyStore
-  task: ImportTask
-  processor?: ProcessContentFn
-  setProgress: Dispatch<SetStateAction<number>>
-  setResult: Dispatch<SetStateAction<ImportResult>>
+  moneeeyStore: MoneeeyStore;
+  task: ImportTask;
+  processor?: ProcessContentFn;
+  setProgress: Dispatch<SetStateAction<number>>;
+  setResult: Dispatch<SetStateAction<ImportResult>>;
 }) => {
-  const onProgress = (percentage: number) => setProgress(percentage)
+  const onProgress = (percentage: number) => setProgress(percentage);
   if (processor) {
-    setResult(await processor(moneeeyStore, task, onProgress))
+    setResult(await processor(moneeeyStore, task, onProgress));
   }
-}
+};
 
 const ImportProcess = function ({ task }: { task: ImportTask }) {
-  const [progress, setProgress] = useState(0)
+  const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<ImportResult>({
     errors: [],
     transactions: [],
     recommended_accounts: {},
-  })
-  const moneeeyStore = useMoneeeyStore()
+  });
+  const moneeeyStore = useMoneeeyStore();
 
   useEffect(() => {
-    const processor = ContentProcessor[task.input.mode]
-    process({ moneeeyStore, task, processor, setProgress, setResult })
-  }, [task])
+    const processor = ContentProcessor[task.input.mode];
+    process({ moneeeyStore, task, processor, setProgress, setResult });
+  }, [task]);
 
   return (
     <>
@@ -65,7 +65,7 @@ const ImportProcess = function ({ task }: { task: ImportTask }) {
       </h4>
       {result && <ImportProcessResult {...{ task, result, setResult }} />}
     </>
-  )
-}
+  );
+};
 
-export { ImportProcess, ImportProcess as default }
+export { ImportProcess, ImportProcess as default };

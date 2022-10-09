@@ -1,40 +1,40 @@
-import { head, isEmpty, last } from 'lodash'
-import { observer } from 'mobx-react'
-import { ChangeEvent, Dispatch, useCallback, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
+import { head, isEmpty, last } from 'lodash';
+import { observer } from 'mobx-react';
+import { ChangeEvent, Dispatch, useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 
-import { Input } from '../../components/base/Input'
-import { AccountSelector } from '../../components/editor/AccountEditor'
-import { TAccountUUID } from '../../entities/Account'
-import ConfigStore from '../../entities/Config'
-import { FileUploaderMode, ImportConfig, ImportInput, ImportTask } from '../../shared/import/ImportContent'
-import useMoneeeyStore from '../../shared/useMoneeeyStore'
-import { TDateFormat } from '../../utils/Date'
-import Messages from '../../utils/Messages'
+import { Input } from '../../components/base/Input';
+import { AccountSelector } from '../../components/editor/AccountEditor';
+import { TAccountUUID } from '../../entities/Account';
+import ConfigStore from '../../entities/Config';
+import { FileUploaderMode, ImportConfig, ImportInput, ImportTask } from '../../shared/import/ImportContent';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import { TDateFormat } from '../../utils/Date';
+import Messages from '../../utils/Messages';
 
-import './ImportStarter.less'
+import './ImportStarter.less';
 
 export interface FileUploaderProps {
-  onFile: (input: ImportInput) => void
-  error: string | false
+  onFile: (input: ImportInput) => void;
+  error: string | false;
 }
 
 const FileUploader = function ({ onFile, error }: FileUploaderProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       acceptedFiles.forEach((f) => {
-        const mode = last(f.name.split('.')) || 'txt'
+        const mode = last(f.name.split('.')) || 'txt';
         onFile({
           name: f.name,
           mode: mode as FileUploaderMode,
           contents: f,
-        })
-      })
+        });
+      });
     },
     [onFile]
-  )
+  );
 
-  const disabled = Boolean(error)
+  const disabled = Boolean(error);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -47,9 +47,9 @@ const FileUploader = function ({ onFile, error }: FileUploaderProps) {
 
       // 'application/x-pdf': ['.pdf'],
     },
-  })
+  });
 
-  const inputProps = getInputProps()
+  const inputProps = getInputProps();
 
   return (
     <>
@@ -65,36 +65,37 @@ const FileUploader = function ({ onFile, error }: FileUploaderProps) {
         <p>{Messages.import.supported_formats}</p>
       </div>
     </>
-  )
-}
+  );
+};
 
 interface ReferenceAccountSelectorProps {
-  referenceAccount: TAccountUUID
-  onReferenceAccount: (account: TAccountUUID) => void
+  referenceAccount: TAccountUUID;
+  onReferenceAccount: (account: TAccountUUID) => void;
 }
 
 export const ReferenceAccountSelector = observer(
   ({ referenceAccount, onReferenceAccount }: ReferenceAccountSelectorProps) => {
-    const moneeeyStore = useMoneeeyStore()
+    const moneeeyStore = useMoneeeyStore();
 
     return (
       <AccountSelector
+        title={Messages.import.select_reference_account}
         account={referenceAccount}
         accounts={moneeeyStore.accounts.allNonPayees}
         onSelect={(value) => onReferenceAccount(value)}
       />
-    )
+    );
   }
-)
+);
 
 const ImportStarter = function ({
   onTask,
   configuration,
 }: {
-  onTask: Dispatch<ImportTask>
-  configuration: ConfigStore
+  onTask: Dispatch<ImportTask>;
+  configuration: ConfigStore;
 }) {
-  const { accounts } = useMoneeeyStore()
+  const { accounts } = useMoneeeyStore();
   const [config, setConfig] = useState(
     () =>
       ({
@@ -102,12 +103,12 @@ const ImportStarter = function ({
         decimalSeparator: configuration.main.decimal_separator,
         referenceAccount: head(accounts.allNonPayees)?.account_uuid || '',
       } as ImportConfig)
-  )
+  );
 
-  const error = isEmpty(config.referenceAccount) && Messages.import.select_reference_account
+  const error = isEmpty(config.referenceAccount) && Messages.import.select_reference_account;
   const onFile = (input: ImportInput) => {
-    onTask({ input, config })
-  }
+    onTask({ input, config });
+  };
 
   return (
     <>
@@ -152,7 +153,7 @@ const ImportStarter = function ({
         {!error && <FileUploader onFile={onFile} error={error} />}
       </section>
     </>
-  )
-}
+  );
+};
 
-export { ImportStarter, ImportStarter as default }
+export { ImportStarter, ImportStarter as default };
