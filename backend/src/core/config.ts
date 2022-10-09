@@ -1,8 +1,16 @@
 import fs from 'fs';
 import dotenv from 'dotenv';
 
-const ENV_FILE = '/run/secret/prod.env';
-dotenv.config(fs.existsSync(ENV_FILE) ? { path: ENV_FILE } : {});
+const PROD_ENV_FILE = "/run/secret/prod.env";
+const DEV_ENV_FILE = "/run/secret/dev.env";
+
+if (fs.existsSync(PROD_ENV_FILE)) {
+  dotenv.config({ path: PROD_ENV_FILE });
+} else if (fs.existsSync(DEV_ENV_FILE)) {
+  dotenv.config({ path: DEV_ENV_FILE });
+} else {
+  dotenv.config();
+}
 
 const env = (envName: string) => process.env[envName] as string;
 const envNumber = (envName: string) => parseInt(env(envName));

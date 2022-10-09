@@ -1,31 +1,31 @@
-import { ReactNode, useMemo, useState } from 'react'
+import { ReactNode, useMemo, useState } from 'react';
 
-import { IBaseEntity } from '../../shared/Entity'
+import { IBaseEntity } from '../../shared/Entity';
 
-import { BaseEditor, BaseEditorProps } from './BaseEditor'
+import { BaseEditor, BaseEditorProps } from './BaseEditor';
 
 interface BaseSelectEditorProps<EntityType extends IBaseEntity, ValueEditorType, ValueEntityType>
   extends BaseEditorProps<EntityType, ValueEditorType, ValueEntityType> {
   options: Array<{
-    label: string | ReactNode
-    labelText?: string
-    value: ValueEditorType
-  }>
+    label: string | ReactNode;
+    labelText?: string;
+    value: ValueEditorType;
+  }>;
 }
 
 const BaseSelectEditor = function <EntityType extends IBaseEntity, ValueEditorType, ValueEntityType>(
   props: BaseSelectEditorProps<EntityType, ValueEditorType, ValueEntityType>
 ) {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState('');
   const options = useMemo(
     () =>
       props.options.filter((option) => {
-        const labelAsText = option.labelText || option.label?.toString() || ''
+        const labelAsText = option.labelText || option.label?.toString() || '';
 
-        return labelAsText.toLowerCase().includes(search)
+        return labelAsText.toLowerCase().includes(search);
       }),
     [props.options, search]
-  )
+  );
 
   return (
     <BaseEditor
@@ -43,7 +43,7 @@ const BaseSelectEditor = function <EntityType extends IBaseEntity, ValueEditorTy
         }),
       }}
     />
-  )
-}
+  );
+};
 
-export default BaseSelectEditor
+export default BaseSelectEditor;

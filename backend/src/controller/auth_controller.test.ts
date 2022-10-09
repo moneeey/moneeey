@@ -72,12 +72,12 @@ describe('auth_controller', () => {
       expect(smtp_mock.mock.calls).toEqual([
         [
           {
-            from: 'moneeey@youremail.com',
-            html: 'Please click the following link to complete your registration: <a href="http://localhost:4270/?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech">http://localhost:4270/?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech</a>',
-            subject: 'Moneeey login',
-            to: 'moneeey@baroni.tech'
-          }
-        ]
+            from: "moneeey@youremail.com",
+            html: 'Please click the following link to complete your registration: <a href="http://local.moneeey.io/?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech">http://local.moneeey.io/?auth_code=hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&confirm_code=hashed:-123450006-hashed:-123450004-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450005&email=moneeey@baroni.tech</a>',
+            subject: "Moneeey login",
+            to: "moneeey@baroni.tech",
+          },
+        ],
       ]);
       expect(logger.history).toEqual([
         { debug: ['get_or_create_user retrieve', { email: 'moneeey@baroni.tech' }] },
@@ -156,12 +156,12 @@ describe('auth_controller', () => {
       expect(smtp_mock.mock.calls).toEqual([
         [
           {
-            from: 'moneeey@youremail.com',
-            html: 'Please click the following link to complete your registration: <a href="http://localhost:4270/?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech">http://localhost:4270/?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech</a>',
-            subject: 'Moneeey login',
-            to: 'moneeey@baroni.tech'
-          }
-        ]
+            from: "moneeey@youremail.com",
+            html: 'Please click the following link to complete your registration: <a href="http://local.moneeey.io/?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech">http://local.moneeey.io/?auth_code=hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001&confirm_code=hashed:-123450004-hashed:-123450002-moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450001moneeey@baroni.tech_auth_UUIDUUID-dcf7-6969-a608-420123450003&email=moneeey@baroni.tech</a>',
+            subject: "Moneeey login",
+            to: "moneeey@baroni.tech",
+          },
+        ],
       ]);
       expect(logger.history).toEqual([
         { debug: ['get_or_create_user retrieve', { email: 'moneeey@baroni.tech' }] },

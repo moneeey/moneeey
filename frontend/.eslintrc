@@ -169,6 +169,7 @@
     "padding-line-between-statements": ["error", { "blankLine": "always", "prev": "*", "next": "return" }],
     "quotes": ["error", "single"],
     "rest-spread-spacing": "error",
+    "semi": ["error", "always"],
     "semi-spacing": "error",
     "semi-style": "error",
     "space-before-blocks": "error",
