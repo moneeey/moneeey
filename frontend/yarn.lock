@@ -2172,10 +2172,10 @@
   dependencies:
     "@reactour/utils" "*"
 
-"@reactour/tour@^3.1.4":
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/@reactour/tour/-/tour-3.1.4.tgz#80f7545b02dcc81bbc78dbfce426d0d1cf79b36b"
-  integrity sha512-iUG84eBdoCp+0DS6+8YIbD6IRZMRAMi3iRwTeVxxur0CLxBc+q7ysfwyHV/tUpV84qRnuEs/mcqC09nGSzdDYw==
+"@reactour/tour@^3.1.6":
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/@reactour/tour/-/tour-3.1.6.tgz#6ab2faff3cbfb61a5ca274468a3bcdfd599db3e1"
+  integrity sha512-TqKDax1pEqKfzlFyQjRAO8iwzPTK8G6UQtB5MrT0uxJeKNduBcZshcT8lA5GYYJqemCL1gRuhrbjJQZdHft5qg==
   dependencies:
     "@reactour/mask" "*"
     "@reactour/popover" "*"
