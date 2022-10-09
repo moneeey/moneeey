@@ -4,7 +4,7 @@ import { observer } from 'mobx-react';
 
 import { BrowserRouter } from 'react-router-dom';
 
-import 'antd/dist/antd.dark.less';
+import './App.less';
 
 import AppMenu from './components/AppMenu';
 import RouteRenderer from './routes/RouteRenderer';
@@ -19,7 +19,6 @@ import Modals from './components/modal/Modals';
 import { TagsHighlightProvider } from './components/Tags';
 import MoneeeyTourProvider from './components/Tour';
 
-import './App.less';
 import { PouchDBFactory } from './shared/Persistence';
 
 export const App = observer(() => {
