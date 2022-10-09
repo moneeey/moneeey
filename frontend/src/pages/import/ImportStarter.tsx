@@ -127,6 +127,7 @@ const ImportStarter = function ({
           <div>
             {Messages.util.date_format}
             <Input
+              data-test-id='inputDateFormat'
               type='text'
               placeholder={TDateFormat}
               value={config.dateFormat}
@@ -138,6 +139,7 @@ const ImportStarter = function ({
           <div>
             {Messages.settings.decimal_separator}
             <Input
+              data-test-id='inputDecimalSeparator'
               type='text'
               placeholder={'. or ,'}
               value={config.decimalSeparator}

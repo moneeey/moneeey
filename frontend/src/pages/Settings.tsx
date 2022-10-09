@@ -81,7 +81,12 @@ export default function Settings() {
           {Messages.settings.clear_all}
         </SecondaryButton>
         {backupRestoreState !== BackupRestoreState.IDLE && (
-          <TextArea value={content} onChange={({ target: { value } }) => setContent(value)} rows={30} />
+          <TextArea
+            data-test-id='importExportOutput'
+            value={content}
+            onChange={({ target: { value } }) => setContent(value)}
+            rows={30}
+          />
         )}
       </Space>
     </section>

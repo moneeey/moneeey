@@ -18,6 +18,7 @@ const Import = observer(() => {
   return (
     <div className='importArea'>
       <Tabs
+        data-test-id='importTabs'
         items={[
           {
             label: Messages.import.start,

@@ -1,10 +1,10 @@
-import { Card, Checkbox, Drawer, Form } from 'antd'
+import { Card, Drawer, Form } from 'antd'
 import { map, range } from 'lodash'
 import { observer } from 'mobx-react'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 
 import { LinkButton, PrimaryButton, SecondaryButton } from '../../components/base/Button'
-import { Input } from '../../components/base/Input'
+import { Checkbox, Input } from '../../components/base/Input'
 import Select from '../../components/base/Select'
 import Space from '../../components/base/Space'
 import { TableEditor } from '../../components/TableEditor'
@@ -101,6 +101,7 @@ const BudgetEditor = ({
       <Form layout='vertical'>
         <Form.Item label={Messages.util.name}>
           <Input
+            data-test-id='budgetName'
             type='text'
             placeholder={Messages.util.name}
             value={editing.name}
@@ -109,6 +110,7 @@ const BudgetEditor = ({
         </Form.Item>
         <Form.Item label={Messages.util.currency}>
           <Select
+            data-test-id='budgetCurrency'
             placeholder={Messages.util.currency}
             options={currencies.all.map((c) => ({
               label: c.name,
@@ -120,6 +122,7 @@ const BudgetEditor = ({
         </Form.Item>
         <Form.Item label={Messages.util.tags}>
           <Select
+            data-test-id='budgetTags'
             mode='tags'
             placeholder={Messages.util.tags}
             options={tags.all.map((t) => ({ label: t, value: t }))}
@@ -129,6 +132,7 @@ const BudgetEditor = ({
         </Form.Item>
         <Form.Item>
           <Checkbox
+            data-test-id='budgetIsArchived'
             value={editing.archived}
             onChange={({ target: { checked: archived } }) => setEditing({ ...editing, archived })}>
             {Messages.util.archived}
@@ -162,6 +166,7 @@ const Budget = observer(() => {
         <div className='divider' />
         {Messages.budget.show_months}
         <Input
+          data-test-id='inputViewMonths'
           min={1}
           max={24}
           placeholder={Messages.budget.show_months}
@@ -169,6 +174,7 @@ const Budget = observer(() => {
           onChange={({ target: { value } }) => config.merge({ ...config.main, view_months: parseInt(value, 10) })}
         />
         <Checkbox
+          data-test-id='checkboxViewArchived'
           checked={viewArchived}
           onChange={({ target: { checked } }) => config.merge({ ...config.main, view_archived: checked })}>
           {Messages.budget.show_archived}
