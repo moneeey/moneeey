@@ -1,49 +1,49 @@
-import { observer } from 'mobx-react'
+import { observer } from 'mobx-react';
 
-import { AccountType, IAccount, TAccountUUID } from '../../entities/Account'
-import { TDate } from '../../utils/Date'
-import { TMonetary } from '../../shared/Entity'
-import useMoneeeyStore from '../../shared/useMoneeeyStore'
-import { ITransaction } from '../../entities/Transaction'
-import Messages from '../../utils/Messages'
+import { AccountType, IAccount, TAccountUUID } from '../../entities/Account';
+import { TDate } from '../../utils/Date';
+import { TMonetary } from '../../shared/Entity';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import { ITransaction } from '../../entities/Transaction';
+import Messages from '../../utils/Messages';
 
-import MoneeeyStore from '../../shared/MoneeeyStore'
+import MoneeeyStore from '../../shared/MoneeeyStore';
 
-import { PeriodGroup, ReportDataMap, dateToPeriod } from './ReportUtils'
-import { BaseColumnChart, BaseReport } from './BaseReport'
+import { PeriodGroup, ReportDataMap, dateToPeriod } from './ReportUtils';
+import { BaseColumnChart, BaseReport } from './BaseReport';
 
 export const baseAccountBalanceReport =
   (moneeeyStore: MoneeeyStore, fromIsPositive: boolean, filter: (account: IAccount) => boolean) =>
   (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => {
     const addBalanceToData = (acct: TAccountUUID, value: TMonetary, date: TDate) => {
-      const account = moneeeyStore.accounts.byUuid(acct)
+      const account = moneeeyStore.accounts.byUuid(acct);
       if (!account || !filter(account)) {
-        return
+        return;
       }
-      const group_date = dateToPeriod(period, date)
-      const key = group_date + account.account_uuid
-      const prev_balance = (data.get(key) || {}).value || 0
-      const balance = prev_balance + value
-      data.set(key, { x: group_date, y: account.name, value: balance })
-    }
+      const group_date = dateToPeriod(period, date);
+      const key = group_date + account.account_uuid;
+      const prev_balance = (data.get(key) || {}).value || 0;
+      const balance = prev_balance + value;
+      data.set(key, { x: group_date, y: account.name, value: balance });
+    };
     addBalanceToData(
       transaction.from_account,
       fromIsPositive ? transaction.from_value : -transaction.from_value,
       transaction.date
-    )
+    );
     addBalanceToData(
       transaction.to_account,
       fromIsPositive ? -transaction.to_value : transaction.to_value,
       transaction.date
-    )
-  }
+    );
+  };
 
 export const accountBalanceReport = (moneeeyStore: MoneeeyStore) =>
-  baseAccountBalanceReport(moneeeyStore, false, (account) => account.type !== AccountType.PAYEE)
+  baseAccountBalanceReport(moneeeyStore, false, (account) => account.type !== AccountType.PAYEE);
 
 const AccountBalanceReport = observer(() => {
-  const moneeeyStore = useMoneeeyStore()
-  const { accounts } = moneeeyStore
+  const moneeeyStore = useMoneeeyStore();
+  const { accounts } = moneeeyStore;
 
   return (
     <BaseReport
@@ -52,7 +52,7 @@ const AccountBalanceReport = observer(() => {
       title={Messages.reports.account_balance}
       chartFn={(rows) => <BaseColumnChart rows={rows} />}
     />
-  )
-})
+  );
+});
 
-export default AccountBalanceReport
+export default AccountBalanceReport;

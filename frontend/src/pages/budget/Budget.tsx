@@ -1,26 +1,26 @@
-import { Card, Drawer, Form } from 'antd'
-import { map, range } from 'lodash'
-import { observer } from 'mobx-react'
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { Card, Drawer, Form } from 'antd';
+import { map, range } from 'lodash';
+import { observer } from 'mobx-react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
-import { LinkButton, PrimaryButton, SecondaryButton } from '../../components/base/Button'
-import { Checkbox, Input } from '../../components/base/Input'
-import Select from '../../components/base/Select'
-import Space from '../../components/base/Space'
-import { TableEditor } from '../../components/TableEditor'
-import { IBudget } from '../../entities/Budget'
-import { BudgetEnvelope } from '../../entities/BudgetEnvelope'
-import { TCurrencyUUID } from '../../entities/Currency'
-import useMoneeeyStore from '../../shared/useMoneeeyStore'
-import { formatDate, formatDateMonth, startOfMonthOffset } from '../../utils/Date'
-import Messages from '../../utils/Messages'
+import { LinkButton, PrimaryButton, SecondaryButton } from '../../components/base/Button';
+import { Checkbox, Input } from '../../components/base/Input';
+import Select from '../../components/base/Select';
+import Space from '../../components/base/Space';
+import { TableEditor } from '../../components/TableEditor';
+import { IBudget } from '../../entities/Budget';
+import { BudgetEnvelope } from '../../entities/BudgetEnvelope';
+import { TCurrencyUUID } from '../../entities/Currency';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import { formatDate, formatDateMonth, startOfMonthOffset } from '../../utils/Date';
+import Messages from '../../utils/Messages';
 
-import './Budget.less'
+import './Budget.less';
 
 interface PeriodProps {
-  startingDate: Date
-  setEditing: Dispatch<SetStateAction<IBudget | undefined>>
-  viewArchived: boolean
+  startingDate: Date;
+  setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
+  viewArchived: boolean;
 }
 
 const BudgetPeriods = ({
@@ -39,15 +39,15 @@ const BudgetPeriods = ({
       />
     ))}
   </div>
-)
+);
 
 const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived }: PeriodProps) => {
-  const { budget } = useMoneeeyStore()
-  const starting = formatDate(startingDate)
+  const { budget } = useMoneeeyStore();
+  const starting = formatDate(startingDate);
   useEffect(() => {
-    budget.makeEnvelopes(starting)
-  }, [startingDate])
-  const onNewBudget = () => setEditing(budget.factory())
+    budget.makeEnvelopes(starting);
+  }, [startingDate]);
+  const onNewBudget = () => setEditing(budget.factory());
 
   return (
     <Card className='period' title={formatDateMonth(startingDate)}>
@@ -60,28 +60,28 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived }: Perio
       />
       <LinkButton onClick={onNewBudget}>{Messages.budget.new}</LinkButton>
     </Card>
-  )
-})
+  );
+});
 
 const BudgetEditor = ({
   editing,
   setEditing,
 }: {
-  editing?: IBudget
-  setEditing: Dispatch<SetStateAction<IBudget | undefined>>
+  editing?: IBudget;
+  setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
 }) => {
-  const { budget, tags, currencies } = useMoneeeyStore()
+  const { budget, tags, currencies } = useMoneeeyStore();
 
-  const onClose = () => setEditing(undefined)
+  const onClose = () => setEditing(undefined);
   const onSave = () => {
     if (editing) {
-      budget.merge(editing)
-      setEditing(undefined)
+      budget.merge(editing);
+      setEditing(undefined);
     }
-  }
+  };
 
   if (!editing) {
-    return <div />
+    return <div />;
   }
 
   return (
@@ -140,8 +140,8 @@ const BudgetEditor = ({
         </Form.Item>
       </Form>
     </Drawer>
-  )
-}
+  );
+};
 
 const MonthDateSelector = ({ setDate, date }: { setDate: Dispatch<SetStateAction<Date>>; date: Date }) => (
   <Space>
@@ -149,15 +149,15 @@ const MonthDateSelector = ({ setDate, date }: { setDate: Dispatch<SetStateAction
     {formatDateMonth(date)}
     <SecondaryButton onClick={() => setDate(startOfMonthOffset(date, +1))}>{Messages.budget.next}</SecondaryButton>
   </Space>
-)
+);
 
 const Budget = observer(() => {
-  const { config } = useMoneeeyStore()
-  const [startingDate, setStartingDate] = useState(() => startOfMonthOffset(new Date(), 0))
-  const [editing, setEditing] = useState<IBudget | undefined>(undefined)
+  const { config } = useMoneeeyStore();
+  const [startingDate, setStartingDate] = useState(() => startOfMonthOffset(new Date(), 0));
+  const [editing, setEditing] = useState<IBudget | undefined>(undefined);
 
-  const viewMonths = config.main?.view_months || 3
-  const viewArchived = config.main?.view_archived === true
+  const viewMonths = config.main?.view_months || 3;
+  const viewArchived = config.main?.view_archived === true;
 
   return (
     <section className='budgetArea'>
@@ -188,7 +188,7 @@ const Budget = observer(() => {
       />
       <BudgetEditor editing={editing} setEditing={setEditing} />
     </section>
-  )
-})
+  );
+});
 
-export { Budget, Budget as default }
+export { Budget, Budget as default };

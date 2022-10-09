@@ -1,13 +1,13 @@
 /* eslint-disable no-console */
-import _, { forEach, map, omit, uniqBy, values } from 'lodash'
-import { makeObservable, observable, observe, toJS } from 'mobx'
-import PouchDB from 'pouchdb'
+import _, { forEach, map, omit, uniqBy, values } from 'lodash';
+import { makeObservable, observable, observe, toJS } from 'mobx';
+import PouchDB from 'pouchdb';
 
-import { asyncProcess } from '../utils/Utils'
+import { asyncProcess } from '../utils/Utils';
 
-import { EntityType, IBaseEntity } from './Entity'
-import MappedStore from './MappedStore'
-import MoneeeyStore from './MoneeeyStore'
+import { EntityType, IBaseEntity } from './Entity';
+import MappedStore from './MappedStore';
+import MoneeeyStore from './MoneeeyStore';
 
 export enum Status {
   ONLINE = 'ONLINE',
@@ -16,70 +16,70 @@ export enum Status {
   ERROR = 'ERROR',
 }
 
-export type PouchDBFactoryFn = () => PouchDB.Database
+export type PouchDBFactoryFn = () => PouchDB.Database;
 
-export const PouchDBFactory = () => new PouchDB('moneeey')
+export const PouchDBFactory = () => new PouchDB('moneeey');
 
 export default class PersistenceStore {
-  public status: Status = Status.OFFLINE
+  public status: Status = Status.OFFLINE;
 
-  public databaseId = ''
+  public databaseId = '';
 
-  private db: PouchDB.Database
+  private db: PouchDB.Database;
 
   private entries: {
-    [_id: string]: IBaseEntity
-  } = {}
+    [_id: string]: IBaseEntity;
+  } = {};
 
   private syncables: {
-    uuid: string
+    uuid: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store: MappedStore<any>
-  }[] = []
+    store: MappedStore<any>;
+  }[] = [];
 
   private stores: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [_type: string]: MappedStore<any>
-  } = {}
+    [_type: string]: MappedStore<any>;
+  } = {};
 
-  private _commit
+  private _commit;
 
-  private moneeeyStore: MoneeeyStore
+  private moneeeyStore: MoneeeyStore;
 
   constructor(moneeeyStore: MoneeeyStore, dbFactory: PouchDBFactoryFn) {
-    this.moneeeyStore = moneeeyStore
-    this.db = dbFactory()
-    this._commit = _.debounce(() => this.commit(), 1000)
+    this.moneeeyStore = moneeeyStore;
+    this.db = dbFactory();
+    this._commit = _.debounce(() => this.commit(), 1000);
 
     makeObservable(this, {
       status: observable,
       databaseId: observable,
-    })
+    });
   }
 
   sync() {
     const setStatus = (status: Status) => {
-      this.status = status
-    }
+      this.status = status;
+    };
 
     return new Promise((resolve, reject) => {
       if (!this.databaseId) {
-        return
+        return;
       }
       this.db
         .sync(`/api/couchdb/${this.databaseId}`, { live: true, retry: true })
         .on('change', () => {
-          resolve(setStatus(Status.ONLINE))
+          resolve(setStatus(Status.ONLINE));
         })
         .on('paused', () => {
-          resolve(setStatus(Status.OFFLINE))
+          resolve(setStatus(Status.OFFLINE));
         })
         .on('denied', () => resolve(setStatus(Status.OFFLINE)))
         .on('error', (e) => {
-          console.error('Persistence sync', { e })
-          reject(setStatus(Status.OFFLINE))
-        })
-    })
+          console.error('Persistence sync', { e });
+          reject(setStatus(Status.OFFLINE));
+        });
+    });
   }
 
   load() {
@@ -91,93 +91,93 @@ export default class PersistenceStore {
         .then((docs) => {
           map([...(docs.rows.map((d) => d.doc) as unknown[] as IBaseEntity[])], (entity) => {
             if (entity._id) {
-              this.entries[entity._id] = entity
+              this.entries[entity._id] = entity;
             }
-          })
-          resolve(this.entries)
-        })
-    })
+          });
+          resolve(this.entries);
+        });
+    });
   }
 
   async commit() {
     const objects = uniqBy(
       this.syncables.map(({ store, uuid }) => {
-        const entity = toJS(store.byUuid(uuid)) as unknown as { _id: string }
+        const entity = toJS(store.byUuid(uuid)) as unknown as { _id: string };
 
-        return { store, _id: entity._id, entity, uuid }
+        return { store, _id: entity._id, entity, uuid };
       }),
       '_id'
-    )
-    this.syncables = []
+    );
+    this.syncables = [];
     try {
-      const responses = await this.db.bulkDocs(objects.map((sync) => sync.entity))
+      const responses = await this.db.bulkDocs(objects.map((sync) => sync.entity));
       map(responses, async (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
-        const { error, status, ok, id, rev } = resp
-        const current = objects.find((obj) => obj._id === id)
+        const { error, status, ok, id, rev } = resp;
+        const current = objects.find((obj) => obj._id === id);
         if (!current) {
-          return
+          return;
         }
         if (error && status === 409) {
-          const actual = await this.fetch(id)
-          this.moneeeyStore.navigation.error('Sync Commit conflict', { resp, current, actual })
-          current.store.merge(actual, { setUpdated: false })
+          const actual = await this.fetch(id);
+          this.moneeeyStore.navigation.error('Sync Commit conflict', { resp, current, actual });
+          current.store.merge(actual, { setUpdated: false });
         } else if (error) {
-          console.error('Sync Commit error', { error, current })
+          console.error('Sync Commit error', { error, current });
         } else if (ok) {
-          const entity = { ...current.entity, _rev: rev }
-          console.info('Sync Commit success', { entity })
+          const entity = { ...current.entity, _rev: rev };
+          console.info('Sync Commit success', { entity });
           if (entity && entity._id) {
-            this.entries[entity._id] = entity as IBaseEntity
+            this.entries[entity._id] = entity as IBaseEntity;
           }
-          current.store.merge(entity, { setUpdated: false })
+          current.store.merge(entity, { setUpdated: false });
         }
-      })
+      });
     } catch (err) {
-      const error = err as PouchDB.Core.Error
-      console.error(error)
+      const error = err as PouchDB.Core.Error;
+      console.error(error);
     }
   }
 
   persist<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, item: EntityType) {
-    console.log('Sync will persist', { uuid: store.getUuid(item), item })
-    this.syncables.push({ store: store as never, uuid: store.getUuid(item) })
+    console.log('Sync will persist', { uuid: store.getUuid(item), item });
+    this.syncables.push({ store: store as never, uuid: store.getUuid(item) });
     if (item && item._id) {
-      this.entries[item._id] = item
+      this.entries[item._id] = item;
     }
-    this._commit()
+    this._commit();
   }
 
   async fetch(id: string) {
-    const entity = await this.db.get(id, { conflicts: true })
+    const entity = await this.db.get(id, { conflicts: true });
     if (entity._conflicts) {
-      forEach(entity._conflicts, (rev) => this.db.remove(id, rev))
+      forEach(entity._conflicts, (rev) => this.db.remove(id, rev));
     }
-    this.entries[entity._id] = entity as IBaseEntity
+    this.entries[entity._id] = entity as IBaseEntity;
 
-    return entity
+    return entity;
   }
 
   retrieve(type: EntityType) {
-    return values(this.entries).filter((e) => e.entity_type === type)
+    return values(this.entries).filter((e) => e.entity_type === type);
   }
 
   monitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType>, type: EntityType) {
-    this.stores[type] = store
-    this.retrieve(type).forEach((e) => store.merge(e as TEntityType))
+    this.stores[type] = store;
+    this.retrieve(type).forEach((e) => store.merge(e as TEntityType));
     observe(store.itemsByUuid, (changes) => {
       if (changes.type === 'add') {
-        this.persist(store, changes.newValue)
+        this.persist(store, changes.newValue);
       } else if (changes.type === 'update') {
-        const oldRev = changes.oldValue._rev
-        const newRev = changes.newValue._rev
+        const oldRev = changes.oldValue._rev;
+        const newRev = changes.newValue._rev;
         if (oldRev === newRev) {
-          console.info('Rev update, will persist', changes)
-          this.persist(store, changes.newValue)
+          console.info('Rev update, will persist', changes);
+          this.persist(store, changes.newValue);
         } else {
-          console.info('Ref changed, skip persist', changes)
+          console.info('Ref changed, skip persist', changes);
         }
       }
-    })
+    });
   }
 
   async exportAll(onProgress: (perc: number) => void) {
@@ -185,48 +185,48 @@ export default class PersistenceStore {
       await asyncProcess(
         values(this.entries),
         (chunk, state, percentage) => {
-          onProgress(percentage)
-          state.result = `${state.result + chunk.map((entity) => JSON.stringify(toJS(entity))).join('\n')}\n`
+          onProgress(percentage);
+          state.result = `${state.result + chunk.map((entity) => JSON.stringify(toJS(entity))).join('\n')}\n`;
         },
         { state: { result: '' }, chunkSize: 100, chunkThrottle: 50 }
       )
-    ).result
+    ).result;
   }
 
   restoreEntity(entity: { entity_type?: string }) {
-    const store = entity.entity_type && this.stores[entity.entity_type]
+    const store = entity.entity_type && this.stores[entity.entity_type];
     if (store) {
-      store.merge(omit(entity, ['_rev']))
+      store.merge(omit(entity, ['_rev']));
 
-      return true
+      return true;
     }
 
-    return false
+    return false;
   }
 
   restoreAll(content: string, onProgress: (perc: number) => void) {
-    const entries = content.split('\n')
+    const entries = content.split('\n');
 
     return asyncProcess(
       entries,
       (chunk, result, percentage) => {
-        onProgress(percentage)
+        onProgress(percentage);
         chunk.forEach((line) => {
           try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (!this.restoreEntity(JSON.parse(line))) {
-              result.errors.push(`Unable to restore: ${line}`)
+              result.errors.push(`Unable to restore: ${line}`);
             }
           } catch {
-            result.errors.push(`Failed to parse line JSON: ${line}`)
+            result.errors.push(`Failed to parse line JSON: ${line}`);
           }
-        })
+        });
       },
       { state: { errors: [] as string[] }, chunkSize: 100, chunkThrottle: 50 }
-    )
+    );
   }
 
   truncateAll() {
-    this.db.destroy()
+    this.db.destroy();
   }
 }

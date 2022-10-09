@@ -1,4 +1,4 @@
-import { Status } from '../shared/Persistence'
+import { Status } from '../shared/Persistence';
 
 const Messages = {
   menu: {
@@ -164,6 +164,6 @@ const Messages = {
 
       Time to insert some transactions!`,
   },
-}
+};
 
-export default Messages
+export default Messages;

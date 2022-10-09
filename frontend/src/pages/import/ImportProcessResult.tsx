@@ -1,33 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable react/display-name */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Table } from 'antd'
-import { compact, identity, isEmpty, isNumber, map } from 'lodash'
-import { Dispatch, SetStateAction } from 'react'
+import { Table } from 'antd';
+import { compact, identity, isEmpty, isNumber, map } from 'lodash';
+import { Dispatch, SetStateAction } from 'react';
 
-import { PrimaryButton } from '../../components/base/Button'
-import { DangerText } from '../../components/base/Text'
-import { AccountSelector } from '../../components/editor/AccountEditor'
-import { TAccountUUID } from '../../entities/Account'
-import { ITransaction } from '../../entities/Transaction'
-import { ImportResult, ImportTask } from '../../shared/import/ImportContent'
-import useMoneeeyStore from '../../shared/useMoneeeyStore'
-import Messages from '../../utils/Messages'
+import { PrimaryButton } from '../../components/base/Button';
+import { DangerText } from '../../components/base/Text';
+import { AccountSelector } from '../../components/editor/AccountEditor';
+import { TAccountUUID } from '../../entities/Account';
+import { ITransaction } from '../../entities/Transaction';
+import { ImportResult, ImportTask } from '../../shared/import/ImportContent';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import Messages from '../../utils/Messages';
 
 const ImportProcessResult = ({
   task,
   result,
   setResult,
 }: {
-  task: ImportTask
-  result: ImportResult
-  setResult: Dispatch<SetStateAction<ImportResult>>
+  task: ImportTask;
+  result: ImportResult;
+  setResult: Dispatch<SetStateAction<ImportResult>>;
 }) => {
-  const moneeeyStore = useMoneeeyStore()
+  const moneeeyStore = useMoneeeyStore();
 
   const accountRender = (field: string) => (account_uuid: TAccountUUID, row: ITransaction) => {
     if (task.config.referenceAccount === account_uuid) {
-      return <span>{moneeeyStore.accounts.nameForUuid(account_uuid)}</span>
+      return <span>{moneeeyStore.accounts.nameForUuid(account_uuid)}</span>;
     }
 
     return (
@@ -50,13 +50,13 @@ const ImportProcessResult = ({
           })
         }
       />
-    )
-  }
+    );
+  };
 
   const onImport = () => {
-    result.transactions.forEach((t) => moneeeyStore.transactions.merge(t))
-    setResult({ ...result, transactions: [] })
-  }
+    result.transactions.forEach((t) => moneeeyStore.transactions.merge(t));
+    setResult({ ...result, transactions: [] });
+  };
 
   return (
     <>
@@ -89,28 +89,28 @@ const ImportProcessResult = ({
         ].map((col) => ({
           ...col,
           render: (cellValue: any, row: ITransaction) => {
-            let mode = 'New'
-            let title = mode
+            let mode = 'New';
+            let title = mode;
             if (col.dataIndex) {
-              const original = moneeeyStore.transactions.byUuid(row.transaction_uuid)
+              const original = moneeeyStore.transactions.byUuid(row.transaction_uuid);
               if (original) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const originalValue = (original as Record<string, any>)[col.dataIndex]
+                const originalValue = (original as Record<string, any>)[col.dataIndex];
                 if (!isEmpty(originalValue) || isNumber(originalValue)) {
                   const format = (value: string) =>
-                    col.dataIndex.indexOf('_account') > 0 ? moneeeyStore.accounts.nameForUuid(value) : `${value}`
-                  const changed = format(originalValue) !== format(cellValue)
+                    col.dataIndex.indexOf('_account') > 0 ? moneeeyStore.accounts.nameForUuid(value) : `${value}`;
+                  const changed = format(originalValue) !== format(cellValue);
                   if (changed) {
-                    mode = Messages.import.updated
-                    title = Messages.import.changed_description(format(originalValue), format(cellValue))
+                    mode = Messages.import.updated;
+                    title = Messages.import.changed_description(format(originalValue), format(cellValue));
                   } else {
-                    mode = Messages.import.unchanged
-                    title = Messages.import.unchanged
+                    mode = Messages.import.unchanged;
+                    title = Messages.import.unchanged;
                   }
                 }
               }
             }
-            const cell = (col.render || identity)(cellValue, row)
+            const cell = (col.render || identity)(cellValue, row);
 
             return (
               <span className={`import${mode}`} title={title}>
@@ -118,13 +118,13 @@ const ImportProcessResult = ({
                   {cell} {mode === 'Updated' ? <span className='newTag'>{mode}</span> : false}
                 </>
               </span>
-            )
+            );
           },
         }))}
       />
       <PrimaryButton onClick={onImport}>{Messages.import.import_transactions}</PrimaryButton>
     </>
-  )
-}
+  );
+};
 
-export { ImportProcessResult, ImportProcessResult as default }
+export { ImportProcessResult, ImportProcessResult as default };

@@ -1,47 +1,47 @@
-import { Column, Line } from '@ant-design/charts'
-import { ReactElement, useEffect, useState } from 'react'
+import { Column, Line } from '@ant-design/charts';
+import { ReactElement, useEffect, useState } from 'react';
 
-import { Checkbox } from '../../components/base/Input'
-import Loading from '../../components/Loading'
-import { IAccount } from '../../entities/Account'
-import useMoneeeyStore from '../../shared/useMoneeeyStore'
-import Messages from '../../utils/Messages'
+import { Checkbox } from '../../components/base/Input';
+import Loading from '../../components/Loading';
+import { IAccount } from '../../entities/Account';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import Messages from '../../utils/Messages';
 
-import DateGroupingSelector from './DateGroupingSelector'
+import DateGroupingSelector from './DateGroupingSelector';
 import {
   AsyncProcessTransactionFn,
   PeriodGroups,
   ReportDataPoint,
   asyncProcessTransactionsForAccounts,
-} from './ReportUtils'
+} from './ReportUtils';
 
 interface BaseReportProps {
-  title: string
-  accounts: IAccount[]
-  processFn: AsyncProcessTransactionFn
-  chartFn: (rows: ReportDataPoint[]) => ReactElement
+  title: string;
+  accounts: IAccount[];
+  processFn: AsyncProcessTransactionFn;
+  chartFn: (rows: ReportDataPoint[]) => ReactElement;
 }
 
 export const BaseReport = function ({ accounts, processFn, title, chartFn }: BaseReportProps) {
-  const [rows, setRows] = useState([] as ReportDataPoint[])
-  const [selectedAccounts, setSelectedAccounts] = useState(accounts)
-  const [period, setPeriod] = useState(PeriodGroups.Month)
-  const [progress, setProgress] = useState(0)
-  const moneeeyStore = useMoneeeyStore()
+  const [rows, setRows] = useState([] as ReportDataPoint[]);
+  const [selectedAccounts, setSelectedAccounts] = useState(accounts);
+  const [period, setPeriod] = useState(PeriodGroups.Month);
+  const [progress, setProgress] = useState(0);
+  const moneeeyStore = useMoneeeyStore();
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;(async () => {
+    (async () => {
       const currentRows = await asyncProcessTransactionsForAccounts({
         moneeeyStore,
         accounts: selectedAccounts.map((act) => act.account_uuid),
         processFn,
         period,
         setProgress,
-      })
-      setProgress(0)
-      setRows(currentRows)
-    })()
-  }, [moneeeyStore, period, selectedAccounts])
+      });
+      setProgress(0);
+      setRows(currentRows);
+    })();
+  }, [moneeeyStore, period, selectedAccounts]);
 
   return (
     <>
@@ -69,8 +69,8 @@ export const BaseReport = function ({ accounts, processFn, title, chartFn }: Bas
         ))}
       </section>
     </>
-  )
-}
+  );
+};
 
 export const BaseColumnChart = function ({ rows, chartProps }: { rows: ReportDataPoint[]; chartProps?: object }) {
   return (
@@ -85,8 +85,8 @@ export const BaseColumnChart = function ({ rows, chartProps }: { rows: ReportDat
         ...chartProps,
       }}
     />
-  )
-}
+  );
+};
 
 export const BaseLineChart = function ({ rows, chartProps }: { rows: ReportDataPoint[]; chartProps?: object }) {
   return (
@@ -101,5 +101,5 @@ export const BaseLineChart = function ({ rows, chartProps }: { rows: ReportDataP
         ...chartProps,
       }}
     />
-  )
-}
+  );
+};

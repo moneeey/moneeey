@@ -1,11 +1,11 @@
-import { ReactNode } from 'react'
+import { ReactNode } from 'react';
 
-import './Loading.less'
+import './Loading.less';
 
 interface LoadingProps {
-  loading: boolean
-  progress?: number
-  children: ReactNode | ReactNode[]
+  loading: boolean;
+  progress?: number;
+  children: ReactNode | ReactNode[];
 }
 
 export default function Loading(props: LoadingProps) {
@@ -20,5 +20,5 @@ export default function Loading(props: LoadingProps) {
       )}
       {props.children}
     </>
-  )
+  );
 }
