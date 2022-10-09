@@ -1,7 +1,7 @@
 // eslint-disable-next-line spaced-comment
 /// <reference types="cypress" />
 
-import '@this-dot/cypress-indexeddb'
+import '@this-dot/cypress-indexeddb';
 
 // ***********************************************
 // This example commands.ts shows you how to

@@ -1,4 +1,4 @@
-import { Status } from '../shared/Persistence'
+import { Status } from '../shared/Persistence';
 
 const Messages = {
   menu: {
@@ -17,6 +17,8 @@ const Messages = {
     sync: {
       [Status.ONLINE]: 'Online',
       [Status.OFFLINE]: 'Offline',
+      [Status.DENIED]: 'Denied',
+      [Status.ERROR]: 'Error',
     },
   },
   landing: {
@@ -139,7 +141,16 @@ const Messages = {
     create_budgets: `It is time to budget your Moneeey!  Budgets are like envelopes you put part of your income.
 
       You should create budgets for things like:
-      home/mortgage, car maintenance, utilities, entertainment...`,
+      home/mortgage, car maintenance, utilities, entertainment...
+
+      Click on 'New budget' in one of the periods`,
+
+    please_create_account: `Before continuing, please create an account by typing its information in the table below.
+    `,
+
+    please_create_budget: `Before continuing, please click on 'New Budget' and create a budget.
+    `,
+
     insert_transactions: `When we have our budgets, it is time to start inserting our transactions!
 
       When Moneeey know your transactions, it will be capable of generating reports, calculating budget usage/remaining
@@ -153,6 +164,6 @@ const Messages = {
 
       Time to insert some transactions!`,
   },
-}
+};
 
-export default Messages
+export default Messages;

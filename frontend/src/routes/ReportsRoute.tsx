@@ -1,20 +1,20 @@
-import Reports from '../pages/report/Reports'
+import Reports from '../pages/report/Reports';
 
-import HomeRoute from './HomeRouter'
-import { IRouteParameters, Route } from './Route'
+import HomeRoute from './HomeRouter';
+import { IRouteParameters, Route } from './Route';
 
-type IReportsRoute = IRouteParameters
+type IReportsRoute = IRouteParameters;
 
 class ReportsRouter extends Route<IReportsRoute> {
   constructor() {
-    super('/reports', HomeRoute)
-    this.parent?.addChild(this)
+    super('/reports', HomeRoute);
+    this.parent?.addChild(this);
   }
 
   render() {
-    return <Reports />
+    return <Reports />;
   }
 }
 
-const ReportsRoute = new ReportsRouter()
-export { ReportsRoute as default }
+const ReportsRoute = new ReportsRouter();
+export { ReportsRoute as default };

@@ -1,50 +1,50 @@
-import { makeObservable, observable } from 'mobx'
+import { makeObservable, observable } from 'mobx';
 
-import { EditorType } from '../components/editor/EditorProps'
-import { EntityType, IBaseEntity, TMonetary } from '../shared/Entity'
-import MappedStore from '../shared/MappedStore'
-import MoneeeyStore from '../shared/MoneeeyStore'
-import { TDate } from '../utils/Date'
+import { EditorType } from '../components/editor/EditorProps';
+import { EntityType, IBaseEntity, TMonetary } from '../shared/Entity';
+import MappedStore from '../shared/MappedStore';
+import MoneeeyStore from '../shared/MoneeeyStore';
+import { TDate } from '../utils/Date';
 
-import { IBudget } from './Budget'
+import { IBudget } from './Budget';
 
 const BudgetEnvelopeKey = (budget: IBudget, starting: TDate) =>
-  `${starting}_${budget.budget_uuid}_${budget.currency_uuid}`
+  `${starting}_${budget.budget_uuid}_${budget.currency_uuid}`;
 
 export class BudgetEnvelope implements IBaseEntity {
-  [k: string]: unknown
+  [k: string]: unknown;
 
-  entity_type: EntityType = EntityType.VIRTUAL_BUDGET_ENVELOPE
+  entity_type: EntityType = EntityType.VIRTUAL_BUDGET_ENVELOPE;
 
-  _rev: string
+  _rev: string;
 
-  tags = []
+  tags = [];
 
-  name: string
+  name: string;
 
-  envelope_uuid: string
+  envelope_uuid: string;
 
-  starting: TDate
+  starting: TDate;
 
-  allocated: TMonetary
+  allocated: TMonetary;
 
-  used: TMonetary
+  used: TMonetary;
 
-  budget: IBudget
+  budget: IBudget;
 
   constructor(budget: IBudget, starting: TDate) {
     makeObservable(this, {
       allocated: observable,
       used: observable,
-    })
+    });
 
-    this.budget = budget
-    this.envelope_uuid = BudgetEnvelopeKey(budget, starting)
-    this.starting = starting
-    this.allocated = 0
-    this.used = 0
-    this.name = budget.name
-    this._rev = this.budget._rev || ''
+    this.budget = budget;
+    this.envelope_uuid = BudgetEnvelopeKey(budget, starting);
+    this.starting = starting;
+    this.allocated = 0;
+    this.used = 0;
+    this.name = budget.name;
+    this._rev = this.budget._rev || '';
   }
 }
 
@@ -82,18 +82,18 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
           title: 'Remaining',
         },
       }),
-    })
+    });
   }
 
   getEnvelope(entity: IBudget, starting: TDate) {
-    const key = BudgetEnvelopeKey(entity, starting)
+    const key = BudgetEnvelopeKey(entity, starting);
     if (this.hasKey(key)) {
-      return this.byUuid(key) as BudgetEnvelope
+      return this.byUuid(key) as BudgetEnvelope;
     }
-    const envelope = new BudgetEnvelope(entity, starting)
-    envelope.allocated = entity.envelopes.find((envelop) => envelop.starting === starting)?.allocated || 0
-    this.merge(envelope)
+    const envelope = new BudgetEnvelope(entity, starting);
+    envelope.allocated = entity.envelopes.find((envelop) => envelop.starting === starting)?.allocated || 0;
+    this.merge(envelope);
 
-    return envelope
+    return envelope;
   }
 }
