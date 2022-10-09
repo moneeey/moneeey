@@ -1,23 +1,23 @@
-import { observer } from 'mobx-react'
+import { observer } from 'mobx-react';
 
-import { BudgetEnvelope } from '../../entities/BudgetEnvelope'
-import { IBaseEntity } from '../../shared/Entity'
-import useMoneeeyStore from '../../shared/useMoneeeyStore'
+import { BudgetEnvelope } from '../../entities/BudgetEnvelope';
+import { IBaseEntity } from '../../shared/Entity';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
 
-import { EditorProps, NoSorter } from './EditorProps'
-import { BaseNumberEditor } from './NumberEditor'
+import { EditorProps, NoSorter } from './EditorProps';
+import { BaseNumberEditor } from './NumberEditor';
 
 export const BudgetUsedEditor = observer(
   <EntityType extends IBaseEntity>(props: EditorProps<EntityType, string, number>) => {
-    const entity = props.store.byUuid(props.entityId) as BudgetEnvelope | undefined
-    const { currencies } = useMoneeeyStore()
-    const currency = currencies.byUuid(entity?.budget.currency_uuid)
+    const entity = props.store.byUuid(props.entityId) as BudgetEnvelope | undefined;
+    const { currencies } = useMoneeeyStore();
+    const currency = currencies.byUuid(entity?.budget.currency_uuid);
 
-    let value: string
+    let value: string;
     if (currency) {
-      value = currencies.formatAmount(currency, entity?.used || 0)
+      value = currencies.formatAmount(currency, entity?.used || 0);
     } else {
-      value = (entity?.used || 0).toString()
+      value = (entity?.used || 0).toString();
     }
 
     return (
@@ -31,8 +31,8 @@ export const BudgetUsedEditor = observer(
           suffix: currency?.suffix,
         }}
       />
-    )
+    );
   }
-)
+);
 
-export const BudgetUsedSorter = NoSorter
+export const BudgetUsedSorter = NoSorter;

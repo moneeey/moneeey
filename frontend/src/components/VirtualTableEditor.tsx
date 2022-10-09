@@ -6,62 +6,62 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/prop-types */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Table } from 'antd'
-import classNames from 'classnames'
-import ResizeObserver from 'rc-resize-observer'
-import React, { useEffect, useRef, useState } from 'react'
-import { VariableSizeGrid as Grid } from 'react-window'
+import { Table } from 'antd';
+import classNames from 'classnames';
+import ResizeObserver from 'rc-resize-observer';
+import React, { useEffect, useRef, useState } from 'react';
+import { VariableSizeGrid as Grid } from 'react-window';
 
 const VirtualTable = (props: Parameters<typeof Table>[0]) => {
-  const { columns } = props
-  const scroll = { x: '100vw', y: 500 }
-  const [tableWidth, setTableWidth] = useState(0)
+  const { columns } = props;
+  const scroll = { x: '100vw', y: 500 };
+  const [tableWidth, setTableWidth] = useState(0);
 
-  const widthColumnCount = columns!.filter(({ width }) => !width).length
+  const widthColumnCount = columns!.filter(({ width }) => !width).length;
   const mergedColumns = columns!.map((column) => {
     if (column.width) {
-      return column
+      return column;
     }
 
     return {
       ...column,
       width: Math.floor(tableWidth / widthColumnCount),
-    }
-  })
+    };
+  });
 
-  const gridRef = useRef<any>()
+  const gridRef = useRef<any>();
   const [connectObject] = useState<any>(() => {
-    const obj = {}
+    const obj = {};
     Object.defineProperty(obj, 'scrollLeft', {
       get: () => {
         if (gridRef.current) {
-          return gridRef.current?.state?.scrollLeft
+          return gridRef.current?.state?.scrollLeft;
         }
 
-        return null
+        return null;
       },
       set: (scrollLeft: number) => {
         if (gridRef.current) {
-          gridRef.current.scrollTo({ scrollLeft })
+          gridRef.current.scrollTo({ scrollLeft });
         }
       },
-    })
+    });
 
-    return obj
-  })
+    return obj;
+  });
 
   const resetVirtualGrid = () => {
     gridRef.current?.resetAfterIndices({
       columnIndex: 0,
       shouldForceUpdate: true,
-    })
-  }
+    });
+  };
 
-  useEffect(() => resetVirtualGrid, [tableWidth])
+  useEffect(() => resetVirtualGrid, [tableWidth]);
 
   const renderVirtualList = (rawData: object[], { scrollbarSize, ref, onScroll }: any) => {
-    ref.current = connectObject
-    const totalHeight = rawData.length * 54
+    ref.current = connectObject;
+    const totalHeight = rawData.length * 54;
 
     return (
       <Grid
@@ -69,18 +69,18 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
         className='virtual-grid'
         columnCount={mergedColumns.length}
         columnWidth={(index: number) => {
-          const { width } = mergedColumns[index]
+          const { width } = mergedColumns[index];
 
           return totalHeight > scroll.y && index === mergedColumns.length - 1
             ? (width as number) - scrollbarSize - 1
-            : (width as number)
+            : (width as number);
         }}
         height={scroll.y}
         rowCount={rawData.length}
         rowHeight={() => 54}
         width={tableWidth}
         onScroll={({ scrollLeft }: { scrollLeft: number }) => {
-          onScroll({ scrollLeft })
+          onScroll({ scrollLeft });
         }}>
         {({ columnIndex, rowIndex, style }: { columnIndex: number; rowIndex: number; style: React.CSSProperties }) => (
           <div
@@ -92,13 +92,13 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
           </div>
         )}
       </Grid>
-    )
-  }
+    );
+  };
 
   return (
     <ResizeObserver
       onResize={({ width }) => {
-        setTableWidth(width)
+        setTableWidth(width);
       }}>
       <Table
         {...props}
@@ -112,7 +112,7 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
         }
       />
     </ResizeObserver>
-  )
-}
+  );
+};
 
-export { VirtualTable, VirtualTable as default }
+export { VirtualTable, VirtualTable as default };

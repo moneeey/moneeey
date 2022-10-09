@@ -1,19 +1,19 @@
-import { observer } from 'mobx-react'
+import { observer } from 'mobx-react';
 
-import { BudgetEnvelope } from '../../entities/BudgetEnvelope'
-import { IBaseEntity } from '../../shared/Entity'
-import useMoneeeyStore from '../../shared/useMoneeeyStore'
+import { BudgetEnvelope } from '../../entities/BudgetEnvelope';
+import { IBaseEntity } from '../../shared/Entity';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
 
-import { EditorProps, NoSorter } from './EditorProps'
-import { BaseNumberEditor } from './NumberEditor'
+import { EditorProps, NoSorter } from './EditorProps';
+import { BaseNumberEditor } from './NumberEditor';
 
 export const BudgetRemainingEditor = observer(
   <EntityType extends IBaseEntity>(props: EditorProps<EntityType, string, number>) => {
-    const entity = props.store.byUuid(props.entityId) as BudgetEnvelope | undefined
-    const { currencies, budget } = useMoneeeyStore()
-    const currency = currencies.byUuid(entity?.budget.currency_uuid)
+    const entity = props.store.byUuid(props.entityId) as BudgetEnvelope | undefined;
+    const { currencies, budget } = useMoneeeyStore();
+    const currency = currencies.byUuid(entity?.budget.currency_uuid);
 
-    const remaining = entity ? budget.getRemaining(entity) : 0
+    const remaining = entity ? budget.getRemaining(entity) : 0;
 
     return (
       <div className={remaining >= 0 ? '' : 'negative'}>
@@ -28,8 +28,8 @@ export const BudgetRemainingEditor = observer(
           }}
         />
       </div>
-    )
+    );
   }
-)
+);
 
-export const BudgetRemainingSorter = NoSorter
+export const BudgetRemainingSorter = NoSorter;

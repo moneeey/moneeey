@@ -1,29 +1,29 @@
-import { startOfDay, startOfMonth, startOfQuarter, startOfWeek, startOfYear } from 'date-fns'
+import { startOfDay, startOfMonth, startOfQuarter, startOfWeek, startOfYear } from 'date-fns';
 
-import { TAccountUUID } from '../../entities/Account'
-import { TDate, TDateFormat, formatDate, formatDateAs, parseDate } from '../../utils/Date'
-import MoneeeyStore from '../../shared/MoneeeyStore'
-import { ITransaction } from '../../entities/Transaction'
-import { asyncProcess } from '../../utils/Utils'
-import Messages from '../../utils/Messages'
-import { TMonetary } from '../../shared/Entity'
+import { TAccountUUID } from '../../entities/Account';
+import { TDate, TDateFormat, formatDate, formatDateAs, parseDate } from '../../utils/Date';
+import MoneeeyStore from '../../shared/MoneeeyStore';
+import { ITransaction } from '../../entities/Transaction';
+import { asyncProcess } from '../../utils/Utils';
+import Messages from '../../utils/Messages';
+import { TMonetary } from '../../shared/Entity';
 
 export interface AsyncProcessTransactions {
-  moneeeyStore: MoneeeyStore
-  processFn: AsyncProcessTransactionFn
-  accounts: TAccountUUID[]
-  period: PeriodGroup
-  setProgress: (v: number) => void
+  moneeeyStore: MoneeeyStore;
+  processFn: AsyncProcessTransactionFn;
+  accounts: TAccountUUID[];
+  period: PeriodGroup;
+  setProgress: (v: number) => void;
 }
 
-export type AsyncProcessTransactionFn = (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => void
+export type AsyncProcessTransactionFn = (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => void;
 
-export type ReportDataMap = Map<string, ReportDataPoint>
+export type ReportDataMap = Map<string, ReportDataPoint>;
 
 export interface ReportDataPoint {
-  x: TDate
-  y: string
-  value: TMonetary
+  x: TDate;
+  y: string;
+  value: TMonetary;
 }
 
 export const asyncProcessTransactionsForAccounts = async function ({
@@ -33,33 +33,33 @@ export const asyncProcessTransactionsForAccounts = async function ({
   period,
   setProgress,
 }: AsyncProcessTransactions) {
-  const transactions = moneeeyStore.transactions.viewAllWithAccounts(accounts)
+  const transactions = moneeeyStore.transactions.viewAllWithAccounts(accounts);
   const processed = await asyncProcess(
     transactions,
     (chunk, data, percentage) => {
-      setProgress(percentage)
-      chunk.forEach((t) => processFn(t, period, data))
+      setProgress(percentage);
+      chunk.forEach((t) => processFn(t, period, data));
     },
     { state: new Map() as ReportDataMap }
-  )
+  );
 
-  return Array.from(processed.values())
-}
+  return Array.from(processed.values());
+};
 
 export interface PeriodGroup {
-  label: string
-  groupFn: (_date: Date) => Date
-  formatter: (_date: Date) => string
-  order: number
+  label: string;
+  groupFn: (_date: Date) => Date;
+  formatter: (_date: Date) => string;
+  order: number;
 }
 
 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-export const noopFormatter = <T,>(o: T): string => `${o}`
-export const patternFormatter = (pattern: string) => (date: Date) => formatDateAs(formatDate(date), pattern)
+export const noopFormatter = <T,>(o: T): string => `${o}`;
+export const patternFormatter = (pattern: string) => (date: Date) => formatDateAs(formatDate(date), pattern);
 
 export const dateToPeriod = function (period: PeriodGroup, date: TDate) {
-  return formatDate(period.groupFn(parseDate(date)))
-}
+  return formatDate(period.groupFn(parseDate(date)));
+};
 
 export const PeriodGroups: { [_name: string]: PeriodGroup } = {
   Day: {
@@ -92,4 +92,4 @@ export const PeriodGroups: { [_name: string]: PeriodGroup } = {
     formatter: noopFormatter,
     order: 4,
   },
-}
+};
