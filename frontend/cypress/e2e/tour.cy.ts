@@ -24,5 +24,9 @@ describe('Tour spec', () => {
     cy.get(loc.TOUR.NEXT_BUTTON).click();
     cy.contains('New budget').click();
     cy.get(loc.BUDGET.NAME_INPUT).type('Budget test');
+    cy.get('[data-test-id="budgetCurrency"]').click(); // TODO: fix me, this is so dirty
+    cy.get('[title="Real brasileiro"]').click();
+    cy.get('[data-test-id="budgetTags"]').type('Hello');
+    cy.get('[data-test-id="primary-button"]').click();
   });
 });

@@ -119,7 +119,7 @@ export default class PersistenceStore {
         }
         if (error && status === 409) {
           const actual = await this.fetch(id);
-          this.moneeeyStore.navigation.error('Sync Commit conflict', { resp, current, actual });
+          console.error('Sync Commit conflict', { resp, current, actual });
           current.store.merge(actual, { setUpdated: false });
         } else if (error) {
           console.error('Sync Commit error', { error, current });
