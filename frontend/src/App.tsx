@@ -9,6 +9,7 @@ import 'antd/dist/antd.dark.less'
 import AppMenu from './components/AppMenu'
 import RouteRenderer from './routes/RouteRenderer'
 import Navigator from './components/Navigator'
+import Notifications from './components/Notifications'
 import HomeRoute from './routes/HomeRouter'
 import MoneeeyStore from './shared/MoneeeyStore'
 import { MoneeeyStoreProvider } from './shared/useMoneeeyStore'
@@ -35,6 +36,7 @@ export const App = observer(() => {
                 <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
                 <Navigator />
                 <Modals />
+                <Notifications />
               </TagsHighlightProvider>
             </MoneeeyTourProvider>
           ) : (
