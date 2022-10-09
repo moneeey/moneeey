@@ -1,29 +1,29 @@
-import React from 'react'
+import React from 'react';
 
-import { observer } from 'mobx-react'
+import { observer } from 'mobx-react';
 
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom';
 
-import 'antd/dist/antd.dark.less'
+import 'antd/dist/antd.dark.less';
 
-import AppMenu from './components/AppMenu'
-import RouteRenderer from './routes/RouteRenderer'
-import Navigator from './components/Navigator'
-import Notifications from './components/Notifications'
-import HomeRoute from './routes/HomeRouter'
-import MoneeeyStore from './shared/MoneeeyStore'
-import { MoneeeyStoreProvider } from './shared/useMoneeeyStore'
-import Messages from './utils/Messages'
+import AppMenu from './components/AppMenu';
+import RouteRenderer from './routes/RouteRenderer';
+import Navigator from './components/Navigator';
+import Notifications from './components/Notifications';
+import HomeRoute from './routes/HomeRouter';
+import MoneeeyStore from './shared/MoneeeyStore';
+import { MoneeeyStoreProvider } from './shared/useMoneeeyStore';
+import Messages from './utils/Messages';
 
-import Modals from './components/modal/Modals'
-import { TagsHighlightProvider } from './components/Tags'
-import MoneeeyTourProvider from './components/Tour'
+import Modals from './components/modal/Modals';
+import { TagsHighlightProvider } from './components/Tags';
+import MoneeeyTourProvider from './components/Tour';
 
-import './App.less'
-import { PouchDBFactory } from './shared/Persistence'
+import './App.less';
+import { PouchDBFactory } from './shared/Persistence';
 
 export const App = observer(() => {
-  const [moneeeyStore] = React.useState(new MoneeeyStore(PouchDBFactory))
+  const [moneeeyStore] = React.useState(new MoneeeyStore(PouchDBFactory));
 
   return (
     <div className='App'>
@@ -45,7 +45,7 @@ export const App = observer(() => {
         </MoneeeyStoreProvider>
       </BrowserRouter>
     </div>
-  )
-})
+  );
+});
 
-export default App
+export default App;

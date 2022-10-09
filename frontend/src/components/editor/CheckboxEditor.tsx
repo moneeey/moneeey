@@ -1,16 +1,16 @@
-import { CheckboxChangeEvent } from 'antd/lib/checkbox'
-import { observer } from 'mobx-react'
+import { CheckboxChangeEvent } from 'antd/lib/checkbox';
+import { observer } from 'mobx-react';
 
-import { IBaseEntity } from '../../shared/Entity'
-import { Checkbox } from '../base/Input'
+import { IBaseEntity } from '../../shared/Entity';
+import { Checkbox } from '../base/Input';
 
-import { BaseEditor } from './BaseEditor'
-import { EditorProps, NoSorter } from './EditorProps'
+import { BaseEditor } from './BaseEditor';
+import { EditorProps, NoSorter } from './EditorProps';
 
 export const CheckboxEditor = observer(
   <EntityType extends IBaseEntity>(props: EditorProps<EntityType, boolean, boolean>) => {
-    const entity = props.store.byUuid(props.entityId)
-    const value = entity?.[props.field.field] === true
+    const entity = props.store.byUuid(props.entityId);
+    const value = entity?.[props.field.field] === true;
 
     return (
       <BaseEditor
@@ -25,13 +25,13 @@ export const CheckboxEditor = observer(
           ) => ({
             checked: value,
             onChange: ({ target: { checked } }: CheckboxChangeEvent) => {
-              return onChange(checked, checked)
+              return onChange(checked, checked);
             },
           }),
         }}
       />
-    )
+    );
   }
-)
+);
 
-export const CheckboxSorter = NoSorter
+export const CheckboxSorter = NoSorter;

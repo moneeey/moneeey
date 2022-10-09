@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from 'mobx'
+import { action, computed, makeObservable, observable } from 'mobx';
 
 export enum NavigationModal {
   NONE,
@@ -6,19 +6,19 @@ export enum NavigationModal {
   SYNC,
 }
 
-type NotificationType = 'warning' | 'success' | 'info' | 'error'
+type NotificationType = 'warning' | 'success' | 'info' | 'error';
 
 export default class NavigationStore {
-  dateFormat = 'dd/MM/yyy'
+  dateFormat = 'dd/MM/yyy';
 
-  navigateToUrl = ''
+  navigateToUrl = '';
 
-  currentModal = NavigationModal.NONE
+  currentModal = NavigationModal.NONE;
 
   notifications: Array<{
-    type: NotificationType
-    text: string
-  }> = []
+    type: NotificationType;
+    text: string;
+  }> = [];
 
   constructor() {
     makeObservable(this, {
@@ -29,46 +29,46 @@ export default class NavigationStore {
       navigate: action,
       modal: computed,
       openModal: action,
-    })
+    });
   }
 
   navigate(url: string) {
-    this.navigateToUrl = url
+    this.navigateToUrl = url;
   }
 
   get navigateTo() {
-    return this.navigateToUrl
+    return this.navigateToUrl;
   }
 
   get modal() {
-    return this.currentModal
+    return this.currentModal;
   }
 
   openModal(modal: NavigationModal) {
-    this.currentModal = modal
+    this.currentModal = modal;
   }
 
   closeModal() {
-    this.openModal(NavigationModal.NONE)
+    this.openModal(NavigationModal.NONE);
   }
 
   private notify(type: NotificationType, text: string) {
-    this.notifications.push({ text, type })
+    this.notifications.push({ text, type });
   }
 
   warning(text: string) {
-    this.notify('warning', text)
+    this.notify('warning', text);
   }
 
   success(text: string) {
-    this.notify('success', text)
+    this.notify('success', text);
   }
 
   info(text: string) {
-    this.notify('info', text)
+    this.notify('info', text);
   }
 
   error(text: string) {
-    this.notify('error', text)
+    this.notify('error', text);
   }
 }
