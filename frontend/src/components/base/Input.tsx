@@ -5,30 +5,14 @@ import {
   CheckboxProps,
   InputNumberProps,
   InputProps,
-} from 'antd'
-import { TextAreaProps } from 'antd/lib/input'
+} from 'antd';
+import { TextAreaProps } from 'antd/lib/input';
 
-import { WithDataTestId } from './Common'
+import { WithDataTestId } from './Common';
 
-const Input = (props: InputProps & WithDataTestId) => (
-  <div data-test-id={props['data-test-id']}>
-    <AntdInput {...props} />
-  </div>
-)
-const InputNumber = (props: InputNumberProps & WithDataTestId) => (
-  <div data-test-id={props['data-test-id']}>
-    <AntdInputNumber {...props} />
-  </div>
-)
-const TextArea = (props: TextAreaProps & WithDataTestId) => (
-  <div data-test-id={props['data-test-id']}>
-    <AntdInput.TextArea {...props} />
-  </div>
-)
-const Checkbox = (props: CheckboxProps & WithDataTestId) => (
-  <div data-test-id={props['data-test-id']}>
-    <AntdCheckbox {...props} />
-  </div>
-)
+const Input = (props: InputProps & WithDataTestId) => <AntdInput {...props} />;
+const InputNumber = (props: InputNumberProps & WithDataTestId) => <AntdInputNumber {...props} />;
+const TextArea = (props: TextAreaProps & WithDataTestId) => <AntdInput.TextArea {...props} />;
+const Checkbox = (props: CheckboxProps & WithDataTestId) => <AntdCheckbox {...props} />;
 
-export { Input, InputNumber, TextArea, Checkbox }
+export { Input, InputNumber, TextArea, Checkbox };

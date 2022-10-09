@@ -1,26 +1,28 @@
-import { StepType, TourProps, TourProvider, useTour } from '@reactour/tour'
-import { isEmpty } from 'lodash'
-import { MutableRefObject, ReactNode, useRef } from 'react'
+import { StepType, TourProps, TourProvider, useTour } from '@reactour/tour';
+import { isEmpty } from 'lodash';
+import { MutableRefObject, ReactNode, useRef } from 'react';
 
-import AccountRoute from '../routes/AccountRoute'
-import { AccountSettingsRoute } from '../routes/AccountSettingsRoute'
-import BudgetRoute from '../routes/BudgetRoute'
-import { CurrencySettingsRoute } from '../routes/CurrencySettingsRoute'
-import ImportRoute from '../routes/ImportRoute'
-import MoneeeyStore from '../shared/MoneeeyStore'
-import useMoneeeyStore from '../shared/useMoneeeyStore'
-import Messages from '../utils/Messages'
+import AccountRoute from '../routes/AccountRoute';
+import { AccountSettingsRoute } from '../routes/AccountSettingsRoute';
+import BudgetRoute from '../routes/BudgetRoute';
+import { CurrencySettingsRoute } from '../routes/CurrencySettingsRoute';
+import ImportRoute from '../routes/ImportRoute';
+import MoneeeyStore from '../shared/MoneeeyStore';
+import useMoneeeyStore from '../shared/useMoneeeyStore';
+import Messages from '../utils/Messages';
 
 const TourSteps = function (
-  { navigation, accounts }: MoneeeyStore,
+  { navigation, accounts, budget }: MoneeeyStore,
   tourRef: MutableRefObject<TourProps | undefined>
 ): StepType[] {
-  const navigateTo = (url: string) => navigation.navigate(url)
+  const navigateTo = (url: string) => navigation.navigate(url);
   const highlight = (area: string) => ({
     selector: area,
     resizeObservables: [area],
-  })
-  const content = (text: string) => <>{text}</>
+  });
+  const content = (text: string) => <>{text}</>;
+
+  const goStepBack = () => tourRef.current && tourRef.current.setCurrentStep(tourRef.current.currentStep - 1);
 
   return [
     {
@@ -37,17 +39,28 @@ const TourSteps = function (
       ...highlight('.budgetArea'),
       content: content(Messages.tour.create_budgets),
       action: () => {
-        if (isEmpty(accounts.all) && tourRef.current) {
-          tourRef.current.setCurrentStep(tourRef.current.currentStep - 1)
+        if (isEmpty(accounts.all)) {
+          navigation.warning(Messages.tour.please_create_account);
+          goStepBack();
         } else {
-          navigateTo(BudgetRoute.url())
+          navigateTo(BudgetRoute.url());
         }
       },
+      resizeObservables: ['.budgetArea', '.editor', '.ant-drawer', '.ant-drawer-body'],
+      mutationObservables: ['.budgetArea', '.editor', '.ant-drawer', '.ant-drawer-body'],
+      position: [42, 42],
     },
     {
       ...highlight('.tableEditor'),
       content: content(Messages.tour.insert_transactions),
-      action: () => navigateTo(AccountRoute.accountUrlForUnclassified()),
+      action: () => {
+        if (isEmpty(budget.all)) {
+          navigation.warning(Messages.tour.please_create_budget);
+          goStepBack();
+        } else {
+          navigateTo(AccountRoute.accountUrlForUnclassified());
+        }
+      },
     },
     {
       ...highlight('.importArea'),
@@ -59,17 +72,17 @@ const TourSteps = function (
       content: content(Messages.tour.your_turn),
       action: () => navigateTo(AccountRoute.accountUrlForUnclassified()),
     },
-  ]
-}
+  ];
+};
 
 const MoneeeyTourProvider = ({ children }: { children: ReactNode | ReactNode[] }) => {
-  const moneeeyStore = useMoneeeyStore()
-  const tourRef = useRef<TourProps>()
+  const moneeeyStore = useMoneeeyStore();
+  const tourRef = useRef<TourProps>();
   const TourRefHolder = () => {
-    tourRef.current = useTour()
+    tourRef.current = useTour();
 
-    return <>{children}</>
-  }
+    return <>{children}</>;
+  };
 
   return (
     <TourProvider
@@ -80,26 +93,28 @@ const MoneeeyTourProvider = ({ children }: { children: ReactNode | ReactNode[] }
           backgroundColor: '#141414',
           color: '#FAFAFA',
           whiteSpace: 'pre-wrap',
+          zIndex: 999,
         }),
         maskWrapper: (base) => ({
           ...base,
           backgroundColor: 'transparent',
+          zIndex: 998,
         }),
       }}>
       <TourRefHolder />
     </TourProvider>
-  )
-}
+  );
+};
 
 const useMoneeeyTour = () => {
-  const tour = useTour()
+  const tour = useTour();
 
   return {
     open: () => {
-      tour.setCurrentStep(0)
-      tour.setIsOpen(true)
+      tour.setCurrentStep(0);
+      tour.setIsOpen(true);
     },
-  }
-}
+  };
+};
 
-export { TourSteps, useMoneeeyTour, MoneeeyTourProvider, MoneeeyTourProvider as default }
+export { TourSteps, useMoneeeyTour, MoneeeyTourProvider, MoneeeyTourProvider as default };

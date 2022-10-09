@@ -1,17 +1,17 @@
-import { computed, makeObservable } from 'mobx'
+import { computed, makeObservable } from 'mobx';
 
-import { EditorType } from '../components/editor/EditorProps'
+import { EditorType } from '../components/editor/EditorProps';
 
-import { TDate, currentDateTime } from '../utils/Date'
-import { EntityType, IBaseEntity } from '../shared/Entity'
-import MappedStore from '../shared/MappedStore'
-import { uuid } from '../utils/Utils'
-import MoneeeyStore from '../shared/MoneeeyStore'
-import Messages from '../utils/Messages'
+import { TDate, currentDateTime } from '../utils/Date';
+import { EntityType, IBaseEntity } from '../shared/Entity';
+import MappedStore from '../shared/MappedStore';
+import { uuid } from '../utils/Utils';
+import MoneeeyStore from '../shared/MoneeeyStore';
+import Messages from '../utils/Messages';
 
-import { TCurrencyUUID } from './Currency'
+import { TCurrencyUUID } from './Currency';
 
-export type TAccountUUID = string
+export type TAccountUUID = string;
 
 export enum AccountType {
   CHECKING = 'CHECKING',
@@ -20,13 +20,13 @@ export enum AccountType {
 }
 
 export interface IAccount extends IBaseEntity {
-  account_uuid: TAccountUUID
-  currency_uuid: TCurrencyUUID
-  name: string
-  created: TDate
-  type: AccountType
-  offbudget: boolean
-  archived: boolean
+  account_uuid: TAccountUUID;
+  currency_uuid: TCurrencyUUID;
+  name: string;
+  created: TDate;
+  type: AccountType;
+  offbudget: boolean;
+  archived: boolean;
 }
 
 export class AccountStore extends MappedStore<IAccount> {
@@ -52,10 +52,10 @@ export class AccountStore extends MappedStore<IAccount> {
           required: true,
           validate: (value: string) => {
             if (value.length < 2) {
-              return { valid: false, error: 'Please type a name' }
+              return { valid: false, error: 'Please type a name' };
             }
 
-            return { valid: true }
+            return { valid: true };
           },
           index: 0,
           editor: EditorType.TEXT,
@@ -93,74 +93,74 @@ export class AccountStore extends MappedStore<IAccount> {
           editor: EditorType.DATE,
         },
       }),
-    })
+    });
 
     makeObservable(this, {
       allPayees: computed,
       allNonPayees: computed,
-    })
+    });
   }
 
   merge(item: IAccount, options: { setUpdated: boolean } = { setUpdated: true }) {
-    super.merge(item, options)
+    super.merge(item, options);
     if (item.type !== AccountType.PAYEE) {
-      this.moneeeyStore.tags.register(item.name)
+      this.moneeeyStore.tags.register(item.name);
     }
   }
 
   get allPayees() {
-    return this.all.filter((acct) => acct.type === AccountType.PAYEE)
+    return this.all.filter((acct) => acct.type === AccountType.PAYEE);
   }
 
   get allNonPayees() {
-    return this.all.filter((acct) => acct.type !== AccountType.PAYEE)
+    return this.all.filter((acct) => acct.type !== AccountType.PAYEE);
   }
 
   byName(name: string) {
-    return this.all.filter((acct) => acct.name === name)[0]
+    return this.all.filter((acct) => acct.name === name)[0];
   }
 
   uuidByName(name: string) {
-    return this.byName(name).account_uuid
+    return this.byName(name).account_uuid;
   }
 
   accountTags(account_uuid: TAccountUUID) {
-    const acct = this.byUuid(account_uuid)
+    const acct = this.byUuid(account_uuid);
     if (acct) {
-      const currencyTags = this.moneeeyStore.currencies.currencyTags(acct.currency_uuid)
+      const currencyTags = this.moneeeyStore.currencies.currencyTags(acct.currency_uuid);
 
-      return [acct.name, ...acct.tags, ...currencyTags]
+      return [acct.name, ...acct.tags, ...currencyTags];
     }
 
-    return []
+    return [];
   }
 
   nameForUuid(account_uuid: TAccountUUID) {
-    const acct = this.byUuid(account_uuid)
+    const acct = this.byUuid(account_uuid);
     if (acct) {
-      return acct.name
+      return acct.name;
     }
 
-    return ''
+    return '';
   }
 
   isArchived(account_uuid: TAccountUUID): boolean {
-    const acct = this.byUuid(account_uuid)
+    const acct = this.byUuid(account_uuid);
     if (acct) {
-      return acct.archived === true
+      return acct.archived === true;
     }
 
-    return true
+    return true;
   }
 
   isOffBudget(account_uuid: TAccountUUID): boolean {
-    const acct = this.byUuid(account_uuid)
+    const acct = this.byUuid(account_uuid);
     if (acct) {
-      return acct.offbudget === true
+      return acct.offbudget === true;
     }
 
-    return true
+    return true;
   }
 }
 
-export default AccountStore
+export default AccountStore;

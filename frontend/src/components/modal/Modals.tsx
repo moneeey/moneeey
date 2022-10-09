@@ -1,11 +1,11 @@
-import LandingModal from './LandingModal'
+import LandingModal from './LandingModal';
 
 const Modals = function () {
   return (
     <>
       <LandingModal />
     </>
-  )
-}
+  );
+};
 
-export { Modals, Modals as default }
+export { Modals, Modals as default };

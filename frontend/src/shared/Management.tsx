@@ -1,13 +1,13 @@
-import { action, makeObservable, observable } from 'mobx'
+import { action, makeObservable, observable } from 'mobx';
 
-import { StorageKind, getStorage, setStorage } from '../utils/Utils'
+import { StorageKind, getStorage, setStorage } from '../utils/Utils';
 
 export default class ManagementStore {
-  auth_code = ''
+  auth_code = '';
 
-  email = ''
+  email = '';
 
-  loggedIn = false
+  loggedIn = false;
 
   constructor() {
     makeObservable(this, {
@@ -18,19 +18,19 @@ export default class ManagementStore {
       start: action,
       checkLoggedIn: action,
       complete: action,
-    })
+    });
 
-    this.loadFromSession()
+    this.loadFromSession();
   }
 
   loadFromSession() {
-    this.auth_code = getStorage('auth_code', '', StorageKind.SESSION) || ''
-    this.email = getStorage('email', '', StorageKind.SESSION) || ''
+    this.auth_code = getStorage('auth_code', '', StorageKind.SESSION) || '';
+    this.email = getStorage('email', '', StorageKind.SESSION) || '';
   }
 
   saveToSession() {
-    setStorage('auth_code', this.auth_code, StorageKind.SESSION)
-    setStorage('email', this.email, StorageKind.SESSION)
+    setStorage('auth_code', this.auth_code, StorageKind.SESSION);
+    setStorage('email', this.email, StorageKind.SESSION);
   }
 
   async post<T>(url: string, body: object) {
@@ -41,43 +41,43 @@ export default class ManagementStore {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-    })
+    });
 
-    return (await response.json()) as T
+    return (await response.json()) as T;
   }
 
   async start(email: string) {
-    this.email = email
+    this.email = email;
     const { success, auth_code } = await this.post<{ success: boolean; auth_code: string }>('/auth/start', {
       email: this.email,
-    })
-    this.auth_code = auth_code
-    this.saveToSession()
+    });
+    this.auth_code = auth_code;
+    this.saveToSession();
 
-    return success
+    return success;
   }
 
   async checkLoggedIn() {
     const { success } = await this.post<{ success: boolean }>('/auth/check', {
       email: this.email,
       auth_code: this.auth_code,
-    })
-    this.loggedIn = success
+    });
+    this.loggedIn = success;
 
-    return success
+    return success;
   }
 
   async complete(email: string, auth_code: string, confirm_code: string) {
-    this.email = email
-    this.auth_code = auth_code
-    this.saveToSession()
+    this.email = email;
+    this.auth_code = auth_code;
+    this.saveToSession();
     const { success, error } = await this.post<{ success: boolean; error: string }>('/auth/complete', {
       email,
       auth_code,
       confirm_code,
-    })
-    this.loggedIn = success
+    });
+    this.loggedIn = success;
 
-    return { success, error }
+    return { success, error };
   }
 }
