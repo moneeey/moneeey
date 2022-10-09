@@ -17,6 +17,8 @@ const Messages = {
     sync: {
       [Status.ONLINE]: 'Online',
       [Status.OFFLINE]: 'Offline',
+      [Status.DENIED]: 'Denied',
+      [Status.ERROR]: 'Error',
     },
   },
   landing: {

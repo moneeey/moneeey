@@ -67,6 +67,7 @@ export default function Login() {
   return (
     <Space>
       <Input
+        data-test-id='email'
         type='text'
         placeholder={Messages.login.email}
         value={email}

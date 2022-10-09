@@ -12,6 +12,7 @@ import './Reports.less'
 const Reports = function () {
   return (
     <Tabs
+      data-test-id='reportTabs'
       className='reportsArea'
       items={[
         {

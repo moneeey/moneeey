@@ -54,6 +54,7 @@ export const BaseReport = function ({ accounts, processFn, title, chartFn }: Bas
         {Messages.reports.include_accounts}
         {accounts.map((account) => (
           <Checkbox
+            data-test-id={`accountVisible_${account.account_uuid}`}
             key={account.account_uuid}
             checked={Boolean(selectedAccounts.find((act) => act.account_uuid === account.account_uuid))}
             onChange={({ target: { checked } }) =>

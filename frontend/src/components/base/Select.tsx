@@ -1,5 +1,11 @@
 import { Select as AntdSelect, SelectProps } from 'antd'
 
-const Select = (props: SelectProps) => <AntdSelect {...props} />
+import { WithDataTestId } from './Common'
+
+const Select = (props: SelectProps & WithDataTestId) => (
+  <div data-test-id={props['data-test-id']}>
+    <AntdSelect {...props} />
+  </div>
+)
 
 export { Select as default }

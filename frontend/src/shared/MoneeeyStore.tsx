@@ -10,7 +10,7 @@ import { EntityType } from './Entity'
 import Importer from './import/Importer'
 import ManagementStore from './Management'
 import NavigationStore from './Navigation'
-import PersistenceStore from './Persistence'
+import PersistenceStore, { PouchDBFactoryFn } from './Persistence'
 import TagsStore from './Tags'
 
 export default class MoneeeyStore {
@@ -28,16 +28,18 @@ export default class MoneeeyStore {
 
   budget = new BudgetStore(this)
 
-  persistence = new PersistenceStore()
-
   management = new ManagementStore()
 
   importer = new Importer(this)
 
   config = new ConfigStore(this)
 
-  constructor() {
+  persistence: PersistenceStore
+
+  constructor(dbFactory: PouchDBFactoryFn) {
     makeObservable(this, { loaded: observable })
+
+    this.persistence = new PersistenceStore(dbFactory)
 
     this.persistence.load().then(() => {
       this.persistence.monitor(this.accounts, EntityType.ACCOUNT)

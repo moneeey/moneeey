@@ -37,6 +37,7 @@ export const AppMenu = observer(() => {
 
   return (
     <Navbar
+      data-test-id='appMenu'
       items={[
         {
           key: 'dashboard',

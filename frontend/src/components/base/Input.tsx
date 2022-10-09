@@ -8,9 +8,27 @@ import {
 } from 'antd'
 import { TextAreaProps } from 'antd/lib/input'
 
-const Input = (props: InputProps) => <AntdInput {...props} />
-const InputNumber = (props: InputNumberProps) => <AntdInputNumber {...props} />
-const TextArea = (props: TextAreaProps) => <AntdInput.TextArea {...props} />
-const Checkbox = (props: CheckboxProps) => <AntdCheckbox {...props} />
+import { WithDataTestId } from './Common'
+
+const Input = (props: InputProps & WithDataTestId) => (
+  <div data-test-id={props['data-test-id']}>
+    <AntdInput {...props} />
+  </div>
+)
+const InputNumber = (props: InputNumberProps & WithDataTestId) => (
+  <div data-test-id={props['data-test-id']}>
+    <AntdInputNumber {...props} />
+  </div>
+)
+const TextArea = (props: TextAreaProps & WithDataTestId) => (
+  <div data-test-id={props['data-test-id']}>
+    <AntdInput.TextArea {...props} />
+  </div>
+)
+const Checkbox = (props: CheckboxProps & WithDataTestId) => (
+  <div data-test-id={props['data-test-id']}>
+    <AntdCheckbox {...props} />
+  </div>
+)
 
 export { Input, InputNumber, TextArea, Checkbox }

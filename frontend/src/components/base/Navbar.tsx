@@ -1,6 +1,8 @@
 import { Menu as AntdMenu } from 'antd'
 import { ReactNode } from 'react'
 
+import { WithDataTestId } from './Common'
+
 interface NavbarItem {
   key: string
   label: string | ReactNode
@@ -13,6 +15,10 @@ interface NavbarProps {
   items: Array<NavbarItem>
 }
 
-const Navbar = (props: NavbarProps) => <AntdMenu mode='horizontal' triggerSubMenuAction='click' {...props} />
+const Navbar = (props: NavbarProps & WithDataTestId) => (
+  <nav data-test-id={props['data-test-id']}>
+    <AntdMenu mode='horizontal' triggerSubMenuAction='click' {...props} />
+  </nav>
+)
 
 export default Navbar
