@@ -46,7 +46,9 @@ const TourSteps = function (
           navigateTo(BudgetRoute.url());
         }
       },
-      position: 'bottom',
+      resizeObservables: ['.budgetArea', '.editor', '.ant-drawer', '.ant-drawer-body'],
+      mutationObservables: ['.budgetArea', '.editor', '.ant-drawer', '.ant-drawer-body'],
+      position: [42, 42],
     },
     {
       ...highlight('.tableEditor'),
@@ -91,10 +93,12 @@ const MoneeeyTourProvider = ({ children }: { children: ReactNode | ReactNode[] }
           backgroundColor: '#141414',
           color: '#FAFAFA',
           whiteSpace: 'pre-wrap',
+          zIndex: 999,
         }),
         maskWrapper: (base) => ({
           ...base,
           backgroundColor: 'transparent',
+          zIndex: 998,
         }),
       }}>
       <TourRefHolder />
