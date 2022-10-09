@@ -1,23 +1,24 @@
-import { observer } from 'mobx-react'
-import { useState } from 'react'
+import { observer } from 'mobx-react';
+import { useState } from 'react';
 
-import Tabs from '../../components/base/Tabs'
-import { ImportTask } from '../../shared/import/ImportContent'
-import useMoneeeyStore from '../../shared/useMoneeeyStore'
-import Messages from '../../utils/Messages'
+import Tabs from '../../components/base/Tabs';
+import { ImportTask } from '../../shared/import/ImportContent';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import Messages from '../../utils/Messages';
 
-import ImportProcess from './ImportProcessor'
-import ImportStarter from './ImportStarter'
+import ImportProcess from './ImportProcessor';
+import ImportStarter from './ImportStarter';
 
-import './Import.less'
+import './Import.less';
 
 const Import = observer(() => {
-  const [processing, setProcessing] = useState([] as ImportTask[])
-  const { config } = useMoneeeyStore()
+  const [processing, setProcessing] = useState([] as ImportTask[]);
+  const { config } = useMoneeeyStore();
 
   return (
     <div className='importArea'>
       <Tabs
+        data-test-id='importTabs'
         items={[
           {
             label: Messages.import.start,
@@ -53,7 +54,7 @@ const Import = observer(() => {
         ]}
       />
     </div>
-  )
-})
+  );
+});
 
-export { Import, Import as default }
+export { Import, Import as default };

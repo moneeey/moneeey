@@ -1,9 +1,9 @@
-import { IBaseEntity } from '../../shared/Entity'
-import MappedStore from '../../shared/MappedStore'
+import { IBaseEntity } from '../../shared/Entity';
+import MappedStore from '../../shared/MappedStore';
 
 interface validation {
-  valid: boolean
-  error?: string
+  valid: boolean;
+  error?: string;
 }
 
 export enum EditorType {
@@ -24,23 +24,23 @@ export enum EditorType {
 }
 
 export interface FieldProps<ValueEditorType> {
-  editor: EditorType
-  field: string
-  title?: string
-  index: number
-  readOnly?: boolean
-  required?: boolean
-  defaultSortOrder?: 'descend' | 'ascend'
-  width?: number
-  validate?: (value: ValueEditorType) => validation
+  editor: EditorType;
+  field: string;
+  title?: string;
+  index: number;
+  readOnly?: boolean;
+  required?: boolean;
+  defaultSortOrder?: 'descend' | 'ascend';
+  width?: number;
+  validate?: (value: ValueEditorType) => validation;
 }
 
 export interface EditorProps<TEntityType extends IBaseEntity, ValueEditorType, ValueEntityType> {
-  entityId?: string
-  field: FieldProps<ValueEditorType>
-  store: MappedStore<TEntityType>
-  context?: unknown
-  onUpdate: (value: ValueEntityType, additional: object) => TEntityType
+  entityId?: string;
+  field: FieldProps<ValueEditorType>;
+  store: MappedStore<TEntityType>;
+  context?: unknown;
+  onUpdate: (value: ValueEntityType, additional: object) => TEntityType;
 }
 
-export const NoSorter = (): false => false
+export const NoSorter = (): false => false;

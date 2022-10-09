@@ -1,17 +1,17 @@
-import { DownOutlined } from '@ant-design/icons'
-import { Dropdown, Menu } from 'antd'
-import _ from 'lodash'
+import { DownOutlined } from '@ant-design/icons';
+import { Dropdown, Menu } from 'antd';
+import _ from 'lodash';
 
-import { LinkButton } from '../../components/base/Button'
+import { LinkButton } from '../../components/base/Button';
 
-import { PeriodGroup, PeriodGroups } from './ReportUtils'
+import { PeriodGroup, PeriodGroups } from './ReportUtils';
 
 const DateGroupingSelector = function ({
   setPeriod,
   period,
 }: {
-  setPeriod: (newPeriod: PeriodGroup) => void
-  period: PeriodGroup
+  setPeriod: (newPeriod: PeriodGroup) => void;
+  period: PeriodGroup;
 }) {
   return (
     <Dropdown
@@ -32,7 +32,7 @@ const DateGroupingSelector = function ({
         {period.label} <DownOutlined />
       </LinkButton>
     </Dropdown>
-  )
-}
+  );
+};
 
-export default DateGroupingSelector
+export default DateGroupingSelector;

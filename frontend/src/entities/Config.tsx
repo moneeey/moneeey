@@ -1,21 +1,21 @@
-import { isEmpty } from 'lodash'
-import { action, computed, makeObservable } from 'mobx'
+import { isEmpty } from 'lodash';
+import { action, computed, makeObservable } from 'mobx';
 
-import { EditorType } from '../components/editor/EditorProps'
-import { EntityType, IBaseEntity } from '../shared/Entity'
-import MappedStore from '../shared/MappedStore'
-import MoneeeyStore from '../shared/MoneeeyStore'
-import { TDateFormat, currentDateTime } from '../utils/Date'
-import Messages from '../utils/Messages'
+import { EditorType } from '../components/editor/EditorProps';
+import { EntityType, IBaseEntity } from '../shared/Entity';
+import MappedStore from '../shared/MappedStore';
+import MoneeeyStore from '../shared/MoneeeyStore';
+import { TDateFormat, currentDateTime } from '../utils/Date';
+import Messages from '../utils/Messages';
 
-import { TCurrencyUUID } from './Currency'
+import { TCurrencyUUID } from './Currency';
 
 export interface IConfig extends IBaseEntity {
-  date_format: string
-  decimal_separator: string
-  default_currency: TCurrencyUUID
-  view_months: number
-  view_archived: boolean
+  date_format: string;
+  decimal_separator: string;
+  default_currency: TCurrencyUUID;
+  view_months: number;
+  view_archived: boolean;
 }
 
 export class ConfigStore extends MappedStore<IConfig> {
@@ -53,23 +53,23 @@ export class ConfigStore extends MappedStore<IConfig> {
           editor: EditorType.CURRENCY,
         },
       }),
-    })
+    });
 
     makeObservable(this, {
       main: computed,
       init: action,
-    })
+    });
   }
 
   get main(): IConfig {
-    return this.all[0]
+    return this.all[0];
   }
 
   init() {
     if (isEmpty(this.all)) {
-      this.merge(this.factory())
+      this.merge(this.factory());
     }
   }
 }
 
-export default ConfigStore
+export default ConfigStore;

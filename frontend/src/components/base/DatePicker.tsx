@@ -1,5 +1,7 @@
-import { DatePicker as AntdDatePicker, DatePickerProps } from 'antd'
+import { DatePicker as AntdDatePicker, DatePickerProps } from 'antd';
 
-const DatePicker = (props: DatePickerProps) => <AntdDatePicker {...props} />
+import { WithDataTestId } from './Common';
 
-export { DatePicker as default }
+const DatePicker = (props: DatePickerProps & WithDataTestId) => <AntdDatePicker {...props} />;
+
+export { DatePicker as default };

@@ -1,17 +1,18 @@
-import Messages from '../../utils/Messages'
-import Tabs from '../../components/base/Tabs'
+import Messages from '../../utils/Messages';
+import Tabs from '../../components/base/Tabs';
 
-import AccountBalanceReport from './AccountBalanceReport'
-import IncomeVsExpensesReport from './IncomeVsExpensesReport'
-import PayeeBalanceReport from './PayeeBalanceReport'
-import TagExpensesReport from './TagExpensesReport'
-import WealthGrowReport from './WealthGrowReport'
+import AccountBalanceReport from './AccountBalanceReport';
+import IncomeVsExpensesReport from './IncomeVsExpensesReport';
+import PayeeBalanceReport from './PayeeBalanceReport';
+import TagExpensesReport from './TagExpensesReport';
+import WealthGrowReport from './WealthGrowReport';
 
-import './Reports.less'
+import './Reports.less';
 
 const Reports = function () {
   return (
     <Tabs
+      data-test-id='reportTabs'
       className='reportsArea'
       items={[
         {
@@ -41,7 +42,7 @@ const Reports = function () {
         },
       ]}
     />
-  )
-}
+  );
+};
 
-export default Reports
+export default Reports;
