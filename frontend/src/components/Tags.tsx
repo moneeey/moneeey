@@ -1,8 +1,9 @@
-import { Tag } from 'antd'
 import React, { ReactNode } from 'react'
 
 import TagsRoute from '../routes/TagsRoute'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
+
+import Tag from './base/Tag'
 
 const TagColors: { [_group: string]: string } = {
   highlight: 'lightsalmon',
@@ -43,13 +44,12 @@ const TagsRenderer = function ({ color, tags }: IStyledTagsProp) {
             color={TagColors[tag === t ? 'highlight' : color]}
             onMouseOver={() => setTag(t)}
             onMouseOut={() => setTag('')}
-            title={'Click to filter'}
+            title={t}
             onClick={(e) => {
               e.preventDefault()
               moneeeyStore.navigation.navigate(TagsRoute.tagsUrl(t))
-            }}>
-            #{t}
-          </Tag>
+            }}
+          />
         )
       })}
     </span>

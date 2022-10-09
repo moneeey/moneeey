@@ -17,6 +17,8 @@ const Messages = {
     sync: {
       [Status.ONLINE]: 'Online',
       [Status.OFFLINE]: 'Offline',
+      [Status.DENIED]: 'Denied',
+      [Status.ERROR]: 'Error',
     },
   },
   landing: {
@@ -59,6 +61,7 @@ const Messages = {
     archived: 'Archived',
     close: 'Close',
     created: 'Created',
+    delete: 'Delete',
     currency: 'Currency',
     date: 'Date',
     date_format: 'Date format',

@@ -19,9 +19,10 @@ import { TagsHighlightProvider } from './components/Tags'
 import MoneeeyTourProvider from './components/Tour'
 
 import './App.less'
+import { PouchDBFactory } from './shared/Persistence'
 
 export const App = observer(() => {
-  const [moneeeyStore] = React.useState(new MoneeeyStore())
+  const [moneeeyStore] = React.useState(new MoneeeyStore(PouchDBFactory))
 
   return (
     <div className='App'>

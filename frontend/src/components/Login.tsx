@@ -1,10 +1,13 @@
-import { Button, Input, Space } from 'antd'
 import React, { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { Status, StatusProps } from '../components/Status'
 import Messages from '../utils/Messages'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
+
+import Space from './base/Space'
+import { PrimaryButton } from './base/Button'
+import { Input } from './base/Input'
 
 export default function Login() {
   const { management } = useMoneeeyStore()
@@ -62,16 +65,17 @@ export default function Login() {
   }, [searchParams, setSearchParams, management])
 
   return (
-    <Space direction='vertical'>
+    <Space>
       <Input
+        data-test-id='email'
         type='text'
         placeholder={Messages.login.email}
         value={email}
         onChange={({ target: { value } }) => setEmail(value.toLowerCase())}
       />
-      <Button disabled={disabled} onClick={onLoginOrSignup}>
+      <PrimaryButton disabled={disabled} onClick={onLoginOrSignup}>
         {Messages.login.login_or_signup}
-      </Button>
+      </PrimaryButton>
       <Status {...status} />
     </Space>
   )

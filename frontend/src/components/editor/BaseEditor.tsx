@@ -1,7 +1,7 @@
-import { Typography } from 'antd'
 import { useEffect, useState } from 'react'
 
 import { IBaseEntity } from '../../shared/Entity'
+import { DangerText } from '../base/Text'
 
 import { EditorProps } from './EditorProps'
 
@@ -58,6 +58,7 @@ export const BaseEditor = function <EntityType extends IBaseEntity, ValueEditorT
     <label>
       <ComposedInput
         {...{
+          'data-test-id': `editor${(title || '').replace(' ', '-')}`,
           readOnly,
           rev,
           status,
@@ -67,11 +68,7 @@ export const BaseEditor = function <EntityType extends IBaseEntity, ValueEditorT
           value: currentValue,
         }}
       />
-      {error && (
-        <Typography.Text className='baseEditor-error' type='danger'>
-          {error}
-        </Typography.Text>
-      )}
+      {error && <DangerText className='baseEditor-error'>{error}</DangerText>}
     </label>
   )
 }

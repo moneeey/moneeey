@@ -1,10 +1,10 @@
-@url = http://localhost:4269
+@url = http://local.moneeey.io
 @email = test@baroni.tech
 
 ### Auth start
 
 # @name auth_start
-POST {{ url }}/auth/start
+POST {{ url }}/api/auth/start
 Content-Type: application/json
 
 { "email": "{{ email }}" }
@@ -14,7 +14,7 @@ Content-Type: application/json
 @auth_code = 2f35e31433bebbac1a57f86ecf417125cf8a3bd5a83c87d83b33e0564e7d07e9fa0b4b13dc2071e8e7fdc23ac3fafcf6d06299c9e24304352b2b12c6fc79841a
 @confirm_code = 422ba857a84a8aade3271edad26d9a443f4d919a6e47f8056d94e7e5c1cd03b0900ce73582f83f0325b327a613495d5b4c8cdb6719b35dd5dd3ac13c566fd8f0
 
-POST {{ url }}/auth/complete
+POST {{ url }}/api/auth/complete
 Content-Type: application/json
 
 { "email": "{{ email }}", "auth_code": "{{ auth_code }}", "confirm_code": "{{ confirm_code }}" }
@@ -23,7 +23,7 @@ Content-Type: application/json
 
 @auth_code = 2f35e31433bebbac1a57f86ecf417125cf8a3bd5a83c87d83b33e0564e7d07e9fa0b4b13dc2071e8e7fdc23ac3fafcf6d06299c9e24304352b2b12c6fc79841a
 
-POST {{ url }}/auth/check
+POST {{ url }}/api/auth/check
 Content-Type: application/json
 
 { "email": "{{ email }}", "auth_code": "{{ auth_code }}" }

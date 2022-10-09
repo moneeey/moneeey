@@ -1,7 +1,7 @@
 import { Column, Line } from '@ant-design/charts'
-import { Checkbox } from 'antd'
 import { ReactElement, useEffect, useState } from 'react'
 
+import { Checkbox } from '../../components/base/Input'
 import Loading from '../../components/Loading'
 import { IAccount } from '../../entities/Account'
 import useMoneeeyStore from '../../shared/useMoneeeyStore'
@@ -54,6 +54,7 @@ export const BaseReport = function ({ accounts, processFn, title, chartFn }: Bas
         {Messages.reports.include_accounts}
         {accounts.map((account) => (
           <Checkbox
+            data-test-id={`accountVisible_${account.account_uuid}`}
             key={account.account_uuid}
             checked={Boolean(selectedAccounts.find((act) => act.account_uuid === account.account_uuid))}
             onChange={({ target: { checked } }) =>

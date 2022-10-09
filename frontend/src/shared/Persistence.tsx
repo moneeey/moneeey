@@ -11,7 +11,13 @@ import MappedStore from './MappedStore'
 export enum Status {
   ONLINE = 'ONLINE',
   OFFLINE = 'OFFLINE',
+  DENIED = 'DENIED',
+  ERROR = 'ERROR',
 }
+
+export type PouchDBFactoryFn = () => PouchDB.Database
+
+export const PouchDBFactory = () => new PouchDB('moneeey')
 
 export default class PersistenceStore {
   public status: Status = Status.OFFLINE
@@ -37,9 +43,8 @@ export default class PersistenceStore {
 
   private _commit
 
-  constructor() {
-    this.db = new PouchDB('moneeey')
-    this.sync()
+  constructor(dbFactory: PouchDBFactoryFn) {
+    this.db = dbFactory()
     this._commit = _.debounce(() => this.commit(), 1000)
 
     makeObservable(this, {
@@ -58,7 +63,7 @@ export default class PersistenceStore {
         return
       }
       this.db
-        .sync(`/couchdb/${this.databaseId}`, { live: true, retry: true })
+        .sync(`/api/couchdb/${this.databaseId}`, { live: true, retry: true })
         .on('change', () => {
           resolve(setStatus(Status.ONLINE))
         })
@@ -66,7 +71,10 @@ export default class PersistenceStore {
           resolve(setStatus(Status.OFFLINE))
         })
         .on('denied', () => resolve(setStatus(Status.OFFLINE)))
-        .on('error', () => reject(setStatus(Status.OFFLINE)))
+        .on('error', (e) => {
+          console.error('Persistence sync', { e })
+          reject(setStatus(Status.OFFLINE))
+        })
     })
   }
 

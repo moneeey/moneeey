@@ -1,6 +1,8 @@
-import { Button, Input } from 'antd'
 import { useState } from 'react'
 
+import { PrimaryButton, SecondaryButton } from '../components/base/Button'
+import { TextArea } from '../components/base/Input'
+import Space from '../components/base/Space'
 import useMoneeeyStore from '../shared/useMoneeeyStore'
 import ConfigTable from '../tables/ConfigTable'
 import Messages from '../utils/Messages'
@@ -64,24 +66,29 @@ export default function Settings() {
   return (
     <section className='settingsArea'>
       <ConfigTable config={moneeeyStore.config} />
-      <p>
-        <Button onClick={onBackupData} disabled={actionsDisabled}>
+      <Space>
+        <PrimaryButton onClick={onBackupData} disabled={actionsDisabled}>
           {Messages.settings.export_data}
-        </Button>
-        <Button
+        </PrimaryButton>
+        <SecondaryButton
           onClick={onRestoreData}
           disabled={actionsDisabled && backupRestoreState !== BackupRestoreState.RESTORE_INPUT}>
           {Messages.settings.import_data}
-        </Button>
-        <Button
+        </SecondaryButton>
+        <SecondaryButton
           onClick={onClearData}
           disabled={actionsDisabled && backupRestoreState !== BackupRestoreState.CLEAR_INPUT}>
           {Messages.settings.clear_all}
-        </Button>
+        </SecondaryButton>
         {backupRestoreState !== BackupRestoreState.IDLE && (
-          <Input.TextArea value={content} onChange={({ target: { value } }) => setContent(value)} rows={30} />
+          <TextArea
+            data-test-id='importExportOutput'
+            value={content}
+            onChange={({ target: { value } }) => setContent(value)}
+            rows={30}
+          />
         )}
-      </p>
+      </Space>
     </section>
   )
 }

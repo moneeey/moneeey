@@ -1,4 +1,5 @@
 import _, { debounce, values } from 'lodash'
+import { action, makeObservable } from 'mobx'
 
 import { TDate, currentDateTime, formatDate, parseDate, startOfMonthOffset } from '../utils/Date'
 import { EntityType, IBaseEntity, TMonetary } from '../shared/Entity'
@@ -46,6 +47,10 @@ export class BudgetStore extends MappedStore<IBudget> {
     })
 
     this._envelopes = new BudgetEnvelopeStore(moneeeyStore)
+
+    makeObservable(this, {
+      calculateRemaining: action,
+    })
   }
 
   get envelopes() {

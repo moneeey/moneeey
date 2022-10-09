@@ -1,5 +1,7 @@
 import { action, makeObservable, observable } from 'mobx'
 
+import { StorageKind, getStorage, setStorage } from '../utils/Utils'
+
 export default class ManagementStore {
   auth_code = ''
 
@@ -22,13 +24,13 @@ export default class ManagementStore {
   }
 
   loadFromSession() {
-    this.auth_code = window.sessionStorage.getItem('auth_code') || ''
-    this.email = window.sessionStorage.getItem('email') || ''
+    this.auth_code = getStorage('auth_code', '', StorageKind.SESSION) || ''
+    this.email = getStorage('email', '', StorageKind.SESSION) || ''
   }
 
   saveToSession() {
-    window.sessionStorage.setItem('auth_code', this.auth_code)
-    window.sessionStorage.setItem('email', this.email)
+    setStorage('auth_code', this.auth_code, StorageKind.SESSION)
+    setStorage('email', this.email, StorageKind.SESSION)
   }
 
   async post<T>(url: string, body: object) {

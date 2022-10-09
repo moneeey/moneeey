@@ -4,45 +4,79 @@ services:
   frontend:
     build: ./docker
     restart: unless-stopped
+    networks:
+      - moneeey-network
     depends_on:
       - backend
     volumes:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/frontend:/app
-    ports:
-      - '4270:4270'
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/frontend_node_modules_data/:/app/node_modules
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moneeey-frontend.rule=Host(`local.moneeey.io`) && !PathPrefix(`/api`)"
+      - "traefik.http.services.moneeey-frontend.loadbalancer.server.port=4270"
 
   backend:
     build: ./docker
     restart: unless-stopped
+    networks:
+      - moneeey-network
     depends_on:
       - couchdb
     volumes:
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/prod.env:ro
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/dev.env:ro
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app
-    ports:
-      - '4269:4269'
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/backend_node_modules_data/:/app/node_modules
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moneeey-backend.rule=Host(`local.moneeey.io`) && PathPrefix(`/api`)"
+      - "traefik.http.services.moneeey-backend.loadbalancer.server.port=4269"
 
   couchdb:
     image: couchdb:3.2
     restart: unless-stopped
+    networks:
+      - moneeey-network
     environment:
       - COUCHDB_USER=dev
       - COUCHDB_PASSWORD=dev
-    ports:
-      - '5984:5984'
-      - '4369:4369'
-      - '9100:9100'
     volumes:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb_data:/opt/couchdb/data
       - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb.dev.ini:/opt/couchdb/etc/local.d/local.ini
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moneeey-couchdb.rule=Host(`localcouchdb.moneeey.io`)"
+      - "traefik.http.services.moneeey-couchdb.loadbalancer.server.port=5984"
 
   devmail:
     image: maildev/maildev:2.0.5
     restart: unless-stopped
+    networks:
+      - moneeey-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moneeey-devmail.rule=Host(`localdevmail.moneeey.io`)"
+      - "traefik.http.services.moneeey-devmail.loadbalancer.server.port=1080"
+
+  traefik:
+    image: traefik:2.7.3
+    restart: unless-stopped
+    networks:
+      - moneeey-network
     ports:
-      - '1080:1080'
-      - '1025:1025'
+      - 80:80
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker/acme.json:/acme.json
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--log.level=DEBUG"
 
 volumes:
   couchdb_data:
     driver: local
+
+networks:
+  moneeey-network:

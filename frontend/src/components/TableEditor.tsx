@@ -147,7 +147,7 @@ export const TableEditor = observer(
 
             return entityId
           })
-          .concat(creatable === true ? [newEntityId] : [])
+          .concat(creatable === false ? [] : [newEntityId])
           .map((entityId) => ({ entityId })),
       [store, store.ids, schemaFilter, newEntityId]
     )
