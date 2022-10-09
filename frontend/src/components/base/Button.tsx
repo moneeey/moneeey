@@ -6,11 +6,7 @@ import { WithDataTestId } from './Common'
 
 const Button = (base: ButtonProps & WithDataTestId) =>
   function BaseButton(props: ButtonProps & Partial<WithDataTestId>) {
-    return (
-      <div data-test-id={props['data-test-id'] || base['data-test-id']}>
-        <AntdButton {...base} {...props} />
-      </div>
-    )
+    return <AntdButton {...base} {...props} />
   }
 
 const PrimaryButton = Button({ type: 'primary', 'data-test-id': 'primary-button' })

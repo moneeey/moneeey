@@ -79,6 +79,7 @@ export const ReferenceAccountSelector = observer(
 
     return (
       <AccountSelector
+        title={Messages.import.select_reference_account}
         account={referenceAccount}
         accounts={moneeeyStore.accounts.allNonPayees}
         onSelect={(value) => onReferenceAccount(value)}

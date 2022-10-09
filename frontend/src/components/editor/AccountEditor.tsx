@@ -96,11 +96,12 @@ const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: Accou
 interface AccountSelectorProps {
   account: TAccountUUID
   accounts: IAccount[]
+  title: string
   onSelect: (account: TAccountUUID) => void
   clearable?: boolean
 }
 
-export const AccountSelector = ({ account, accounts, onSelect, clearable }: AccountSelectorProps) => (
+export const AccountSelector = ({ account, accounts, onSelect, clearable, title }: AccountSelectorProps) => (
   <AccountEditorBase
     clearable={clearable}
     accounts={accounts}
@@ -110,7 +111,7 @@ export const AccountSelector = ({ account, accounts, onSelect, clearable }: Acco
       editor: EditorType.ACCOUNT,
       field: 'selectorz',
       index: 0,
-      title: '',
+      title,
     }}
     onUpdate={(value) => {
       onSelect(value)
