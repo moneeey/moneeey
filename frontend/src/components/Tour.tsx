@@ -12,7 +12,7 @@ import useMoneeeyStore from '../shared/useMoneeeyStore'
 import Messages from '../utils/Messages'
 
 const TourSteps = function (
-  { navigation, accounts }: MoneeeyStore,
+  { navigation, accounts, budget }: MoneeeyStore,
   tourRef: MutableRefObject<TourProps | undefined>
 ): StepType[] {
   const navigateTo = (url: string) => navigation.navigate(url)
@@ -21,6 +21,8 @@ const TourSteps = function (
     resizeObservables: [area],
   })
   const content = (text: string) => <>{text}</>
+
+  const goStepBack = () => tourRef.current && tourRef.current.setCurrentStep(tourRef.current.currentStep - 1)
 
   return [
     {
@@ -37,17 +39,26 @@ const TourSteps = function (
       ...highlight('.budgetArea'),
       content: content(Messages.tour.create_budgets),
       action: () => {
-        if (isEmpty(accounts.all) && tourRef.current) {
-          tourRef.current.setCurrentStep(tourRef.current.currentStep - 1)
+        if (isEmpty(accounts.all)) {
+          navigation.warning(Messages.tour.please_create_account)
+          goStepBack()
         } else {
           navigateTo(BudgetRoute.url())
         }
       },
+      position: 'bottom',
     },
     {
       ...highlight('.tableEditor'),
       content: content(Messages.tour.insert_transactions),
-      action: () => navigateTo(AccountRoute.accountUrlForUnclassified()),
+      action: () => {
+        if (isEmpty(budget.all)) {
+          navigation.warning(Messages.tour.please_create_budget)
+          goStepBack()
+        } else {
+          navigateTo(AccountRoute.accountUrlForUnclassified())
+        }
+      },
     },
     {
       ...highlight('.importArea'),

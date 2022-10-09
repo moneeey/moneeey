@@ -7,6 +7,7 @@ import { asyncProcess } from '../utils/Utils'
 
 import { EntityType, IBaseEntity } from './Entity'
 import MappedStore from './MappedStore'
+import MoneeeyStore from './MoneeeyStore'
 
 export enum Status {
   ONLINE = 'ONLINE',
@@ -43,7 +44,10 @@ export default class PersistenceStore {
 
   private _commit
 
-  constructor(dbFactory: PouchDBFactoryFn) {
+  private moneeeyStore: MoneeeyStore
+
+  constructor(moneeeyStore: MoneeeyStore, dbFactory: PouchDBFactoryFn) {
+    this.moneeeyStore = moneeeyStore
     this.db = dbFactory()
     this._commit = _.debounce(() => this.commit(), 1000)
 
@@ -115,7 +119,7 @@ export default class PersistenceStore {
         }
         if (error && status === 409) {
           const actual = await this.fetch(id)
-          console.error('Sync Commit conflict', { resp, current, actual })
+          this.moneeeyStore.navigation.error('Sync Commit conflict', { resp, current, actual })
           current.store.merge(actual, { setUpdated: false })
         } else if (error) {
           console.error('Sync Commit error', { error, current })

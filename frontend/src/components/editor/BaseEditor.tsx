@@ -58,7 +58,7 @@ export const BaseEditor = function <EntityType extends IBaseEntity, ValueEditorT
     <label>
       <ComposedInput
         {...{
-          'data-test-id': `editor${(title || '').replace(' ', '-')}`,
+          'data-test-id': `editor${(title || '').replace(' ', '_')}_${rev}`,
           readOnly,
           rev,
           status,

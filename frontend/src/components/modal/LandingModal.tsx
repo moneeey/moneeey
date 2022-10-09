@@ -29,9 +29,11 @@ const LandingModal = function () {
       }}
       cancelText={Messages.util.close}
       okText={Messages.modal.start_tour}>
-      <ul>
-        {map(Messages.landing.messages, (message) => (
-          <li key={message}>{message}</li>
+      <ul data-test-id='start_tour_messages'>
+        {map(Messages.landing.messages, (message, index) => (
+          <li data-test-id={`start_tour_message_${index}`} key={message}>
+            {message}
+          </li>
         ))}
       </ul>
     </BaseModal>

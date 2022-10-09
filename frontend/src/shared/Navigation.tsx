@@ -6,6 +6,8 @@ export enum NavigationModal {
   SYNC,
 }
 
+type NotificationType = 'warning' | 'success' | 'info' | 'error'
+
 export default class NavigationStore {
   dateFormat = 'dd/MM/yyy'
 
@@ -13,10 +15,16 @@ export default class NavigationStore {
 
   currentModal = NavigationModal.NONE
 
+  notifications: Array<{
+    type: NotificationType
+    text: string
+  }> = []
+
   constructor() {
     makeObservable(this, {
       navigateToUrl: observable,
       currentModal: observable,
+      notifications: observable,
       navigateTo: computed,
       navigate: action,
       modal: computed,
@@ -42,5 +50,25 @@ export default class NavigationStore {
 
   closeModal() {
     this.openModal(NavigationModal.NONE)
+  }
+
+  private notify(type: NotificationType, text: string) {
+    this.notifications.push({ text, type })
+  }
+
+  warning(text: string) {
+    this.notify('warning', text)
+  }
+
+  success(text: string) {
+    this.notify('success', text)
+  }
+
+  info(text: string) {
+    this.notify('info', text)
+  }
+
+  error(text: string) {
+    this.notify('error', text)
   }
 }

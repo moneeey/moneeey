@@ -39,7 +39,7 @@ export default class MoneeeyStore {
   constructor(dbFactory: PouchDBFactoryFn) {
     makeObservable(this, { loaded: observable })
 
-    this.persistence = new PersistenceStore(dbFactory)
+    this.persistence = new PersistenceStore(this, dbFactory)
 
     this.persistence.load().then(() => {
       this.persistence.monitor(this.accounts, EntityType.ACCOUNT)

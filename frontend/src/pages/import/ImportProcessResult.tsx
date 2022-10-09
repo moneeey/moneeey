@@ -33,6 +33,7 @@ const ImportProcessResult = ({
     return (
       <AccountSelector
         clearable
+        title='Account'
         account={account_uuid}
         accounts={compact([
           ...map(result?.recommended_accounts[row.transaction_uuid], (cur_account_uuid) =>

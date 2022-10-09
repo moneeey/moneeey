@@ -1,4 +1,4 @@
-import { Modal } from 'antd'
+import { ButtonProps, Modal } from 'antd'
 import { observer } from 'mobx-react'
 import { ReactElement } from 'react'
 
@@ -20,11 +20,13 @@ const BaseModal = observer(({ title, modalId, onSubmit, okText, cancelText, chil
 
   return (
     <Modal
-      title={title}
+      title={<span data-test-id='modalTitle'>{title}</span>}
       open={navigation.modal === modalId}
       onOk={onSubmit}
       okText={okText || Messages.util.ok}
+      okButtonProps={{ 'data-test-id': 'button-ok' } as ButtonProps}
       onCancel={() => navigation.closeModal()}
+      cancelButtonProps={{ 'data-test-id': 'button-cancel' } as ButtonProps}
       cancelText={cancelText || Messages.util.cancel}>
       {children}
     </Modal>

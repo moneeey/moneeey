@@ -14,9 +14,14 @@ interface TabsProps {
   items: Array<TabItem>
 }
 
+const itemsWithDataTestId = (rootTestId: string, items: Array<TabItem>) =>
+  items.map((item) => {
+    return { ...item, label: <span data-test-id={`${rootTestId}_${item.key}`}>{item.label}</span> }
+  })
+
 const Tabs = (props: TabsProps & WithDataTestId) => (
   <nav data-test-id={props['data-test-id']}>
-    <AntdTabs {...props} />
+    <AntdTabs {...props} items={itemsWithDataTestId(props['data-test-id'], props.items)} />
   </nav>
 )
 
