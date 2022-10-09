@@ -15,14 +15,14 @@ Execute these steps to run locally:
 docker-compose up
 ```
 
-The frontend will be available at: <http://local.moneeey.io>
+The frontend will be available at: [local.moneeey.io](<http://local.moneeey.io>)
 
-The backend will be available at: <http://local.moneeey.io/api>
+The backend will be available at: [local.moneeey.io/api](<http://local.moneeey.io/api>)
 
-MailDev to see emails sent from the system: <http://localdevmail.moneeey.io>
+MailDev to see emails sent from the system: [localdevmail.moneeey.io](<http://localdevmail.moneeey.io>)
 
-CouchDB admin is available at <http://localcouchdb.moneeey.io/_utils/#login> use
-`dev/dev` to login as admin.
+CouchDB admin is available at [localcouchdb.moneeey.io/login](<http://localcouchdb.moneeey.io/_utils/#login>)
+use `dev/dev` to login as admin.
 
 ## Example backend requests
 
