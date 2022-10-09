@@ -8,6 +8,6 @@ const locators = {
   BUDGET: {
     NAME_INPUT: '[placeholder="Name"]',
   },
-}
+};
 
-export default locators
+export default locators;

@@ -1,19 +1,19 @@
-import _, { flattenDeep } from 'lodash'
-import { observer } from 'mobx-react'
+import _, { flattenDeep } from 'lodash';
+import { observer } from 'mobx-react';
 
-import { IBaseEntity } from '../../shared/Entity'
+import { IBaseEntity } from '../../shared/Entity';
 
-import useMoneeeyStore from '../../shared/useMoneeeyStore'
-import Select from '../base/Select'
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import Select from '../base/Select';
 
-import BaseSelectEditor from './BaseSelectEditor'
-import { EditorProps, NoSorter } from './EditorProps'
+import BaseSelectEditor from './BaseSelectEditor';
+import { EditorProps, NoSorter } from './EditorProps';
 
 export const TagEditor = observer(
   <EntityType extends IBaseEntity>(props: EditorProps<EntityType, string[], string[]>) => {
-    const { tags } = useMoneeeyStore()
-    const entity = props.store.byUuid(props.entityId)
-    const currentValue = entity?.[props.field.field] as string[]
+    const { tags } = useMoneeeyStore();
+    const entity = props.store.byUuid(props.entityId);
+    const currentValue = entity?.[props.field.field] as string[];
 
     return (
       <BaseSelectEditor
@@ -25,8 +25,8 @@ export const TagEditor = observer(
             .map(
               (tag) =>
                 ({ label: tag, value: tag } as unknown as {
-                  label: string
-                  value: string[]
+                  label: string;
+                  value: string[];
                 })
             )
             .compact()
@@ -39,8 +39,8 @@ export const TagEditor = observer(
           ComposedInput: Select,
         }}
       />
-    )
+    );
   }
-)
+);
 
-export const TagSorter = NoSorter
+export const TagSorter = NoSorter;
