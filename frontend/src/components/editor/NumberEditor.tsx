@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react'
-import { ChangeEvent } from 'react'
 
 import { IBaseEntity } from '../../shared/Entity'
 import MappedStore from '../../shared/MappedStore'

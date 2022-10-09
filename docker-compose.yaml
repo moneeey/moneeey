@@ -5,7 +5,7 @@ services:
     build: ./docker
     restart: unless-stopped
     networks:
-    - moneeey-network
+      - moneeey-network
     depends_on:
       - backend
     volumes:
@@ -19,11 +19,11 @@ services:
     build: ./docker
     restart: unless-stopped
     networks:
-    - moneeey-network
+      - moneeey-network
     depends_on:
       - couchdb
     volumes:
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/prod.env:ro
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/dev.env:ro
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app
     labels:
       - "traefik.enable=true"
@@ -34,7 +34,7 @@ services:
     image: couchdb:3.2
     restart: unless-stopped
     networks:
-    - moneeey-network
+      - moneeey-network
     environment:
       - COUCHDB_USER=dev
       - COUCHDB_PASSWORD=dev
@@ -50,7 +50,7 @@ services:
     image: maildev/maildev:2.0.5
     restart: unless-stopped
     networks:
-    - moneeey-network
+      - moneeey-network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.moneeey-devmail.rule=Host(`localdevmail.moneeey.io`)"
@@ -60,7 +60,7 @@ services:
     image: traefik:2.7.3
     restart: unless-stopped
     networks:
-    - moneeey-network
+      - moneeey-network
     ports:
       - 80:80
     volumes:
