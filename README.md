@@ -5,7 +5,7 @@
 Moneeey is an attempt to provide personal budgeting and financial services to
 end users, at a cheap price (possibly self-hosted for free), offering multiple
 user experience, encrypted data, freedom of data ownership, export, import,
-automatic transaction categorization, reports and much more...
+automatic transaction categorization, reports and much more.
 
 ## How to run locally
 
@@ -26,5 +26,5 @@ use `dev/dev` to login as admin.
 
 ## Example backend requests
 
-There are some backend request examples [here](/backend/requests), they are
+There are some backend request examples [here](/backend/requests). They are
 runnable with VSCode Rest Client.
