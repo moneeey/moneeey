@@ -1,9 +1,8 @@
 import { observer } from 'mobx-react'
-import { ChangeEvent } from 'react'
 
 import { IBaseEntity } from '../../shared/Entity'
 import MappedStore from '../../shared/MappedStore'
-import { Input } from '../base/Input'
+import { InputNumber } from '../base/Input'
 import { Row } from '../TableEditor'
 
 import { BaseEditor } from './BaseEditor'
@@ -29,15 +28,14 @@ export const BaseNumberEditor = observer(
           ...props,
           value: props.value,
           rev: props.rev,
-          ComposedInput: Input,
+          ComposedInput: InputNumber,
           ComposedProps: (
             onChange: (value?: number, editorValue?: string, additional?: Partial<EntityType>) => void
           ) => ({
             type: 'number',
             prefix,
             suffix,
-            onChange: ({ target: { value } }: ChangeEvent<HTMLInputElement>) =>
-              onChange(parseInt(value, 10), parseInt(value, 10).toString(), {}),
+            onChange: (value: number) => onChange(value, value.toString(), {}),
           }),
         }}
       />
@@ -52,7 +50,7 @@ export const NumberEditor = observer(
     return (
       <BaseNumberEditor
         {...props}
-        value={(entity?.[props.field.field] as number).toString()}
+        value={((entity?.[props.field.field] as number) || '').toString()}
         rev={entity?._rev || ''}
       />
     )

@@ -39,7 +39,6 @@ export default class PersistenceStore {
 
   constructor() {
     this.db = new PouchDB('moneeey')
-    this.sync()
     this._commit = _.debounce(() => this.commit(), 1000)
 
     makeObservable(this, {

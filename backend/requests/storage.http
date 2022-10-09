@@ -1,11 +1,11 @@
-@url = http://localhost:4269
+@url = http://local.moneeey.io
 @email = test@baroni.tech
 @auth_code = 2f35e31433bebbac1a57f86ecf417125cf8a3bd5a83c87d83b33e0564e7d07e9fa0b4b13dc2071e8e7fdc23ac3fafcf6d06299c9e24304352b2b12c6fc79841a
 
 ### Storage create
 
 # @name auth_start
-POST {{ url }}/storage/new
+POST {{ url }}/api/storage/new
 Content-Type: application/json
 Authorization: Bearer {{auth_code}}
 Email: {{email}}
@@ -17,7 +17,7 @@ Email: {{email}}
 @database = asd
 
 # @name auth_start
-POST {{ url }}/storage/new
+POST {{ url }}/api/storage/new
 Content-Type: application/json
 Authorization: Bearer {{auth_code}}
 Email: {{email}}

@@ -50,6 +50,7 @@ export default class MoneeeyStore {
         this.currencies.addDefaults()
       }, 1000)
       this.loaded = true
+      this.persistence.sync()
     })
   }
 }

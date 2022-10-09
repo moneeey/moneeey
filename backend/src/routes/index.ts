@@ -7,6 +7,6 @@ import { HandleAPI, HandleAuthAPI } from './handle_api';
 
 const router: Router = express.Router();
 
-router.get('/', async (_: Request, res: Response) => res.send(APP_DESC));
+router.get("/", async (_: Request, res: Response) => res.send(APP_DESC));
 
 export { router as defaultRoutes, authRoutes, storageRoutes, HandleAPI, HandleAuthAPI };
