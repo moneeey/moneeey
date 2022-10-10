@@ -4,10 +4,12 @@
 import loc from '../support/locators';
 import '../support/cypress-indexeddb-namespace';
 
+const getAppEndpoint = () => 'http://local.moneeey.io:' + (Cypress.env('FRONTEND_PORT') || 80);
+
 describe('Tour spec', () => {
   before(() => {
     cy.clearIndexedDb('_pouch_moneeey');
-    cy.visit('http://local.moneeey.io');
+    cy.visit(getAppEndpoint());
   });
 
   it('Start tour', () => {

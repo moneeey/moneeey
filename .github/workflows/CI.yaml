@@ -33,20 +33,31 @@ jobs:
         path: |
           backend/node_modules
           frontend/node_modules
-        key: ${{ runner.os }}-moneeey-${{ matrix.service }}--${{ hashFiles('${{matrix.service}}-/package.json') }}
+          /home/runner/.cache/Cypress
+        key: ${{ runner.os }}-moneeey-${{ matrix.service }}-${{ hashFiles('**/package.json') }}
 
     # Install node_modules
-    - run: yarn install
+    - run: yarn install --frozen-lockfile
 
     # Basic tests
     - run: yarn test
 
-    # Cypress
-    - name: cypress
+    # Cypress Install
+    - name: Cypress install
       uses: cypress-io/github-action@v4
       if: matrix.service == 'frontend'
       with:
-        project: ./${{ matrix.service }}
+        runTests: false
+        build: yarn build
+        working-directory: frontend
+
+    # Cypress
+    - name: Cypress run
+      uses: cypress-io/github-action@v4
+      if: matrix.service == 'frontend'
+      with:
+        start: yarn dev --port 80 && wait-on http://local.moneeey.io
+        working-directory: frontend
 
     # Install the cosign tool except on PR
     # https://github.com/sigstore/cosign-installer
