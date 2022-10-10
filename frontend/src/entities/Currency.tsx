@@ -129,7 +129,7 @@ export class CurrencyStore extends MappedStore<ICurrency> {
   currencyTags(currency_uuid: TCurrencyUUID) {
     const curr = this.byUuid(currency_uuid);
     if (curr) {
-      return [...curr.tags];
+      return curr.tags || [];
     }
 
     return [];

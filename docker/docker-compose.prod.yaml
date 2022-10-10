@@ -25,18 +25,18 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.moneeey_frontend.rule=Host(`moneeey.io`) && !PathPrefix(`/api`)"
-      - "traefik.http.routers.moneeey_frontend.tls.certresolver=le"
-    depends_on:
-      - backend
+      - "traefik.http.routers.moneeey-frontend.rule=Host(`moneeey.io`) && !PathPrefix(`/api`)"
+      - "traefik.http.routers.moneeey-frontend.tls.certresolver=le"
+      - "traefik.http.services.moneeey-frontend.loadbalancer.server.port=4270"
 
   backend:
     image: BACKEND_IMAGE
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.moneeey_backend.rule=Host(`moneeey.io`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.moneeey_backend.tls.certresolver=le"
+      - "traefik.http.routers.moneeey-backend.rule=Host(`moneeey.io`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.moneeey-backend.tls.certresolver=le"
+      - "traefik.http.services.moneeey-backend.loadbalancer.server.port=4269"
     depends_on:
       - couchdb
     volumes:
