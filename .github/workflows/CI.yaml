@@ -33,10 +33,20 @@ jobs:
         path: |
           backend/node_modules
           frontend/node_modules
-        key: ${{ runner.os }}-npm-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ runner.os }}-moneeey-${{ matrix.service }}--${{ hashFiles('${{matrix.service}}-/package.json') }}
 
-    - run: yarn
+    # Install node_modules
+    - run: yarn install
+
+    # Basic tests
     - run: yarn test
+
+    # Cypress
+    - name: cypress
+      uses: cypress-io/github-action@v4
+      if: matrix.service == 'frontend'
+      with:
+        project: ./${{ matrix.service }}
 
     # Install the cosign tool except on PR
     # https://github.com/sigstore/cosign-installer
@@ -63,7 +73,7 @@ jobs:
 
     # Login against a Docker registry except on PR
     # https://github.com/docker/login-action
-    - name: Log into registry ${{ env.REGISTRY }}
+    - name: Log into Github Docker registry
       if: startsWith(github.ref, 'refs/tags/')
       uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
       with:
