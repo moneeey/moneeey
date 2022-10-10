@@ -6,11 +6,9 @@ services:
     restart: unless-stopped
     networks:
       - moneeey-network
-    depends_on:
-      - backend
     volumes:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/frontend:/app
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/frontend_node_modules_data/:/app/node_modules
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/frontend_node_modules_data:/app/node_modules
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.moneeey-frontend.rule=Host(`local.moneeey.io`) && !PathPrefix(`/api`)"
@@ -26,7 +24,7 @@ services:
     volumes:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/dev.env:ro
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/backend_node_modules_data/:/app/node_modules
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/backend_node_modules_data:/app/node_modules
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.moneeey-backend.rule=Host(`local.moneeey.io`) && PathPrefix(`/api`)"
@@ -72,10 +70,6 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedByDefault=false"
       - "--log.level=DEBUG"
-
-volumes:
-  couchdb_data:
-    driver: local
 
 networks:
   moneeey-network:
