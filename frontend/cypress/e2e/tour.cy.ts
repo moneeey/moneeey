@@ -7,7 +7,7 @@ import '../support/cypress-indexeddb-namespace';
 describe('Tour spec', () => {
   before(() => {
     cy.clearIndexedDb('_pouch_moneeey');
-    cy.visit('http://local.moneeey.io');
+    cy.visit('/');
   });
 
   it('Start tour', () => {
@@ -16,16 +16,14 @@ describe('Tour spec', () => {
     cy.contains(
       'The first step to archive your financial freedom is to let us know what currencies are you working with'
     );
-    cy.wait(100);
-    cy.get(loc.TOUR.NEXT_BUTTON).click();
+    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
     cy.contains('Now that we know the currencies we are having, it is time to tell us what are your accounts');
     cy.get(loc.ACCOUNTS.NAME_INPUT).type('Account test');
-    cy.wait(100);
-    cy.get(loc.TOUR.NEXT_BUTTON).click();
+    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
     cy.contains('New budget').click();
     cy.get(loc.BUDGET.NAME_INPUT).type('Budget test');
     cy.get('[data-test-id="budgetCurrency"]').click(); // TODO: fix me, this is so dirty
-    cy.get('[title="Real brasileiro"]').click();
+    cy.get('[title="Real brasileiro"]').should('be.visible').click();
     cy.get('[data-test-id="budgetTags"]').type('Hello');
     cy.get('[data-test-id="primary-button"]').click();
   });
