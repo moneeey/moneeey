@@ -42,22 +42,18 @@ jobs:
     # Basic tests
     - run: yarn test
 
-    # Cypress Install
-    - name: Cypress install
-      uses: cypress-io/github-action@v4
-      if: matrix.service == 'frontend'
-      with:
-        runTests: false
-        build: yarn build
-        working-directory: frontend
-
     # Cypress
     - name: Cypress run
       uses: cypress-io/github-action@v4
       if: matrix.service == 'frontend'
+      env:
+        CYPRESS_BASE_URL: 'http://127.0.0.1:42069'
       with:
-        start: yarn dev --port 80 && wait-on http://local.moneeey.io
+        install: true
+        build: yarn build
+        start: npx http-serve dist -p 42069 && sleep 2 && wait-on 'http://127.0.0.1:42069'
         working-directory: frontend
+        browser: chrome
 
     # Install the cosign tool except on PR
     # https://github.com/sigstore/cosign-installer

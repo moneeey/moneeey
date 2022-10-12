@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 dev-dist
+
+cypress/screenshots
+cypress/videos
