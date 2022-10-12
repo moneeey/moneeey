@@ -49,6 +49,8 @@ jobs:
       env:
         CYPRESS_BASE_URL: 'http://127.0.0.1:42069'
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+        NODE_OPTIONS: '--max_old_space_size=4096'
+
       with:
         install: true
         record: true
