@@ -1,12 +1,14 @@
-import { Card, Drawer, Form } from 'antd';
+import { Drawer, Form } from 'antd';
 import { map, range } from 'lodash';
 import { observer } from 'mobx-react';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 import { LinkButton, PrimaryButton, SecondaryButton } from '../../components/base/Button';
+import Card from '../../components/base/Card';
 import { Checkbox, Input } from '../../components/base/Input';
 import Select from '../../components/base/Select';
 import Space from '../../components/base/Space';
+import { NormalText } from '../../components/base/Text';
 import { TableEditor } from '../../components/TableEditor';
 import { IBudget } from '../../entities/Budget';
 import { BudgetEnvelope } from '../../entities/BudgetEnvelope';
@@ -50,7 +52,11 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived }: Perio
   const onNewBudget = () => setEditing(budget.factory());
 
   return (
-    <Card className='period' title={formatDateMonth(startingDate)}>
+    <Card
+      data-test-id={`budget_period_${formatDateMonth(startingDate)}`}
+      className='period'
+      header={<NormalText>{formatDateMonth(startingDate)}</NormalText>}
+      footer={<LinkButton onClick={onNewBudget}>{Messages.budget.new}</LinkButton>}>
       <TableEditor
         store={budget.envelopes}
         factory={budget.envelopes.factory}
@@ -58,7 +64,6 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived }: Perio
         schemaFilter={(b) => b.starting === starting && (!b.budget.archived || viewArchived)}
         context={{ name: (env: BudgetEnvelope) => setEditing(env.budget) }}
       />
-      <LinkButton onClick={onNewBudget}>{Messages.budget.new}</LinkButton>
     </Card>
   );
 });

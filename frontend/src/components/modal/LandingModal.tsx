@@ -5,9 +5,10 @@ import { NavigationModal } from '../../shared/Navigation';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
 import { StorageKind, getStorage, setStorage } from '../../utils/Utils';
-import { useMoneeeyTour } from '../Tour';
+import { useMoneeeyTour } from '../tour/Tour';
 
-import BaseModal from './BaseModal';
+import Modal from '../base/Modal';
+import { OkCancel } from '../base/Button';
 
 const LandingModal = function () {
   const { navigation } = useMoneeeyStore();
@@ -19,16 +20,21 @@ const LandingModal = function () {
   }, []);
 
   return (
-    <BaseModal
+    <Modal
       modalId={NavigationModal.LANDING}
       title={Messages.modal.landing}
-      onSubmit={() => {
-        setStorage('show_landing', 'false', StorageKind.PERMANENT);
-        navigation.closeModal();
-        tour.open();
-      }}
-      cancelText={Messages.util.close}
-      okText={Messages.modal.start_tour}>
+      footer={
+        <OkCancel
+          onOk={() => {
+            setStorage('show_landing', 'false', StorageKind.PERMANENT);
+            navigation.closeModal();
+            tour.open();
+          }}
+          onCancel={() => navigation.closeModal()}
+          cancelTitle={Messages.util.close}
+          okTitle={Messages.modal.start_tour}
+        />
+      }>
       <ul data-test-id='start_tour_messages'>
         {map(Messages.landing.messages, (message, index) => (
           <li data-test-id={`start_tour_message_${index}`} key={message}>
@@ -36,7 +42,7 @@ const LandingModal = function () {
           </li>
         ))}
       </ul>
-    </BaseModal>
+    </Modal>
   );
 };
 
