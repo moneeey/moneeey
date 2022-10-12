@@ -68,6 +68,11 @@ export const AppMenu = observer(() => {
                 onClick: () => navigation.navigate(AccountRoute.accountUrl(acct)),
               })),
             {
+              key: 'all',
+              label: Messages.menu.all_transactions,
+              onClick: () => navigation.navigate(AccountRoute.accountUrlForAll()),
+            },
+            {
               key: 'unassigned',
               label: Messages.menu.unassigned,
               onClick: () => navigation.navigate(AccountRoute.accountUrlForUnclassified()),

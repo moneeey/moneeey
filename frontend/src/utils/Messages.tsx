@@ -5,6 +5,7 @@ const Messages = {
     dashboard: 'Dashboard',
     transactions: 'Transactions',
     unassigned: 'Unassigned',
+    all_transactions: 'All transactions',
     import: 'Import',
     budget: 'Budget',
     reports: 'Reports',
@@ -132,6 +133,10 @@ const Messages = {
     start_tour: 'Start Tour',
   },
   tour: {
+    welcome: 'Welcome to Moneeey',
+    next: 'Next',
+    prev: 'Previous',
+
     edit_currencies: `The first step to archive your financial freedom is to let us know what currencies
       are you working with.
 

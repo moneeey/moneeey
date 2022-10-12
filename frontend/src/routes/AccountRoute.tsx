@@ -24,7 +24,7 @@ const AccountTransactions = observer(
     const account = accounts.find((acc: IAccount) => slugify(acc.name) === account_name);
     const account_uuid = account?.account_uuid || '';
     const filterByAccount = transactions.filterByAccounts([account_uuid]);
-    const schemaFilter = (row: ITransaction) => filterByAccount(row);
+    const schemaFilter = (row: ITransaction) => account_name === 'all' || filterByAccount(row);
     const referenceAccount = account_uuid;
 
     return (
@@ -62,6 +62,10 @@ class AccountRouter extends Route<IAccountRoute> {
 
   accountUrlForUnclassified() {
     return this.url({ account_name: '-' });
+  }
+
+  accountUrlForAll() {
+    return this.url({ account_name: 'all' });
   }
 }
 

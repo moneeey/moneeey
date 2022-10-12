@@ -17,7 +17,7 @@ import Messages from './utils/Messages';
 
 import Modals from './components/modal/Modals';
 import { TagsHighlightProvider } from './components/Tags';
-import MoneeeyTourProvider from './components/Tour';
+import MoneeeyTourProvider from './components/tour/Tour';
 
 import { PouchDBFactory } from './shared/Persistence';
 
