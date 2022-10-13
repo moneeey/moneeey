@@ -16,9 +16,7 @@ describe('Tour spec', () => {
     cy.contains('Start Tour').click();
 
     // Started tour, see currencies
-    cy.contains(
-      'The first step to archive your financial freedom is to let us know what currencies are you working with'
-    );
+    cy.contains('please edit the currencies');
 
     // Create first account
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
