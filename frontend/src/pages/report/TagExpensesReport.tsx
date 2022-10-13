@@ -1,4 +1,4 @@
-import { AccountType, TAccountUUID } from '../../entities/Account';
+import { AccountKind, TAccountUUID } from '../../entities/Account';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { ITransaction } from '../../entities/Transaction';
 import Messages from '../../utils/Messages';
@@ -12,7 +12,7 @@ const tagExpensesProcess =
   (moneeeyStore: MoneeeyStore) => (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => {
     const sumTransactionTagExpenses = (account_uuid: TAccountUUID, value: number) => {
       const account = moneeeyStore.accounts.byUuid(account_uuid);
-      const is_payee = account?.type === AccountType.PAYEE;
+      const is_payee = account?.kind === AccountKind.PAYEE;
       const payee_tags = (!is_payee && account?.tags) || [];
       const tags = new Set([...payee_tags, ...transaction.tags]);
       tags.forEach((tag) => {

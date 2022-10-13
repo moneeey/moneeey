@@ -1,3 +1,4 @@
+import { AccountKind } from '../entities/Account';
 import { Status } from '../shared/Persistence';
 
 const Messages = {
@@ -20,7 +21,7 @@ const Messages = {
       [Status.OFFLINE]: 'Offline',
       [Status.DENIED]: 'Denied',
       [Status.ERROR]: 'Error',
-    },
+    } as Record<Status, string>,
   },
   landing: {
     failed: 'Login failed, please try again',
@@ -100,6 +101,14 @@ const Messages = {
   },
   account: {
     offbudget: 'Off-Budget',
+    account_kind: 'Type',
+    kind: {
+      CHECKING: 'Checking Account',
+      CREDIT_CARD: 'Credit Card',
+      INVESTMENT: 'Investment Account',
+      PAYEE: 'Payee',
+      SAVINGS: 'Savings Account',
+    } as Record<string, string>,
   },
   currencies: {
     short: 'Short name',
@@ -136,10 +145,10 @@ const Messages = {
     next: 'Next',
     prev: 'Previous',
 
-    edit_currencies: `The first step to archive your financial freedom is to let us know what currencies
-      are you working with.
+    edit_currencies: `Moneeey is multi currency, please edit the currencies
+      to fit your needs.
 
-      We already added the top 20 most used currencies from 2020.`,
+      We added the 20 most used currencies from 2020.`,
     create_accounts: `Now that we know the currencies we are having, it is time to tell us what are your accounts:
       credit cards, checking accounts, investment accounts...`,
     create_budgets: `It is time to budget your Moneeey!  Budgets are like envelopes you put part of your income.

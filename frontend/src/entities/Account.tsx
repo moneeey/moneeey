@@ -13,8 +13,10 @@ import { TCurrencyUUID } from './Currency';
 
 export type TAccountUUID = string;
 
-export enum AccountType {
+export enum AccountKind {
   CHECKING = 'CHECKING',
+  INVESTMENT = 'INVESTMENT',
+  SAVINGS = 'INVESTMENT',
   CREDIT_CARD = 'CREDIT_CARD',
   PAYEE = 'PAYEE',
 }
@@ -24,7 +26,7 @@ export interface IAccount extends IBaseEntity {
   currency_uuid: TCurrencyUUID;
   name: string;
   created: TDate;
-  type: AccountType;
+  kind: AccountKind;
   offbudget: boolean;
   archived: boolean;
 }
@@ -41,7 +43,7 @@ export class AccountStore extends MappedStore<IAccount> {
         offbudget: false,
         archived: false,
         currency_uuid: moneeeyStore.currencies.all[0]?.currency_uuid,
-        type: AccountType.CHECKING,
+        kind: AccountKind.CHECKING,
         created: currentDateTime(),
         updated: currentDateTime(),
       }),
@@ -73,23 +75,29 @@ export class AccountStore extends MappedStore<IAccount> {
           index: 2,
           editor: EditorType.TAG,
         },
+        kind: {
+          title: Messages.account.account_kind,
+          field: 'kind',
+          index: 3,
+          editor: EditorType.ACCOUNT_TYPE,
+        },
         offbudget: {
           title: Messages.account.offbudget,
           field: 'offbudget',
-          index: 3,
+          index: 4,
           editor: EditorType.CHECKBOX,
         },
         archived: {
           title: Messages.util.archived,
           field: 'archived',
-          index: 4,
+          index: 5,
           editor: EditorType.CHECKBOX,
         },
         created: {
           title: Messages.util.created,
           field: 'created',
           readOnly: true,
-          index: 5,
+          index: 6,
           editor: EditorType.DATE,
         },
       }),
@@ -103,17 +111,17 @@ export class AccountStore extends MappedStore<IAccount> {
 
   merge(item: IAccount, options: { setUpdated: boolean } = { setUpdated: true }) {
     super.merge(item, options);
-    if (item.type !== AccountType.PAYEE) {
+    if (item.kind !== AccountKind.PAYEE) {
       this.moneeeyStore.tags.register(item.name);
     }
   }
 
   get allPayees() {
-    return this.all.filter((acct) => acct.type === AccountType.PAYEE);
+    return this.all.filter((acct) => acct.kind === AccountKind.PAYEE);
   }
 
   get allNonPayees() {
-    return this.all.filter((acct) => acct.type !== AccountType.PAYEE);
+    return this.all.filter((acct) => acct.kind !== AccountKind.PAYEE);
   }
 
   byName(name: string) {

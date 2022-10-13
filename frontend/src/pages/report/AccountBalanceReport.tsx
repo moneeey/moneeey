@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react';
 
-import { AccountType, IAccount, TAccountUUID } from '../../entities/Account';
+import { AccountKind, IAccount, TAccountUUID } from '../../entities/Account';
 import { TDate } from '../../utils/Date';
 import { TMonetary } from '../../shared/Entity';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
@@ -39,7 +39,7 @@ export const baseAccountBalanceReport =
   };
 
 export const accountBalanceReport = (moneeeyStore: MoneeeyStore) =>
-  baseAccountBalanceReport(moneeeyStore, false, (account) => account.type !== AccountType.PAYEE);
+  baseAccountBalanceReport(moneeeyStore, false, (account) => account.kind !== AccountKind.PAYEE);
 
 const AccountBalanceReport = observer(() => {
   const moneeeyStore = useMoneeeyStore();

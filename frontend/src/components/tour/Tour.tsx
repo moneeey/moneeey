@@ -24,8 +24,8 @@ const TourClient = () => {
       setStep(newStep);
     },
     open() {
+      this.setStep(0);
       setOpen(true);
-      setStep(0);
     },
     close() {
       setOpen(false);

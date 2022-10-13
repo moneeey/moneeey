@@ -1,4 +1,4 @@
-import { AccountType, TAccountUUID } from '../../entities/Account';
+import { AccountKind, TAccountUUID } from '../../entities/Account';
 import { TDate, compareDates } from '../../utils/Date';
 import { TMonetary } from '../../shared/Entity';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
@@ -14,7 +14,7 @@ const wealthGrowProcess =
   (moneeeyStore: MoneeeyStore) => (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => {
     const addBalanceToData = (acct: TAccountUUID, value: TMonetary, date: TDate) => {
       const account = moneeeyStore.accounts.byUuid(acct);
-      if (!account || account.type === AccountType.PAYEE) {
+      if (!account || account.kind === AccountKind.PAYEE) {
         return;
       }
       const group_date = dateToPeriod(period, date);

@@ -1,4 +1,4 @@
-import { AccountType, TAccountUUID } from '../../entities/Account';
+import { AccountKind, TAccountUUID } from '../../entities/Account';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { ITransaction } from '../../entities/Transaction';
 import Messages from '../../utils/Messages';
@@ -19,10 +19,10 @@ const incomeVsExpensesProcess =
       }
 
       let kind = '';
-      if (account.type === AccountType.PAYEE && value < 0) {
+      if (account.kind === AccountKind.PAYEE && value < 0) {
         kind = Messages.reports.expense;
       }
-      if (account.type !== AccountType.PAYEE && value > 0) {
+      if (account.kind !== AccountKind.PAYEE && value > 0) {
         kind = Messages.reports.income;
       }
       if (kind === '') {
