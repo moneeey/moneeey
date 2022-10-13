@@ -10,6 +10,8 @@ import { useMoneeeyTour } from '../tour/Tour';
 import Modal from '../base/Modal';
 import { OkCancel } from '../base/Button';
 
+import './LandingModal.less';
+
 const LandingModal = function () {
   const { navigation } = useMoneeeyStore();
   const tour = useMoneeeyTour();
@@ -35,7 +37,7 @@ const LandingModal = function () {
           okTitle={Messages.modal.start_tour}
         />
       }>
-      <ul data-test-id='start_tour_messages'>
+      <ul className='start_tour_messages' data-test-id='start_tour_messages'>
         {map(Messages.landing.messages, (message, index) => (
           <li data-test-id={`start_tour_message_${index}`} key={message}>
             {message}

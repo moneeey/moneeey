@@ -26,11 +26,10 @@ const Messages = {
     failed: 'Login failed, please try again',
     welcome: 'Please check your email.',
     messages: [
-      'Personal Finance is necessary for people to grow',
-      'Knowledge is key for success',
-      'Finance independence is freedom',
-      'Privacy and private, with encryption from end to end',
-      'Export your data, your data is yours',
+      'Personal Finance budgeting is knowledge and poer',
+      'Finance Independence is freedom, your goal is it',
+      'Built with privacy and private in mind, with E2E encryption',
+      'Own your data, export and import, your data is yours',
     ],
   },
   login: {
