@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react';
 import { ReactElement, ReactNode } from 'react';
+import { XCircleIcon } from '@heroicons/react/24/outline';
 
 import { NavigationModal } from '../../shared/Navigation';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
@@ -15,18 +16,19 @@ interface ModalProps {
   isOpen?: boolean;
   modalId?: NavigationModal;
   children: ReactElement | ReactElement[];
+  className?: string;
 }
 
-const Modal = observer(({ title, modalId, footer, onClose, isOpen, children }: ModalProps) => {
+const Modal = observer(({ title, modalId, footer, onClose, isOpen, children, className }: ModalProps) => {
   const { navigation } = useMoneeeyStore();
 
   const onCloseFn = () => (onClose && onClose()) || navigation.closeModal();
 
   const visible = isOpen === true || (modalId && navigation.modal === modalId);
-  const titleCloseButton = <span onClick={onCloseFn}>X</span>;
+  const titleCloseButton = <XCircleIcon className='icon' onClick={onCloseFn} />;
 
   return visible ? (
-    <article className='mn-modal'>
+    <article className={`mn-modal ${className || ''}`}>
       <Card
         header={
           <div className='title'>

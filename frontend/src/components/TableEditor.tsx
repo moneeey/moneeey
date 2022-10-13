@@ -27,6 +27,7 @@ import { TransactionValueEditor, TransactionValueSorter } from './editor/Transac
 import VirtualTable from './VirtualTableEditor';
 
 import './TableEditor.less';
+import { AccountTypeEditor, AccountTypeSorter } from './editor/AccountTypeEditor';
 
 interface TableEditorProps<T extends IBaseEntity, Context> {
   store: MappedStore<T>;
@@ -75,6 +76,11 @@ const EditorTypeConfig: Record<
   [EditorType.ACCOUNT]: {
     render: AccountEditor,
     sorter: AccountSorter,
+    width: undefined,
+  },
+  [EditorType.ACCOUNT_TYPE]: {
+    render: AccountTypeEditor,
+    sorter: AccountTypeSorter,
     width: undefined,
   },
   [EditorType.CURRENCY]: {

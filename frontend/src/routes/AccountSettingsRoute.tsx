@@ -1,5 +1,5 @@
 import { AccountTable } from '../tables/AccountTable';
-import { AccountType } from '../entities/Account';
+import { AccountKind } from '../entities/Account';
 
 import HomeRoute from './HomeRouter';
 import { IAppParameters, IRouteParameters, Route } from './Route';
@@ -17,7 +17,7 @@ export class AccountSettingsRouter extends Route<IAccountSettingsRoute> {
       <AccountTable
         currencies={app.moneeeyStore.currencies}
         accounts={app.moneeeyStore.accounts}
-        type={AccountType.CHECKING}
+        type={AccountKind.CHECKING}
       />
     );
   }

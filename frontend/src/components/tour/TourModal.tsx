@@ -4,11 +4,14 @@ import Modal from '../base/Modal';
 
 import { useMoneeeyTour } from './Tour';
 
+import './TourModal.less';
+
 export default function TourModal() {
   const tour = useMoneeeyTour();
 
   return (
     <Modal
+      className='tour'
       title={Messages.tour.welcome}
       isOpen={tour.isOpen()}
       onClose={() => tour.close()}
@@ -20,7 +23,7 @@ export default function TourModal() {
           okTitle={Messages.tour.next}
         />
       }>
-      <span style={{ whiteSpace: 'pre-line' }}>{tour.content()}</span>
+      <span className='content'>{tour.content()}</span>
     </Modal>
   );
 }

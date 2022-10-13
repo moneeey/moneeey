@@ -2,7 +2,7 @@ import { compact, head, isEmpty, map, uniqBy } from 'lodash';
 import { observer } from 'mobx-react';
 import { useState } from 'react';
 
-import { AccountType, IAccount, TAccountUUID } from '../../entities/Account';
+import { AccountKind, IAccount, TAccountUUID } from '../../entities/Account';
 import { isTransaction } from '../../entities/Transaction';
 import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
@@ -69,7 +69,7 @@ const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: Accou
               if (value?.startsWith(addPrefix)) {
                 const account = {
                   ...accounts.factory(),
-                  type: AccountType.PAYEE,
+                  type: AccountKind.PAYEE,
                   name: value.replace(addPrefix, ''),
                 };
                 if (props.entity && isTransaction(props.entity)) {

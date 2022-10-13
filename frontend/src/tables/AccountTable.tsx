@@ -1,19 +1,19 @@
 import { observer } from 'mobx-react-lite';
 
 import { TableEditor } from '../components/TableEditor';
-import { AccountStore, AccountType, IAccount } from '../entities/Account';
+import { AccountStore, AccountKind, IAccount } from '../entities/Account';
 import { CurrencyStore } from '../entities/Currency';
 
 interface AccountSettingsProps {
   accounts: AccountStore;
   currencies: CurrencyStore;
-  type: AccountType;
+  type: AccountKind;
 }
 
 const AccountTable = observer(({ accounts, type }: AccountSettingsProps) => (
   <TableEditor
     store={accounts}
-    schemaFilter={(row: IAccount) => row.type === type}
+    schemaFilter={(row: IAccount) => row.kind === type}
     factory={(id?: string) => ({ ...accounts.factory(id), type })}
   />
 ));
