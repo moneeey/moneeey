@@ -8,6 +8,7 @@ import TransactionStore from '../entities/Transaction';
 
 import { EntityType } from './Entity';
 import Importer from './import/Importer';
+import Logger from './Logger';
 import ManagementStore from './Management';
 import NavigationStore from './Navigation';
 import PersistenceStore, { PouchDBFactoryFn } from './Persistence';
@@ -16,9 +17,11 @@ import TagsStore from './Tags';
 export default class MoneeeyStore {
   loaded = false;
 
-  tags = new TagsStore();
+  logger = new Logger('moneeey');
 
-  navigation = new NavigationStore();
+  tags = new TagsStore(this.logger);
+
+  navigation = new NavigationStore(this.logger);
 
   accounts = new AccountStore(this);
 
@@ -39,7 +42,7 @@ export default class MoneeeyStore {
   constructor(dbFactory: PouchDBFactoryFn) {
     makeObservable(this, { loaded: observable });
 
-    this.persistence = new PersistenceStore(this, dbFactory);
+    this.persistence = new PersistenceStore(dbFactory, this.logger);
 
     this.persistence.load().then(() => {
       this.persistence.monitor(this.accounts, EntityType.ACCOUNT);

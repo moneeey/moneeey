@@ -1,18 +1,19 @@
-/* eslint-disable no-console */
-import _, { forEach, map, omit, uniqBy, values } from 'lodash';
-import { makeObservable, observable, observe, toJS } from 'mobx';
+import { debounce, forEach, map, omit, uniqBy, values } from 'lodash';
+import { action, makeObservable, observable, observe, toJS } from 'mobx';
 import PouchDB from 'pouchdb';
 
+import { compareDates } from '../utils/Date';
 import { asyncProcess } from '../utils/Utils';
 
 import { EntityType, IBaseEntity } from './Entity';
+import Logger from './Logger';
 import MappedStore from './MappedStore';
-import MoneeeyStore from './MoneeeyStore';
 
 export enum Status {
   ONLINE = 'ONLINE',
   OFFLINE = 'OFFLINE',
   DENIED = 'DENIED',
+  PAUSED = 'PAUSED',
   ERROR = 'ERROR',
 }
 
@@ -44,16 +45,17 @@ export default class PersistenceStore {
 
   private _commit;
 
-  private moneeeyStore: MoneeeyStore;
+  private logger: Logger;
 
-  constructor(moneeeyStore: MoneeeyStore, dbFactory: PouchDBFactoryFn) {
-    this.moneeeyStore = moneeeyStore;
+  constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
+    this.logger = new Logger('persistence', parent);
     this.db = dbFactory();
-    this._commit = _.debounce(() => this.commit(), 1000);
+    this._commit = debounce(() => this.commit(), 1000);
 
     makeObservable(this, {
       status: observable,
       databaseId: observable,
+      sync: action,
     });
   }
 
@@ -68,18 +70,34 @@ export default class PersistenceStore {
       }
       this.db
         .sync(`/api/couchdb/${this.databaseId}`, { live: true, retry: true })
-        .on('change', () => {
+        .on('change', (change) => {
+          const changedDocIds = change.change.docs.map((doc) => doc._id);
+          this.logger.info('sync change', { change: changedDocIds });
+          this.fetchLatest(changedDocIds);
           resolve(setStatus(Status.ONLINE));
         })
-        .on('paused', () => {
-          resolve(setStatus(Status.OFFLINE));
+        .on('paused', (info) => {
+          this.logger.info('sync paused', { info });
+          resolve(setStatus(Status.PAUSED));
         })
-        .on('denied', () => resolve(setStatus(Status.OFFLINE)))
-        .on('error', (e) => {
-          console.error('Persistence sync', { e });
-          reject(setStatus(Status.OFFLINE));
+        .on('denied', (info) => {
+          this.logger.warn('sync denied', { info });
+          resolve(setStatus(Status.DENIED));
+        })
+        .on('error', (error) => {
+          this.logger.error('sync error', { error });
+          reject(setStatus(Status.ERROR));
         });
     });
+  }
+
+  async fetchLatest(docIds: string[]) {
+    const docId = docIds.pop();
+    if (docId) {
+      this.logger.info('fetch latest', { docId });
+      await this.fetch(docId);
+      await this.fetchLatest(docIds);
+    }
   }
 
   load() {
@@ -89,6 +107,7 @@ export default class PersistenceStore {
           include_docs: true,
         })
         .then((docs) => {
+          this.logger.info('loaded docs', { total: docs.total_rows });
           map([...(docs.rows.map((d) => d.doc) as unknown[] as IBaseEntity[])], (entity) => {
             if (entity._id) {
               this.entries[entity._id] = entity;
@@ -97,6 +116,15 @@ export default class PersistenceStore {
           resolve(this.entries);
         });
     });
+  }
+
+  resolveConflict<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, a: EntityType, b: EntityType) {
+    const aIsMostRecent = (a._rev && !b._rev) || compareDates(a.updated || '', b.updated || '') > 0;
+    const updated = aIsMostRecent ? a : b;
+    const outdated = aIsMostRecent ? b : a;
+    const resolved = { ...outdated, ...updated };
+    this.logger.info('resolve conflict', { updated, outdated, resolved });
+    store.merge(resolved, { setUpdated: true });
   }
 
   async commit() {
@@ -119,13 +147,11 @@ export default class PersistenceStore {
         }
         if (error && status === 409) {
           const actual = await this.fetch(id);
-          console.error('Sync Commit conflict', { resp, current, actual });
-          current.store.merge(actual, { setUpdated: false });
+          this.resolveConflict(current.store, current.entity, actual);
         } else if (error) {
-          console.error('Sync Commit error', { error, current });
+          this.logger.error('sync commit error on doc', { error, current });
         } else if (ok) {
           const entity = { ...current.entity, _rev: rev };
-          console.info('Sync Commit success', { entity });
           if (entity && entity._id) {
             this.entries[entity._id] = entity as IBaseEntity;
           }
@@ -134,12 +160,12 @@ export default class PersistenceStore {
       });
     } catch (err) {
       const error = err as PouchDB.Core.Error;
-      console.error(error);
+      this.logger.error('sync commit error', error);
     }
   }
 
   persist<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, item: EntityType) {
-    console.log('Sync will persist', { uuid: store.getUuid(item), item });
+    this.logger.log('sync will persist', { uuid: store.getUuid(item), item });
     this.syncables.push({ store: store as never, uuid: store.getUuid(item) });
     if (item && item._id) {
       this.entries[item._id] = item;
@@ -171,10 +197,10 @@ export default class PersistenceStore {
         const oldRev = changes.oldValue._rev;
         const newRev = changes.newValue._rev;
         if (oldRev === newRev) {
-          console.info('Rev update, will persist', changes);
+          this.logger.info('monitor - same rev, will persist', changes);
           this.persist(store, changes.newValue);
         } else {
-          console.info('Ref changed, skip persist', changes);
+          this.logger.info('monitor - different rev, not persisting', changes);
         }
       }
     });

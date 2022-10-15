@@ -6,9 +6,10 @@ import useMoneeeyStore from '../shared/useMoneeeyStore';
 
 const Notifications = observer(() => {
   const { navigation } = useMoneeeyStore();
+  const { notifications } = navigation;
 
-  if (!isEmpty(navigation.notifications)) {
-    navigation.notifications.forEach((notification) => {
+  if (!isEmpty(notifications)) {
+    notifications.forEach((notification) => {
       switch (notification.type) {
         case 'error':
           message.error(notification.text);
@@ -25,7 +26,7 @@ const Notifications = observer(() => {
           break;
       }
     });
-    navigation.notifications = [];
+    navigation.clearNotifications();
   }
 
   return <div />;

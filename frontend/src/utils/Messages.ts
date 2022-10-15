@@ -1,6 +1,3 @@
-import { AccountKind } from '../entities/Account';
-import { Status } from '../shared/Persistence';
-
 const Messages = {
   menu: {
     dashboard: 'Dashboard',
@@ -17,11 +14,11 @@ const Messages = {
     preferences: 'Preferences',
     landing: 'Landing',
     sync: {
-      [Status.ONLINE]: 'Online',
-      [Status.OFFLINE]: 'Offline',
-      [Status.DENIED]: 'Denied',
-      [Status.ERROR]: 'Error',
-    } as Record<Status, string>,
+      ONLINE: 'Online',
+      OFFLINE: 'Offline',
+      DENIED: 'Denied',
+      ERROR: 'Error',
+    } as Record<string, string>,
   },
   landing: {
     failed: 'Login failed, please try again',
