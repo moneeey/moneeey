@@ -1,9 +1,11 @@
 import { action, computed, makeObservable, observable } from 'mobx';
 
+import Logger from './Logger';
+
 export enum NavigationModal {
-  NONE,
-  LANDING,
-  SYNC,
+  NONE = 'NONE',
+  LANDING = 'LANDING',
+  SYNC = 'SYNC',
 }
 
 type NotificationType = 'warning' | 'success' | 'info' | 'error';
@@ -20,11 +22,17 @@ export default class NavigationStore {
     text: string;
   }> = [];
 
-  constructor() {
+  logger: Logger;
+
+  constructor(parent: Logger) {
+    this.logger = new Logger('navigationStore', parent);
+
     makeObservable(this, {
       navigateToUrl: observable,
       currentModal: observable,
       notifications: observable,
+      clearNotifications: action,
+      notify: action,
       navigateTo: computed,
       navigate: action,
       modal: computed,
@@ -33,7 +41,14 @@ export default class NavigationStore {
   }
 
   navigate(url: string) {
+    if (url) {
+      this.logger.info('navigate', { url });
+    }
     this.navigateToUrl = url;
+  }
+
+  clearNotifications() {
+    this.notifications = [];
   }
 
   get navigateTo() {
@@ -45,6 +60,7 @@ export default class NavigationStore {
   }
 
   openModal(modal: NavigationModal) {
+    this.logger.info('openModal', { modal });
     this.currentModal = modal;
   }
 
@@ -52,7 +68,8 @@ export default class NavigationStore {
     this.openModal(NavigationModal.NONE);
   }
 
-  private notify(type: NotificationType, text: string) {
+  notify(type: NotificationType, text: string) {
+    this.logger.info('notify', { type, text });
     this.notifications.push({ text, type });
   }
 

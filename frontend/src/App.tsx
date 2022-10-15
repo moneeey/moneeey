@@ -12,7 +12,7 @@ import Navigator from './components/Navigator';
 import Notifications from './components/Notifications';
 import HomeRoute from './routes/HomeRouter';
 import MoneeeyStore from './shared/MoneeeyStore';
-import { MoneeeyStoreProvider } from './shared/useMoneeeyStore';
+import useMoneeeyStore, { MoneeeyStoreProvider } from './shared/useMoneeeyStore';
 import Messages from './utils/Messages';
 
 import Modals from './components/modal/Modals';
@@ -21,30 +21,38 @@ import MoneeeyTourProvider from './components/tour/Tour';
 
 import { PouchDBFactory } from './shared/Persistence';
 
-export const App = observer(() => {
-  const [moneeeyStore] = React.useState(new MoneeeyStore(PouchDBFactory));
+const LoadedApp = observer(() => {
+  const moneeeyStore = useMoneeeyStore();
+
+  return moneeeyStore.loaded ? (
+    <>
+      <AppMenu />
+      <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
+      <Navigator />
+      <Modals />
+      <Notifications />
+    </>
+  ) : (
+    <p>{Messages.util.loading}</p>
+  );
+});
+
+export const App = () => {
+  const moneeeyStore = React.useMemo(() => new MoneeeyStore(PouchDBFactory), []);
 
   return (
     <div className='App'>
       <BrowserRouter>
         <MoneeeyStoreProvider value={moneeeyStore}>
-          {moneeeyStore.loaded ? (
-            <MoneeeyTourProvider>
-              <TagsHighlightProvider>
-                <AppMenu />
-                <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
-                <Navigator />
-                <Modals />
-                <Notifications />
-              </TagsHighlightProvider>
-            </MoneeeyTourProvider>
-          ) : (
-            <p>{Messages.util.loading}</p>
-          )}
+          <MoneeeyTourProvider>
+            <TagsHighlightProvider>
+              <LoadedApp />
+            </TagsHighlightProvider>
+          </MoneeeyTourProvider>
         </MoneeeyStoreProvider>
       </BrowserRouter>
     </div>
   );
-});
+};
 
 export default App;
