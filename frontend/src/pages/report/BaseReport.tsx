@@ -1,5 +1,5 @@
-import { Column, Line } from '@ant-design/charts';
 import { ReactElement, useEffect, useState } from 'react';
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { Checkbox } from '../../components/base/Input';
 import Loading from '../../components/Loading';
@@ -14,6 +14,9 @@ import {
   ReportDataPoint,
   asyncProcessTransactionsForAccounts,
 } from './ReportUtils';
+
+import './BaseReport.less';
+import { uniq } from 'lodash';
 
 interface BaseReportProps {
   title: string;
@@ -72,34 +75,58 @@ export const BaseReport = function ({ accounts, processFn, title, chartFn }: Bas
   );
 };
 
-export const BaseColumnChart = function ({ rows, chartProps }: { rows: ReportDataPoint[]; chartProps?: object }) {
+const ChartColors = ['#BBE7FE', '#D3B5E5', '#FFD4DB', '#EFF1DB', '#FBE7C6', '#B4F8C8', '#A0E7E5', '#FFAEBC'];
+
+export const BaseColumnChart = function ({ rows }: { rows: ReportDataPoint[] }) {
+  let color = 0;
+  const getColor = () => {
+    color += 1;
+
+    return ChartColors[color - 1];
+  };
+
+  const columns = uniq(rows.map((row) => row.y));
+  const data = rows.map((row) => ({ x: row.x, [row.y]: row.value }));
+
   return (
-    <Column
-      {...{
-        data: rows,
-        yField: 'value',
-        xField: 'x',
-        seriesField: 'y',
-        connectNulls: true,
-        smooth: true,
-        ...chartProps,
-      }}
-    />
+    <section className='chartArea'>
+      <ResponsiveContainer width='100%' height='100%' minHeight='42em'>
+        <BarChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+          <XAxis dataKey='x' />
+          <Tooltip />
+          <CartesianGrid stroke='#fafafa' strokeDasharray='3 3' />
+          {columns.map((column) => (
+            <Bar key={column} type='monotone' dataKey={column} fill={getColor()} stackId='a' />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </section>
   );
 };
 
-export const BaseLineChart = function ({ rows, chartProps }: { rows: ReportDataPoint[]; chartProps?: object }) {
+export const BaseLineChart = function ({ rows }: { rows: ReportDataPoint[] }) {
+  let color = 0;
+  const getColor = () => {
+    color += 1;
+
+    return ChartColors[color - 1];
+  };
+
+  const columns = uniq(rows.map((row) => row.y));
+  const data = rows.map((row) => ({ x: row.x, [row.y]: row.value }));
+
   return (
-    <Line
-      {...{
-        data: rows,
-        yField: 'value',
-        xField: 'x',
-        seriesField: 'y',
-        connectNulls: true,
-        smooth: true,
-        ...chartProps,
-      }}
-    />
+    <section className='chartArea'>
+      <ResponsiveContainer width='100%' height='100%' minHeight='42em'>
+        <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+          <XAxis dataKey='x' />
+          <Tooltip />
+          <CartesianGrid stroke='#fafafa' strokeDasharray='3 3' />
+          {columns.map((column, index) => (
+            <Line key={column} type='monotone' dataKey={column} stroke={getColor()} yAxisId={index} />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </section>
   );
 };
