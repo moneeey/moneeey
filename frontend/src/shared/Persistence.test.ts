@@ -62,7 +62,7 @@ describe('Persistence', () => {
       log: [
         {
           level: 'info',
-          text: 'tests persistence resolve conflict',
+          text: 'tests:persistence:resolve conflict',
           args: [
             {
               updated,
