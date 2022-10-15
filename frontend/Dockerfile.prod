@@ -8,6 +8,10 @@ COPY yarn.lock .
 RUN yarn install
 
 COPY . /app
+
+USER root
+RUN rm -rf /app/dist
+USER node
 RUN NODE_OPTIONS=--max_old_space_size=4096 yarn build
 
 FROM busybox:1.35
