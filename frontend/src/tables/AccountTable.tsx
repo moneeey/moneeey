@@ -7,14 +7,14 @@ import { CurrencyStore } from '../entities/Currency';
 interface AccountSettingsProps {
   accounts: AccountStore;
   currencies: CurrencyStore;
-  type: AccountKind;
+  kind: AccountKind;
 }
 
-const AccountTable = observer(({ accounts, type }: AccountSettingsProps) => (
+const AccountTable = observer(({ accounts, kind }: AccountSettingsProps) => (
   <TableEditor
     store={accounts}
-    schemaFilter={(row: IAccount) => row.kind === type}
-    factory={(id?: string) => ({ ...accounts.factory(id), type })}
+    schemaFilter={(row: IAccount) => row.kind === kind}
+    factory={(id?: string) => ({ ...accounts.factory(id), kind })}
   />
 ));
 

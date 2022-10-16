@@ -28,11 +28,12 @@ const incomeVsExpensesProcess =
       if (kind === '') {
         return;
       }
-      const group_date = dateToPeriod(period, date);
-      const key = group_date + kind;
-      const prev_balance = (data.get(key) || {}).value || 0;
+      const key = dateToPeriod(period, date);
+      const prev_record = data.points.get(key);
+      const prev_balance = (prev_record && prev_record[kind]) || 0;
       const balance = prev_balance + value;
-      data.set(key, { x: group_date, value: balance, y: kind });
+      data.columns.add(kind);
+      data.points.set(key, { ...prev_record, [kind]: balance });
     };
     addBalanceToData(transaction.from_account, transaction.from_value, transaction.date);
     addBalanceToData(transaction.to_account, transaction.to_value, transaction.date);
@@ -47,7 +48,7 @@ const IncomeVsExpensesReport = function () {
       accounts={accounts.allPayees}
       processFn={incomeVsExpensesProcess(moneeeyStore)}
       title={Messages.reports.income_vs_expenses}
-      chartFn={(rows) => <BaseColumnChart rows={rows} />}
+      chartFn={(data) => <BaseColumnChart data={data} />}
     />
   );
 };

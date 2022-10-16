@@ -17,7 +17,7 @@ export class PayeeSettingsRouter extends Route<IPayeeSettingsRoute> {
       <AccountTable
         accounts={app.moneeeyStore.accounts}
         currencies={app.moneeeyStore.currencies}
-        type={AccountKind.PAYEE}
+        kind={AccountKind.PAYEE}
       />
     );
   }

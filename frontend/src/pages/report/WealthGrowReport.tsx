@@ -17,11 +17,14 @@ const wealthGrowProcess =
       if (!account || account.kind === AccountKind.PAYEE) {
         return;
       }
-      const group_date = dateToPeriod(period, date);
-      const key = group_date + account.account_uuid;
-      const prev_balance = (data.get(key) || {}).value || 0;
+
+      const key = dateToPeriod(period, date);
+      const prev_record = data.points.get(key);
+      const category = Messages.reports.wealth;
+      const prev_balance = (prev_record && prev_record[category]) || 0;
       const balance = prev_balance + value;
-      data.set(key, { x: group_date, value: balance, y: Messages.reports.wealth });
+      data.columns.add(category);
+      data.points.set(key, { ...prev_record, [category]: balance });
     };
     addBalanceToData(transaction.from_account, -transaction.from_value, transaction.date);
     addBalanceToData(transaction.to_account, transaction.to_value, transaction.date);
@@ -36,15 +39,19 @@ const WealthGrowReport = function () {
       accounts={accounts.allPayees}
       processFn={wealthGrowProcess(moneeeyStore)}
       title={Messages.reports.wealth_growth}
-      chartFn={(rows) => {
-        const sorted = rows.sort((a, b) => compareDates(a.x, b.x));
-        const sumWithPreviousBalances = sorted.map((cur, index) => {
-          cur.value += index > 0 ? sorted[index - 1].value : 0;
-
-          return cur;
+      chartFn={(data) => {
+        const sorted = Array.from(data.points.entries()).sort(([keyA], [keyB]) => compareDates(keyA, keyB));
+        sorted.forEach(([key, points], index) => {
+          const category = Messages.reports.wealth;
+          const previousKey = index > 0 && sorted[index - 1] && sorted[index - 1][0];
+          const previousRecord = previousKey && data.points.get(previousKey);
+          const previous = (previousRecord && previousRecord[category]) || 0;
+          const current = points[category];
+          const withPrevious = current + previous;
+          data.points.set(key, { [category]: withPrevious });
         });
 
-        return <BaseLineChart rows={sumWithPreviousBalances} />;
+        return <BaseLineChart data={data} />;
       }}
     />
   );

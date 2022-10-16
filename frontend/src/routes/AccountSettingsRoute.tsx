@@ -17,7 +17,7 @@ export class AccountSettingsRouter extends Route<IAccountSettingsRoute> {
       <AccountTable
         currencies={app.moneeeyStore.currencies}
         accounts={app.moneeeyStore.accounts}
-        type={AccountKind.CHECKING}
+        kind={AccountKind.CHECKING}
       />
     );
   }

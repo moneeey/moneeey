@@ -18,13 +18,15 @@ export interface AsyncProcessTransactions {
 
 export type AsyncProcessTransactionFn = (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => void;
 
-export type ReportDataMap = Map<string, ReportDataPoint>;
+export type ReportDataMap = {
+  columns: Set<string>;
+  points: Map<TDate, Record<string, TMonetary>>;
+};
 
-export interface ReportDataPoint {
-  x: TDate;
-  y: string;
-  value: TMonetary;
-}
+export const NewReportDataMap = (): ReportDataMap => ({
+  columns: new Set<string>(),
+  points: new Map(),
+});
 
 export const asyncProcessTransactionsForAccounts = async function ({
   moneeeyStore,
@@ -34,16 +36,19 @@ export const asyncProcessTransactionsForAccounts = async function ({
   setProgress,
 }: AsyncProcessTransactions) {
   const transactions = moneeeyStore.transactions.viewAllWithAccounts(accounts);
-  const processed = await asyncProcess(
+
+  const result = await asyncProcess(
     transactions,
     (chunk, data, percentage) => {
       setProgress(percentage);
       chunk.forEach((t) => processFn(t, period, data));
     },
-    { state: new Map() as ReportDataMap }
+    {
+      state: NewReportDataMap(),
+    }
   );
 
-  return Array.from(processed.values());
+  return result;
 };
 
 export interface PeriodGroup {

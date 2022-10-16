@@ -16,16 +16,15 @@ const tagExpensesProcess =
       const payee_tags = (!is_payee && account?.tags) || [];
       const tags = new Set([...payee_tags, ...transaction.tags]);
       tags.forEach((tag) => {
-        const group_date = dateToPeriod(period, transaction.date);
-        const group = group_date + tag;
-        const prev_balance = (data.get(group) || {}).value || 0;
+        const key = dateToPeriod(period, transaction.date);
+        const prev_record = data.points.get(key);
+        const prev_balance = (prev_record && prev_record[tag]) || 0;
         const delta = is_payee ? value : -value;
-        const balance = prev_balance + delta;
-        data.set(group, {
-          x: group_date,
-          y: tag,
-          value: balance,
-        });
+        if (delta > 0) {
+          const balance = prev_balance + delta;
+          data.columns.add(tag);
+          data.points.set(key, { ...prev_record, [tag]: balance });
+        }
       });
     };
     sumTransactionTagExpenses(transaction.from_account, transaction.from_value);
@@ -41,7 +40,7 @@ const TagExpensesReport = function () {
       accounts={accounts.allPayees}
       processFn={tagExpensesProcess(moneeeyStore)}
       title={Messages.reports.tag_expenses}
-      chartFn={(rows) => <BaseColumnChart rows={rows} />}
+      chartFn={(data) => <BaseColumnChart data={data} />}
     />
   );
 };

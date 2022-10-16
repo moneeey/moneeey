@@ -20,7 +20,7 @@ const PayeeBalanceReport = observer(() => {
       accounts={accounts.allPayees}
       processFn={payeeBalanceReport(moneeeyStore)}
       title={Messages.reports.payee_balance}
-      chartFn={(rows) => <BaseColumnChart rows={rows} />}
+      chartFn={(data) => <BaseColumnChart data={data} />}
     />
   );
 });
