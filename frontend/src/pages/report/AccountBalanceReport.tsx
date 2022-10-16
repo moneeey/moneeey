@@ -21,10 +21,12 @@ export const baseAccountBalanceReport =
         return;
       }
       const group_date = dateToPeriod(period, date);
-      const key = group_date + account.account_uuid;
-      const prev_balance = (data.get(key) || {}).value || 0;
+      const key = group_date;
+      const prev_record = data.points.get(key);
+      const prev_balance = (prev_record && prev_record[account.name]) || 0;
       const balance = prev_balance + value;
-      data.set(key, { x: group_date, y: account.name, value: balance });
+      data.columns.add(account.name);
+      data.points.set(key, { ...prev_record, [account.name]: balance });
     };
     addBalanceToData(
       transaction.from_account,
@@ -50,7 +52,7 @@ const AccountBalanceReport = observer(() => {
       accounts={accounts.allNonPayees}
       processFn={accountBalanceReport(moneeeyStore)}
       title={Messages.reports.account_balance}
-      chartFn={(rows) => <BaseColumnChart rows={rows} />}
+      chartFn={(data) => <BaseColumnChart data={data} />}
     />
   );
 });
