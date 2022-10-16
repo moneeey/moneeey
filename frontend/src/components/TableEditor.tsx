@@ -140,9 +140,11 @@ export const TableEditor = observer(
 
     const [newEntityId, setNewEntityId] = useState(() => store.getUuid(store.factory()));
 
+    const storeIds = store.ids;
+
     const entities = useMemo(
       () =>
-        store.ids
+        storeIds
           .map((id) => store.byUuid(id) as T)
           .filter((row) => !schemaFilter || schemaFilter(row))
           .map((row) => store.getUuid(row))
@@ -155,7 +157,7 @@ export const TableEditor = observer(
           })
           .concat(creatable === false ? [] : [newEntityId])
           .map((entityId) => ({ entityId })),
-      [store, store.ids, schemaFilter, newEntityId]
+      [storeIds, store, schemaFilter, newEntityId]
     );
 
     const columns: ColumnType<Row>[] = useMemo(

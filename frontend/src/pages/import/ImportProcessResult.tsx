@@ -7,7 +7,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 import { PrimaryButton, SecondaryButton } from '../../components/base/Button';
 import Space from '../../components/base/Space';
-import { TextDanger, TextNormal, TextSuccess } from '../../components/base/Text';
+import { TextDanger, TextNormal } from '../../components/base/Text';
 import { AccountSelector } from '../../components/editor/AccountEditor';
 import { TAccountUUID } from '../../entities/Account';
 import { ITransaction } from '../../entities/Transaction';

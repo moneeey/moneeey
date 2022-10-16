@@ -1,168 +1,17 @@
-import { PlusCircleFilled } from '@ant-design/icons';
-import { Drawer, Form } from 'antd';
-import { map, range } from 'lodash';
 import { observer } from 'mobx-react';
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 
-import { LinkButton, PrimaryButton, SecondaryButton } from '../../components/base/Button';
-import Card from '../../components/base/Card';
+import { SecondaryButton } from '../../components/base/Button';
 import { Checkbox, Input } from '../../components/base/Input';
-import Select from '../../components/base/Select';
 import Space from '../../components/base/Space';
-import { TextNormal } from '../../components/base/Text';
-import Loading from '../../components/Loading';
-import { TableEditor } from '../../components/TableEditor';
 import { IBudget } from '../../entities/Budget';
-import { BudgetEnvelope } from '../../entities/BudgetEnvelope';
-import { TCurrencyUUID } from '../../entities/Currency';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import { formatDate, formatDateMonth, startOfMonthOffset } from '../../utils/Date';
+import { formatDateMonth, startOfMonthOffset } from '../../utils/Date';
 import Messages from '../../utils/Messages';
 
 import './Budget.less';
-
-interface PeriodProps {
-  startingDate: Date;
-  setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
-  setProgress: Dispatch<SetStateAction<number>>;
-  viewArchived: boolean;
-}
-
-const BudgetPeriods = ({
-  startingDate,
-  setEditing,
-  viewArchived,
-  viewMonths,
-}: PeriodProps & { viewMonths: number }) => {
-  const [progress, setProgress] = useState(0);
-
-  return (
-    <Loading loading={progress !== 100} progress={progress}>
-      <div className='periods'>
-        {map(range(0, viewMonths), (offset) => (
-          <BudgetPeriod
-            key={offset}
-            startingDate={startOfMonthOffset(startingDate, offset)}
-            setEditing={setEditing}
-            viewArchived={viewArchived}
-            setProgress={setProgress}
-          />
-        ))}
-      </div>
-    </Loading>
-  );
-};
-const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProgress }: PeriodProps) => {
-  const { budget } = useMoneeeyStore();
-  const starting = useMemo(() => formatDate(startingDate), [startingDate]);
-  useEffect(() => {
-    budget.makeEnvelopes(starting, (currentProgress) => setProgress(currentProgress));
-  }, [starting]);
-  const onNewBudget = () => setEditing(budget.factory());
-
-  return (
-    <Card
-      data-test-id={`budget_period_${formatDateMonth(startingDate)}`}
-      className='period'
-      header={
-        <span className='periodTitle'>
-          <TextNormal>{formatDateMonth(startingDate)}</TextNormal>
-          <LinkButton onClick={onNewBudget}>
-            <PlusCircleFilled style={{ color: 'lightgreen' }} />
-            {Messages.budget.new}
-          </LinkButton>
-        </span>
-      }>
-      <TableEditor
-        store={budget.envelopes}
-        factory={budget.envelopes.factory}
-        creatable={false}
-        schemaFilter={(b) => b.starting === starting && (!b.budget.archived || viewArchived)}
-        context={{ name: (env: BudgetEnvelope) => setEditing(env.budget) }}
-      />
-    </Card>
-  );
-});
-
-const BudgetEditor = ({
-  editing,
-  setEditing,
-}: {
-  editing?: IBudget;
-  setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
-}) => {
-  const { budget, tags, currencies } = useMoneeeyStore();
-
-  const onClose = () => setEditing(undefined);
-  const onSave = () => {
-    if (editing) {
-      budget.merge(editing);
-      setEditing(undefined);
-    }
-  };
-
-  if (!editing) {
-    return <div />;
-  }
-
-  return (
-    <Drawer
-      className='editor'
-      title={editing.name || ''}
-      width={500}
-      placement='right'
-      onClose={onClose}
-      open={true}
-      extra={
-        <Space>
-          <SecondaryButton onClick={onClose}>{Messages.util.close}</SecondaryButton>
-          <PrimaryButton onClick={onSave}>{Messages.budget.save}</PrimaryButton>
-        </Space>
-      }>
-      <Form layout='vertical'>
-        <Form.Item label={Messages.util.name}>
-          <Input
-            data-test-id='budgetName'
-            type='text'
-            placeholder={Messages.util.name}
-            value={editing.name}
-            onChange={({ target: { value: name } }) => setEditing({ ...editing, name })}
-          />
-        </Form.Item>
-        <Form.Item label={Messages.util.currency}>
-          <Select
-            data-test-id='budgetCurrency'
-            placeholder={Messages.util.currency}
-            options={currencies.all.map((c) => ({
-              label: c.name,
-              value: c.currency_uuid,
-            }))}
-            value={editing.currency_uuid}
-            onChange={(currency_uuid: TCurrencyUUID) => setEditing({ ...editing, currency_uuid })}
-          />
-        </Form.Item>
-        <Form.Item label={Messages.util.tags}>
-          <Select
-            data-test-id='budgetTags'
-            mode='tags'
-            placeholder={Messages.util.tags}
-            options={tags.all.map((t) => ({ label: t, value: t }))}
-            value={editing.tags}
-            onChange={(new_tags: string[]) => setEditing({ ...editing, tags: new_tags })}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Checkbox
-            data-test-id='budgetIsArchived'
-            value={editing.archived}
-            onChange={({ target: { checked: archived } }) => setEditing({ ...editing, archived })}>
-            {Messages.util.archived}
-          </Checkbox>
-        </Form.Item>
-      </Form>
-    </Drawer>
-  );
-};
+import BudgetEditor from './BudgetEditor';
+import BudgetPeriods from './BudgetPeriod';
 
 const MonthDateSelector = ({ setDate, date }: { setDate: Dispatch<SetStateAction<Date>>; date: Date }) => (
   <Space>

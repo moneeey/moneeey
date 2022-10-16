@@ -11,7 +11,7 @@ const locators = {
     NAME_INPUT: '[data-test-id="budgetName"]',
     TAGS_INPUT: '[data-test-id="budgetTags"]',
     CURRENCY_OPTION_BRL: '[title="Real brasileiro"]',
-    SAVE_BUTTON: '[data-test-id="primary-button"]',
+    SAVE_BUTTON: '[data-test-id="budgetSave"]',
   },
   TRANSACTIONS: {
     FROM_INPUT: '[data-test-id^="editorFrom_"]',

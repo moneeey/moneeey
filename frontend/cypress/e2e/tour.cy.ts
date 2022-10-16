@@ -54,7 +54,7 @@ describe('Tour spec', () => {
     cy.get(loc.BUDGET.NAME_INPUT).type('Budget test');
     cy.get(loc.BUDGET.CURRENCY_INPUT).click();
     cy.get(loc.BUDGET.CURRENCY_OPTION_BRL).should('be.visible').click();
-    cy.get(loc.BUDGET.TAGS_INPUT).type('Hello');
+    cy.get(loc.BUDGET.TAGS_INPUT).type('Hello{enter}');
     cy.get(loc.BUDGET.SAVE_BUTTON).click();
 
     // Confirm it appeared
