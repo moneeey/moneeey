@@ -30,6 +30,21 @@ describe('Tour spec', () => {
     cy.get(loc.ACCOUNTS.NAME_INPUT).type('Account test');
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
 
+    // Create a transaction
+    cy.get(loc.TRANSACTIONS.FROM_INPUT).click();
+    cy.get(loc.TRANSACTIONS.ACCOUNT_OPTION_ACCOUNT_TEST).click();
+
+    // Wait persistence/pouchdb to sync that new account
+    cy.get(loc.TRANSACTIONS.TO_INPUT).should('have.length', 2);
+    cy.get(loc.TRANSACTIONS.TO_INPUT).first().click().type('Gas Station{enter}');
+
+    // Go to Import
+    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
+    cy.contains('New import');
+
+    // Go to Budget
+    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
+
     // Check budget is created before going next step
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
     cy.contains('and create a budget').click();
@@ -45,21 +60,6 @@ describe('Tour spec', () => {
     // Confirm it appeared
     cy.contains('Budget test');
     cy.contains('R$');
-
-    // Go to Transactions
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
-
-    // Create a transaction
-    cy.get(loc.TRANSACTIONS.FROM_INPUT).click();
-    cy.get(loc.TRANSACTIONS.ACCOUNT_OPTION_ACCOUNT_TEST).click();
-
-    // Wait persistence/pouchdb to sync that new account
-    cy.get(loc.TRANSACTIONS.TO_INPUT).should('have.length', 2);
-    cy.get(loc.TRANSACTIONS.TO_INPUT).first().click().type('Gas Station{enter}');
-
-    // Go to Import
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
-    cy.contains('New import');
 
     // Go to back to Transactions
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
