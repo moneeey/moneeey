@@ -1,14 +1,16 @@
+import { PlusCircleFilled } from '@ant-design/icons';
 import { Drawer, Form } from 'antd';
 import { map, range } from 'lodash';
 import { observer } from 'mobx-react';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 
 import { LinkButton, PrimaryButton, SecondaryButton } from '../../components/base/Button';
 import Card from '../../components/base/Card';
 import { Checkbox, Input } from '../../components/base/Input';
 import Select from '../../components/base/Select';
 import Space from '../../components/base/Space';
-import { NormalText } from '../../components/base/Text';
+import { TextNormal } from '../../components/base/Text';
+import Loading from '../../components/Loading';
 import { TableEditor } from '../../components/TableEditor';
 import { IBudget } from '../../entities/Budget';
 import { BudgetEnvelope } from '../../entities/BudgetEnvelope';
@@ -22,6 +24,7 @@ import './Budget.less';
 interface PeriodProps {
   startingDate: Date;
   setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
+  setProgress: Dispatch<SetStateAction<number>>;
   viewArchived: boolean;
 }
 
@@ -30,33 +33,46 @@ const BudgetPeriods = ({
   setEditing,
   viewArchived,
   viewMonths,
-}: PeriodProps & { viewMonths: number }) => (
-  <div className='periods'>
-    {map(range(0, viewMonths), (offset) => (
-      <BudgetPeriod
-        key={offset}
-        startingDate={startOfMonthOffset(startingDate, offset)}
-        setEditing={setEditing}
-        viewArchived={viewArchived}
-      />
-    ))}
-  </div>
-);
+}: PeriodProps & { viewMonths: number }) => {
+  const [progress, setProgress] = useState(0);
 
-const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived }: PeriodProps) => {
+  return (
+    <Loading loading={progress !== 100} progress={progress}>
+      <div className='periods'>
+        {map(range(0, viewMonths), (offset) => (
+          <BudgetPeriod
+            key={offset}
+            startingDate={startOfMonthOffset(startingDate, offset)}
+            setEditing={setEditing}
+            viewArchived={viewArchived}
+            setProgress={setProgress}
+          />
+        ))}
+      </div>
+    </Loading>
+  );
+};
+const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProgress }: PeriodProps) => {
   const { budget } = useMoneeeyStore();
-  const starting = formatDate(startingDate);
+  const starting = useMemo(() => formatDate(startingDate), [startingDate]);
   useEffect(() => {
-    budget.makeEnvelopes(starting);
-  }, [startingDate]);
+    budget.makeEnvelopes(starting, (currentProgress) => setProgress(currentProgress));
+  }, [starting]);
   const onNewBudget = () => setEditing(budget.factory());
 
   return (
     <Card
       data-test-id={`budget_period_${formatDateMonth(startingDate)}`}
       className='period'
-      header={<NormalText>{formatDateMonth(startingDate)}</NormalText>}
-      footer={<LinkButton onClick={onNewBudget}>{Messages.budget.new}</LinkButton>}>
+      header={
+        <span className='periodTitle'>
+          <TextNormal>{formatDateMonth(startingDate)}</TextNormal>
+          <LinkButton onClick={onNewBudget}>
+            <PlusCircleFilled style={{ color: 'lightgreen' }} />
+            {Messages.budget.new}
+          </LinkButton>
+        </span>
+      }>
       <TableEditor
         store={budget.envelopes}
         factory={budget.envelopes.factory}

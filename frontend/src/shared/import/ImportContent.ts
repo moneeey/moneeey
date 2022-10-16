@@ -35,6 +35,7 @@ export interface ImportResult {
     description: string;
   }[];
   transactions: ITransaction[];
+  update: Record<TTransactionUUID, boolean>;
   recommended_accounts: Record<TTransactionUUID, TAccountUUID[]>;
 }
 
@@ -120,5 +121,5 @@ export const importTransaction = function ({
     transaction._rev = existing._rev;
   }
 
-  return transaction;
+  return { transaction, existing };
 };

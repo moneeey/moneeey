@@ -22,11 +22,11 @@ const BaseText = (type?: string, ComposedElement: typeof AntdText | typeof AntdT
     );
   };
 
-const TitleText = BaseText('', AntdTitle);
-const NormalText = BaseText();
-const SecondaryText = BaseText('secondary');
-const DangerText = BaseText('danger');
-const WarningText = BaseText('warning');
-const SuccessText = BaseText('success');
+const TextTitle = BaseText('', AntdTitle);
+const TextNormal = BaseText();
+const TextSecondary = BaseText('secondary');
+const TextDanger = BaseText('danger');
+const TextWarning = BaseText('warning');
+const TextSuccess = BaseText('success');
 
-export { TitleText, NormalText, SecondaryText, DangerText, WarningText, SuccessText };
+export { TextTitle, TextNormal, TextSecondary, TextDanger, TextWarning, TextSuccess };

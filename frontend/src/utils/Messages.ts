@@ -41,6 +41,9 @@ const Messages = {
   import: {
     start: 'New import',
     processing: 'Importing...',
+    success: (fileName: string) => `We found these transactions in "${fileName}". Please, confirm the transaction
+      from/to accounts, updating errors, that way Moneeey will learn from your changes and be smarter in the next
+      import.`,
     drop_here: 'Drop the files here ...',
     click_or_drop_here: 'Drag and drop files here, or click to select files',
     supported_formats: 'Supported: TXT, CSV, OFX',

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { IBaseEntity } from '../../shared/Entity';
-import { DangerText } from '../base/Text';
+import { TextDanger } from '../base/Text';
 
 import { EditorProps } from './EditorProps';
 
@@ -68,7 +68,7 @@ export const BaseEditor = function <EntityType extends IBaseEntity, ValueEditorT
           value: currentValue,
         }}
       />
-      {error && <DangerText className='baseEditor-error'>{error}</DangerText>}
+      {error && <TextDanger className='baseEditor-error'>{error}</TextDanger>}
     </label>
   );
 };

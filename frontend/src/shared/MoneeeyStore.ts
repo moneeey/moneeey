@@ -1,4 +1,4 @@
-import { makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 
 import AccountStore from '../entities/Account';
 import BudgetStore from '../entities/Budget';
@@ -40,22 +40,26 @@ export default class MoneeeyStore {
   persistence: PersistenceStore;
 
   constructor(dbFactory: PouchDBFactoryFn) {
-    makeObservable(this, { loaded: observable });
+    makeObservable(this, { loaded: observable, readEntitiesIntoStores: action });
 
     this.persistence = new PersistenceStore(dbFactory, this.logger);
 
     this.persistence.load().then(() => {
-      this.persistence.monitor(this.accounts, EntityType.ACCOUNT);
-      this.persistence.monitor(this.currencies, EntityType.CURRENCY);
-      this.persistence.monitor(this.transactions, EntityType.TRANSACTION);
-      this.persistence.monitor(this.budget, EntityType.BUDGET);
-      this.persistence.monitor(this.config, EntityType.CONFIG);
-      setTimeout(() => {
-        this.config.init();
-        this.currencies.addDefaults();
-      }, 1000);
-      this.loaded = true;
-      this.persistence.sync();
+      this.readEntitiesIntoStores();
     });
+  }
+
+  readEntitiesIntoStores() {
+    this.persistence.monitor(this.accounts, EntityType.ACCOUNT);
+    this.persistence.monitor(this.currencies, EntityType.CURRENCY);
+    this.persistence.monitor(this.transactions, EntityType.TRANSACTION);
+    this.persistence.monitor(this.budget, EntityType.BUDGET);
+    this.persistence.monitor(this.config, EntityType.CONFIG);
+    setTimeout(() => {
+      this.config.init();
+      this.currencies.addDefaults();
+    }, 1000);
+    this.loaded = true;
+    this.persistence.sync();
   }
 }

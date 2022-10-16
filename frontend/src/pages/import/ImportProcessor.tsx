@@ -44,12 +44,13 @@ const process = async ({
   }
 };
 
-const ImportProcess = function ({ task }: { task: ImportTask }) {
+const ImportProcess = function ({ task, close }: { task: ImportTask; close: () => void }) {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<ImportResult>({
     errors: [],
     transactions: [],
     recommended_accounts: {},
+    update: {},
   });
   const moneeeyStore = useMoneeeyStore();
 
@@ -63,7 +64,7 @@ const ImportProcess = function ({ task }: { task: ImportTask }) {
       <h4>
         {Messages.import.processing} <strong>{task.input.mode}</strong> {task.input.name} ({progress}%)
       </h4>
-      {result && <ImportProcessResult {...{ task, result, setResult }} />}
+      {result && <ImportProcessResult {...{ task, result, setResult, close }} />}
     </>
   );
 };
