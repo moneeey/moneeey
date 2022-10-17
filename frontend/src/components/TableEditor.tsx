@@ -1,5 +1,5 @@
 import { ColumnType } from 'antd/lib/table';
-import { compact, values } from 'lodash';
+import { compact, uniq, values } from 'lodash';
 import { action } from 'mobx';
 import { observer } from 'mobx-react';
 import React, { useMemo, useState } from 'react';
@@ -8,6 +8,7 @@ import { IBaseEntity } from '../shared/Entity';
 import MappedStore from '../shared/MappedStore';
 import MoneeeyStore from '../shared/MoneeeyStore';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
+import { currentDateTime, dateDistanceInSecs, parseDateTime } from '../utils/Date';
 
 import { AccountEditor, AccountSorter } from './editor/AccountEditor';
 import { BudgetAllocatedEditor, BudgetAllocatedSorter } from './editor/BudgetAllocatedEditor';
@@ -28,8 +29,9 @@ import VirtualTable from './VirtualTableEditor';
 
 import './TableEditor.less';
 import { AccountTypeEditor, AccountTypeSorter } from './editor/AccountTypeEditor';
+import { WithDataTestId } from './base/Common';
 
-interface TableEditorProps<T extends IBaseEntity, Context> {
+interface TableEditorProps<T extends IBaseEntity, Context> extends WithDataTestId {
   store: MappedStore<T>;
   schemaFilter?: (row: T) => boolean;
   factory: (id?: string) => T;
@@ -144,19 +146,27 @@ export const TableEditor = observer(
 
     const entities = useMemo(
       () =>
-        storeIds
-          .map((id) => store.byUuid(id) as T)
-          .filter((row) => !schemaFilter || schemaFilter(row))
-          .map((row) => store.getUuid(row))
-          .map((entityId) => {
-            if (entityId === newEntityId) {
-              setTimeout(() => setNewEntityId(store.getUuid(factory())), 500);
-            }
+        uniq(
+          storeIds
+            .map((id) => store.byUuid(id) as T)
+            .filter((row) => {
+              const isSchemaFiltered = schemaFilter && schemaFilter(row);
+              const isRecent =
+                row.updated && dateDistanceInSecs(parseDateTime(row.updated), parseDateTime(currentDateTime())) < 20;
+              const isNewEntityId = store.getUuid(row) === newEntityId;
 
-            return entityId;
-          })
-          .concat(creatable === false ? [] : [newEntityId])
-          .map((entityId) => ({ entityId })),
+              return isSchemaFiltered || isRecent || isNewEntityId;
+            })
+            .map((row) => store.getUuid(row))
+            .map((entityId) => {
+              if (entityId === newEntityId) {
+                setTimeout(() => setNewEntityId(store.getUuid(factory())), 500);
+              }
+
+              return entityId;
+            })
+            .concat(creatable === false ? [] : [newEntityId])
+        ).map((entityId) => ({ entityId })),
       [storeIds, store, schemaFilter, newEntityId]
     );
 

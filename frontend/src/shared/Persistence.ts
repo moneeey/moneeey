@@ -189,7 +189,7 @@ export default class PersistenceStore {
 
   monitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType>, type: EntityType) {
     this.stores[type] = store;
-    this.retrieve(type).forEach((e) => store.merge(e as TEntityType));
+    this.retrieve(type).forEach((e) => store.merge(e as TEntityType, { setUpdated: false }));
     observe(store.itemsByUuid, (changes) => {
       if (changes.type === 'add') {
         this.persist(store, changes.newValue);

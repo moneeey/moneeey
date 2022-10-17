@@ -114,6 +114,7 @@ export class BudgetStore extends MappedStore<IBudget> {
 
   calculateRemaining = debounce(async (onProgress: (percentage: number) => void) => {
     const { transactions, accounts } = this.moneeeyStore;
+    onProgress(0);
     const usages = await asyncProcess(
       transactions.all.filter((t) => !accounts.isOffBudget(t.from_account) && !accounts.isOffBudget(t.to_account)),
       (chunk, state, percentage) => {

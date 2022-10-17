@@ -12,10 +12,13 @@ import ResizeObserver from 'rc-resize-observer';
 import React, { useEffect, useRef, useState } from 'react';
 import { VariableSizeGrid as Grid } from 'react-window';
 
-const VirtualTable = (props: Parameters<typeof Table>[0]) => {
+type ExtractProps<T extends (...args: any[]) => any> = Parameters<T>[0];
+
+const VirtualTable = (props: ExtractProps<typeof Table>) => {
   const { columns } = props;
   const scroll = { x: '100vw', y: 500 };
   const [tableWidth, setTableWidth] = useState(0);
+  const [tableHeight, setTableHeight] = useState(0);
 
   const widthColumnCount = columns!.filter(({ width }) => !width).length;
   const mergedColumns = columns!.map((column) => {
@@ -75,7 +78,7 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
             ? (width as number) - scrollbarSize - 1
             : (width as number);
         }}
-        height={scroll.y}
+        height={tableHeight}
         rowCount={rawData.length}
         rowHeight={() => 54}
         width={tableWidth}
@@ -84,6 +87,7 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
         }}>
         {({ columnIndex, rowIndex, style }: { columnIndex: number; rowIndex: number; style: React.CSSProperties }) => (
           <div
+            key={`${columnIndex}_${rowIndex}`}
             className={classNames('virtual-table-cell', {
               'virtual-table-cell-last': columnIndex === mergedColumns.length - 1,
             })}
@@ -97,8 +101,9 @@ const VirtualTable = (props: Parameters<typeof Table>[0]) => {
 
   return (
     <ResizeObserver
-      onResize={({ width }) => {
+      onResize={({ width, height }) => {
         setTableWidth(width);
+        setTableHeight(height);
       }}>
       <Table
         {...props}

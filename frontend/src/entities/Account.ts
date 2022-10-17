@@ -16,7 +16,7 @@ export type TAccountUUID = string;
 export enum AccountKind {
   CHECKING = 'CHECKING',
   INVESTMENT = 'INVESTMENT',
-  SAVINGS = 'INVESTMENT',
+  SAVINGS = 'SAVINGS',
   CREDIT_CARD = 'CREDIT_CARD',
   PAYEE = 'PAYEE',
 }
