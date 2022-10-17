@@ -1,4 +1,4 @@
-import { PlusCircleFilled } from '@ant-design/icons';
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import { map, range } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
@@ -63,7 +63,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
         <span className='periodTitle'>
           <TextNormal>{formatDateMonth(startingDate)}</TextNormal>
           <LinkButton onClick={onNewBudget}>
-            <PlusCircleFilled style={{ color: 'lightgreen' }} />
+            <PlusCircleIcon style={{ color: 'lightgreen', width: '1.2em', height: '1.2em' }} />
             {Messages.budget.new}
           </LinkButton>
         </span>

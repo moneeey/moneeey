@@ -21,7 +21,10 @@ const itemsWithDataTestId = (rootTestId: string, items: Array<NavbarItem>) =>
       item.children = itemsWithDataTestId(rootTestId, item.children);
     }
 
-    return { ...item, label: <span data-test-id={`${rootTestId}_${item.key}`}>{item.label}</span> };
+    return {
+      ...item,
+      label: <span data-test-id={`${rootTestId}_${item.key}`}>{item.label}</span>,
+    };
   });
 
 const Navbar = (props: NavbarProps & WithDataTestId) => (
