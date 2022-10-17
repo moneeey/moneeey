@@ -10,7 +10,7 @@ import { BaseNumberEditor, NumberSorter } from './NumberEditor';
 import './TransactionValueEditor.less';
 
 export const TransactionValueEditor = observer(
-  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, string, number>) => {
+  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number | string, number>) => {
     const entity = props.store.byUuid(props.entityId) as ITransaction | undefined;
     const { accounts, currencies } = useMoneeeyStore();
 
