@@ -25,7 +25,7 @@ const BudgetPeriods = observer(
     const [progress, setProgress] = useState(0);
 
     return (
-      <Loading loading={progress !== 100} progress={progress}>
+      <Loading loading={progress !== 0 && progress !== 100} progress={progress}>
         <div className='periods'>
           {map(range(0, viewMonths), (offset) => (
             <BudgetPeriod
