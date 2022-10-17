@@ -69,6 +69,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
         </span>
       }>
       <TableEditor
+        data-test-id={`budget_period_table_${formatDateMonth(startingDate)}`}
         store={budget.envelopes}
         factory={budget.envelopes.factory}
         creatable={false}

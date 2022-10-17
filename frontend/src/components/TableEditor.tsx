@@ -29,8 +29,9 @@ import VirtualTable from './VirtualTableEditor';
 
 import './TableEditor.less';
 import { AccountTypeEditor, AccountTypeSorter } from './editor/AccountTypeEditor';
+import { WithDataTestId } from './base/Common';
 
-interface TableEditorProps<T extends IBaseEntity, Context> {
+interface TableEditorProps<T extends IBaseEntity, Context> extends WithDataTestId {
   store: MappedStore<T>;
   schemaFilter?: (row: T) => boolean;
   factory: (id?: string) => T;

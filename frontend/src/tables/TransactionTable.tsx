@@ -7,7 +7,7 @@ import { TableEditor } from '../components/TableEditor';
 import { AccountStore, TAccountUUID } from '../entities/Account';
 import CurrencyStore from '../entities/Currency';
 import TransactionStore, { ITransaction } from '../entities/Transaction';
-import { formatDateMonth, isDateBetween, parseDate, startOfMonthOffset } from '../utils/Date';
+import { formatDate, formatDateMonth, isDateBetween, parseDate, startOfMonthOffset } from '../utils/Date';
 import Messages from '../utils/Messages';
 
 interface TransactionSettingsProps {
@@ -32,7 +32,12 @@ const TransactionTable = observer(({ transactions, schemaFilter }: TransactionSe
         {formatDateMonth(starting)} to {formatDateMonth(ending)}
         <SecondaryButton onClick={() => setDate(startOfMonthOffset(date, +2))}>{Messages.budget.next}</SecondaryButton>
       </Space>
-      <TableEditor store={transactions} schemaFilter={filter} factory={transactions.factory} />
+      <TableEditor
+        data-test-id={`transactionTable_${formatDate(starting)}_${formatDate(ending)}`}
+        store={transactions}
+        schemaFilter={filter}
+        factory={transactions.factory}
+      />
     </section>
   );
 });
