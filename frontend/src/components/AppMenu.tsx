@@ -1,12 +1,12 @@
 import {
-  AreaChartOutlined,
-  CheckCircleTwoTone,
-  DashboardOutlined,
-  DollarOutlined,
-  MailOutlined,
-  SettingOutlined,
-  WarningTwoTone,
-} from '@ant-design/icons';
+  ChartPieIcon,
+  ClipboardDocumentIcon,
+  Cog6ToothIcon,
+  CurrencyDollarIcon,
+  EnvelopeIcon,
+  PlayCircleIcon,
+  StopCircleIcon,
+} from '@heroicons/react/24/outline';
 import { observer } from 'mobx-react';
 
 import AccountRoute from '../routes/AccountRoute';
@@ -35,6 +35,10 @@ export const AppMenu = observer(() => {
     return curr?.short || curr?.name || '?';
   };
 
+  const iconProps = {
+    style: { width: '1.2em', height: '1.2em' },
+  };
+
   return (
     <Navbar
       data-test-id='appMenu'
@@ -42,13 +46,13 @@ export const AppMenu = observer(() => {
         {
           key: 'dashboard',
           label: Messages.menu.dashboard,
-          icon: <DashboardOutlined />,
+          icon: <ClipboardDocumentIcon {...iconProps} />,
           onClick: () => navigation.navigate(HomeRoute.url()),
         },
         {
           key: 'transactions',
           label: Messages.menu.transactions,
-          icon: <DollarOutlined />,
+          icon: <CurrencyDollarIcon {...iconProps} />,
           children: [
             {
               key: 'import',
@@ -82,19 +86,19 @@ export const AppMenu = observer(() => {
         {
           key: 'budget',
           label: Messages.menu.budget,
-          icon: <MailOutlined />,
+          icon: <EnvelopeIcon {...iconProps} />,
           onClick: () => navigation.navigate(BudgetRoute.url()),
         },
         {
           key: 'reports',
           label: Messages.menu.reports,
-          icon: <AreaChartOutlined />,
+          icon: <ChartPieIcon {...iconProps} />,
           onClick: () => navigation.navigate(ReportsRoute.url()),
         },
         {
           key: 'settings',
           label: Messages.menu.settings,
-          icon: <SettingOutlined />,
+          icon: <Cog6ToothIcon {...iconProps} />,
           children: [
             {
               key: 'settings_currencies',
@@ -128,9 +132,9 @@ export const AppMenu = observer(() => {
           label: Messages.menu.sync[persistence.status],
           icon:
             persistence.status === Status.ONLINE ? (
-              <CheckCircleTwoTone twoToneColor='green' />
+              <PlayCircleIcon color='green' {...iconProps} />
             ) : (
-              <WarningTwoTone twoToneColor='red' />
+              <StopCircleIcon color='red' {...iconProps} />
             ),
           onClick: () => navigation.openModal(NavigationModal.SYNC),
         },

@@ -1,4 +1,4 @@
-import { DownOutlined } from '@ant-design/icons';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { Dropdown, Menu } from 'antd';
 import _ from 'lodash';
 
@@ -29,7 +29,7 @@ const DateGroupingSelector = function ({
       }
       trigger={['click']}>
       <LinkButton className='ant-dropdown-link' onClick={(e) => e.preventDefault()}>
-        {period.label} <DownOutlined />
+        {period.label} <ChevronDownIcon style={{ height: '1em', width: '1em' }} />
       </LinkButton>
     </Dropdown>
   );
