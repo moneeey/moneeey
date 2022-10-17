@@ -13,18 +13,16 @@ const tagExpensesProcess =
     const sumTransactionTagExpenses = (account_uuid: TAccountUUID, value: number) => {
       const account = moneeeyStore.accounts.byUuid(account_uuid);
       const is_payee = account?.kind === AccountKind.PAYEE;
-      const payee_tags = (!is_payee && account?.tags) || [];
+      const payee_tags = (is_payee && account?.tags) || [];
       const tags = new Set([...payee_tags, ...transaction.tags]);
       tags.forEach((tag) => {
         const key = dateToPeriod(period, transaction.date);
         const prev_record = data.points.get(key);
         const prev_balance = (prev_record && prev_record[tag]) || 0;
         const delta = is_payee ? value : -value;
-        if (delta > 0) {
-          const balance = prev_balance + delta;
-          data.columns.add(tag);
-          data.points.set(key, { ...prev_record, [tag]: balance });
-        }
+        const balance = prev_balance + delta;
+        data.columns.add(tag);
+        data.points.set(key, { ...prev_record, [tag]: balance });
       });
     };
     sumTransactionTagExpenses(transaction.from_account, transaction.from_value);

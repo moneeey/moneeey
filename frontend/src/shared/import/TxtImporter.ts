@@ -1,6 +1,5 @@
 import { head, isEmpty, shuffle } from 'lodash';
 
-import { ITransaction } from '../../entities/Transaction';
 import { TDateFormat } from '../../utils/Date';
 import { asyncProcess } from '../../utils/Utils';
 import MoneeeyStore from '../MoneeeyStore';
@@ -39,6 +38,7 @@ const txtImportFromLines = ({
       ],
       transactions: [],
       recommended_accounts: {},
+      update: {},
     });
   }
   const { importer } = moneeeyStore;
@@ -56,6 +56,7 @@ const txtImportFromLines = ({
       ],
       transactions: [],
       recommended_accounts: {},
+      update: {},
     });
   }
   onProgress(60);
@@ -80,7 +81,7 @@ const txtImportFromLines = ({
         const { value, date, other } = retrieveColumns(tokens, columns, dateFormat || TDateFormat);
         const accounts = importer.findAccountsForTokens(referenceAccount, tokenMap, other);
         const other_account = accounts[0] || '';
-        const transaction: ITransaction = importTransaction({
+        const { transaction, existing } = importTransaction({
           date,
           line,
           value,
@@ -89,6 +90,7 @@ const txtImportFromLines = ({
           importer,
         });
         stt.transactions.push(transaction);
+        stt.update[transaction.transaction_uuid] = Boolean(existing);
         stt.recommended_accounts[transaction.transaction_uuid] = accounts;
       });
     },
@@ -97,6 +99,7 @@ const txtImportFromLines = ({
         errors: [],
         transactions: [],
         recommended_accounts: {},
+        update: {},
       },
     }
   );

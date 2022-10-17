@@ -7,7 +7,7 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore';
 
 import Card from './Card';
 import './Modal.less';
-import { TitleText } from './Text';
+import { TextTitle } from './Text';
 
 interface ModalProps {
   title: string;
@@ -32,7 +32,7 @@ const Modal = observer(({ title, modalId, footer, onClose, isOpen, children, cla
       <Card
         header={
           <div className='title'>
-            <TitleText>{title}</TitleText>
+            <TextTitle>{title}</TextTitle>
             <span className='close'>{titleCloseButton}</span>
           </div>
         }

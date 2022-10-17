@@ -49,7 +49,8 @@ export class BudgetStore extends MappedStore<IBudget> {
     this._envelopes = new BudgetEnvelopeStore(moneeeyStore);
 
     makeObservable(this, {
-      calculateRemaining: action,
+      setRemaining: action,
+      setAllocation: action,
     });
   }
 
@@ -82,14 +83,14 @@ export class BudgetStore extends MappedStore<IBudget> {
     this.merge(entity);
   }
 
-  makeEnvelopes(starting: TDate) {
+  makeEnvelopes(starting: TDate, onProgress: (percentage: number) => void) {
     this.all.forEach((budget) => this.getEnvelope(budget, starting));
-    this.calculateRemaining();
+    this.calculateRemaining(onProgress);
   }
 
   findBudgetsFor(tags: string[]) {
     return this.all.filter((budget) => {
-      return _.every(budget.tags, (tag) => _.includes(tags, tag));
+      return _.some(budget.tags, (budgetTag) => _.includes(tags, budgetTag));
     });
   }
 
@@ -107,14 +108,20 @@ export class BudgetStore extends MappedStore<IBudget> {
     return envelope.allocated - envelope.used + previousValue;
   }
 
-  calculateRemaining = debounce(async () => {
+  setRemaining(envelope: BudgetEnvelope, usage: number) {
+    envelope.used = usage;
+  }
+
+  calculateRemaining = debounce(async (onProgress: (percentage: number) => void) => {
     const { transactions, accounts } = this.moneeeyStore;
     const usages = await asyncProcess(
       transactions.all.filter((t) => !accounts.isOffBudget(t.from_account) && !accounts.isOffBudget(t.to_account)),
-      (chunk, state) =>
+      (chunk, state, percentage) => {
+        onProgress(percentage);
         chunk.forEach((transaction) => {
           const starting = formatDate(startOfMonthOffset(parseDate(transaction.date), 0));
-          const budgets = this.findBudgetsFor(transactions.getAllTransactionTags(transaction, accounts));
+          const allTransactionTags = transactions.getAllTransactionTags(transaction, accounts);
+          const budgets = this.findBudgetsFor(allTransactionTags);
           budgets.forEach((budget) => {
             const envelope = this.getEnvelope(budget, starting);
             state[envelope.envelope_uuid] = {
@@ -122,10 +129,11 @@ export class BudgetStore extends MappedStore<IBudget> {
               usage: (state[envelope.envelope_uuid]?.usage || 0) - transaction.from_value,
             };
           });
-        }),
+        });
+      },
       { state: {} as Record<string, { usage: number; envelope: BudgetEnvelope }>, chunkSize: 100, chunkThrottle: 50 }
     );
-    values(usages).map(({ envelope, usage }) => (envelope.used = usage));
+    values(usages).map(({ envelope, usage }) => this.setRemaining(envelope, usage));
   }, 500);
 }
 

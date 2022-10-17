@@ -7,7 +7,7 @@ import './Card.less';
 interface CardProps {
   className?: string;
   header: ReactNode;
-  footer: ReactNode;
+  footer?: ReactNode;
   children: ReactNode;
 }
 

@@ -37,6 +37,7 @@ describe('Tour spec', () => {
     // Wait persistence/pouchdb to sync that new account
     cy.get(loc.TRANSACTIONS.TO_INPUT).should('have.length', 2);
     cy.get(loc.TRANSACTIONS.TO_INPUT).first().click().type('Gas Station{enter}');
+    cy.get(loc.TRANSACTIONS.AMOUNT_INPUT).first().type('12.34{enter}');
 
     // Go to Import
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
@@ -54,12 +55,14 @@ describe('Tour spec', () => {
     cy.get(loc.BUDGET.NAME_INPUT).type('Budget test');
     cy.get(loc.BUDGET.CURRENCY_INPUT).click();
     cy.get(loc.BUDGET.CURRENCY_OPTION_BRL).should('be.visible').click();
-    cy.get(loc.BUDGET.TAGS_INPUT).type('Hello');
+    cy.get(loc.BUDGET.TAGS_INPUT).type('Gas Station{enter}');
     cy.get(loc.BUDGET.SAVE_BUTTON).click();
 
     // Confirm it appeared
     cy.contains('Budget test');
     cy.contains('R$');
+    cy.get(loc.BUDGET.CARD_ALLOCATED_INPUT).first().type('408.08');
+    cy.get(loc.BUDGET.CARD_REMAINING_INPUT).first().should('contain.value', '420.42');
 
     // Go to back to Transactions
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();

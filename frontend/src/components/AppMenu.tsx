@@ -25,7 +25,7 @@ import Messages from '../utils/Messages';
 import { NavigationModal } from '../shared/Navigation';
 
 import Navbar from './base/Navbar';
-import { NormalText, SecondaryText } from './base/Text';
+import { TextNormal, TextSecondary } from './base/Text';
 
 export const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence } = useMoneeeyStore();
@@ -61,9 +61,9 @@ export const AppMenu = observer(() => {
               .map((acct) => ({
                 key: `account_${acct._id || ''}`,
                 label: (
-                  <NormalText>
-                    <SecondaryText>{getAccountCurrency(acct)}</SecondaryText> {acct.name}
-                  </NormalText>
+                  <TextNormal>
+                    <TextSecondary>{getAccountCurrency(acct)}</TextSecondary> {acct.name}
+                  </TextNormal>
                 ),
                 onClick: () => navigation.navigate(AccountRoute.accountUrl(acct)),
               })),

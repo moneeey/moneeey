@@ -15,6 +15,9 @@ const Import = observer(() => {
   const [processing, setProcessing] = useState([] as ImportTask[]);
   const { config } = useMoneeeyStore();
 
+  const closeImportTask = (task: ImportTask) =>
+    setProcessing((prevProcessing) => prevProcessing.filter((p) => p.input.name !== task.input.name));
+
   return (
     <div className='importArea'>
       <Tabs
@@ -40,16 +43,12 @@ const Import = observer(() => {
             label: (
               <span>
                 {task.input.name}{' '}
-                <span
-                  className='importTaskClose'
-                  onClick={() =>
-                    setProcessing((prevProcessing) => prevProcessing.filter((p) => p.input.name !== task.input.name))
-                  }>
+                <span className='importTaskClose' onClick={() => closeImportTask(task)}>
                   X
                 </span>
               </span>
             ),
-            children: <ImportProcess task={task} />,
+            children: <ImportProcess task={task} close={() => closeImportTask(task)} />,
           })),
         ]}
       />
