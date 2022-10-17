@@ -19,7 +19,7 @@ interface TransactionSettingsProps {
 }
 
 const TransactionTable = observer(({ transactions, schemaFilter }: TransactionSettingsProps) => {
-  const [date, setDate] = useState(startOfMonthOffset(transactions.newest_dt, -4));
+  const [date, setDate] = useState(startOfMonthOffset(transactions.newest_dt, -1));
   const starting = startOfMonthOffset(date, -2);
   const ending = startOfMonthOffset(date, +2);
   const periodFilter = (row: ITransaction) => isDateBetween(parseDate(row.date), starting, ending);
