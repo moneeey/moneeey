@@ -33,5 +33,8 @@ export const formatDateAs = (date: TDate, pattern: string) => formatDateFmt(pars
 export const isValidDate = (date: Date) => isValid(date);
 
 export const compareDates = (a: TDate, b: TDate) => parseDate(a).getTime() - parseDate(b).getTime();
+export const isDateGreater = (a: Date, b: Date) => a.getTime() >= b.getTime();
+export const isDateLesser = (a: Date, b: Date) => a.getTime() <= b.getTime();
+export const isDateBetween = (date: Date, min: Date, max: Date) => isDateGreater(date, min) && isDateLesser(date, max);
 
 export const startOfMonthOffset = (date: Date, offset: number) => startOfMonth(add(date, { months: offset }));

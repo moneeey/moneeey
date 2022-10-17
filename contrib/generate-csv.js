@@ -15,6 +15,36 @@ const payeeConfig = [
     per_month: 12,
   },
   {
+    name: "Restaurante Sorocaba",
+    value_min: -16.42,
+    value_max: -480.84,
+    per_month: 4,
+  },
+  {
+    name: "Restaurante Itape",
+    value_min: -220.42,
+    value_max: -480.84,
+    per_month: 4,
+  },
+  {
+    name: "Restaurante Monteiro",
+    value_min: -16.42,
+    value_max: -93.84,
+    per_month: 4,
+  },
+  {
+    name: "Quiosque Praia",
+    value_min: -16.42,
+    value_max: -930.84,
+    per_month: 1,
+  },
+  {
+    name: "BarDeck",
+    value_min: -3.42,
+    value_max: -230.84,
+    per_month: 2,
+  },
+  {
     name: "Auto Posto Aurora",
     value_min: -85,
     value_max: -200,
@@ -89,7 +119,7 @@ function generateTransactions(month) {
       const payeeIdx = rand(0, payeesWithTheirFreq.length - 1);
       const payee = payeesWithTheirFreq[payeeIdx];
       const value = rand(payee.value_min * 100, payee.value_max * 100) / 100;
-      const date = new Date(2022, 1 - month, rand(1, 28));
+      const date = new Date(2022, 12 - month, rand(1, 28));
       const formatted = formatDate(date);
       return `${formatted};${payee.name};${value}`;
     })
@@ -98,8 +128,8 @@ function generateTransactions(month) {
 }
 
 function generateFiles(dir) {
-  Array.from({ length: 48 }).forEach((_v, month) => {
-    const date = new Date(2022, 1 - month, 0);
+  Array.from({ length: 96 }).forEach((_v, month) => {
+    const date = new Date(2022, 12 - month, 0);
     const formatted = formatDate(date);
     const path = `${dir}/${formatted}.csv`;
     const csvContent = generateTransactions(month);

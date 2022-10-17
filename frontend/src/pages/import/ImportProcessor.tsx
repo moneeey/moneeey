@@ -15,6 +15,7 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
 
 import { ImportProcessResult } from './ImportProcessResult';
+import Loading from '../../components/Loading';
 
 export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
   txt: txtImport(),
@@ -62,9 +63,11 @@ const ImportProcess = function ({ task, close }: { task: ImportTask; close: () =
   return (
     <>
       <h4>
-        {Messages.import.processing} <strong>{task.input.mode}</strong> {task.input.name} ({progress}%)
+        {Messages.import.processing} <strong>{task.input.mode}</strong> {task.input.name}
       </h4>
-      {result && <ImportProcessResult {...{ task, result, setResult, close }} />}
+      <Loading loading={progress !== 100} progress={progress}>
+        {result && <ImportProcessResult {...{ task, result, setResult, close }} />}
+      </Loading>
     </>
   );
 };
