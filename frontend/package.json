@@ -39,7 +39,7 @@
     "@this-dot/cypress-indexeddb": "^1.1.3",
     "@types/cypress": "^1.1.3",
     "@types/jest": "^29.1.2",
-    "@types/lodash": "^4.14.186",
+    "@types/lodash": "^4.14.187",
     "@types/pouchdb": "^6.4.0",
     "@types/react": "^18.0.21",
     "@types/react-dom": "^18.0.6",
