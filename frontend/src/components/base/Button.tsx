@@ -13,6 +13,7 @@ type ButtonProps = {
   title?: string;
   children?: string | ReactNode | ReactNode[];
   className?: string;
+  disabled?: boolean;
 };
 
 type WithButtonKind = {
