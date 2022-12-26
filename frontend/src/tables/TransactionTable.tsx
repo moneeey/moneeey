@@ -29,7 +29,9 @@ const TransactionTable = observer(({ transactions, schemaFilter }: TransactionSe
     <section>
       <Space>
         <SecondaryButton onClick={() => setDate(startOfMonthOffset(date, -2))}>{Messages.budget.prev}</SecondaryButton>
-        {formatDateMonth(starting)} to {formatDateMonth(ending)}
+        <span>
+          {formatDateMonth(starting)} to {formatDateMonth(ending)}
+        </span>
         <SecondaryButton onClick={() => setDate(startOfMonthOffset(date, +2))}>{Messages.budget.next}</SecondaryButton>
       </Space>
       <TableEditor

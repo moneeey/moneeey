@@ -1,9 +1,9 @@
-import { Space as AntdSpace } from 'antd';
-
 import { ReactNode } from 'react';
 
+import './Space.less';
+
 const Space = ({ children, className }: { children: ReactNode | ReactNode[]; className?: string }) => (
-  <AntdSpace className={className}>{children}</AntdSpace>
+  <div className={`mn-space ${className || ''}`}>{children}</div>
 );
 
 export default Space;
