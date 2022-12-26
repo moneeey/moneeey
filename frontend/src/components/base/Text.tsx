@@ -2,23 +2,26 @@ import { ReactNode } from 'react';
 
 import './Text.less';
 
-type BaseType = 'title' | 'subtitle' | 'normal' | 'secondary' | 'danger' | 'warning' | 'success';
-
 interface TextProps {
   children: string | ReactNode | ReactNode[];
   className?: string;
 }
 
-const BaseText = (type: BaseType) =>
+type BaseElementType = Extract<keyof JSX.IntrinsicElements, 'p' | 'span' | 'h1' | 'h2'>;
+type BaseType = 'title' | 'subtitle' | 'normal' | 'paragraph' | 'secondary' | 'danger' | 'warning' | 'success';
+
+const BaseText = (type: BaseType, ElementTyp: BaseElementType) =>
   function Text({ children, className }: TextProps) {
-    return <span className={`mn-text-${type} ${className || ''}`}>{children}</span>;
+    return <ElementTyp className={`mn-text-${type} ${className || ''}`}>{children}</ElementTyp>;
   };
 
-const TextTitle = BaseText('title');
-const TextNormal = BaseText('normal');
-const TextSecondary = BaseText('secondary');
-const TextDanger = BaseText('danger');
-const TextWarning = BaseText('warning');
-const TextSuccess = BaseText('success');
+const TextTitle = BaseText('title', 'h1');
+const TextSubtitle = BaseText('subtitle', 'h2');
+const TextParagraph = BaseText('paragraph', 'p');
+const TextNormal = BaseText('normal', 'span');
+const TextSecondary = BaseText('secondary', 'span');
+const TextDanger = BaseText('danger', 'span');
+const TextWarning = BaseText('warning', 'span');
+const TextSuccess = BaseText('success', 'span');
 
-export { TextTitle, TextNormal, TextSecondary, TextDanger, TextWarning, TextSuccess };
+export { TextTitle, TextSubtitle, TextParagraph, TextNormal, TextSecondary, TextDanger, TextWarning, TextSuccess };
