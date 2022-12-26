@@ -135,7 +135,10 @@ class TransactionStore extends MappedStore<ITransaction> {
   }
 
   filterByTag(tag: string, accountsStore: AccountStore) {
-    return (row: ITransaction) => this.getAllTransactionTags(row, accountsStore).indexOf(tag) >= 0;
+    return (row: ITransaction) =>
+      this.getAllTransactionTags(row, accountsStore)
+        .map((taag) => taag.toLowerCase())
+        .indexOf(tag.toLowerCase()) >= 0;
   }
 
   viewAllWithTag(tag: string, accountsStore: AccountStore) {

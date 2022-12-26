@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable react/display-name */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Table } from 'antd';
+import { ColumnType } from 'antd/lib/table';
 import { compact, identity, isEmpty, isNumber, map } from 'lodash';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -9,6 +9,7 @@ import { PrimaryButton, SecondaryButton } from '../../components/base/Button';
 import Space from '../../components/base/Space';
 import { TextDanger, TextNormal } from '../../components/base/Text';
 import { AccountSelector } from '../../components/editor/AccountEditor';
+import VirtualTable from '../../components/VirtualTableEditor';
 import { TAccountUUID } from '../../entities/Account';
 import { ITransaction } from '../../entities/Transaction';
 import { ImportResult, ImportTask } from '../../shared/import/ImportContent';
@@ -58,6 +59,41 @@ const accountRender =
     );
   };
 
+const rendererForCol =
+  <T,>(col: ColumnType<T>) =>
+  (cellValue: any, row: ITransaction) => {
+    let mode = 'New';
+    let title = mode;
+    if (col.dataIndex) {
+      const original = moneeeyStore.transactions.byUuid(row.transaction_uuid);
+      if (original) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const originalValue = (original as Record<string, any>)[col.dataIndex];
+        if (!isEmpty(originalValue) || isNumber(originalValue)) {
+          const format = (value: string) =>
+            col.dataIndex.indexOf('_account') > 0 ? moneeeyStore.accounts.nameForUuid(value) : `${value}`;
+          const changed = format(originalValue) !== format(cellValue);
+          if (changed) {
+            mode = Messages.import.updated;
+            title = Messages.import.changed_description(format(originalValue), format(cellValue));
+          } else {
+            mode = Messages.import.unchanged;
+            title = Messages.import.unchanged;
+          }
+        }
+      }
+    }
+    const cell = (col.render || identity)(cellValue, row);
+
+    return (
+      <span className={`import${mode}`} title={title}>
+        <>
+          {cell} {mode === 'Updated' ? <span className='newTag'>{mode}</span> : false}
+        </>
+      </span>
+    );
+  };
+
 const ContentTransactionTable = ({
   moneeeyStore,
   transactions,
@@ -72,7 +108,7 @@ const ContentTransactionTable = ({
   setResult: Dispatch<SetStateAction<ImportResult>>;
 }) =>
   isEmpty(transactions) ? null : (
-    <Table
+    <VirtualTable
       className='tableEditor'
       dataSource={transactions}
       rowKey='transaction_uuid'
@@ -105,38 +141,7 @@ const ContentTransactionTable = ({
         { dataIndex: 'from_value', title: Messages.transactions.amount },
       ].map((col) => ({
         ...col,
-        render: (cellValue: any, row: ITransaction) => {
-          let mode = 'New';
-          let title = mode;
-          if (col.dataIndex) {
-            const original = moneeeyStore.transactions.byUuid(row.transaction_uuid);
-            if (original) {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              const originalValue = (original as Record<string, any>)[col.dataIndex];
-              if (!isEmpty(originalValue) || isNumber(originalValue)) {
-                const format = (value: string) =>
-                  col.dataIndex.indexOf('_account') > 0 ? moneeeyStore.accounts.nameForUuid(value) : `${value}`;
-                const changed = format(originalValue) !== format(cellValue);
-                if (changed) {
-                  mode = Messages.import.updated;
-                  title = Messages.import.changed_description(format(originalValue), format(cellValue));
-                } else {
-                  mode = Messages.import.unchanged;
-                  title = Messages.import.unchanged;
-                }
-              }
-            }
-          }
-          const cell = (col.render || identity)(cellValue, row);
-
-          return (
-            <span className={`import${mode}`} title={title}>
-              <>
-                {cell} {mode === 'Updated' ? <span className='newTag'>{mode}</span> : false}
-              </>
-            </span>
-          );
-        },
+        render: rendererForCol(col),
       }))}
     />
   );

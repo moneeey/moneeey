@@ -1,29 +1,21 @@
-import { Typography } from 'antd';
-import { BaseType } from 'antd/lib/typography/Base';
 import { ReactNode } from 'react';
 
-const { Text: AntdText, Title: AntdTitle } = Typography;
+import './Text.less';
+
+type BaseType = 'title' | 'subtitle' | 'normal' | 'secondary' | 'danger' | 'warning' | 'success';
 
 interface TextProps {
   children: string | ReactNode | ReactNode[];
   className?: string;
 }
 
-interface BaseTextProps extends TextProps {
-  type?: string;
-}
-
-const BaseText = (type?: string, ComposedElement: typeof AntdText | typeof AntdTitle = AntdText) =>
-  function Text({ children, className }: BaseTextProps) {
-    return (
-      <ComposedElement type={type as BaseType} className={className}>
-        {children}
-      </ComposedElement>
-    );
+const BaseText = (type: BaseType) =>
+  function Text({ children, className }: TextProps) {
+    return <span className={`mn-text-${type} ${className || ''}`}>{children}</span>;
   };
 
-const TextTitle = BaseText('', AntdTitle);
-const TextNormal = BaseText();
+const TextTitle = BaseText('title');
+const TextNormal = BaseText('normal');
 const TextSecondary = BaseText('secondary');
 const TextDanger = BaseText('danger');
 const TextWarning = BaseText('warning');
