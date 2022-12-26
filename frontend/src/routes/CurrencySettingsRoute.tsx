@@ -12,7 +12,11 @@ export class CurrencySettingsRouter extends Route<ICurrencySettingsRoute> {
   }
 
   render({ app }: { app: IAppParameters }) {
-    return <CurrencyTable currencies={app.moneeeyStore.currencies} />;
+    return (
+      <section className='settingsArea'>
+        <CurrencyTable currencies={app.moneeeyStore.currencies} />
+      </section>
+    );
   }
 }
 

@@ -10,7 +10,7 @@ type ButtonType = 'primary' | 'secondary' | 'link' | 'danger';
 
 type ButtonProps = {
   onClick: () => void;
-  title?: string;
+  title?: string | ReactNode;
   children?: string | ReactNode | ReactNode[];
   className?: string;
   disabled?: boolean;

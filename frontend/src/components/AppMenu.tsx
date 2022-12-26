@@ -28,7 +28,7 @@ import Navbar from './base/Navbar';
 import { TextNormal, TextSecondary } from './base/Text';
 
 export const AppMenu = observer(() => {
-  const { navigation, accounts, currencies, persistence } = useMoneeeyStore();
+  const { navigation, accounts, currencies, persistence, transactions } = useMoneeeyStore();
   const getAccountCurrency = (account: IAccount) => {
     const curr = currencies.byUuid(account.currency_uuid);
 
@@ -39,6 +39,8 @@ export const AppMenu = observer(() => {
     style: { width: '1.2em', height: '1.2em' },
   };
 
+  const activeAccounts = accounts.allNonPayees.filter((t) => t.archived !== true);
+
   return (
     <Navbar
       data-test-id='appMenu'
@@ -48,19 +50,20 @@ export const AppMenu = observer(() => {
           label: Messages.menu.dashboard,
           icon: <ClipboardDocumentIcon {...iconProps} />,
           onClick: () => navigation.navigate(HomeRoute.url()),
+          visible: activeAccounts.length > 0,
         },
         {
           key: 'transactions',
           label: Messages.menu.transactions,
           icon: <CurrencyDollarIcon {...iconProps} />,
+          visible: activeAccounts.length > 0,
           children: [
             {
               key: 'import',
               label: Messages.menu.import,
               onClick: () => navigation.navigate(ImportRoute.url()),
             },
-            ...accounts.allNonPayees
-              .filter((t) => t.archived !== true)
+            ...activeAccounts
               .sort((a, b) => a.currency_uuid?.localeCompare(b.currency_uuid))
               .map((acct) => ({
                 key: `account_${acct._id || ''}`,
@@ -88,12 +91,14 @@ export const AppMenu = observer(() => {
           label: Messages.menu.budget,
           icon: <EnvelopeIcon {...iconProps} />,
           onClick: () => navigation.navigate(BudgetRoute.url()),
+          visible: transactions.all.length > 0,
         },
         {
           key: 'reports',
           label: Messages.menu.reports,
           icon: <ChartPieIcon {...iconProps} />,
           onClick: () => navigation.navigate(ReportsRoute.url()),
+          visible: transactions.all.length > 0,
         },
         {
           key: 'settings',
@@ -101,14 +106,14 @@ export const AppMenu = observer(() => {
           icon: <Cog6ToothIcon {...iconProps} />,
           children: [
             {
+              key: 'settings_general',
+              label: Messages.menu.preferences,
+              onClick: () => navigation.navigate(SettingsRoute.url()),
+            },
+            {
               key: 'settings_currencies',
               label: Messages.menu.currencies,
               onClick: () => navigation.navigate(CurrencySettingsRoute.url()),
-            },
-            {
-              key: 'settings_payees',
-              label: Messages.menu.payees,
-              onClick: () => navigation.navigate(PayeeSettingsRoute.url()),
             },
             {
               key: 'settings_accounts',
@@ -116,13 +121,13 @@ export const AppMenu = observer(() => {
               onClick: () => navigation.navigate(AccountSettingsRoute.url()),
             },
             {
-              key: 'settings_general',
-              label: Messages.menu.preferences,
-              onClick: () => navigation.navigate(SettingsRoute.url()),
+              key: 'settings_payees',
+              label: Messages.menu.payees,
+              onClick: () => navigation.navigate(PayeeSettingsRoute.url()),
             },
             {
               key: 'settings_landing',
-              label: Messages.menu.landing,
+              label: Messages.menu.start_tour,
               onClick: () => navigation.openModal(NavigationModal.LANDING),
             },
           ],

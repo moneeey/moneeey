@@ -1,7 +1,10 @@
-import { Menu as AntdMenu } from 'antd';
 import { ReactNode } from 'react';
 
+import { LinkButton } from './Button';
+
 import { WithDataTestId } from './Common';
+
+import './Navbar.less';
 
 interface NavbarItem {
   key: string;
@@ -9,32 +12,36 @@ interface NavbarItem {
   icon?: ReactNode;
   onClick?: () => void;
   children?: Array<NavbarItem>;
+  visible?: boolean;
 }
 
 interface NavbarProps {
   items: Array<NavbarItem>;
 }
 
-const itemsWithDataTestId = (rootTestId: string, items: Array<NavbarItem>) =>
-  items.map((item) => {
-    if (item.children) {
-      item.children = itemsWithDataTestId(rootTestId, item.children);
+const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
+  items.map((item: NavbarItem): JSX.Element[] => {
+    if (item.visible === false) {
+      return [];
     }
 
-    return {
-      ...item,
-      label: <span data-test-id={`${rootTestId}_${item.key}`}>{item.label}</span>,
-    };
+    return [
+      <LinkButton
+        className={'item'}
+        data-test-id={`${dataTestId}_${item.key}`}
+        onClick={item.onClick || (() => ({}))}
+        key={item.key}
+        title={item.label}
+      />,
+      <div key={`subitems_${item.key}`} className='subitems'>
+        {renderNavbarItems(dataTestId, item.children || [])}
+      </div>,
+    ];
   });
 
 const Navbar = (props: NavbarProps & WithDataTestId) => (
-  <nav data-test-id={props['data-test-id']}>
-    <AntdMenu
-      mode='horizontal'
-      triggerSubMenuAction='click'
-      {...props}
-      items={itemsWithDataTestId(props['data-test-id'], props.items)}
-    />
+  <nav className='mn-navbar' data-test-id={props['data-test-id']}>
+    {renderNavbarItems(props['data-test-id'], props.items)}
   </nav>
 );
 

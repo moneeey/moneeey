@@ -65,7 +65,6 @@ export default function Settings() {
 
   return (
     <section className='settingsArea'>
-      <ConfigTable config={moneeeyStore.config} />
       <Space>
         <PrimaryButton onClick={onBackupData} disabled={actionsDisabled}>
           {Messages.settings.export_data}
@@ -89,6 +88,7 @@ export default function Settings() {
           />
         )}
       </Space>
+      <ConfigTable config={moneeeyStore.config} />
     </section>
   );
 }

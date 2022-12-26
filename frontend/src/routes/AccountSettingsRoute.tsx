@@ -14,11 +14,13 @@ export class AccountSettingsRouter extends Route<IAccountSettingsRoute> {
 
   render({ app }: { app: IAppParameters }) {
     return (
-      <AccountTable
-        currencies={app.moneeeyStore.currencies}
-        accounts={app.moneeeyStore.accounts}
-        kind={AccountKind.CHECKING}
-      />
+      <section className='settingsArea'>
+        <AccountTable
+          currencies={app.moneeeyStore.currencies}
+          accounts={app.moneeeyStore.accounts}
+          kind={AccountKind.CHECKING}
+        />
+      </section>
     );
   }
 }

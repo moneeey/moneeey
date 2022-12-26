@@ -36,7 +36,7 @@ export default function Dashboard() {
   const moneeeyStore = useMoneeeyStore();
 
   return (
-    <div>
+    <div className='dashboardArea'>
       <WealthGrowReport />
       <RecentTransactions moneeyStore={moneeeyStore} />
     </div>

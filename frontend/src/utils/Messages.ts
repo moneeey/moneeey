@@ -12,7 +12,7 @@ const Messages = {
     payees: 'Payees',
     accounts: 'Accounts',
     preferences: 'Preferences',
-    landing: 'Landing',
+    start_tour: 'Start tour',
     sync: {
       ONLINE: 'Online',
       OFFLINE: 'Offline',
