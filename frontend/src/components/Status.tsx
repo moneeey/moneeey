@@ -11,9 +11,7 @@ interface StatusProps {
 const Status = ({ type, children }: StatusProps) => {
   const [dismissed, setDismiss] = useState(false);
 
-  return dismissed ? (
-    false
-  ) : (
+  return dismissed ? null : (
     <p className={`mn-status mn-status-${type}`} onClick={() => setDismiss(true)}>
       {children}
       <span className='close'>
