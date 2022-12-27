@@ -23,9 +23,9 @@ interface NavbarProps {
   items: Array<NavbarItem>;
 }
 
-const renderNavbarItems = (dataTestId: string, items: NavbarItem[], isExpanded: boolean) =>
+const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
   items.map((item: NavbarItem): JSX.Element[] => {
-    if (item.visible === false || (!isExpanded && !item.icon)) {
+    if (item.visible === false) {
       return [];
     }
 
@@ -36,10 +36,10 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[], isExpanded: 
         onClick={item.onClick || (() => ({}))}
         key={item.key}
         title={item.label}>
-        {item.icon} {isExpanded ? item.customLabel || item.label : ''}
+        {item.icon} {item.customLabel || item.label}
       </LinkButton>,
       <div key={`subitems_${item.key}`} className='subitems'>
-        {renderNavbarItems(dataTestId, item.children || [], isExpanded)}
+        {renderNavbarItems(dataTestId, item.children || [])}
       </div>,
     ];
   });
@@ -55,7 +55,7 @@ const Navbar = (props: NavbarProps & WithDataTestId) => {
           <Bars3Icon />
         </TextTitle>
       </header>
-      <section>{renderNavbarItems(props['data-test-id'], props.items, isExpanded)}</section>
+      {isExpanded && <section>{renderNavbarItems(props['data-test-id'], props.items)}</section>}
     </nav>
   );
 };

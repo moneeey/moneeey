@@ -6,21 +6,21 @@
   bottom: 0;
   width: 4em;
   padding: 1em;
-  background-color: @card-skeleton-bg;
-  border-right: 1px solid @border-color-base;
   transition: width 0.3s;
 
   &.expanded {
-    width: 20em;
+    min-width: 16em;
+    background-color: @card-skeleton-bg;
+    border-right: 1px solid @border-color-base;
   }
 
   header h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
 
     svg {
-      cursor: pointer;
       width: 1.2em;
       height: 1.2em;
     }
