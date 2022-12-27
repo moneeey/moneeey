@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
 
-import { LinkButton } from './Button';
 import { WithDataTestId } from './Common';
 
 import './Drawer.less';

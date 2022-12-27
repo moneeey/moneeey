@@ -1,8 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable react/display-name */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ColumnType } from 'antd/lib/table';
-import { compact, identity, isEmpty, isNumber, map } from 'lodash';
+import { compact, isEmpty, isNumber, map } from 'lodash';
 import { Dispatch, SetStateAction } from 'react';
 
 import { PrimaryButton, SecondaryButton } from '../../components/base/Button';
@@ -17,21 +14,20 @@ import MoneeeyStore from '../../shared/MoneeeyStore';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
 
-const accountRender =
-  ({
-    field,
-    referenceAccount,
-    moneeeyStore,
-    result,
-    setResult,
-  }: {
-    field: string;
-    referenceAccount: TAccountUUID;
-    moneeeyStore: MoneeeyStore;
-    result: ImportResult;
-    setResult: Dispatch<SetStateAction<ImportResult>>;
-  }) =>
-  (account_uuid: TAccountUUID, row: ITransaction) => {
+const accountRender = ({
+  field,
+  referenceAccount,
+  moneeeyStore,
+  result,
+  setResult,
+}: {
+  field: string;
+  referenceAccount: TAccountUUID;
+  moneeeyStore: MoneeeyStore;
+  result: ImportResult;
+  setResult: Dispatch<SetStateAction<ImportResult>>;
+}) =>
+  function accountRenderer(account_uuid: TAccountUUID, row: ITransaction) {
     if (referenceAccount === account_uuid) {
       return <span>{moneeeyStore.accounts.nameForUuid(account_uuid)}</span>;
     }
@@ -59,23 +55,25 @@ const accountRender =
     );
   };
 
-const rendererForCol =
-  <T,>(col: ColumnType<T>) =>
-  (cellValue: any, row: ITransaction) => {
+const rendererForCol = (col: ColumnType<ITransaction>, moneeeyStore: MoneeeyStore) =>
+  function columnRenderer(cellValue: object, row: ITransaction, index: number) {
     let mode = 'New';
     let title = mode;
-    if (col.dataIndex) {
+    const field = col.dataIndex as string;
+    if (field) {
+      const isAccountColumn = field.indexOf('_account') > 0;
       const original = moneeeyStore.transactions.byUuid(row.transaction_uuid);
       if (original) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const originalValue = (original as Record<string, any>)[col.dataIndex];
+        const originalValue = original[field];
         if (!isEmpty(originalValue) || isNumber(originalValue)) {
-          const format = (value: string) =>
-            col.dataIndex.indexOf('_account') > 0 ? moneeeyStore.accounts.nameForUuid(value) : `${value}`;
-          const changed = format(originalValue) !== format(cellValue);
+          const format = (value: unknown) =>
+            isAccountColumn ? moneeeyStore.accounts.nameForUuid(value as string) : (value as string);
+          const originalFormattedValue = format(originalValue);
+          const newFormattedValue = format(cellValue);
+          const changed = originalFormattedValue !== newFormattedValue;
           if (changed) {
             mode = Messages.import.updated;
-            title = Messages.import.changed_description(format(originalValue), format(cellValue));
+            title = Messages.import.changed_description(originalFormattedValue, newFormattedValue);
           } else {
             mode = Messages.import.unchanged;
             title = Messages.import.unchanged;
@@ -83,7 +81,8 @@ const rendererForCol =
         }
       }
     }
-    const cell = (col.render || identity)(cellValue, row);
+
+    const cell = col.render ? col.render(cellValue, row, index) : cellValue;
 
     return (
       <span className={`import${mode}`} title={title}>
@@ -113,36 +112,38 @@ const ContentTransactionTable = ({
       dataSource={transactions}
       rowKey='transaction_uuid'
       pagination={false}
-      columns={[
-        { dataIndex: 'date', title: Messages.util.date },
-        {
-          dataIndex: 'from_account',
-          title: Messages.transactions.from_account,
-          render: accountRender({
-            moneeeyStore,
-            referenceAccount: task.config.referenceAccount,
-            field: 'from_account',
-            result,
-            setResult,
-          }),
-        },
-        {
-          dataIndex: 'to_account',
-          title: Messages.transactions.to_account,
-          render: accountRender({
-            moneeeyStore,
-            referenceAccount: task.config.referenceAccount,
-            field: 'to_account',
-            result,
-            setResult,
-          }),
-        },
-        { dataIndex: 'memo', title: Messages.transactions.memo },
-        { dataIndex: 'from_value', title: Messages.transactions.amount },
-      ].map((col) => ({
-        ...col,
-        render: rendererForCol(col),
-      }))}
+      columns={
+        [
+          { dataIndex: 'date', title: Messages.util.date },
+          {
+            dataIndex: 'from_account',
+            title: Messages.transactions.from_account,
+            render: accountRender({
+              moneeeyStore,
+              referenceAccount: task.config.referenceAccount,
+              field: 'from_account',
+              result,
+              setResult,
+            }),
+          },
+          {
+            dataIndex: 'to_account',
+            title: Messages.transactions.to_account,
+            render: accountRender({
+              moneeeyStore,
+              referenceAccount: task.config.referenceAccount,
+              field: 'to_account',
+              result,
+              setResult,
+            }),
+          },
+          { dataIndex: 'memo', title: Messages.transactions.memo },
+          { dataIndex: 'from_value', title: Messages.transactions.amount },
+        ].map((col) => ({
+          ...col,
+          render: rendererForCol(col, moneeeyStore),
+        })) as unknown as ColumnType<object>[]
+      }
     />
   );
 

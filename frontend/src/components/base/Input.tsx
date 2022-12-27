@@ -4,7 +4,7 @@ import { WithDataTestId } from './Common';
 
 import './Input.less';
 
-type InputProps<T> = WithDataTestId & {
+export type InputProps<T> = WithDataTestId & {
   className?: string;
   onChange: (value: T) => void;
   value: T;
@@ -15,7 +15,7 @@ type InputProps<T> = WithDataTestId & {
 
 type AddonType = string | ReactNode | undefined;
 
-const InputContainer = (prefix: AddonType, suffix: AddonType, input: ReactNode) => (
+export const InputContainer = (prefix: AddonType, suffix: AddonType, input: ReactNode) => (
   <div className='mn-input-container'>
     {prefix && <div className='mn-input-prefix'>{prefix}</div>}
     {input}

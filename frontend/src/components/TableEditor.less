@@ -12,9 +12,6 @@
   height: 24px;
 }
 
-.tableEditor .ant-picker,
-.tableEditor .ant-select,
-.tableEditor .ant-select-selector,
 .tableEditor .mn-input {
   width: 100% !important;
   height: 24px;
@@ -28,11 +25,13 @@
 }
 
 .tableEditor tr:nth-child(2n) td,
-.tableEditor tr:nth-child(2n) .ant-picker
-.tableEditor tr:nth-child(2n) .ant-select,
-.tableEditor tr:nth-child(2n) .ant-select-selector,
 .tableEditor tr:nth-child(2n) .mn-input {
   background-color: #212224;
+
+}
+.tableEditor tr:hover td,
+.tableEditor tr:hover .mn-input {
+  background-color: #808080;
 }
 
 .tableEditor .accountEditor {

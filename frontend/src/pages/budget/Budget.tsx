@@ -2,7 +2,7 @@ import { observer } from 'mobx-react';
 import { Dispatch, SetStateAction, useState } from 'react';
 
 import { SecondaryButton } from '../../components/base/Button';
-import { Checkbox, Input, InputNumber } from '../../components/base/Input';
+import { Checkbox, InputNumber } from '../../components/base/Input';
 import Space from '../../components/base/Space';
 import { IBudget } from '../../entities/Budget';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
@@ -47,8 +47,9 @@ const Budget = observer(() => {
         </div>
         <Checkbox
           data-test-id='checkboxViewArchived'
-          checked={viewArchived}
-          onChange={({ target: { checked } }) => config.merge({ ...config.main, view_archived: checked })}>
+          value={viewArchived}
+          onChange={(view_archived) => config.merge({ ...config.main, view_archived })}
+          placeholder={Messages.budget.show_archived}>
           {Messages.budget.show_archived}
         </Checkbox>
       </Space>

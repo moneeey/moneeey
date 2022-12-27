@@ -13,9 +13,9 @@ import ofxImport from '../../shared/import/OfxImporter';
 import MoneeeyStore from '../../shared/MoneeeyStore';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
+import Loading from '../../components/Loading';
 
 import { ImportProcessResult } from './ImportProcessResult';
-import Loading from '../../components/Loading';
 
 export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
   txt: txtImport(),

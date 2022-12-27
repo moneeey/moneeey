@@ -1,5 +1,4 @@
 import {
-  Bars3Icon,
   ChartPieIcon,
   ClipboardDocumentIcon,
   Cog6ToothIcon,

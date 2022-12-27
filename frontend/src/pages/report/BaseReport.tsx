@@ -59,14 +59,15 @@ export const BaseReport = function ({ accounts, processFn, title, chartFn }: Bas
           <Checkbox
             data-test-id={`accountVisible_${account.account_uuid}`}
             key={account.account_uuid}
-            checked={Boolean(selectedAccounts.find((act) => act.account_uuid === account.account_uuid))}
-            onChange={({ target: { checked } }) =>
+            value={Boolean(selectedAccounts.find((act) => act.account_uuid === account.account_uuid))}
+            onChange={(checked) =>
               setSelectedAccounts(
                 selectedAccounts
                   .filter((act) => act.account_uuid !== account.account_uuid)
                   .concat(checked ? [account] : [])
               )
-            }>
+            }
+            placeholder={account.name}>
             {account.name}
           </Checkbox>
         ))}

@@ -1,6 +1,6 @@
 import { head, isEmpty, last } from 'lodash';
 import { observer } from 'mobx-react';
-import { ChangeEvent, Dispatch, useCallback, useState } from 'react';
+import { Dispatch, useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 import { Input } from '../../components/base/Input';

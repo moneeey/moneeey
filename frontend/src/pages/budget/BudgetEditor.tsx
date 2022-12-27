@@ -3,10 +3,9 @@ import { Dispatch, SetStateAction } from 'react';
 import { PrimaryButton, SecondaryButton } from '../../components/base/Button';
 import Drawer from '../../components/base/Drawer';
 import { Checkbox, Input } from '../../components/base/Input';
-import Select from '../../components/base/Select';
+import Select, { MultiSelect } from '../../components/base/Select';
 import Space, { VerticalSpace } from '../../components/base/Space';
 import { IBudget } from '../../entities/Budget';
-import { TCurrencyUUID } from '../../entities/Currency';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
 
@@ -17,7 +16,7 @@ const BudgetEditor = ({
   editing?: IBudget;
   setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
 }) => {
-  const { budget, tags, currencies } = useMoneeeyStore();
+  const { budget, tags, currencies, config } = useMoneeeyStore();
 
   const onClose = () => setEditing(undefined);
   const onSave = () => {
@@ -63,20 +62,22 @@ const BudgetEditor = ({
             value: c.currency_uuid,
           }))}
           value={editing.currency_uuid}
-          onChange={(currency_uuid: TCurrencyUUID) => setEditing({ ...editing, currency_uuid })}
+          onChange={(currency_uuid) =>
+            setEditing({ ...editing, currency_uuid: currency_uuid || config.main.default_currency })
+          }
         />
         <label>{Messages.util.tags}</label>
-        <Select
+        <MultiSelect
           data-test-id='budgetTags'
-          mode='tags'
           placeholder={Messages.util.tags}
           options={tags.all.map((t) => ({ label: t, value: t }))}
           value={editing.tags}
-          onChange={(new_tags: string[]) => setEditing({ ...editing, tags: new_tags })}
+          onChange={(new_tags: readonly string[]) => setEditing({ ...editing, tags: [...new_tags] })}
         />
         <Checkbox
           data-test-id='budgetIsArchived'
           value={editing.archived}
+          placeholder={Messages.util.archived}
           onChange={(archived) => setEditing({ ...editing, archived })}>
           {Messages.util.archived}
         </Checkbox>

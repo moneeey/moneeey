@@ -83,8 +83,8 @@ export default function Settings() {
           <TextArea
             data-test-id='importExportOutput'
             value={content}
-            onChange={({ target: { value } }) => setContent(value)}
-            rows={30}
+            onChange={(value) => setContent(value)}
+            placeholder={'Data'}
           />
         )}
       </Space>
