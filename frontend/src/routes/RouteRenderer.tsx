@@ -12,7 +12,7 @@ interface IMappedRoute {
 const RouteElem = observer(({ route, app }: { route: MyRoute<IRouteParameters>; app: IAppParameters }) => {
   const parameters = _.reduce(useParams(), (accum, value, key) => ({ ...accum, [key]: value }), {});
 
-  return <section className='contentArea'>{route.render({ parameters, app })}</section>;
+  return <main>{route.render({ parameters, app })}</main>;
 });
 
 const RouteRenderer = observer(

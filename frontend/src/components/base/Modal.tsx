@@ -25,7 +25,6 @@ const Modal = observer(({ title, modalId, footer, onClose, isOpen, children, cla
   const onCloseFn = () => (onClose && onClose()) || navigation.closeModal();
 
   const visible = isOpen === true || (modalId && navigation.modal === modalId);
-  const titleCloseButton = <XCircleIcon className='icon' onClick={onCloseFn} />;
 
   return visible ? (
     <article className={`mn-modal ${className || ''}`}>
@@ -33,7 +32,9 @@ const Modal = observer(({ title, modalId, footer, onClose, isOpen, children, cla
         header={
           <div className='title'>
             <TextTitle>{title}</TextTitle>
-            <span className='close'>{titleCloseButton}</span>
+            <span className='close'>
+              <XCircleIcon className='icon' onClick={onCloseFn} />
+            </span>
           </div>
         }
         data-test-id='nm-modal-card'
