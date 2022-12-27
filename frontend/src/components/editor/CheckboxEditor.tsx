@@ -1,5 +1,5 @@
-import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import { observer } from 'mobx-react';
+import { ChangeEvent } from 'react';
 
 import { IBaseEntity } from '../../shared/Entity';
 import { Checkbox } from '../base/Input';
@@ -24,7 +24,7 @@ export const CheckboxEditor = observer(
             onChange: (value?: boolean, editorValue?: boolean, additional?: Partial<EntityType>) => void
           ) => ({
             checked: value,
-            onChange: ({ target: { checked } }: CheckboxChangeEvent) => {
+            onChange: ({ target: { checked } }: ChangeEvent<HTMLInputElement>) => {
               return onChange(checked, checked);
             },
           }),
