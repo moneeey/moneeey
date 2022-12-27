@@ -68,10 +68,9 @@ export default function Login() {
     <Space>
       <Input
         data-test-id='email'
-        type='text'
         placeholder={Messages.login.email}
         value={email}
-        onChange={({ target: { value } }) => setEmail(value.toLowerCase())}
+        onChange={(value) => setEmail(value.toLowerCase())}
       />
       <PrimaryButton disabled={disabled} onClick={onLoginOrSignup}>
         {Messages.login.login_or_signup}

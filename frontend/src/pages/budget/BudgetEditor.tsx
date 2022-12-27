@@ -50,10 +50,9 @@ const BudgetEditor = ({
         <label>{Messages.util.name}</label>
         <Input
           data-test-id='budgetName'
-          type='text'
           placeholder={Messages.util.name}
           value={editing.name}
-          onChange={({ target: { value: name } }) => setEditing({ ...editing, name })}
+          onChange={(name) => setEditing({ ...editing, name })}
         />
         <label>{Messages.util.currency}</label>
         <Select
@@ -77,8 +76,8 @@ const BudgetEditor = ({
         />
         <Checkbox
           data-test-id='budgetIsArchived'
-          checked={editing.archived}
-          onChange={({ target: { checked: archived } }) => setEditing({ ...editing, archived })}>
+          value={editing.archived}
+          onChange={(archived) => setEditing({ ...editing, archived })}>
           {Messages.util.archived}
         </Checkbox>
       </VerticalSpace>

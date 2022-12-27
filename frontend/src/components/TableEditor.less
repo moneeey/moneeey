@@ -9,17 +9,18 @@
 .tableEditor .ant-table tfoot > tr > th,
 .tableEditor .ant-table tfoot > tr > td {
   padding: 0;
+  height: 24px;
 }
 
+.tableEditor .ant-picker,
 .tableEditor .ant-select,
 .tableEditor .ant-select-selector,
-.tableEditor input,
-.tableEditor .ant-input-number,
-.tableEditor .ant-picker,
-.tableEditor .ant-input-affix-wrapper,
-.tableEditor .ant-input-number-affix-wrapper {
+.tableEditor .mn-input {
   width: 100% !important;
+  height: 24px;
+  line-height: 24px;
   border: 0 !important;
+  background-color: #414244;
 }
 
 .tableEditor .negative input {
@@ -27,13 +28,10 @@
 }
 
 .tableEditor tr:nth-child(2n) td,
-.tableEditor tr:nth-child(2n) td .ant-select,
-.tableEditor tr:nth-child(2n) td .ant-select-selector,
-.tableEditor tr:nth-child(2n) td input,
-.tableEditor tr:nth-child(2n) td .ant-input-number,
-.tableEditor tr:nth-child(2n) td .ant-picker,
-.tableEditor tr:nth-child(2n) td .ant-input-affix-wrapper,
-.tableEditor tr:nth-child(2n) td .ant-input-group-addon {
+.tableEditor tr:nth-child(2n) .ant-picker
+.tableEditor tr:nth-child(2n) .ant-select,
+.tableEditor tr:nth-child(2n) .ant-select-selector,
+.tableEditor tr:nth-child(2n) .mn-input {
   background-color: #212224;
 }
 
@@ -45,7 +43,8 @@
   flex-grow: 1;
 }
 
-.tableEditor .ant-input-group-addon {
+.tableEditor .mn-input-suffix,
+.tableEditor .mn-input-prefix {
   background-color: transparent;
   border: 0;
 }

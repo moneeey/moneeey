@@ -150,7 +150,7 @@ export const TableEditor = observer(
           storeIds
             .map((id) => store.byUuid(id) as T)
             .filter((row) => {
-              const isSchemaFiltered = schemaFilter && schemaFilter(row);
+              const isSchemaFiltered = !schemaFilter || schemaFilter(row);
               const isRecent =
                 row.updated && dateDistanceInSecs(parseDateTime(row.updated), parseDateTime(currentDateTime())) < 20;
               const isNewEntityId = store.getUuid(row) === newEntityId;

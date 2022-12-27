@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import { ChangeEvent, useState } from 'react';
+import { useState } from 'react';
 
 import { IBaseEntity } from '../../shared/Entity';
 import { Input } from '../base/Input';
@@ -31,14 +31,14 @@ export const MemoEditor = observer(<EntityType extends IBaseEntity>(props: Edito
         ComposedProps: (
           onChange: (value?: string, editorValue?: string, additional?: Partial<EntityType>) => void
         ) => ({
-          onChange: ({ target: { value: newValue } }: ChangeEvent<HTMLInputElement>) => {
+          onChange: (newValue: string) => {
             setCurrentValue(newValue);
 
             return onChange(newValue, newValue, {
               tags: tagsForText(newValue),
             } as unknown as Partial<EntityType>);
           },
-          addonAfter: <TagsMemo tags={tags} />,
+          suffix: <TagsMemo tags={tags} />,
         }),
       }}
     />

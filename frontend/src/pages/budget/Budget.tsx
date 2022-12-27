@@ -2,7 +2,7 @@ import { observer } from 'mobx-react';
 import { Dispatch, SetStateAction, useState } from 'react';
 
 import { SecondaryButton } from '../../components/base/Button';
-import { Checkbox, Input } from '../../components/base/Input';
+import { Checkbox, Input, InputNumber } from '../../components/base/Input';
 import Space from '../../components/base/Space';
 import { IBudget } from '../../entities/Budget';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
@@ -35,13 +35,14 @@ const Budget = observer(() => {
         <MonthDateSelector date={startingDate} setDate={setStartingDate} />
         <div>
           {Messages.budget.show_months}
-          <Input
+          <InputNumber
             data-test-id='inputViewMonths'
+            step={1}
             min={1}
             max={24}
             placeholder={Messages.budget.show_months}
             value={viewMonths}
-            onChange={({ target: { value } }) => config.merge({ ...config.main, view_months: parseInt(value, 10) })}
+            onChange={(value: number | null) => config.merge({ ...config.main, view_months: value || 3 })}
           />
         </div>
         <Checkbox

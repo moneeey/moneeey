@@ -14,13 +14,11 @@ export class PayeeSettingsRouter extends Route<IPayeeSettingsRoute> {
 
   render({ app }: { app: IAppParameters }) {
     return (
-      <section className='settingsArea'>
-        <AccountTable
-          accounts={app.moneeeyStore.accounts}
-          currencies={app.moneeeyStore.currencies}
-          kind={AccountKind.PAYEE}
-        />
-      </section>
+      <AccountTable
+        accounts={app.moneeeyStore.accounts}
+        currencies={app.moneeeyStore.currencies}
+        kind={AccountKind.PAYEE}
+      />
     );
   }
 }

@@ -28,18 +28,16 @@ const AccountTransactions = observer(
     const referenceAccount = account_uuid;
 
     return (
-      <section className='transactionsArea'>
-        <TransactionTable
-          {...{
-            transactions,
-            accounts,
-            currencies,
-            schemaFilter,
-            referenceAccount,
-            account_name,
-          }}
-        />
-      </section>
+      <TransactionTable
+        {...{
+          transactions,
+          accounts,
+          currencies,
+          schemaFilter,
+          referenceAccount,
+          account_name,
+        }}
+      />
     );
   }
 );
