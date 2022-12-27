@@ -1,4 +1,5 @@
 import {
+  Bars3Icon,
   ChartPieIcon,
   ClipboardDocumentIcon,
   Cog6ToothIcon,
@@ -44,6 +45,7 @@ export const AppMenu = observer(() => {
   return (
     <Navbar
       data-test-id='appMenu'
+      header={Messages.menu.title}
       items={[
         {
           key: 'dashboard',
@@ -57,17 +59,14 @@ export const AppMenu = observer(() => {
           label: Messages.menu.transactions,
           icon: <CurrencyDollarIcon {...iconProps} />,
           visible: activeAccounts.length > 0,
+          onClick: () => navigation.navigate(AccountRoute.accountUrlForAll()),
           children: [
-            {
-              key: 'import',
-              label: Messages.menu.import,
-              onClick: () => navigation.navigate(ImportRoute.url()),
-            },
             ...activeAccounts
               .sort((a, b) => a.currency_uuid?.localeCompare(b.currency_uuid))
               .map((acct) => ({
                 key: `account_${acct._id || ''}`,
-                label: (
+                label: `${getAccountCurrency(acct)} ${acct.name}`,
+                customLabel: (
                   <TextNormal>
                     <TextSecondary>{getAccountCurrency(acct)}</TextSecondary> {acct.name}
                   </TextNormal>
@@ -83,6 +82,11 @@ export const AppMenu = observer(() => {
               key: 'unassigned',
               label: Messages.menu.unassigned,
               onClick: () => navigation.navigate(AccountRoute.accountUrlForUnclassified()),
+            },
+            {
+              key: 'import',
+              label: Messages.menu.import,
+              onClick: () => navigation.navigate(ImportRoute.url()),
             },
           ],
         },
@@ -104,6 +108,7 @@ export const AppMenu = observer(() => {
           key: 'settings',
           label: Messages.menu.settings,
           icon: <Cog6ToothIcon {...iconProps} />,
+          onClick: () => navigation.navigate(SettingsRoute.url()),
           children: [
             {
               key: 'settings_general',
@@ -125,12 +130,12 @@ export const AppMenu = observer(() => {
               label: Messages.menu.payees,
               onClick: () => navigation.navigate(PayeeSettingsRoute.url()),
             },
-            {
-              key: 'settings_landing',
-              label: Messages.menu.start_tour,
-              onClick: () => navigation.openModal(NavigationModal.LANDING),
-            },
           ],
+        },
+        {
+          key: 'settings_landing',
+          label: Messages.menu.start_tour,
+          onClick: () => navigation.openModal(NavigationModal.LANDING),
         },
         {
           key: 'sync',

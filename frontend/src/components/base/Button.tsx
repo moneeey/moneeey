@@ -10,7 +10,7 @@ type ButtonType = 'primary' | 'secondary' | 'link' | 'danger';
 
 type ButtonProps = {
   onClick: () => void;
-  title?: string | ReactNode;
+  title?: string;
   children?: string | ReactNode | ReactNode[];
   className?: string;
   disabled?: boolean;
@@ -24,7 +24,7 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind & WithD
   function BaseButton(props: ButtonProps & Partial<WithDataTestId>) {
     return (
       <button {...base} {...props} className={`mn-button mn-button-${kind} ${props.className || ''}`}>
-        {props.title || props.children}
+        {props.children || props.title}
       </button>
     );
   };

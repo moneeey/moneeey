@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 import './Text.less';
 
 interface TextProps {
+  onClick?: () => void;
   children: string | ReactNode | ReactNode[];
   className?: string;
 }
@@ -11,8 +12,12 @@ type BaseElementType = Extract<keyof JSX.IntrinsicElements, 'p' | 'span' | 'h1' 
 type BaseType = 'title' | 'subtitle' | 'normal' | 'paragraph' | 'secondary' | 'danger' | 'warning' | 'success';
 
 const BaseText = (type: BaseType, ElementTyp: BaseElementType) =>
-  function Text({ children, className }: TextProps) {
-    return <ElementTyp className={`mn-text-${type} ${className || ''}`}>{children}</ElementTyp>;
+  function Text({ children, className, onClick }: TextProps) {
+    return (
+      <ElementTyp className={`mn-text-${type} ${className || ''}`} onClick={onClick}>
+        {children}
+      </ElementTyp>
+    );
   };
 
 const TextTitle = BaseText('title', 'h1');

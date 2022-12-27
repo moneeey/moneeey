@@ -1,5 +1,6 @@
 const Messages = {
   menu: {
+    title: 'Moneeey',
     dashboard: 'Dashboard',
     transactions: 'Transactions',
     unassigned: 'Unassigned',
