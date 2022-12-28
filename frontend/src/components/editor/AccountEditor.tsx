@@ -8,12 +8,11 @@ import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
 import MoneeeyStore from '../../shared/MoneeeyStore';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import Messages from '../../utils/Messages';
 import Select from '../base/Select';
 import { Row } from '../TableEditor';
 import { TagsFrom, TagsTo } from '../Tags';
 
-import BaseSelectEditor from './BaseSelectEditor';
+import { BaseEditor } from './BaseEditor';
 import { EditorProps, EditorType } from './EditorProps';
 
 interface AccountEditorBaseProps<EntityType extends IBaseEntity>
@@ -27,68 +26,54 @@ interface AccountEditorBaseProps<EntityType extends IBaseEntity>
 
 const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: AccountEditorBaseProps<EntityType>) => {
   const { accounts } = useMoneeeyStore();
-  const [adding, setAdding] = useState('');
-  const currentAccount = accounts.byUuid(props.value)?.name || '';
-  const tags = accounts.accountTags(props.value).filter((t) => t !== currentAccount);
+  const currentAccount = accounts.byUuid(props.value);
+  const value = currentAccount?.account_uuid || '';
+  const tags = accounts.accountTags(props.value).filter((t) => t !== currentAccount?.name);
   const TagsComponent = props.field.field === 'from_account' ? TagsFrom : TagsTo;
-  const addPrefix = 'ADD_';
   const options = uniqBy(
     compact([
       ...map(props.accounts, (account) => ({
         label: account.name,
         value: account.account_uuid,
       })),
-      !isEmpty(adding) && {
-        label: Messages.settings.create_entity(adding),
-        value: addPrefix + adding,
-      },
     ]),
     'value'
   );
 
   return (
     <div className='accountEditor'>
-      <BaseSelectEditor
+      <BaseEditor
         {...{
           ...props,
-          value: props.value,
-          rev: props.rev || props.value,
-          options,
-          ComposedProps: (
-            onChange: (value?: string, editorValue?: string, additional?: Partial<EntityType>) => void
-          ) => ({
-            showSearch: true,
-            filterOption: (inputValue: string, option?: typeof options[number]) =>
-              option?.label.toLowerCase().includes(inputValue.toLowerCase()),
-            onSearch: (value: string) => setAdding(value),
-            allowClear: props.clearable === true,
-            onClear: () => {
-              onChange('', '');
-            },
-            onSelect: (value?: string) => {
-              if (value?.startsWith(addPrefix)) {
-                const account = {
-                  ...accounts.factory(),
-                  type: AccountKind.PAYEE,
-                  name: value.replace(addPrefix, ''),
-                };
-                if (props.entity && isTransaction(props.entity)) {
-                  const transaction_currencies = [props.entity.from_account, props.entity.to_account].map(
-                    (account_uuid) => accounts.byUuid(account_uuid)?.currency_uuid
-                  );
-                  account.currency_uuid = head(compact(transaction_currencies)) || account.currency_uuid;
-                }
-                accounts.merge(account);
-                onChange(undefined, account.account_uuid, undefined);
-              } else {
-                onChange(undefined, value, undefined);
-              }
-            },
-          }),
-          ComposedInput: Select,
+          value,
+          rev: props.rev || '',
         }}
+        Composed={(baseProps, onChange) => (
+          <Select
+            {...baseProps}
+            options={options}
+            onCreate={(name) => {
+              const account = {
+                ...accounts.factory(),
+                type: AccountKind.PAYEE,
+                name,
+              };
+              if (props.entity && isTransaction(props.entity)) {
+                const transaction_currencies = [props.entity.from_account, props.entity.to_account].map(
+                  (account_uuid) => accounts.byUuid(account_uuid)?.currency_uuid
+                );
+                account.currency_uuid = head(compact(transaction_currencies)) || account.currency_uuid;
+              }
+              accounts.merge(account);
+              onChange(undefined, account.account_uuid, undefined);
+            }}
+            onChange={(newValue) => {
+              onChange(undefined, newValue, undefined);
+            }}
+            suffix={<TagsComponent tags={tags} />}
+          />
+        )}
       />
-      <TagsComponent tags={tags} />
     </div>
   );
 });

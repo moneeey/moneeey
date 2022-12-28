@@ -17,17 +17,19 @@
   height: 24px;
   line-height: 24px;
   border: 0 !important;
-  background-color: #414244;
 }
 
 .tableEditor .negative input {
   color: red;
 }
 
+.tableEditor tr:nth-child(1n) td,
+.tableEditor tr:nth-child(1n) .mn-input {
+  background-color: #414244;
+}
 .tableEditor tr:nth-child(2n) td,
 .tableEditor tr:nth-child(2n) .mn-input {
   background-color: #212224;
-
 }
 .tableEditor tr:hover td,
 .tableEditor tr:hover .mn-input {

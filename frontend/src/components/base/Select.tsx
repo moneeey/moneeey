@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import ReactSelect from 'react-select';
+import CreatableReactSelect from 'react-select/creatable';
 
 import { WithDataTestId } from './Common';
 import { InputContainer, InputProps } from './Input';
@@ -9,11 +10,13 @@ type Option = {
   value: string;
 };
 
-type OptionsProps = {
+type BaseSelectProps = {
   options: Option[];
+  onCreate?: (name: string) => void;
+  creatable?: boolean;
 };
 
-type SelectProps = InputProps<string> & WithDataTestId & OptionsProps;
+type SelectProps = InputProps<string> & WithDataTestId & BaseSelectProps;
 
 const Select = ({
   className,
@@ -22,24 +25,36 @@ const Select = ({
   onChange,
   placeholder,
   'data-test-id': dataTestId,
+  disabled,
+  readOnly,
   prefix,
   suffix,
-}: SelectProps) =>
-  InputContainer(
+  isError,
+  onCreate,
+}: SelectProps) => {
+  const SelectComponent = onCreate ? CreatableReactSelect : ReactSelect;
+
+  return InputContainer({
     prefix,
     suffix,
-    <ReactSelect
-      {...{ 'data-test-id': dataTestId }}
-      className={`mn-input ${className || ''}`}
-      isMulti={false}
-      options={options}
-      value={options.find((opt) => opt.value === value)}
-      onChange={(newValue) => newValue && onChange(newValue.value)}
-      placeholder={placeholder}
-    />
-  );
+    isError,
+    input: (
+      <SelectComponent
+        {...{ 'data-test-id': dataTestId }}
+        className={`mn-input ${className || ''}`}
+        isMulti={false}
+        options={options}
+        value={options.find((opt) => opt.value === value)}
+        onChange={(newValue) => newValue && onChange(newValue.value)}
+        onCreateOption={(name) => onCreate && onCreate(name)}
+        placeholder={placeholder}
+        isDisabled={disabled || readOnly}
+      />
+    ),
+  });
+};
 
-type MultiSelectProps = InputProps<string[]> & WithDataTestId & OptionsProps;
+type MultiSelectProps = InputProps<string[]> & WithDataTestId & BaseSelectProps;
 const MultiSelect = ({
   className,
   value,
@@ -47,21 +62,33 @@ const MultiSelect = ({
   onChange,
   placeholder,
   'data-test-id': dataTestId,
+  disabled,
+  readOnly,
   prefix,
   suffix,
-}: MultiSelectProps) =>
-  InputContainer(
+  isError,
+  onCreate,
+}: MultiSelectProps) => {
+  const SelectComponent = onCreate ? CreatableReactSelect : ReactSelect;
+
+  return InputContainer({
     prefix,
     suffix,
-    <ReactSelect
-      {...{ 'data-test-id': dataTestId }}
-      className={`mn-input ${className || ''}`}
-      isMulti={true}
-      options={options}
-      value={value.map((val) => options.find((opt) => opt.value === val))}
-      onChange={(newValue) => onChange(newValue.map((option) => option?.value || '').filter((val) => val !== ''))}
-      placeholder={placeholder}
-    />
-  );
+    isError,
+    input: (
+      <SelectComponent
+        {...{ 'data-test-id': dataTestId }}
+        className={`mn-input ${className || ''}`}
+        isMulti={true}
+        options={options}
+        value={(value || []).map((val) => options.find((opt) => opt.value === val))}
+        onChange={(newValue) => onChange(newValue.map((option) => option?.value || '').filter((val) => val !== ''))}
+        onCreateOption={(name) => onCreate && onCreate(name)}
+        placeholder={placeholder}
+        isDisabled={disabled || readOnly}
+      />
+    ),
+  });
+};
 
 export { Select as default, MultiSelect };

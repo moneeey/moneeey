@@ -18,11 +18,10 @@ export const TextEditor = observer(<EntityType extends IBaseEntity>(props: Edito
         ...props,
         value,
         rev: entity?._rev || '',
-        ComposedInput: Input,
-        ComposedProps: (onChange: (value?: string, editorValue?: string, additional?: object) => void) => ({
-          onChange: (newValue: string) => onChange(newValue, newValue, {}),
-        }),
       }}
+      Composed={(baseProps, onChange) => (
+        <Input {...{ ...baseProps }} onChange={(newValue) => onChange(newValue, newValue)} />
+      )}
     />
   );
 });

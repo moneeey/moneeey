@@ -19,26 +19,25 @@ interface ValueRev {
 }
 
 export const BaseNumberEditor = observer(
-  <EntityType extends IBaseEntity>(
-    props: EditorProps<EntityType, number | string, number> & PrefixSuffix & ValueRev
-  ) => {
+  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number, number> & PrefixSuffix & ValueRev) => {
     const { prefix, suffix } = props;
 
     return (
       <BaseEditor
         {...{
           ...props,
-          value: parseFloat(props.value),
-          rev: props.rev,
-          ComposedInput: InputNumber,
-          ComposedProps: (
-            onChange: (value?: number, editorValue?: number | string, additional?: Partial<EntityType>) => void
-          ) => ({
-            prefix,
-            suffix,
-            onChange: (value: number) => onChange(value, value, {}),
-          }),
+          value: parseInt(props.value, 10),
+          rev: props.rev || '',
         }}
+        Composed={(baseProps, onChange) => (
+          <InputNumber
+            step={1}
+            max={99999999999}
+            min={0}
+            {...{ ...baseProps, prefix, suffix }}
+            onChange={(newValue) => onChange(newValue, newValue)}
+          />
+        )}
       />
     );
   }

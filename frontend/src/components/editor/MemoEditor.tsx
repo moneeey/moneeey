@@ -25,22 +25,22 @@ export const MemoEditor = observer(<EntityType extends IBaseEntity>(props: Edito
     <BaseEditor
       {...{
         ...props,
-        value: memo.replace('##', '#'),
+        value,
         rev: entity?._rev || '',
-        ComposedInput: Input,
-        ComposedProps: (
-          onChange: (value?: string, editorValue?: string, additional?: Partial<EntityType>) => void
-        ) => ({
-          onChange: (newValue: string) => {
+      }}
+      Composed={(baseProps, onChange) => (
+        <Input
+          {...baseProps}
+          onChange={(newValue) => {
             setCurrentValue(newValue);
 
             return onChange(newValue, newValue, {
               tags: tagsForText(newValue),
             } as unknown as Partial<EntityType>);
-          },
-          suffix: <TagsMemo tags={tags} />,
-        }),
-      }}
+          }}
+          suffix={<TagsMemo tags={tags} />}
+        />
+      )}
     />
   );
 });

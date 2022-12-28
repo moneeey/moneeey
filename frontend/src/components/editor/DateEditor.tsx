@@ -23,15 +23,14 @@ export const DateEditor = observer(
           ...props,
           value,
           rev: entity?._rev || '',
-          ComposedInput: DatePicker,
-          ComposedProps: (
-            onChange: (value?: TDate, editorValue?: moment.Moment, additional?: Partial<EntityType>) => void
-          ) => ({
-            onSelect: (newValue: moment.Moment) => onChange(formatDate(newValue.toDate()), newValue, {}),
-            allowClear: !props.field.readOnly,
-            disabled: Boolean(props.field.readOnly),
-          }),
         }}
+        Composed={(baseProps, onChange) => (
+          <DatePicker
+            {...baseProps}
+            allowClear={props.field.readOnly}
+            onSelect={(newValue) => onChange(formatDate(newValue.toDate()), newValue)}
+          />
+        )}
       />
     );
   }
