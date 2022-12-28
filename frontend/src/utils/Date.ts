@@ -23,6 +23,18 @@ export const formatDateMonth = (date: Date) => format(date, TDateMonthFormat);
 export const parseDateFmt = (date: TDate, formatPattern: string) => parse(date, formatPattern, new Date());
 export const parseDate = (date: TDate) => parseDateFmt(date, TDateFormat);
 export const parseDateTime = (date: TDateTime) => parseDateFmt(date, TDateTimeFormat);
+export const parseDateOrTime = (date: string) => {
+  if (date) {
+    if (date.length === TDateFormat.length) {
+      return parseDate(date);
+    }
+    if (date.length === TDateTimeFormat.length) {
+      return parseDateTime(date);
+    }
+  }
+
+  return new Date();
+};
 
 export const currentDate = () => formatDate(new Date());
 export const currentDateTime = () => formatISO(new Date());
