@@ -40,6 +40,7 @@ export const AppMenu = observer(() => {
   };
 
   const activeAccounts = accounts.allNonPayees.filter((t) => t.archived !== true);
+  const unclassified = transactions.viewAllUnclassified().length;
 
   return (
     <Navbar
@@ -79,8 +80,9 @@ export const AppMenu = observer(() => {
             },
             {
               key: 'unassigned',
-              label: Messages.menu.unassigned,
+              label: Messages.menu.unassigned(unclassified),
               onClick: () => navigation.navigate(AccountRoute.accountUrlForUnclassified()),
+              visible: unclassified > 0,
             },
             {
               key: 'import',

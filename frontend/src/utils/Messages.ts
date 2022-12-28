@@ -3,7 +3,7 @@ const Messages = {
     title: 'Moneeey',
     dashboard: 'Dashboard',
     transactions: 'Transactions',
-    unassigned: 'Unassigned',
+    unassigned: (amount: number) => `Unassigned (${amount})`,
     all_transactions: 'All transactions',
     import: 'Import',
     budget: 'Budget',

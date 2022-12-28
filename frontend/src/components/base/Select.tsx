@@ -5,6 +5,8 @@ import CreatableReactSelect from 'react-select/creatable';
 import { WithDataTestId } from './Common';
 import { InputContainer, InputProps } from './Input';
 
+import './Select.less';
+
 type Option = {
   label: string | ReactNode;
   value: string;
@@ -41,7 +43,8 @@ const Select = ({
     input: (
       <SelectComponent
         {...{ 'data-test-id': dataTestId }}
-        className={`mn-input ${className || ''}`}
+        className={`mn-input mn-select ${className || ''}`}
+        classNamePrefix={'react-select'}
         isMulti={false}
         options={options}
         value={options.find((opt) => opt.value === value)}
@@ -78,7 +81,8 @@ const MultiSelect = ({
     input: (
       <SelectComponent
         {...{ 'data-test-id': dataTestId }}
-        className={`mn-input ${className || ''}`}
+        className={`mn-input mn-select ${className || ''}`}
+        classNamePrefix={'react-select'}
         isMulti={true}
         options={options}
         value={(value || []).map((val) => options.find((opt) => opt.value === val))}
