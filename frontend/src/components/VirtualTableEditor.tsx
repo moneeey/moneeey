@@ -1,123 +1,100 @@
-/* eslint-disable multiline-ternary */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react/prop-types */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Table } from 'antd';
-import classNames from 'classnames';
-import ResizeObserver from 'rc-resize-observer';
-import React, { useEffect, useRef, useState } from 'react';
-import { VariableSizeGrid as Grid } from 'react-window';
+import React, { ReactNode } from 'react';
+import useVirtual from 'react-cool-virtual';
 
-type ExtractProps<T extends (...args: any[]) => any> = Parameters<T>[0];
+import './VirtualTableEditor.less';
 
-const VirtualTable = (props: ExtractProps<typeof Table>) => {
-  const { columns } = props;
-  const scroll = { x: '100vw', y: 500 };
-  const [tableWidth, setTableWidth] = useState(0);
-  const [tableHeight, setTableHeight] = useState(0);
+export type ColumnDef<Row> = {
+  width?: number;
+  title: string;
+  fieldName?: keyof Row;
+  defaultSortOrder?: 'descend' | 'ascend';
+  sorter?: (a: Row, b: Row, asc: boolean) => number;
+  render?: (value: unknown, row: Row) => React.ReactNode;
+};
 
-  const widthColumnCount = columns!.filter(({ width }) => !width).length;
-  const mergedColumns = columns!.map((column) => {
-    if (column.width) {
-      return column;
-    }
+type VirtualTableProps<Row> = {
+  className?: string;
+  columns: ColumnDef<Row>[];
+  rows: Row[];
+};
 
-    return {
-      ...column,
-      width: Math.floor(tableWidth / widthColumnCount),
-    };
+type GridRenderCell = {
+  rowIndex: number;
+  columnIndex: number;
+};
+
+type GridRenderer = {
+  renderCell: ({ rowIndex, columnIndex }: GridRenderCell) => ReactNode;
+};
+
+const Grid = <Row,>({ rows, columns, className, renderCell }: VirtualTableProps<Row> & GridRenderer) => {
+  const row = useVirtual({
+    itemCount: rows.length,
+    itemSize: 24,
   });
-
-  const gridRef = useRef<any>();
-  const [connectObject] = useState<any>(() => {
-    const obj = {};
-    Object.defineProperty(obj, 'scrollLeft', {
-      get: () => {
-        if (gridRef.current) {
-          return gridRef.current?.state?.scrollLeft;
-        }
-
-        return null;
-      },
-      set: (scrollLeft: number) => {
-        if (gridRef.current) {
-          gridRef.current.scrollTo({ scrollLeft });
-        }
-      },
-    });
-
-    return obj;
+  const col = useVirtual({
+    horizontal: true,
+    itemCount: columns.length,
+    itemSize: 160,
   });
-
-  const resetVirtualGrid = () => {
-    gridRef.current?.resetAfterIndices({
-      columnIndex: 0,
-      shouldForceUpdate: true,
-    });
-  };
-
-  useEffect(() => resetVirtualGrid, [tableWidth]);
-
-  const renderVirtualList = (rawData: object[], { scrollbarSize, ref, onScroll }: any) => {
-    ref.current = connectObject;
-    const totalHeight = rawData.length * 54;
-
-    return (
-      <Grid
-        ref={gridRef}
-        className='virtual-grid'
-        columnCount={mergedColumns.length}
-        columnWidth={(index: number) => {
-          const { width } = mergedColumns[index];
-
-          return totalHeight > scroll.y && index === mergedColumns.length - 1
-            ? (width as number) - scrollbarSize - 1
-            : (width as number);
-        }}
-        height={tableHeight}
-        rowCount={rawData.length}
-        rowHeight={() => 54}
-        width={tableWidth}
-        onScroll={({ scrollLeft }: { scrollLeft: number }) => {
-          onScroll({ scrollLeft });
-        }}>
-        {({ columnIndex, rowIndex, style }: { columnIndex: number; rowIndex: number; style: React.CSSProperties }) => (
-          <div
-            key={`${columnIndex}_${rowIndex}`}
-            className={classNames('virtual-table-cell', {
-              'virtual-table-cell-last': columnIndex === mergedColumns.length - 1,
-            })}
-            style={style}>
-            {(rawData[rowIndex] as any)[(mergedColumns as any)[columnIndex].dataIndex]}
-          </div>
-        )}
-      </Grid>
-    );
-  };
 
   return (
-    <ResizeObserver
-      onResize={({ width, height }) => {
-        setTableWidth(width);
-        setTableHeight(height);
+    <div
+      className={`mn-virtualtable ${className || ''}`}
+      style={{ width: '400px', height: '400px', overflow: 'auto' }}
+      ref={(el) => {
+        row.outerRef.current = el;
+        col.outerRef.current = el;
       }}>
-      <Table
-        {...props}
-        className={`virtual-table ${props.className || ''}`}
-        columns={mergedColumns}
-        pagination={false}
-        components={
-          {
-            body: renderVirtualList,
-          } as any
-        }
-      />
-    </ResizeObserver>
+      <div
+        style={{ position: 'relative' }}
+        ref={(el) => {
+          row.innerRef.current = el;
+          col.innerRef.current = el;
+        }}>
+        {row.items.map((rowItem) => (
+          <div key={rowItem.index} className='mn-tr'>
+            {col.items.map((colItem) => (
+              <div
+                key={colItem.index}
+                ref={colItem.measureRef}
+                className='mn-td'
+                style={{
+                  position: 'absolute',
+                  height: `${rowItem.size}px`,
+                  width: `${colItem.size}px`,
+                  transform: `translateX(${colItem.start}px) translateY(${rowItem.start}px)`,
+                }}>
+                {renderCell({ rowIndex: rowItem.index, columnIndex: colItem.index })}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
   );
+};
+
+const VirtualTable = function VirtualTableRenderer<Row>({ columns: originalColumns, rows }: VirtualTableProps<Row>) {
+  const renderCell = ({ rowIndex, columnIndex }: GridRenderCell) => {
+    const column = columns[columnIndex];
+    const renderer = column.render || ((o) => <>{o}</>);
+    const row = rows[rowIndex];
+    const value = column.fieldName && row[column.fieldName];
+
+    return renderer(value, row);
+  };
+
+  const columnsWithWidth = originalColumns.filter((col) => col.width);
+  const columnsWithWidthTotalWidth = columnsWithWidth.reduce((total, cur) => total + (cur.width || 0), 0);
+  const autoColumnSize = columnsWithWidthTotalWidth / (originalColumns.length - columnsWithWidth.length);
+
+  const columns = originalColumns.map((col) => ({
+    ...col,
+    width: col.width || autoColumnSize,
+  }));
+
+  return <Grid columns={columns} rows={rows} renderCell={renderCell} />;
 };
 
 export { VirtualTable, VirtualTable as default };

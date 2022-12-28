@@ -1,4 +1,3 @@
-import { ColumnType } from 'antd/lib/table';
 import { compact, uniq, values } from 'lodash';
 import { action } from 'mobx';
 import { observer } from 'mobx-react';
@@ -25,7 +24,7 @@ import { NumberEditor, NumberSorter } from './editor/NumberEditor';
 import { TagEditor, TagSorter } from './editor/TagEditor';
 import { TextEditor, TextSorter } from './editor/TextEditor';
 import { TransactionValueEditor, TransactionValueSorter } from './editor/TransactionValueEditor';
-import VirtualTable from './VirtualTableEditor';
+import VirtualTable, { ColumnDef } from './VirtualTableEditor';
 
 import './TableEditor.less';
 import { AccountTypeEditor, AccountTypeSorter } from './editor/AccountTypeEditor';
@@ -170,11 +169,11 @@ export const TableEditor = observer(
       [storeIds, store, schemaFilter, newEntityId]
     );
 
-    const columns: ColumnType<Row>[] = useMemo(
+    const columns: ColumnDef<Row>[] = useMemo(
       () =>
         compact(values(store.schema()))
           .sort((a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index)
-          .map((props: FieldProps<never>): ColumnType<Row> => {
+          .map((props: FieldProps<never>) => {
             const config = EditorTypeConfig[props.editor];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
             const Editor = config.render as unknown as any;
@@ -184,9 +183,9 @@ export const TableEditor = observer(
             return {
               width: width || props.width,
               title: props.title,
-              dataIndex: props.field,
+              fieldName: props.field,
               defaultSortOrder: props.defaultSortOrder,
-              sorter: sorter ? (a, b, sortOrder) => sorter(a, b, sortOrder === 'ascend') : undefined,
+              sorter,
               render: (_value: unknown, { entityId }: Row): React.ReactNode => {
                 const key = `${entityId}_${props.field}`;
                 const onUpdate = action((value: unknown, additional: object = {}) =>
@@ -215,14 +214,6 @@ export const TableEditor = observer(
       [store]
     );
 
-    return (
-      <VirtualTable
-        rowKey='entityId'
-        className='tableEditor'
-        columns={columns as ColumnType<object>[]}
-        dataSource={entities}
-        pagination={false}
-      />
-    );
+    return <VirtualTable className='tableEditor' columns={columns} rows={entities} />;
   }
 );

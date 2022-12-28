@@ -1,4 +1,3 @@
-import { ColumnType } from 'antd/lib/table';
 import { compact, isEmpty, isNumber, map } from 'lodash';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -6,7 +5,7 @@ import { PrimaryButton, SecondaryButton } from '../../components/base/Button';
 import Space from '../../components/base/Space';
 import { TextDanger, TextNormal } from '../../components/base/Text';
 import { AccountSelector } from '../../components/editor/AccountEditor';
-import VirtualTable from '../../components/VirtualTableEditor';
+import VirtualTable, { ColumnDef } from '../../components/VirtualTableEditor';
 import { TAccountUUID } from '../../entities/Account';
 import { ITransaction } from '../../entities/Transaction';
 import { ImportResult, ImportTask } from '../../shared/import/ImportContent';
@@ -27,7 +26,7 @@ const accountRender = ({
   result: ImportResult;
   setResult: Dispatch<SetStateAction<ImportResult>>;
 }) =>
-  function accountRenderer(account_uuid: TAccountUUID, row: ITransaction) {
+  function AccountRenderer(account_uuid: unknown, row: ITransaction) {
     if (referenceAccount === account_uuid) {
       return <span>{moneeeyStore.accounts.nameForUuid(account_uuid)}</span>;
     }
@@ -36,7 +35,7 @@ const accountRender = ({
       <AccountSelector
         clearable
         title='Account'
-        account={account_uuid}
+        account={account_uuid as string}
         accounts={compact([
           ...map(result?.recommended_accounts[row.transaction_uuid], (cur_account_uuid) =>
             moneeeyStore.accounts.byUuid(cur_account_uuid)
@@ -55,11 +54,11 @@ const accountRender = ({
     );
   };
 
-const rendererForCol = (col: ColumnType<ITransaction>, moneeeyStore: MoneeeyStore) =>
-  function columnRenderer(cellValue: object, row: ITransaction, index: number) {
+const rendererForCol = (col: ColumnDef<ITransaction>, moneeeyStore: MoneeeyStore) =>
+  function ColumnRenderer(cellValue: unknown, row: ITransaction) {
     let mode = 'New';
     let title = mode;
-    const field = col.dataIndex as string;
+    const field = col.fieldName as string;
     if (field) {
       const isAccountColumn = field.indexOf('_account') > 0;
       const original = moneeeyStore.transactions.byUuid(row.transaction_uuid);
@@ -82,7 +81,7 @@ const rendererForCol = (col: ColumnType<ITransaction>, moneeeyStore: MoneeeyStor
       }
     }
 
-    const cell = col.render ? col.render(cellValue, row, index) : cellValue;
+    const cell = col.render ? col.render(cellValue, row) : cellValue;
 
     return (
       <span className={`import${mode}`} title={title}>
@@ -109,41 +108,37 @@ const ContentTransactionTable = ({
   isEmpty(transactions) ? null : (
     <VirtualTable
       className='tableEditor'
-      dataSource={transactions}
-      rowKey='transaction_uuid'
-      pagination={false}
-      columns={
-        [
-          { dataIndex: 'date', title: Messages.util.date },
-          {
-            dataIndex: 'from_account',
-            title: Messages.transactions.from_account,
-            render: accountRender({
-              moneeeyStore,
-              referenceAccount: task.config.referenceAccount,
-              field: 'from_account',
-              result,
-              setResult,
-            }),
-          },
-          {
-            dataIndex: 'to_account',
-            title: Messages.transactions.to_account,
-            render: accountRender({
-              moneeeyStore,
-              referenceAccount: task.config.referenceAccount,
-              field: 'to_account',
-              result,
-              setResult,
-            }),
-          },
-          { dataIndex: 'memo', title: Messages.transactions.memo },
-          { dataIndex: 'from_value', title: Messages.transactions.amount },
-        ].map((col) => ({
-          ...col,
-          render: rendererForCol(col, moneeeyStore),
-        })) as unknown as ColumnType<object>[]
-      }
+      rows={transactions}
+      columns={[
+        { dataIndex: 'date', title: Messages.util.date },
+        {
+          dataIndex: 'from_account',
+          title: Messages.transactions.from_account,
+          render: accountRender({
+            moneeeyStore,
+            referenceAccount: task.config.referenceAccount,
+            field: 'from_account',
+            result,
+            setResult,
+          }),
+        },
+        {
+          fieldName: 'to_account',
+          title: Messages.transactions.to_account,
+          render: accountRender({
+            moneeeyStore,
+            referenceAccount: task.config.referenceAccount,
+            field: 'to_account',
+            result,
+            setResult,
+          }),
+        },
+        { fieldName: 'memo', title: Messages.transactions.memo },
+        { fieldName: 'from_value', title: Messages.transactions.amount },
+      ].map((col) => ({
+        ...col,
+        render: rendererForCol(col, moneeeyStore),
+      }))}
     />
   );
 

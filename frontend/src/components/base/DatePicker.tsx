@@ -5,6 +5,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { WithDataTestId } from './Common';
 import { InputContainer, InputProps } from './Input';
 
+import './DatePicker.less';
+
 type DatePickerProps = InputProps<Date> & WithDataTestId;
 
 const DatePicker = ({

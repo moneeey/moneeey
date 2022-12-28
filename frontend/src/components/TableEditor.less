@@ -1,70 +1,7 @@
 @import "../main.less";
 
-.tableEditor {
-  max-width: 100% !important;
-  margin: auto;
-  padding: 1em;
-}
-
-.tableEditor .ant-table-thead > tr > th,
-.tableEditor .ant-table-tbody > tr > td,
-.tableEditor .ant-table tfoot > tr > th,
-.tableEditor .ant-table tfoot > tr > td {
-  padding: 0;
-  height: 24px;
-}
-
-.tableEditor .mn-input,
-.tableEditor .mn-select input {
-  color: @primary-color;
-  width: 100% !important;
-  height: 24px;
-  line-height: 24px;
-  border: 0 !important;
-  background-color: @table-tr1-color;
-}
-
-.tableEditor .mn-input,
-.tableEditor .mn-input-prefix,
-.tableEditor .mn-input-suffix,
-.tableEditor .mn-datepicker,
-.tableEditor .mn-select div {
-  border: 0 !important;
-  border-radius: 0;
-}
-
 .tableEditor .negative input {
   color: red;
-}
-
-.tableEditor tr:nth-child(1n) td,
-.tableEditor tr:nth-child(1n) .mn-input,
-.tableEditor tr:nth-child(1n) .mn-input-prefix,
-.tableEditor tr:nth-child(1n) .mn-input-suffix,
-.tableEditor tr:nth-child(1n) .mn-datepicker,
-.tableEditor tr:nth-child(1n) .mn-select .react-select__menu-list,
-.tableEditor tr:nth-child(1n) .mn-select .react-select__indicators,
-.tableEditor tr:nth-child(1n) .mn-select .react-select__value-container {
-  background-color: @table-tr1-color;
-}
-.tableEditor tr:nth-child(2n) td,
-.tableEditor tr:nth-child(2n) .mn-input,
-.tableEditor tr:nth-child(2n) .mn-input-prefix,
-.tableEditor tr:nth-child(2n) .mn-input-suffix,
-.tableEditor tr:nth-child(2n) .mn-datepicker,
-.tableEditor tr:nth-child(2n) .mn-select .react-select__menu-list,
-.tableEditor tr:nth-child(2n) .mn-select .react-select__indicators,
-.tableEditor tr:nth-child(2n) .mn-select .react-select__value-container {
-  background-color: @table-tr2-color;
-}
-.tableEditor tr:hover td,
-.tableEditor tr:hover .mn-input,
-.tableEditor tr:hover .mn-input-prefix,
-.tableEditor tr:hover .mn-input-suffix,
-.tableEditor tr:hover .mn-datepicker,
-.tableEditor tr:hover .mn-select .react-select__indicators,
-.tableEditor tr:hover .mn-select .react-select__value-container {
-  background-color: #808080;
 }
 
 .tableEditor .accountEditor {
@@ -81,24 +18,16 @@
   border: 0;
 }
 
-.tableEditor .ant-table-cell th,
-.tableEditor .ant-table-column-title {
-  font-weight: bold;
-}
-
-.tableEditor .importUnchanged,
-.tableEditor .importUnchanged .ant-select-selection-item {
+.tableEditor .importUnchanged {
   color: gray;
 }
 
-.tableEditor .importNew,
-.tableEditor .importNew .ant-select-selection-item {
+.tableEditor .importNew {
   color: green;
   font-weight: bold;
 }
 
-.tableEditor .importUpdated,
-.tableEditor .importUpdated .ant-select-selection-item {
+.tableEditor .importUpdated {
   color: purple;
   font-weight: bolder;
 }

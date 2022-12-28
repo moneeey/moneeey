@@ -6,7 +6,7 @@ import useMoneeeyStore from '../shared/useMoneeeyStore';
 import Tag from './base/Tag';
 
 const TagColors: { [_group: string]: string } = {
-  highlight: 'lightsalmon',
+  highlight: 'lightblue',
   memo: 'goldenrod',
   from: 'mediumturquoise',
   to: 'geekblue',
