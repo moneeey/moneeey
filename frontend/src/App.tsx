@@ -41,17 +41,15 @@ export const App = () => {
   const moneeeyStore = React.useMemo(() => new MoneeeyStore(PouchDBFactory), []);
 
   return (
-    <div className='App'>
-      <BrowserRouter>
-        <MoneeeyStoreProvider value={moneeeyStore}>
-          <MoneeeyTourProvider>
-            <TagsHighlightProvider>
-              <LoadedApp />
-            </TagsHighlightProvider>
-          </MoneeeyTourProvider>
-        </MoneeeyStoreProvider>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <MoneeeyStoreProvider value={moneeeyStore}>
+        <MoneeeyTourProvider>
+          <TagsHighlightProvider>
+            <LoadedApp />
+          </TagsHighlightProvider>
+        </MoneeeyTourProvider>
+      </MoneeeyStoreProvider>
+    </BrowserRouter>
   );
 };
 

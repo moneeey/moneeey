@@ -93,7 +93,7 @@ const InputNumber = ({
         type='number'
         className={`mn-input ${className || ''}`}
         value={`${value}`}
-        onChange={({ target: { value: newValue } }) => onChange(parseInt(newValue, 10))}
+        onChange={({ target: { value: newValue } }) => onChange(parseFloat(newValue))}
         placeholder={placeholder}
         min={min}
         max={max}

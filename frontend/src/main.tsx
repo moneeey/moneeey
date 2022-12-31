@@ -6,7 +6,7 @@ import App from './App';
 
 import './main.less';
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+ReactDOM.createRoot(document.querySelector('.App') as HTMLElement).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>

@@ -1,91 +1,98 @@
 import { useState } from 'react';
 
 import { PrimaryButton, SecondaryButton } from '../components/base/Button';
+import Drawer from '../components/base/Drawer';
 import { TextArea } from '../components/base/Input';
 import Space from '../components/base/Space';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
 import ConfigTable from '../tables/ConfigTable';
 import Messages from '../utils/Messages';
+import { noop } from '../utils/Utils';
 
-enum BackupRestoreState {
-  IDLE,
-  BACKUP_LOADING,
-  RESTORE_INPUT,
-  RESTORE_LOADING,
-  CLEAR_INPUT,
-  COMPLETED,
-}
+import './Settings.less';
+
+type Action = {
+  title: string;
+  content: string;
+  submitTitle?: string;
+  submitFn?: (data: Action) => void;
+};
 
 export default function Settings() {
-  const [backupRestoreState, setBackupRestoreState] = useState(BackupRestoreState.IDLE);
-  const [content, setContent] = useState('');
+  const [action, setAction] = useState<Action | undefined>(undefined);
   const moneeeyStore = useMoneeeyStore();
 
-  const actionsDisabled =
-    backupRestoreState !== BackupRestoreState.IDLE && backupRestoreState !== BackupRestoreState.COMPLETED;
-
-  const onBackupData = async () => {
-    if (!actionsDisabled) {
-      setBackupRestoreState(BackupRestoreState.BACKUP_LOADING);
-      setContent(Messages.settings.backup_loading(0));
-      const data = await moneeeyStore.persistence.exportAll((percentage) => {
-        setContent(Messages.settings.backup_loading(percentage));
+  const onExportData = async () => {
+    const update = (newContent: string) =>
+      setAction({
+        title: Messages.settings.export_data,
+        content: newContent,
       });
-      setContent(data);
-      setBackupRestoreState(BackupRestoreState.COMPLETED);
-    }
+    update(Messages.settings.backup_loading(0));
+    const data = await moneeeyStore.persistence.exportAll((percentage) => {
+      update(Messages.settings.backup_loading(percentage));
+    });
+    update(data);
   };
-  const onRestoreData = async () => {
-    if (backupRestoreState === BackupRestoreState.RESTORE_INPUT) {
-      setBackupRestoreState(BackupRestoreState.RESTORE_LOADING);
-      const input = content;
-      setContent(Messages.settings.restore_loading(0));
-      const { errors } = await moneeeyStore.persistence.restoreAll(input, (percentage) => {
-        setContent(Messages.settings.restore_loading(percentage));
+  const onImportData = () => {
+    const update = (newContent: string) =>
+      setAction({
+        title: Messages.settings.import_data,
+        content: newContent,
+        submitTitle: Messages.util.close,
+        submitFn: noop,
       });
-      setContent([...errors, '', Messages.settings.reload_page].join('\n'));
-      setBackupRestoreState(BackupRestoreState.COMPLETED);
-    } else if (!actionsDisabled) {
-      setBackupRestoreState(BackupRestoreState.RESTORE_INPUT);
-      setContent(Messages.settings.restore_data_placeholder);
-    }
+    const submitFn = async (data: Action) => {
+      const input = (data && data.content) || '';
+      update(Messages.settings.restore_loading(0));
+      const { errors } = await moneeeyStore.persistence.restoreAll(input, (percentage) => {
+        update(Messages.settings.restore_loading(percentage));
+      });
+      update([...errors, '', Messages.settings.reload_page].join('\n'));
+    };
+    setAction({
+      content: Messages.settings.restore_data_placeholder,
+      title: Messages.settings.import_data,
+      submitFn,
+      submitTitle: Messages.settings.import_data,
+    });
   };
 
   const onClearData = () => {
-    if (backupRestoreState === BackupRestoreState.CLEAR_INPUT) {
-      if (content === Messages.settings.clear_data_token) {
-        moneeeyStore.persistence.truncateAll();
-        setContent(Messages.settings.reload_page);
-      }
-    } else if (!actionsDisabled) {
-      setBackupRestoreState(BackupRestoreState.CLEAR_INPUT);
-      setContent(Messages.settings.clear_data_placeholder);
-    }
+    setAction({
+      title: Messages.settings.clear_all,
+      content: Messages.settings.clear_data_placeholder,
+      submitTitle: Messages.settings.clear_all,
+      submitFn: (data) => {
+        if (data && data.content === Messages.settings.clear_data_token) {
+          moneeeyStore.persistence.truncateAll();
+          setAction({ ...data, content: Messages.settings.reload_page });
+        }
+      },
+    });
   };
 
   return (
     <section className='settingsArea'>
       <Space>
-        <PrimaryButton onClick={onBackupData} disabled={actionsDisabled}>
-          {Messages.settings.export_data}
-        </PrimaryButton>
-        <SecondaryButton
-          onClick={onRestoreData}
-          disabled={actionsDisabled && backupRestoreState !== BackupRestoreState.RESTORE_INPUT}>
-          {Messages.settings.import_data}
-        </SecondaryButton>
-        <SecondaryButton
-          onClick={onClearData}
-          disabled={actionsDisabled && backupRestoreState !== BackupRestoreState.CLEAR_INPUT}>
-          {Messages.settings.clear_all}
-        </SecondaryButton>
-        {backupRestoreState !== BackupRestoreState.IDLE && (
-          <TextArea
-            data-test-id='importExportOutput'
-            value={content}
-            onChange={(value) => setContent(value)}
-            placeholder={'Data'}
-          />
+        <PrimaryButton onClick={onExportData}>{Messages.settings.export_data}</PrimaryButton>
+        <SecondaryButton onClick={onImportData}>{Messages.settings.import_data}</SecondaryButton>
+        <SecondaryButton onClick={onClearData}>{Messages.settings.clear_all}</SecondaryButton>
+        {action && (
+          <Drawer {...{ 'data-test-id': 'accountSettings' }} header={action.title}>
+            <TextArea
+              data-test-id='importExportOutput'
+              value={action.content}
+              onChange={(value) => setAction((cont) => cont && { ...cont, content: value })}
+              placeholder={'Data'}
+            />
+            <Space>
+              <SecondaryButton onClick={() => setAction(undefined)} title={Messages.util.close} />
+              {action.submitFn && (
+                <PrimaryButton onClick={() => action.submitFn && action.submitFn(action)} title={action.submitTitle} />
+              )}
+            </Space>
+          </Drawer>
         )}
       </Space>
       <ConfigTable config={moneeeyStore.config} />

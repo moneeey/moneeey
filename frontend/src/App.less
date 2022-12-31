@@ -1,15 +1,23 @@
-#root, main, .App {
-  width: 100%;
-  height: 100%;
+body,
+.mainArea,
+.App {
+  width: 100vw;
+  height: 100vh;
   margin: 0;
 }
 
 .App {
-  text-align: center;
   display: flex;
   flex-direction: row;
 }
 
-main {
+.mainArea {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mainAreaInner {
   padding: 1em;
+  height: 100%;
 }

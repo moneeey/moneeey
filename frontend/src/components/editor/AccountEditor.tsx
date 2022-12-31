@@ -55,7 +55,7 @@ const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: Accou
             onCreate={(name) => {
               const account = {
                 ...accounts.factory(),
-                type: AccountKind.PAYEE,
+                kind: AccountKind.PAYEE,
                 name,
               };
               if (props.entity && isTransaction(props.entity)) {

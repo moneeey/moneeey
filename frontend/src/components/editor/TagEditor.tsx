@@ -15,6 +15,11 @@ export const TagEditor = observer(
     const entity = props.store.byUuid(props.entityId);
     const currentValue = entity?.[props.field.field] as string[];
 
+    const availableTags = _(tags.all)
+      .map((tag) => ({ label: tag, value: tag }))
+      .compact()
+      .value();
+
     return (
       <BaseEditor
         {...{
@@ -26,11 +31,13 @@ export const TagEditor = observer(
           <MultiSelect
             {...baseProps}
             value={currentValue}
-            options={_(tags.all)
-              .map((tag) => ({ label: tag, value: tag }))
-              .compact()
-              .value()}
+            options={availableTags}
             onChange={(newValue) => newValue && onChange(newValue, newValue)}
+            onCreate={(tagName) => {
+              tags.register(tagName);
+              const newValue = [...currentValue, tagName];
+              onChange(newValue, newValue);
+            }}
           />
         )}
       />

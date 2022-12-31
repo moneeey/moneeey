@@ -238,6 +238,9 @@ export default class PersistenceStore {
       (chunk, result, percentage) => {
         onProgress(percentage);
         chunk.forEach((line) => {
+          if (line.trim() === '') {
+            return;
+          }
           try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (!this.restoreEntity(JSON.parse(line))) {

@@ -26,12 +26,12 @@ export const BaseNumberEditor = observer(
       <BaseEditor
         {...{
           ...props,
-          value: parseInt(props.value, 10),
+          value: parseFloat(props.value),
           rev: props.rev || '',
         }}
         Composed={(baseProps, onChange) => (
           <InputNumber
-            step={1}
+            step={0.01}
             max={99999999999}
             min={0}
             {...{ ...baseProps, prefix, suffix }}

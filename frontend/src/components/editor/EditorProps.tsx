@@ -27,7 +27,7 @@ export enum EditorType {
 export interface FieldProps<ValueEditorType> {
   editor: EditorType;
   field: string;
-  title?: string;
+  title: string;
   index: number;
   readOnly?: boolean;
   required?: boolean;

@@ -210,7 +210,7 @@ export const TableEditor = observer(
                 );
               },
             };
-          }),
+          }) as ColumnDef<Row>[],
       [store]
     );
 
