@@ -1040,11 +1040,6 @@ argparse@^1.0.7:
   dependencies:
     sprintf-js "~1.0.2"
 
-argsarray@0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/argsarray/-/argsarray-0.0.1.tgz#6e7207b4ecdb39b0af88303fa5ae22bda8df61cb"
-  integrity sha512-u96dg2GcAKtpTrBdDoFIM7PjcBA+6rSP0OR94MOReNRyUECL6MtQt5XXmRr4qrftYaef9+l5hcpO5te7sML1Cg==
-
 array-flatten@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/array-flatten/-/array-flatten-1.1.1.tgz#9a5f699051b1e7073328f2a008968b64ea2955d2"
@@ -2764,19 +2759,17 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-pouchdb@^7.3.0:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/pouchdb/-/pouchdb-7.3.0.tgz#440fbef12dfd8f9002320802528665e883a3b7f8"
-  integrity sha512-OwsIQGXsfx3TrU1pLruj6PGSwFH+h5k4hGNxFkZ76Um7/ZI8F5TzUHFrpldVVIhfXYi2vP31q0q7ot1FSLFYOw==
+pouchdb@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/pouchdb/-/pouchdb-8.0.0.tgz#f701d971ac55ec7b579f1917f138808cfdce04c3"
+  integrity sha512-VYaPQ1CPTNjZ+Ltm/pl4llaDMTRCZrpg7TZ/2BpeA8RrawE66CRW7aGSWzgQarW8j/KHwEz5cVv/mwj9RMnCTg==
   dependencies:
     abort-controller "3.0.0"
-    argsarray "0.0.1"
     buffer-from "1.1.2"
     clone-buffer "1.0.0"
     double-ended-queue "2.1.0-0"
     fetch-cookie "0.11.0"
     immediate "3.3.0"
-    inherits "2.0.4"
     level "6.0.1"
     level-codec "9.0.2"
     level-write-stream "1.0.0"
