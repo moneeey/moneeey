@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 
 import { LinkButton } from '../../components/base/Button';
 import Card from '../../components/base/Card';
-import { TextNormal } from '../../components/base/Text';
+import { TextNormal, TextTitle } from '../../components/base/Text';
 import Loading from '../../components/Loading';
 import { TableEditor } from '../../components/TableEditor';
 import { IBudget } from '../../entities/Budget';
@@ -60,13 +60,13 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
       data-test-id={`budget_period_${formatDateMonth(startingDate)}`}
       className='period'
       header={
-        <span className='periodTitle'>
-          <TextNormal>{formatDateMonth(startingDate)}</TextNormal>
+        <TextTitle className='periodTitle'>
+          {formatDateMonth(startingDate)}
           <LinkButton onClick={onNewBudget}>
-            <PlusCircleIcon style={{ color: 'lightgreen', width: '1.2em', height: '1.2em' }} />
+            <PlusCircleIcon style={{ color: 'lightgreen', width: '1.2em', height: '1.2em', marginRight: '0.5em' }} />
             {Messages.budget.new}
           </LinkButton>
-        </span>
+        </TextTitle>
       }>
       <TableEditor
         data-test-id={`budget_period_table_${formatDateMonth(startingDate)}`}
@@ -75,6 +75,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
         creatable={false}
         schemaFilter={(b) => b.starting === starting && (!b.budget.archived || viewArchived)}
         context={{ name: (env: BudgetEnvelope) => setEditing(env.budget) }}
+        showRecentEntries={false}
       />
     </Card>
   );

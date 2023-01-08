@@ -36,6 +36,7 @@ interface TableEditorProps<T extends IBaseEntity, Context> extends WithDataTestI
   factory: (id?: string) => T;
   creatable?: boolean;
   context?: Context;
+  showRecentEntries?: boolean;
 }
 
 type SortRow = (a: Row, b: Row, asc: boolean) => number;
@@ -136,7 +137,14 @@ export type Row = {
 };
 
 export const TableEditor = observer(
-  <T extends IBaseEntity>({ schemaFilter, store, factory, creatable, context }: TableEditorProps<T, unknown>) => {
+  <T extends IBaseEntity>({
+    schemaFilter,
+    store,
+    factory,
+    creatable,
+    context,
+    showRecentEntries,
+  }: TableEditorProps<T, unknown>) => {
     const moneeeyStore = useMoneeeyStore();
 
     const [newEntityId, setNewEntityId] = useState(() => store.getUuid(store.factory()));
@@ -151,7 +159,9 @@ export const TableEditor = observer(
             .filter((row) => {
               const isSchemaFiltered = !schemaFilter || schemaFilter(row);
               const isRecent =
-                row.updated && dateDistanceInSecs(parseDateTime(row.updated), parseDateTime(currentDateTime())) < 20;
+                showRecentEntries !== false &&
+                row.updated &&
+                dateDistanceInSecs(parseDateTime(row.updated), parseDateTime(currentDateTime())) < 20;
               const isNewEntityId = store.getUuid(row) === newEntityId;
 
               return isSchemaFiltered || isRecent || isNewEntityId;
