@@ -70,20 +70,20 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
           title: 'Budget',
         },
         allocated: {
-          editor: EditorType.NUMBER,
+          editor: EditorType.BUDGET_VALUE,
           field: 'allocated',
           index: 1,
           title: 'Allocated',
         },
         used: {
-          editor: EditorType.NUMBER,
+          editor: EditorType.BUDGET_VALUE,
           field: 'used',
           index: 2,
           title: 'Used',
           readOnly: true,
         },
         remaining: {
-          editor: EditorType.NUMBER,
+          editor: EditorType.BUDGET_VALUE,
           field: 'remaining',
           index: 3,
           title: 'Remaining',

@@ -26,6 +26,7 @@ import VirtualTable, { ColumnDef } from './VirtualTableEditor';
 import './TableEditor.less';
 import { AccountTypeEditor, AccountTypeSorter } from './editor/AccountTypeEditor';
 import { WithDataTestId } from './base/Common';
+import { BudgetValueEditor, BudgetValueSorter } from './editor/BudgetValueEditor';
 
 interface TableEditorProps<T extends IBaseEntity, Context> extends WithDataTestId {
   store: MappedStore<T>;
@@ -101,6 +102,11 @@ const EditorTypeConfig: Record<
     render: TransactionValueEditor,
     sorter: TransactionValueSorter,
     width: 320,
+  },
+  [EditorType.BUDGET_VALUE]: {
+    render: BudgetValueEditor,
+    sorter: BudgetValueSorter,
+    width: undefined,
   },
   [EditorType.LABEL]: {
     render: LabelEditor,

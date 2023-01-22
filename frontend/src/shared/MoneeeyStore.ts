@@ -1,4 +1,4 @@
-import { once } from 'lodash';
+import { debounce, once } from 'lodash';
 import { action, makeObservable, observable } from 'mobx';
 
 import AccountStore from '../entities/Account';
@@ -15,7 +15,10 @@ import NavigationStore from './Navigation';
 import PersistenceStore, { PouchDBFactoryFn } from './Persistence';
 import TagsStore from './Tags';
 
-const initializeOnce = once((cb: () => void) => cb());
+const initializeOnce = debounce(
+  once((cb: () => void) => cb()),
+  100
+);
 
 export default class MoneeeyStore {
   loaded = false;

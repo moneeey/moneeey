@@ -2,7 +2,6 @@ import { debounce, forEach, map, omit, uniqBy, values } from 'lodash';
 import { action, makeObservable, observable, observe, toJS } from 'mobx';
 import PouchDB from 'pouchdb';
 
-import { compareDates } from '../utils/Date';
 import { asyncProcess } from '../utils/Utils';
 
 import { EntityType, IBaseEntity } from './Entity';
