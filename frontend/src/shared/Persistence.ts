@@ -119,12 +119,14 @@ export default class PersistenceStore {
   }
 
   resolveConflict<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, a: EntityType, b: EntityType) {
-    const aIsMostRecent = (a._rev && !b._rev) || compareDates(a.updated || '', b.updated || '') > 0;
+    const revLevel = (rev: string | undefined) => (rev || '0-').split('-')[0];
+    const aIsMostRecent =
+      (a._rev && !b._rev) || revLevel(a._rev) > revLevel(b._rev) || (a.updated || '') > (b.updated || '');
     const updated = aIsMostRecent ? a : b;
     const outdated = aIsMostRecent ? b : a;
     const resolved = { ...outdated, ...updated };
     this.logger.info('resolve conflict', { updated, outdated, resolved });
-    store.merge(resolved, { setUpdated: true });
+    store.merge(resolved, { setUpdated: false });
   }
 
   async commit() {

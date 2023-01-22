@@ -58,7 +58,7 @@ export class BudgetStore extends MappedStore<IBudget> {
   }
 
   getRealEnvelope(entity: IBudget, starting: TDate) {
-    const existing = entity.envelopes.find((envelope) => (envelope.starting = starting));
+    const existing = entity.envelopes.find((envelope) => envelope.starting === starting);
     if (existing) {
       return existing;
     }
@@ -69,10 +69,18 @@ export class BudgetStore extends MappedStore<IBudget> {
   }
 
   setAllocation(entity: IBudget, starting: TDate, allocated: number) {
-    const realEnvelope = this.getRealEnvelope(entity, starting);
-    if (realEnvelope.allocated !== allocated) {
-      realEnvelope.allocated = allocated;
-      this.merge(entity);
+    const latest = this.byUuid(entity.budget_uuid);
+    if (latest) {
+      const realEnvelope = this.getRealEnvelope(latest, starting);
+      if (realEnvelope.allocated !== allocated) {
+        this.merge({
+          ...latest,
+          envelopes: [
+            ...latest.envelopes.filter((envelope) => envelope.starting !== starting),
+            { starting, allocated },
+          ],
+        });
+      }
     }
   }
 

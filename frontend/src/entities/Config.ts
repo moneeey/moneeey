@@ -70,7 +70,7 @@ export class ConfigStore extends MappedStore<IConfig> {
   }
 
   get main(): IConfig {
-    return this.all[0];
+    return isEmpty(this.all) ? this.factory() : this.all[0];
   }
 
   init() {
