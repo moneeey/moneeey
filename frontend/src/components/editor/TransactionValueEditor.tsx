@@ -29,7 +29,7 @@ export const TransactionValueEditor = observer(
             rev: entity?._rev || '',
             prefix: (fromCurrency || toCurrency)?.prefix,
             suffix: (fromCurrency || toCurrency)?.suffix,
-            value: (entity?.from_value || 0).toString(),
+            value: entity?.from_value || 0,
             onUpdate: (value: number) =>
               props.onUpdate(0, {
                 from_value: value,
@@ -48,7 +48,7 @@ export const TransactionValueEditor = observer(
             rev: entity?._rev || '',
             prefix: fromCurrency?.prefix,
             suffix: fromCurrency?.suffix,
-            value: (entity?.from_value || 0).toString(),
+            value: entity?.from_value || 0,
             field: { ...props.field, field: 'from_value' },
             onUpdate: (value: number) =>
               props.onUpdate(0, {
@@ -63,7 +63,7 @@ export const TransactionValueEditor = observer(
             rev: entity?._rev || '',
             prefix: toCurrency?.prefix,
             suffix: toCurrency?.suffix,
-            value: (entity?.to_value || 0).toString(),
+            value: entity?.to_value || 0,
             field: { ...props.field, field: 'to_value' },
             onUpdate: (value: number) =>
               props.onUpdate(0, {

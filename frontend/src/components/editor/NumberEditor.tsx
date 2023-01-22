@@ -2,6 +2,7 @@ import { observer } from 'mobx-react';
 
 import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
+import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { InputNumber } from '../base/Input';
 import { Row } from '../TableEditor';
 
@@ -14,27 +15,26 @@ interface PrefixSuffix {
 }
 
 interface ValueRev {
-  value: string;
+  value: number;
   rev: string;
 }
 
 export const BaseNumberEditor = observer(
   <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number, number> & PrefixSuffix & ValueRev) => {
     const { prefix, suffix } = props;
+    const { config } = useMoneeeyStore();
+    const { thousand_separator: thousandSeparator, decimal_separator: decimalSeparator } = config.main;
 
     return (
       <BaseEditor
         {...{
           ...props,
-          value: parseFloat(props.value),
+          value: props.value,
           rev: props.rev || '',
         }}
         Composed={(baseProps, onChange) => (
           <InputNumber
-            step={0.01}
-            max={99999999999}
-            min={0}
-            {...{ ...baseProps, prefix, suffix }}
+            {...{ ...baseProps, prefix, suffix, decimalSeparator, thousandSeparator, decimalScale: 20 }}
             onChange={(newValue) => onChange(newValue, newValue)}
           />
         )}
@@ -46,14 +46,9 @@ export const BaseNumberEditor = observer(
 export const NumberEditor = observer(
   <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number | string, number> & PrefixSuffix) => {
     const entity = props.store.byUuid(props.entityId);
+    const value = (entity?.[props.field.field] as number) || 0;
 
-    return (
-      <BaseNumberEditor
-        {...props}
-        value={((entity?.[props.field.field] as number) || '').toString()}
-        rev={entity?._rev || ''}
-      />
-    );
+    return <BaseNumberEditor {...props} value={value} rev={entity?._rev || ''} />;
   }
 );
 

@@ -37,12 +37,14 @@ const Budget = observer(() => {
           {Messages.budget.show_months}
           <InputNumber
             data-test-id='inputViewMonths'
-            step={1}
-            min={1}
-            max={24}
             placeholder={Messages.budget.show_months}
             value={viewMonths}
-            onChange={(value: number | null) => config.merge({ ...config.main, view_months: value || 3 })}
+            thousandSeparator={config.main.thousand_separator}
+            decimalSeparator={config.main.decimal_separator}
+            decimalScale={0}
+            onChange={(value: number | null) =>
+              config.merge({ ...config.main, view_months: Math.min(Math.max(value || 3, 0), 12) })
+            }
           />
         </div>
         <Checkbox

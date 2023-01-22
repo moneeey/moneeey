@@ -1,3 +1,4 @@
+import { once } from 'lodash';
 import { action, makeObservable, observable } from 'mobx';
 
 import AccountStore from '../entities/Account';
@@ -13,6 +14,8 @@ import ManagementStore from './Management';
 import NavigationStore from './Navigation';
 import PersistenceStore, { PouchDBFactoryFn } from './Persistence';
 import TagsStore from './Tags';
+
+const initializeOnce = once((cb: () => void) => cb());
 
 export default class MoneeeyStore {
   loaded = false;
@@ -55,10 +58,10 @@ export default class MoneeeyStore {
     this.persistence.monitor(this.transactions, EntityType.TRANSACTION);
     this.persistence.monitor(this.budget, EntityType.BUDGET);
     this.persistence.monitor(this.config, EntityType.CONFIG);
-    setTimeout(() => {
+    initializeOnce(() => {
       this.config.init();
       this.currencies.addDefaults();
-    }, 1000);
+    });
     this.loaded = true;
     this.persistence.sync();
   }

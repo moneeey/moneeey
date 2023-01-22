@@ -84,6 +84,7 @@ const Messages = {
     default_currency: 'Default currency',
     reference_account: 'Reference account',
     decimal_separator: 'Decimal separator',
+    thousand_separator: 'Thousand separator',
     backup_loading: (percentage: number) => `Loading your backup data, please wait... ${percentage}%`,
     restore_loading: (percentage: number) => `Restoring your backup data, please wait... ${percentage}%`,
     restore_data_placeholder: 'Paste your restore data here and click "Restore data" again',

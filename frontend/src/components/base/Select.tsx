@@ -42,8 +42,7 @@ const Select = ({
     isError,
     input: (
       <SelectComponent
-        {...{ 'data-test-id': dataTestId }}
-        className={`mn-input mn-select ${className || ''}`}
+        className={`mn-input mn-select ${className || ''} ${dataTestId}`}
         classNamePrefix={'react-select'}
         isMulti={false}
         options={options}
@@ -80,8 +79,7 @@ const MultiSelect = ({
     isError,
     input: (
       <SelectComponent
-        {...{ 'data-test-id': dataTestId }}
-        className={`mn-input mn-select ${className || ''}`}
+        className={`mn-input mn-select ${className || ''} ${dataTestId}`}
         classNamePrefix={'react-select'}
         isMulti={true}
         options={options}

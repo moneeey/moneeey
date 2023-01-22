@@ -72,6 +72,10 @@ const BudgetEditor = ({
           placeholder={Messages.util.tags}
           options={tags.all.map((t) => ({ label: t, value: t }))}
           value={editing.tags}
+          onCreate={(tagName) => {
+            tags.register(tagName);
+            setEditing({ ...editing, tags: [...editing.tags, tagName] });
+          }}
           onChange={(new_tags: readonly string[]) => setEditing({ ...editing, tags: [...new_tags] })}
         />
         <Checkbox

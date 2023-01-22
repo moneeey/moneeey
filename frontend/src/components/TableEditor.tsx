@@ -10,9 +10,6 @@ import useMoneeeyStore from '../shared/useMoneeeyStore';
 import { currentDateTime, dateDistanceInSecs, parseDateTime } from '../utils/Date';
 
 import { AccountEditor, AccountSorter } from './editor/AccountEditor';
-import { BudgetAllocatedEditor, BudgetAllocatedSorter } from './editor/BudgetAllocatedEditor';
-import { BudgetRemainingEditor, BudgetRemainingSorter } from './editor/BudgetRemainingEditor';
-import { BudgetUsedEditor, BudgetUsedSorter } from './editor/BudgetUsedEditor';
 import { CheckboxEditor, CheckboxSorter } from './editor/CheckboxEditor';
 import { CurrencyEditor, CurrencySorter } from './editor/CurrencyEditor';
 import { DateEditor, DateSorter } from './editor/DateEditor';
@@ -113,21 +110,6 @@ const EditorTypeConfig: Record<
   [EditorType.LINK]: {
     render: LinkEditor,
     sorter: LinkSorter,
-    width: undefined,
-  },
-  [EditorType.BUDGET_REMAINING]: {
-    render: BudgetRemainingEditor,
-    sorter: BudgetRemainingSorter,
-    width: undefined,
-  },
-  [EditorType.BUDGET_ALLOCATED]: {
-    render: BudgetAllocatedEditor,
-    sorter: BudgetAllocatedSorter,
-    width: undefined,
-  },
-  [EditorType.BUDGET_USED]: {
-    render: BudgetUsedEditor,
-    sorter: BudgetUsedSorter,
     width: undefined,
   },
 };

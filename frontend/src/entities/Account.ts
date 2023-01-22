@@ -111,9 +111,7 @@ export class AccountStore extends MappedStore<IAccount> {
 
   merge(item: IAccount, options: { setUpdated: boolean } = { setUpdated: true }) {
     super.merge(item, options);
-    if (item.kind !== AccountKind.PAYEE) {
-      this.moneeeyStore.tags.register(item.name);
-    }
+    this.moneeeyStore.tags.register(item.name);
   }
 
   get allPayees() {

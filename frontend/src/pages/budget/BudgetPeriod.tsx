@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 
 import { LinkButton } from '../../components/base/Button';
 import Card from '../../components/base/Card';
-import { TextNormal, TextTitle } from '../../components/base/Text';
+import { TextTitle } from '../../components/base/Text';
 import Loading from '../../components/Loading';
 import { TableEditor } from '../../components/TableEditor';
 import { IBudget } from '../../entities/Budget';

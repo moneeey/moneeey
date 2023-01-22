@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
+import { NumericFormat } from 'react-number-format';
 
 import { WithDataTestId } from './Common';
 
@@ -63,9 +64,9 @@ const Input = ({
   });
 
 type InputNumberProps = InputProps<number> & {
-  step: number;
-  max: number;
-  min: number;
+  thousandSeparator: string;
+  decimalSeparator: string;
+  decimalScale: number;
 };
 
 const InputNumber = ({
@@ -76,33 +77,49 @@ const InputNumber = ({
   'data-test-id': dataTestId,
   prefix,
   suffix,
-  min,
-  max,
-  step,
   disabled,
   readOnly,
   isError,
-}: InputNumberProps) =>
-  InputContainer({
+  thousandSeparator,
+  decimalSeparator,
+  decimalScale,
+}: InputNumberProps) => {
+  const [currentValue, setCurrentValue] = useState(`${value}`);
+  const [lastFloatValue, setLastFloatValue] = useState(value);
+  useEffect(() => {
+    if (lastFloatValue !== value) {
+      setCurrentValue(`${value}`);
+      setLastFloatValue(value);
+    }
+  }, [lastFloatValue, value]);
+
+  return InputContainer({
     prefix,
     suffix,
     isError,
     input: (
-      <input
+      <NumericFormat
         {...{ 'data-test-id': dataTestId }}
-        type='number'
         className={`mn-input ${className || ''}`}
-        value={`${value}`}
-        onChange={({ target: { value: newValue } }) => onChange(parseFloat(newValue))}
+        value={currentValue}
+        onValueChange={({ floatValue, formattedValue }) => {
+          setCurrentValue(formattedValue);
+          if (floatValue) {
+            setLastFloatValue(floatValue);
+            onChange(floatValue);
+          }
+        }}
         placeholder={placeholder}
-        min={min}
-        max={max}
-        step={step}
+        thousandsGroupStyle='thousand'
+        thousandSeparator={thousandSeparator}
+        decimalSeparator={decimalSeparator}
+        decimalScale={decimalScale}
         disabled={disabled}
         readOnly={readOnly}
       />
     ),
   });
+};
 
 const TextArea = ({
   className,

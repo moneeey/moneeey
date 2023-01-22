@@ -1,6 +1,5 @@
-import { compact, head, isEmpty, map, uniqBy } from 'lodash';
+import { compact, head, map, uniqBy } from 'lodash';
 import { observer } from 'mobx-react';
-import { useState } from 'react';
 
 import { AccountKind, IAccount, TAccountUUID } from '../../entities/Account';
 import { isTransaction } from '../../entities/Transaction';
