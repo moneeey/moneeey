@@ -16,7 +16,7 @@ import {
   retrieveColumns,
 } from './ImportContent';
 
-const logger = new Logger('txtImporter', null);
+const logger = new Logger('txtImporter', undefined);
 
 const txtImportFromLines = ({
   moneeeyStore,

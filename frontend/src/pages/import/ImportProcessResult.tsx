@@ -1,4 +1,4 @@
-import { compact, isEmpty, isNumber, map } from 'lodash';
+import { compact, isEmpty, isNumber, map, noop } from 'lodash';
 import { Dispatch, SetStateAction } from 'react';
 
 import { PrimaryButton, SecondaryButton } from '../../components/base/Button';
@@ -92,6 +92,8 @@ const rendererForCol = (col: ColumnDef<ITransaction>, moneeeyStore: MoneeeyStore
     );
   };
 
+const noOpRender = (value: unknown) => <>{value}</>;
+
 const ContentTransactionTable = ({
   moneeeyStore,
   transactions,
@@ -110,7 +112,7 @@ const ContentTransactionTable = ({
       className='tableEditor'
       rows={transactions}
       columns={[
-        { fieldName: 'date', title: Messages.util.date, render: (value: string) => <>{value}</> },
+        { fieldName: 'date', title: Messages.util.date, render: noOpRender },
         {
           fieldName: 'from_account',
           title: Messages.transactions.from_account,
@@ -133,8 +135,8 @@ const ContentTransactionTable = ({
             setResult,
           }),
         },
-        { fieldName: 'memo', title: Messages.transactions.memo },
-        { fieldName: 'from_value', title: Messages.transactions.amount },
+        { fieldName: 'memo', title: Messages.transactions.memo, render: noOpRender },
+        { fieldName: 'from_value', title: Messages.transactions.amount, render: noOpRender },
       ].map((col) => ({
         ...col,
         render: rendererForCol(col, moneeeyStore),
