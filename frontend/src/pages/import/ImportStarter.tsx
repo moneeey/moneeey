@@ -1,6 +1,6 @@
 import { head, isEmpty, last } from 'lodash';
 import { observer } from 'mobx-react';
-import { ChangeEvent, Dispatch, useCallback, useState } from 'react';
+import { Dispatch, useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 import { Input } from '../../components/base/Input';
@@ -129,24 +129,18 @@ const ImportStarter = function ({
             {Messages.util.date_format}
             <Input
               data-test-id='inputDateFormat'
-              type='text'
               placeholder={TDateFormat}
               value={config.dateFormat}
-              onChange={({ target: { value } }: ChangeEvent<HTMLInputElement>) =>
-                setConfig((currentConfig) => ({ ...currentConfig, dateFormat: value }))
-              }
+              onChange={(dateFormat) => setConfig((currentConfig) => ({ ...currentConfig, dateFormat }))}
             />
           </div>
           <div>
             {Messages.settings.decimal_separator}
             <Input
               data-test-id='inputDecimalSeparator'
-              type='text'
               placeholder={'. or ,'}
               value={config.decimalSeparator}
-              onChange={({ target: { value } }: ChangeEvent<HTMLInputElement>) =>
-                setConfig((currentConfig) => ({ ...currentConfig, decimalSeparator: value }))
-              }
+              onChange={(decimalSeparator) => setConfig((currentConfig) => ({ ...currentConfig, decimalSeparator }))}
             />
           </div>
         </section>

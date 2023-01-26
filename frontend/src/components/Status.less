@@ -1,0 +1,26 @@
+@import "../main.less";
+
+.mn-status {
+  padding: 0.5em 1em;
+  margin: 1em;
+  border-radius: @border-radius-status;
+  text-align: left;
+  color: @primary-color;
+  display: flex;
+  justify-content: space-between;
+  color: @dark-color;
+
+  .close {
+    svg {
+      margin-left: 1em;
+      cursor: pointer;
+      width: 1.2em;
+      height: 1.2em;
+    }
+  }
+}
+
+.mn-status-error { background-color: @danger-color; }
+.mn-status-info { background-color: @info-color; }
+.mn-status-warning { background-color: @warning-color; }
+.mn-status-success { background-color: @success-color; }

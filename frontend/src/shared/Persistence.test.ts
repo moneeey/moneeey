@@ -21,7 +21,8 @@ describe('Persistence', () => {
     created: '2022-10-14T23:00:26-03:00',
   };
 
-  const _rev = '1-13cc7a98be34fcf6a409b9808b592025';
+  const rev1 = { _rev: '1-13cc7a98be34fcf6a409b9808b592025' };
+  const rev2 = { _rev: '2-13cc7a98be34fcf6a409b9808b592030' };
 
   const sampleCurrency = (obj: object) => ({
     entity_type: EntityType.CURRENCY,
@@ -44,8 +45,7 @@ describe('Persistence', () => {
     } as unknown as MappedStore<ICurrency>;
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const thenExpect = ({ updated, outdated, resolved }: any) => {
+  const thenExpect = ({ updated, outdated, resolved }: { updated: object; outdated: object; resolved: object }) => {
     const state = {
       merge: (mockStore.merge as jest.Mock<unknown, unknown[]>).mock.calls,
       log: mockLogger.calls,
@@ -76,9 +76,45 @@ describe('Persistence', () => {
   };
 
   describe('resolveConflict', () => {
-    it('take document with _rev over documents without _rev with correct date', () => {
-      const a = sampleCurrency({ ...today, _rev });
+    it('take document with _rev over documents without _rev', () => {
+      const a = sampleCurrency({ ...today, ...rev1 });
       const b = sampleCurrency({ ...yesterday });
+      persistence.resolveConflict(mockStore, a, b);
+
+      thenExpect({
+        updated: a,
+        outdated: b,
+        resolved: { ...b, ...a, ...today },
+      });
+    });
+
+    it('take document with _rev over documents without _rev reversed', () => {
+      const a = sampleCurrency({ ...today });
+      const b = sampleCurrency({ ...yesterday, ...rev1 });
+      persistence.resolveConflict(mockStore, a, b);
+
+      thenExpect({
+        updated: b,
+        outdated: a,
+        resolved: { ...a, ...b },
+      });
+    });
+
+    it('take document with newer _rev', () => {
+      const a = sampleCurrency({ ...today, ...rev1 });
+      const b = sampleCurrency({ ...yesterday, ...rev2 });
+      persistence.resolveConflict(mockStore, a, b);
+
+      thenExpect({
+        updated: b,
+        outdated: a,
+        resolved: { ...a, ...b },
+      });
+    });
+
+    it('take document with newer _rev a b reversed', () => {
+      const a = sampleCurrency({ ...today, ...rev2 });
+      const b = sampleCurrency({ ...yesterday, ...rev1 });
       persistence.resolveConflict(mockStore, a, b);
 
       thenExpect({
@@ -90,7 +126,7 @@ describe('Persistence', () => {
 
     it('take document with _rev over documents without _rev with older date', () => {
       const a = sampleCurrency({ ...today });
-      const b = sampleCurrency({ ...yesterday, _rev });
+      const b = sampleCurrency({ ...yesterday, ...rev1 });
       persistence.resolveConflict(mockStore, a, b);
 
       thenExpect({
@@ -100,9 +136,9 @@ describe('Persistence', () => {
       });
     });
 
-    it('chooses latest document between two with _rev', () => {
-      const a = sampleCurrency({ ...yesterday, _rev: `${_rev}A` });
-      const b = sampleCurrency({ ...today, _rev: `${_rev}B` });
+    it('chooses latest document between two with same _rev', () => {
+      const a = sampleCurrency({ ...yesterday, ...rev1 });
+      const b = sampleCurrency({ ...today, ...rev1 });
       persistence.resolveConflict(mockStore, a, b);
 
       thenExpect({

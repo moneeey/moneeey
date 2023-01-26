@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react';
-import { ChangeEvent } from 'react';
 
 import { Input } from '../base/Input';
 import { IBaseEntity } from '../../shared/Entity';
@@ -19,12 +18,10 @@ export const TextEditor = observer(<EntityType extends IBaseEntity>(props: Edito
         ...props,
         value,
         rev: entity?._rev || '',
-        ComposedInput: Input,
-        ComposedProps: (onChange: (value?: string, editorValue?: string, additional?: object) => void) => ({
-          onChange: ({ target: { value: newValue } }: ChangeEvent<HTMLInputElement>) =>
-            onChange(newValue, newValue, {}),
-        }),
       }}
+      Composed={(baseProps, onChange) => (
+        <Input {...{ ...baseProps }} onChange={(newValue) => onChange(newValue, newValue)} />
+      )}
     />
   );
 });

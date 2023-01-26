@@ -13,6 +13,7 @@ import { TCurrencyUUID } from './Currency';
 export interface IConfig extends IBaseEntity {
   date_format: string;
   decimal_separator: string;
+  thousand_separator: string;
   default_currency: TCurrencyUUID;
   view_months: number;
   view_archived: boolean;
@@ -27,6 +28,7 @@ export class ConfigStore extends MappedStore<IConfig> {
           entity_type: EntityType.CONFIG,
           date_format: TDateFormat,
           decimal_separator: ',',
+          thousand_separator: '.',
           default_currency: '',
           view_months: 3,
           view_archived: false,
@@ -46,10 +48,16 @@ export class ConfigStore extends MappedStore<IConfig> {
           index: 1,
           editor: EditorType.TEXT,
         },
+        thousand_separator: {
+          title: Messages.settings.thousand_separator,
+          field: 'thousand_separator',
+          index: 2,
+          editor: EditorType.TEXT,
+        },
         default_currency: {
           title: Messages.settings.default_currency,
           field: 'default_currency',
-          index: 2,
+          index: 3,
           editor: EditorType.CURRENCY,
         },
       }),
@@ -62,12 +70,12 @@ export class ConfigStore extends MappedStore<IConfig> {
   }
 
   get main(): IConfig {
-    return this.all[0];
+    return isEmpty(this.all) ? this.factory() : this.all[0];
   }
 
   init() {
     if (isEmpty(this.all)) {
-      this.merge(this.factory());
+      this.merge({ ...this.factory() });
     }
   }
 }

@@ -8,13 +8,14 @@ interface AccountSettingsProps {
   accounts: AccountStore;
   currencies: CurrencyStore;
   kind: AccountKind;
+  schemaFilter: (row: IAccount) => boolean;
 }
 
-const AccountTable = observer(({ accounts, kind }: AccountSettingsProps) => (
+const AccountTable = observer(({ accounts, schemaFilter, kind }: AccountSettingsProps) => (
   <TableEditor
     data-test-id={`accountTable${kind}`}
     store={accounts}
-    schemaFilter={(row: IAccount) => row.kind === kind}
+    schemaFilter={schemaFilter}
     factory={(id?: string) => ({ ...accounts.factory(id), kind })}
   />
 ));

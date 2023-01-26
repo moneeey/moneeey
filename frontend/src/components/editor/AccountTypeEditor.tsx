@@ -5,30 +5,31 @@ import { IBaseEntity } from '../../shared/Entity';
 import Messages from '../../utils/Messages';
 import Select from '../base/Select';
 
-import BaseSelectEditor from './BaseSelectEditor';
+import { BaseEditor } from './BaseEditor';
 import { EditorProps, NoSorter } from './EditorProps';
 
 export const AccountTypeEditor = observer(
   <EntityType extends IBaseEntity>(props: EditorProps<EntityType, string, string>) => {
     const entity = props.store.byUuid(props.entityId);
-    const currentValue = entity?.[props.field.field] as string;
+    const value = entity?.[props.field.field] as string;
 
     return (
-      <BaseSelectEditor
+      <BaseEditor
         {...{
           ...props,
-          options: Object.values(AccountKind).map((accountType) => ({
-            labelText: Messages.account.kind[accountType],
-            label: Messages.account.kind[accountType],
-            value: accountType,
-          })),
-          value: currentValue,
+          value,
           rev: entity?._rev || '',
-          ComposedProps: (onChange: (value?: string, editorValue?: string, additional?: object) => void) => ({
-            onSelect: (value: string) => onChange(value || AccountKind.CHECKING),
-          }),
-          ComposedInput: Select,
         }}
+        Composed={(baseProps, onChange) => (
+          <Select
+            {...baseProps}
+            options={Object.values(AccountKind).map((accountType) => ({
+              label: Messages.account.kind[accountType],
+              value: accountType,
+            }))}
+            onChange={(newValue) => onChange(newValue || AccountKind.CHECKING)}
+          />
+        )}
       />
     );
   }

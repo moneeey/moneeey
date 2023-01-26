@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react';
 
 import { IBaseEntity } from '../../shared/Entity';
+import { LinkButton } from '../base/Button';
 
 import { EditorProps } from './EditorProps';
 import { TextSorter } from './TextEditor';
@@ -10,11 +11,8 @@ export const LinkEditor = observer(<EntityType extends IBaseEntity>(props: Edito
   const value = entity?.[props.field.field] as string;
 
   return (
-    <a
-      href='#'
-      onClick={(e) => {
-        e.preventDefault();
-
+    <LinkButton
+      onClick={() => {
         // The next lines don't make me any proud!
 
         // eslint-disable-next-line  @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -23,7 +21,7 @@ export const LinkEditor = observer(<EntityType extends IBaseEntity>(props: Edito
         ctx[props.field.field](entity);
       }}>
       {value}
-    </a>
+    </LinkButton>
   );
 });
 

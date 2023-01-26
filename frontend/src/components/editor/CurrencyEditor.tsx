@@ -9,7 +9,7 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Select from '../base/Select';
 import { Row } from '../TableEditor';
 
-import BaseSelectEditor from './BaseSelectEditor';
+import { BaseEditor } from './BaseEditor';
 import { EditorProps } from './EditorProps';
 
 export const CurrencyEditor = observer(
@@ -19,25 +19,28 @@ export const CurrencyEditor = observer(
     const value = (entity?.[props.field.field] as TCurrencyUUID | undefined) || '';
 
     return (
-      <BaseSelectEditor
+      <BaseEditor
         {...{
           ...props,
           value,
           rev: entity?._rev || '',
-          options: _(currencies.all)
-            .map((currency) => ({
-              label: (
-                <span>
-                  <b>{currency.short}</b> {currency.name}
-                </span>
-              ),
-              labelText: `${currency.short} ${currency.name}`,
-              value: currency.currency_uuid,
-            }))
-            .value(),
-          ComposedProps: () => ({}),
-          ComposedInput: Select,
         }}
+        Composed={(baseProps, onChange) => (
+          <Select
+            {...baseProps}
+            options={_(currencies.all)
+              .map((currency) => ({
+                label: (
+                  <span>
+                    <b>{currency.short}</b> {currency.name}
+                  </span>
+                ),
+                value: currency.currency_uuid,
+              }))
+              .value()}
+            onChange={(newValue) => newValue && onChange(newValue)}
+          />
+        )}
       />
     );
   }

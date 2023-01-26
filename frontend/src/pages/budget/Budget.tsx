@@ -2,7 +2,7 @@ import { observer } from 'mobx-react';
 import { Dispatch, SetStateAction, useState } from 'react';
 
 import { SecondaryButton } from '../../components/base/Button';
-import { Checkbox, Input } from '../../components/base/Input';
+import { Checkbox, InputNumber } from '../../components/base/Input';
 import Space from '../../components/base/Space';
 import { IBudget } from '../../entities/Budget';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
@@ -16,7 +16,7 @@ import BudgetPeriods from './BudgetPeriod';
 const MonthDateSelector = ({ setDate, date }: { setDate: Dispatch<SetStateAction<Date>>; date: Date }) => (
   <Space>
     <SecondaryButton onClick={() => setDate(startOfMonthOffset(date, -1))}>{Messages.budget.prev}</SecondaryButton>
-    {formatDateMonth(date)}
+    <span>{formatDateMonth(date)}</span>
     <SecondaryButton onClick={() => setDate(startOfMonthOffset(date, +1))}>{Messages.budget.next}</SecondaryButton>
   </Space>
 );
@@ -33,20 +33,25 @@ const Budget = observer(() => {
     <section className='budgetArea'>
       <Space className='control'>
         <MonthDateSelector date={startingDate} setDate={setStartingDate} />
-        <div className='divider' />
-        {Messages.budget.show_months}
-        <Input
-          data-test-id='inputViewMonths'
-          min={1}
-          max={24}
-          placeholder={Messages.budget.show_months}
-          value={viewMonths}
-          onChange={({ target: { value } }) => config.merge({ ...config.main, view_months: parseInt(value, 10) })}
-        />
+        <div>
+          {Messages.budget.show_months}
+          <InputNumber
+            data-test-id='inputViewMonths'
+            placeholder={Messages.budget.show_months}
+            value={viewMonths}
+            thousandSeparator={config.main.thousand_separator}
+            decimalSeparator={config.main.decimal_separator}
+            decimalScale={0}
+            onChange={(value: number | null) =>
+              config.merge({ ...config.main, view_months: Math.min(Math.max(value || 3, 0), 12) })
+            }
+          />
+        </div>
         <Checkbox
           data-test-id='checkboxViewArchived'
-          checked={viewArchived}
-          onChange={({ target: { checked } }) => config.merge({ ...config.main, view_archived: checked })}>
+          value={viewArchived}
+          onChange={(view_archived) => config.merge({ ...config.main, view_archived })}
+          placeholder={Messages.budget.show_archived}>
           {Messages.budget.show_archived}
         </Checkbox>
       </Space>

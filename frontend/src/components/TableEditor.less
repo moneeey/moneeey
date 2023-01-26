@@ -1,40 +1,7 @@
-.tableEditor {
-  max-width: 100% !important;
-  margin: auto;
-  padding: 1em;
-}
-
-.tableEditor .ant-table-thead > tr > th,
-.tableEditor .ant-table-tbody > tr > td,
-.tableEditor .ant-table tfoot > tr > th,
-.tableEditor .ant-table tfoot > tr > td {
-  padding: 0;
-}
-
-.tableEditor .ant-select,
-.tableEditor .ant-select-selector,
-.tableEditor input,
-.tableEditor .ant-input-number,
-.tableEditor .ant-picker,
-.tableEditor .ant-input-affix-wrapper,
-.tableEditor .ant-input-number-affix-wrapper {
-  width: 100% !important;
-  border: 0 !important;
-}
+@import "../main.less";
 
 .tableEditor .negative input {
   color: red;
-}
-
-.tableEditor tr:nth-child(2n) td,
-.tableEditor tr:nth-child(2n) td .ant-select,
-.tableEditor tr:nth-child(2n) td .ant-select-selector,
-.tableEditor tr:nth-child(2n) td input,
-.tableEditor tr:nth-child(2n) td .ant-input-number,
-.tableEditor tr:nth-child(2n) td .ant-picker,
-.tableEditor tr:nth-child(2n) td .ant-input-affix-wrapper,
-.tableEditor tr:nth-child(2n) td .ant-input-group-addon {
-  background-color: #212224;
 }
 
 .tableEditor .accountEditor {
@@ -45,33 +12,25 @@
   flex-grow: 1;
 }
 
-.tableEditor .accountEditor span {
-  padding-left: 1em;
-}
-
-.tableEditor .ant-input-group-addon {
+.tableEditor .mn-input-suffix,
+.tableEditor .mn-input-prefix {
   background-color: transparent;
   border: 0;
 }
 
-.tableEditor .ant-table-cell th,
-.tableEditor .ant-table-column-title {
-  font-weight: bold;
-}
-
 .tableEditor .importUnchanged,
-.tableEditor .importUnchanged .ant-select-selection-item {
+.tableEditor .importUnchanged .react-select__single-value {
   color: gray;
 }
 
 .tableEditor .importNew,
-.tableEditor .importNew .ant-select-selection-item {
+.tableEditor .importNew .react-select__single-value {
   color: green;
   font-weight: bold;
 }
 
 .tableEditor .importUpdated,
-.tableEditor .importUpdated .ant-select-selection-item {
+.tableEditor .importUpdated .react-select__single-value {
   color: purple;
   font-weight: bolder;
 }

@@ -16,18 +16,16 @@ export enum EditorType {
   TAG = 'TAG',
   MEMO = 'MEMO',
   TRANSACTION_VALUE = 'TRANSACTION_VALUE',
+  BUDGET_VALUE = 'BUDGET_VALUE',
   LABEL = 'LABEL',
-  BUDGET_REMAINING = 'BUDGET_REMAINING',
-  BUDGET_ALLOCATED = 'BUDGET_ALLOCATED',
   LINK = 'LINK',
-  BUDGET_USED = 'BUDGET_USED',
   CHECKBOX = 'CHECKBOX',
 }
 
 export interface FieldProps<ValueEditorType> {
   editor: EditorType;
   field: string;
-  title?: string;
+  title: string;
   index: number;
   readOnly?: boolean;
   required?: boolean;

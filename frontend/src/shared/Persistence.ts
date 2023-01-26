@@ -2,7 +2,6 @@ import { debounce, forEach, map, omit, uniqBy, values } from 'lodash';
 import { action, makeObservable, observable, observe, toJS } from 'mobx';
 import PouchDB from 'pouchdb';
 
-import { compareDates } from '../utils/Date';
 import { asyncProcess } from '../utils/Utils';
 
 import { EntityType, IBaseEntity } from './Entity';
@@ -65,29 +64,30 @@ export default class PersistenceStore {
     };
 
     return new Promise((resolve, reject) => {
-      if (!this.databaseId) {
-        return;
+      if (this.databaseId) {
+        this.db
+          .sync(`/api/couchdb/${this.databaseId}`, { live: true, retry: true })
+          .on('change', (change) => {
+            const changedDocIds = change.change.docs.map((doc) => doc._id);
+            this.logger.info('sync change', { change: changedDocIds });
+            this.fetchLatest(changedDocIds);
+            resolve(setStatus(Status.ONLINE));
+          })
+          .on('paused', (info) => {
+            this.logger.info('sync paused', { info });
+            resolve(setStatus(Status.PAUSED));
+          })
+          .on('denied', (info) => {
+            this.logger.warn('sync denied', { info });
+            resolve(setStatus(Status.DENIED));
+          })
+          .on('error', (error) => {
+            this.logger.error('sync error', { error });
+            reject(setStatus(Status.ERROR));
+          });
+      } else {
+        resolve(setStatus(Status.OFFLINE));
       }
-      this.db
-        .sync(`/api/couchdb/${this.databaseId}`, { live: true, retry: true })
-        .on('change', (change) => {
-          const changedDocIds = change.change.docs.map((doc) => doc._id);
-          this.logger.info('sync change', { change: changedDocIds });
-          this.fetchLatest(changedDocIds);
-          resolve(setStatus(Status.ONLINE));
-        })
-        .on('paused', (info) => {
-          this.logger.info('sync paused', { info });
-          resolve(setStatus(Status.PAUSED));
-        })
-        .on('denied', (info) => {
-          this.logger.warn('sync denied', { info });
-          resolve(setStatus(Status.DENIED));
-        })
-        .on('error', (error) => {
-          this.logger.error('sync error', { error });
-          reject(setStatus(Status.ERROR));
-        });
     });
   }
 
@@ -119,12 +119,33 @@ export default class PersistenceStore {
   }
 
   resolveConflict<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, a: EntityType, b: EntityType) {
-    const aIsMostRecent = (a._rev && !b._rev) || compareDates(a.updated || '', b.updated || '') > 0;
-    const updated = aIsMostRecent ? a : b;
-    const outdated = aIsMostRecent ? b : a;
-    const resolved = { ...outdated, ...updated };
-    this.logger.info('resolve conflict', { updated, outdated, resolved });
-    store.merge(resolved, { setUpdated: true });
+    const resolve = (updated: EntityType) => {
+      const outdated = updated === a ? b : a;
+      const resolved = { ...outdated, ...updated };
+      this.logger.info('resolve conflict', { updated, outdated, resolved });
+      store.merge(resolved, { setUpdated: true });
+    };
+    if (a._rev && !b._rev) {
+      return resolve(a);
+    }
+    if (!a._rev && b._rev) {
+      return resolve(b);
+    }
+    if (a._rev && b._rev) {
+      const revLevel = (rev: string | undefined) => parseInt((rev || '0-').split('-')[0], 10);
+      const aRevLevel = revLevel(a._rev);
+      const bRevLevel = revLevel(b._rev);
+      if (aRevLevel > bRevLevel) {
+        return resolve(a);
+      } else if (bRevLevel > aRevLevel) {
+        return resolve(b);
+      }
+    }
+    if ((a.updated || '') > (b.updated || '')) {
+      return resolve(a);
+    }
+
+    return resolve(b);
   }
 
   async commit() {
@@ -238,6 +259,9 @@ export default class PersistenceStore {
       (chunk, result, percentage) => {
         onProgress(percentage);
         chunk.forEach((line) => {
+          if (line.trim() === '') {
+            return;
+          }
           try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (!this.restoreEntity(JSON.parse(line))) {

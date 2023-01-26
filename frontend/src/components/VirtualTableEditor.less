@@ -1,0 +1,77 @@
+@import '../main.less';
+
+.mn-virtualtable {
+  width: 100%;
+  max-height: 90vh;
+  min-height: 30em;
+}
+.mn-input,
+.mn-datepicker,
+.mn-select input {
+  border: 0 !important;
+  width: 100% !important;
+  color: @primary-color;
+  background-color: @table-tr1-color;
+}
+
+.mn-virtualtable .mn-input,
+.mn-virtualtable .mn-input-prefix,
+.mn-virtualtable .mn-input-suffix,
+.mn-virtualtable .mn-datepicker,
+.mn-virtualtable .mn-select div {
+  border: 0 !important;
+  border-radius: 0;
+}
+
+.mn-virtualtable .mn-tr {
+  display: flex;
+}
+
+.mn-virtualtable .mn-th {
+  font-weight: bold;
+}
+.mn-virtualtable .mn-tr .mn-td,
+.mn-virtualtable .mn-tr .mn-th,
+.mn-virtualtable .mn-tr .mn-input,
+.mn-virtualtable .mn-tr .mn-input-prefix,
+.mn-virtualtable .mn-tr .mn-input-suffix,
+.mn-virtualtable .mn-tr .mn-datepicker,
+.mn-virtualtable .mn-tr .mn-select .react-select__indicators,
+.mn-virtualtable .mn-tr .mn-select .react-select__value-container {
+  height: 24px;
+  line-height: 24px;
+}
+
+.mn-virtualtable .mn-tr .mn-th,
+.mn-virtualtable .mn-tr:nth-child(1n) .mn-td,
+.mn-virtualtable .mn-tr:nth-child(1n) .mn-input,
+.mn-virtualtable .mn-tr:nth-child(1n) .mn-input-prefix,
+.mn-virtualtable .mn-tr:nth-child(1n) .mn-input-suffix,
+.mn-virtualtable .mn-tr:nth-child(1n) .mn-datepicker,
+.mn-virtualtable .mn-tr:nth-child(1n) .mn-select .react-select__menu-list,
+.mn-virtualtable .mn-tr:nth-child(1n) .mn-select .react-select__indicators,
+.mn-virtualtable .mn-tr:nth-child(1n) .mn-select .react-select__value-container {
+  background-color: @table-tr1-color;
+}
+
+.mn-virtualtable .mn-tr:nth-child(2n) .mn-td,
+.mn-virtualtable .mn-tr:nth-child(2n) .mn-th,
+.mn-virtualtable .mn-tr:nth-child(2n) .mn-input,
+.mn-virtualtable .mn-tr:nth-child(2n) .mn-input-prefix,
+.mn-virtualtable .mn-tr:nth-child(2n) .mn-input-suffix,
+.mn-virtualtable .mn-tr:nth-child(2n) .mn-datepicker,
+.mn-virtualtable .mn-tr:nth-child(2n) .mn-select .react-select__menu-list,
+.mn-virtualtable .mn-tr:nth-child(2n) .mn-select .react-select__indicators,
+.mn-virtualtable .mn-tr:nth-child(2n) .mn-select .react-select__value-container {
+  background-color: @table-tr2-color;
+}
+
+.mn-virtualtable .mn-tr:hover .mn-td,
+.mn-virtualtable .mn-tr:hover .mn-input,
+.mn-virtualtable .mn-tr:hover .mn-input-prefix,
+.mn-virtualtable .mn-tr:hover .mn-input-suffix,
+.mn-virtualtable .mn-tr:hover .mn-datepicker,
+.mn-virtualtable .mn-tr:hover .mn-select .react-select__indicators,
+.mn-virtualtable .mn-tr:hover .mn-select .react-select__value-container {
+  background-color: #808080;
+}

@@ -1,7 +1,10 @@
-import { Tabs as AntdTabs } from 'antd';
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
+
+import { LinkButton } from './Button';
 
 import { WithDataTestId } from './Common';
+import Space from './Space';
+import './Tabs.less';
 
 interface TabItem {
   key: string;
@@ -14,15 +17,27 @@ interface TabsProps {
   items: Array<TabItem>;
 }
 
-const itemsWithDataTestId = (rootTestId: string, items: Array<TabItem>) =>
-  items.map((item) => {
-    return { ...item, label: <span data-test-id={`${rootTestId}_${item.key}`}>{item.label}</span> };
-  });
+const Tabs = (props: TabsProps & WithDataTestId) => {
+  const [selectedIdx, setSelectedIdx] = useState(0);
 
-const Tabs = (props: TabsProps & WithDataTestId) => (
-  <nav data-test-id={props['data-test-id']}>
-    <AntdTabs {...props} items={itemsWithDataTestId(props['data-test-id'], props.items)} />
-  </nav>
-);
+  return (
+    <section className='mn-tabs'>
+      <nav data-test-id={props['data-test-id']}>
+        <Space>
+          {props.items.map((item, idx) => (
+            <LinkButton
+              key={item.key}
+              onClick={() => setSelectedIdx(idx)}
+              data-test-id={`${props['data-test-id']}_${item.key}`}
+              className={idx === selectedIdx ? 'mn-tab-active' : ''}>
+              {item.label}
+            </LinkButton>
+          ))}
+        </Space>
+      </nav>
+      {props.items[selectedIdx]?.children}
+    </section>
+  );
+};
 
 export default Tabs;

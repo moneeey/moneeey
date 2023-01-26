@@ -1,5 +1,6 @@
-import { Tag as AntdTag } from 'antd';
 import { MouseEventHandler } from 'react';
+
+import './Tag.less';
 
 interface TagProps {
   title: string;
@@ -9,6 +10,26 @@ interface TagProps {
   onMouseOut?: () => void;
 }
 
-const Tag = (props: TagProps) => <AntdTag {...props}>{props.title}</AntdTag>;
+const contrastColor = (hexcolor: string) => {
+  const r = parseInt(hexcolor.substr(0, 2), 16);
+  const g = parseInt(hexcolor.substr(2, 2), 16);
+  const b = parseInt(hexcolor.substr(4, 2), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+
+  return yiq >= 128 ? 'black' : 'white';
+};
+
+const Tag = (props: TagProps) => (
+  <span
+    className='mn-tag'
+    {...props}
+    style={{
+      backgroundColor: props.color,
+      color: contrastColor(props.color || '#000000'),
+      borderColor: props.color,
+    }}>
+    {props.title}
+  </span>
+);
 
 export default Tag;

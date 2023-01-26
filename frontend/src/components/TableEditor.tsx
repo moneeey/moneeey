@@ -1,4 +1,3 @@
-import { ColumnType } from 'antd/lib/table';
 import { compact, uniq, values } from 'lodash';
 import { action } from 'mobx';
 import { observer } from 'mobx-react';
@@ -11,9 +10,6 @@ import useMoneeeyStore from '../shared/useMoneeeyStore';
 import { currentDateTime, dateDistanceInSecs, parseDateTime } from '../utils/Date';
 
 import { AccountEditor, AccountSorter } from './editor/AccountEditor';
-import { BudgetAllocatedEditor, BudgetAllocatedSorter } from './editor/BudgetAllocatedEditor';
-import { BudgetRemainingEditor, BudgetRemainingSorter } from './editor/BudgetRemainingEditor';
-import { BudgetUsedEditor, BudgetUsedSorter } from './editor/BudgetUsedEditor';
 import { CheckboxEditor, CheckboxSorter } from './editor/CheckboxEditor';
 import { CurrencyEditor, CurrencySorter } from './editor/CurrencyEditor';
 import { DateEditor, DateSorter } from './editor/DateEditor';
@@ -25,11 +21,12 @@ import { NumberEditor, NumberSorter } from './editor/NumberEditor';
 import { TagEditor, TagSorter } from './editor/TagEditor';
 import { TextEditor, TextSorter } from './editor/TextEditor';
 import { TransactionValueEditor, TransactionValueSorter } from './editor/TransactionValueEditor';
-import VirtualTable from './VirtualTableEditor';
+import VirtualTable, { ColumnDef } from './VirtualTableEditor';
 
 import './TableEditor.less';
 import { AccountTypeEditor, AccountTypeSorter } from './editor/AccountTypeEditor';
 import { WithDataTestId } from './base/Common';
+import { BudgetValueEditor, BudgetValueSorter } from './editor/BudgetValueEditor';
 
 interface TableEditorProps<T extends IBaseEntity, Context> extends WithDataTestId {
   store: MappedStore<T>;
@@ -37,6 +34,7 @@ interface TableEditorProps<T extends IBaseEntity, Context> extends WithDataTestI
   factory: (id?: string) => T;
   creatable?: boolean;
   context?: Context;
+  showRecentEntries?: boolean;
 }
 
 type SortRow = (a: Row, b: Row, asc: boolean) => number;
@@ -105,6 +103,11 @@ const EditorTypeConfig: Record<
     sorter: TransactionValueSorter,
     width: 320,
   },
+  [EditorType.BUDGET_VALUE]: {
+    render: BudgetValueEditor,
+    sorter: BudgetValueSorter,
+    width: undefined,
+  },
   [EditorType.LABEL]: {
     render: LabelEditor,
     sorter: LabelSorter,
@@ -115,21 +118,6 @@ const EditorTypeConfig: Record<
     sorter: LinkSorter,
     width: undefined,
   },
-  [EditorType.BUDGET_REMAINING]: {
-    render: BudgetRemainingEditor,
-    sorter: BudgetRemainingSorter,
-    width: undefined,
-  },
-  [EditorType.BUDGET_ALLOCATED]: {
-    render: BudgetAllocatedEditor,
-    sorter: BudgetAllocatedSorter,
-    width: undefined,
-  },
-  [EditorType.BUDGET_USED]: {
-    render: BudgetUsedEditor,
-    sorter: BudgetUsedSorter,
-    width: undefined,
-  },
 };
 
 export type Row = {
@@ -137,7 +125,14 @@ export type Row = {
 };
 
 export const TableEditor = observer(
-  <T extends IBaseEntity>({ schemaFilter, store, factory, creatable, context }: TableEditorProps<T, unknown>) => {
+  <T extends IBaseEntity>({
+    schemaFilter,
+    store,
+    factory,
+    creatable,
+    context,
+    showRecentEntries,
+  }: TableEditorProps<T, unknown>) => {
     const moneeeyStore = useMoneeeyStore();
 
     const [newEntityId, setNewEntityId] = useState(() => store.getUuid(store.factory()));
@@ -150,9 +145,11 @@ export const TableEditor = observer(
           storeIds
             .map((id) => store.byUuid(id) as T)
             .filter((row) => {
-              const isSchemaFiltered = schemaFilter && schemaFilter(row);
+              const isSchemaFiltered = !schemaFilter || schemaFilter(row);
               const isRecent =
-                row.updated && dateDistanceInSecs(parseDateTime(row.updated), parseDateTime(currentDateTime())) < 20;
+                showRecentEntries !== false &&
+                row.updated &&
+                dateDistanceInSecs(parseDateTime(row.updated), parseDateTime(currentDateTime())) < 20;
               const isNewEntityId = store.getUuid(row) === newEntityId;
 
               return isSchemaFiltered || isRecent || isNewEntityId;
@@ -170,11 +167,11 @@ export const TableEditor = observer(
       [storeIds, store, schemaFilter, newEntityId]
     );
 
-    const columns: ColumnType<Row>[] = useMemo(
+    const columns: ColumnDef<Row>[] = useMemo(
       () =>
         compact(values(store.schema()))
           .sort((a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index)
-          .map((props: FieldProps<never>): ColumnType<Row> => {
+          .map((props: FieldProps<never>) => {
             const config = EditorTypeConfig[props.editor];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
             const Editor = config.render as unknown as any;
@@ -184,9 +181,9 @@ export const TableEditor = observer(
             return {
               width: width || props.width,
               title: props.title,
-              dataIndex: props.field,
+              fieldName: props.field,
               defaultSortOrder: props.defaultSortOrder,
-              sorter: sorter ? (a, b, sortOrder) => sorter(a, b, sortOrder === 'ascend') : undefined,
+              sorter,
               render: (_value: unknown, { entityId }: Row): React.ReactNode => {
                 const key = `${entityId}_${props.field}`;
                 const onUpdate = action((value: unknown, additional: object = {}) =>
@@ -211,18 +208,10 @@ export const TableEditor = observer(
                 );
               },
             };
-          }),
+          }) as ColumnDef<Row>[],
       [store]
     );
 
-    return (
-      <VirtualTable
-        rowKey='entityId'
-        className='tableEditor'
-        columns={columns as ColumnType<object>[]}
-        dataSource={entities}
-        pagination={false}
-      />
-    );
+    return <VirtualTable className='tableEditor' columns={columns} rows={entities} />;
   }
 );

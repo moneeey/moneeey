@@ -28,7 +28,7 @@ import Navbar from './base/Navbar';
 import { TextNormal, TextSecondary } from './base/Text';
 
 export const AppMenu = observer(() => {
-  const { navigation, accounts, currencies, persistence } = useMoneeeyStore();
+  const { navigation, accounts, currencies, persistence, transactions } = useMoneeeyStore();
   const getAccountCurrency = (account: IAccount) => {
     const curr = currencies.byUuid(account.currency_uuid);
 
@@ -39,32 +39,34 @@ export const AppMenu = observer(() => {
     style: { width: '1.2em', height: '1.2em' },
   };
 
+  const activeAccounts = accounts.allNonPayees.filter((t) => t.archived !== true);
+  const unclassified = transactions.viewAllUnclassified().length;
+
   return (
     <Navbar
       data-test-id='appMenu'
+      header={Messages.menu.title}
       items={[
         {
           key: 'dashboard',
           label: Messages.menu.dashboard,
           icon: <ClipboardDocumentIcon {...iconProps} />,
           onClick: () => navigation.navigate(HomeRoute.url()),
+          visible: activeAccounts.length > 0,
         },
         {
           key: 'transactions',
           label: Messages.menu.transactions,
           icon: <CurrencyDollarIcon {...iconProps} />,
+          visible: activeAccounts.length > 0,
+          onClick: () => navigation.navigate(AccountRoute.accountUrlForAll()),
           children: [
-            {
-              key: 'import',
-              label: Messages.menu.import,
-              onClick: () => navigation.navigate(ImportRoute.url()),
-            },
-            ...accounts.allNonPayees
-              .filter((t) => t.archived !== true)
+            ...activeAccounts
               .sort((a, b) => a.currency_uuid?.localeCompare(b.currency_uuid))
               .map((acct) => ({
                 key: `account_${acct._id || ''}`,
-                label: (
+                label: `${getAccountCurrency(acct)} ${acct.name}`,
+                customLabel: (
                   <TextNormal>
                     <TextSecondary>{getAccountCurrency(acct)}</TextSecondary> {acct.name}
                   </TextNormal>
@@ -78,8 +80,14 @@ export const AppMenu = observer(() => {
             },
             {
               key: 'unassigned',
-              label: Messages.menu.unassigned,
+              label: Messages.menu.unassigned(unclassified),
               onClick: () => navigation.navigate(AccountRoute.accountUrlForUnclassified()),
+              visible: unclassified > 0,
+            },
+            {
+              key: 'import',
+              label: Messages.menu.import,
+              onClick: () => navigation.navigate(ImportRoute.url()),
             },
           ],
         },
@@ -88,27 +96,30 @@ export const AppMenu = observer(() => {
           label: Messages.menu.budget,
           icon: <EnvelopeIcon {...iconProps} />,
           onClick: () => navigation.navigate(BudgetRoute.url()),
+          visible: transactions.all.length > 0,
         },
         {
           key: 'reports',
           label: Messages.menu.reports,
           icon: <ChartPieIcon {...iconProps} />,
           onClick: () => navigation.navigate(ReportsRoute.url()),
+          visible: transactions.all.length > 0,
         },
         {
           key: 'settings',
           label: Messages.menu.settings,
           icon: <Cog6ToothIcon {...iconProps} />,
+          onClick: () => navigation.navigate(SettingsRoute.url()),
           children: [
+            {
+              key: 'settings_general',
+              label: Messages.menu.preferences,
+              onClick: () => navigation.navigate(SettingsRoute.url()),
+            },
             {
               key: 'settings_currencies',
               label: Messages.menu.currencies,
               onClick: () => navigation.navigate(CurrencySettingsRoute.url()),
-            },
-            {
-              key: 'settings_payees',
-              label: Messages.menu.payees,
-              onClick: () => navigation.navigate(PayeeSettingsRoute.url()),
             },
             {
               key: 'settings_accounts',
@@ -116,16 +127,16 @@ export const AppMenu = observer(() => {
               onClick: () => navigation.navigate(AccountSettingsRoute.url()),
             },
             {
-              key: 'settings_general',
-              label: Messages.menu.preferences,
-              onClick: () => navigation.navigate(SettingsRoute.url()),
-            },
-            {
-              key: 'settings_landing',
-              label: Messages.menu.landing,
-              onClick: () => navigation.openModal(NavigationModal.LANDING),
+              key: 'settings_payees',
+              label: Messages.menu.payees,
+              onClick: () => navigation.navigate(PayeeSettingsRoute.url()),
             },
           ],
+        },
+        {
+          key: 'settings_landing',
+          label: Messages.menu.start_tour,
+          onClick: () => navigation.openModal(NavigationModal.LANDING),
         },
         {
           key: 'sync',

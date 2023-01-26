@@ -1,0 +1,17 @@
+.mn-vertical-space, .mn-horizontal-space {
+  display: inline-flex;
+
+  & > * {
+    margin-right: 1em;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.mn-vertical-space {
+  flex-direction: column;
+  & > * {
+    margin-right: 0;
+    margin-bottom: 1em;
+  }
+}

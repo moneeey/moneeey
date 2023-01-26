@@ -3,6 +3,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 const uuid = () => uuidv4();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const noop = () => {};
+
+const identity = (o: unknown) => o;
+
 const tokenize = (text: string | undefined) => (text || '').toLowerCase().split(/[\W\d]/);
 
 const asyncTimeout = function <R>(fn: () => R | Promise<R>, delay: number): Promise<R> {
@@ -61,4 +66,4 @@ const setStorage = function (key: string, value: string, storage: StorageKind) {
   }
 };
 
-export { uuid, tokenize, asyncProcess, getStorage, setStorage, StorageKind };
+export { uuid, tokenize, asyncProcess, getStorage, setStorage, StorageKind, noop, identity };

@@ -1,9 +1,14 @@
-import { Space as AntdSpace } from 'antd';
-
 import { ReactNode } from 'react';
 
-const Space = ({ children, className }: { children: ReactNode | ReactNode[]; className?: string }) => (
-  <AntdSpace className={className}>{children}</AntdSpace>
-);
+import './Space.less';
+
+const BaseSpace = (baseClassname: string) =>
+  function Spacer({ children, className }: { children: ReactNode | ReactNode[]; className?: string }) {
+    return <div className={`${baseClassname} ${className || ''}`}>{children}</div>;
+  };
+
+const Space = BaseSpace('mn-horizontal-space');
+const VerticalSpace = BaseSpace('mn-vertical-space');
 
 export default Space;
+export { Space, VerticalSpace };

@@ -134,8 +134,15 @@ class TransactionStore extends MappedStore<ITransaction> {
     return this.sortTransactions(this.byPredicate(this.filterByAccounts(accounts)));
   }
 
+  viewAllUnclassified() {
+    return this.sortTransactions(this.byPredicate(this.filterByAccounts([])));
+  }
+
   filterByTag(tag: string, accountsStore: AccountStore) {
-    return (row: ITransaction) => this.getAllTransactionTags(row, accountsStore).indexOf(tag) >= 0;
+    return (row: ITransaction) =>
+      this.getAllTransactionTags(row, accountsStore)
+        .map((taag) => taag.toLowerCase())
+        .indexOf(tag.toLowerCase()) >= 0;
   }
 
   viewAllWithTag(tag: string, accountsStore: AccountStore) {

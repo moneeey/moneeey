@@ -18,16 +18,16 @@ export default function Login() {
 
   const onLoginOrSignup = async () => {
     setDisabled(true);
-    setStatus({});
+    setStatus(undefined);
     if (await management.start(email)) {
-      setStatus({ type: 'success', message: Messages.landing.welcome });
+      setStatus({ type: 'success', children: Messages.landing.welcome });
       const tmr = setInterval(async () => {
         if (await management.checkLoggedIn()) {
           clearInterval(tmr);
         }
       }, 2000);
     } else {
-      setStatus({ type: 'error', message: Messages.landing.failed });
+      setStatus({ type: 'error', children: Messages.landing.failed });
     }
     setDisabled(false);
   };
@@ -55,10 +55,10 @@ export default function Login() {
             message = Messages.login.auth_code;
           }
           if (message) {
-            setStatus({ type: 'error', message });
+            setStatus({ type: 'error', children: message });
           }
         } else if (success) {
-          setStatus({ type: 'success', message: Messages.login.completed });
+          setStatus({ type: 'success', children: Messages.login.completed });
         }
       })();
     }
@@ -68,15 +68,14 @@ export default function Login() {
     <Space>
       <Input
         data-test-id='email'
-        type='text'
         placeholder={Messages.login.email}
         value={email}
-        onChange={({ target: { value } }) => setEmail(value.toLowerCase())}
+        onChange={(value) => setEmail(value.toLowerCase())}
       />
       <PrimaryButton disabled={disabled} onClick={onLoginOrSignup}>
         {Messages.login.login_or_signup}
       </PrimaryButton>
-      <Status {...status} />
+      {status && <Status type={status?.type}>{status?.children}</Status>}
     </Space>
   );
 }

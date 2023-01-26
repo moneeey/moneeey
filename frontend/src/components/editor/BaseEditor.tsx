@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { IBaseEntity } from '../../shared/Entity';
 import { TextDanger } from '../base/Text';
+import { WithDataTestId } from '../base/Common';
 
 import { EditorProps } from './EditorProps';
 
@@ -13,18 +14,24 @@ type OnChange<EntityType, ValueEditorType, ValueEntityType> = (
   additional?: Partial<EntityType>
 ) => void;
 
+type BaseProps<ValueEditorType> = WithDataTestId & {
+  readOnly: boolean;
+  placeholder: string;
+  value: ValueEditorType;
+};
+
 export interface BaseEditorProps<EntityType extends IBaseEntity, ValueEditorType, ValueEntityType>
   extends EditorProps<EntityType, ValueEditorType, ValueEntityType> {
   value: ValueEditorType;
   rev: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ComposedInput: any;
-  ComposedProps: (onChange: OnChange<EntityType, ValueEditorType, ValueEntityType>) => object;
+  Composed: (
+    baseProps: BaseProps<ValueEditorType>,
+    onChange: OnChange<EntityType, ValueEditorType, ValueEntityType>
+  ) => JSX.Element;
 }
 
 export const BaseEditor = function <EntityType extends IBaseEntity, ValueEditorType, ValueEntityType>({
-  ComposedInput,
-  ComposedProps,
+  Composed,
   value,
   rev,
   onUpdate,
@@ -52,22 +59,17 @@ export const BaseEditor = function <EntityType extends IBaseEntity, ValueEditorT
     setCurrentValue(value);
   }, [setCurrentValue, value]);
 
-  const status = error ? 'error' : undefined;
-
   return (
     <label>
-      <ComposedInput
-        {...{
+      {Composed(
+        {
           'data-test-id': `editor${(title || '').replace(' ', '_')}_${rev}`,
-          readOnly,
-          rev,
-          status,
-          title,
-          placeholder: title,
-          ...ComposedProps(onChange),
+          readOnly: Boolean(readOnly),
+          placeholder: title || '',
           value: currentValue,
-        }}
-      />
+        },
+        onChange
+      )}
       {error && <TextDanger className='baseEditor-error'>{error}</TextDanger>}
     </label>
   );

@@ -1,4 +1,3 @@
-import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import { observer } from 'mobx-react';
 
 import { IBaseEntity } from '../../shared/Entity';
@@ -17,18 +16,15 @@ export const CheckboxEditor = observer(
         {...{
           ...props,
           value,
-          checked: value,
           rev: entity?._rev || '',
-          ComposedInput: Checkbox,
-          ComposedProps: (
-            onChange: (value?: boolean, editorValue?: boolean, additional?: Partial<EntityType>) => void
-          ) => ({
-            checked: value,
-            onChange: ({ target: { checked } }: CheckboxChangeEvent) => {
-              return onChange(checked, checked);
-            },
-          }),
         }}
+        Composed={(baseProps, onChange) => (
+          <Checkbox
+            {...{ ...baseProps, 'data-test-id': baseProps['data-test-id'] || '' }}
+            onChange={(newValue) => onChange(newValue, newValue)}>
+            {props.field.title}
+          </Checkbox>
+        )}
       />
     );
   }

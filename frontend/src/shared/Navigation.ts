@@ -1,5 +1,7 @@
 import { action, computed, makeObservable, observable } from 'mobx';
 
+import { uuid } from '../utils/Utils';
+
 import Logger from './Logger';
 
 export enum NavigationModal {
@@ -9,6 +11,12 @@ export enum NavigationModal {
 }
 
 type NotificationType = 'warning' | 'success' | 'info' | 'error';
+export type NotificationData = {
+  id: string;
+  created: Date;
+  type: NotificationType;
+  text: string;
+};
 
 export default class NavigationStore {
   dateFormat = 'dd/MM/yyy';
@@ -17,10 +25,7 @@ export default class NavigationStore {
 
   currentModal = NavigationModal.NONE;
 
-  notifications: Array<{
-    type: NotificationType;
-    text: string;
-  }> = [];
+  notifications: Array<NotificationData> = [];
 
   logger: Logger;
 
@@ -69,8 +74,9 @@ export default class NavigationStore {
   }
 
   notify(type: NotificationType, text: string) {
+    const created = new Date();
     this.logger.info('notify', { type, text });
-    this.notifications.push({ text, type });
+    this.notifications = [...this.notifications, { id: uuid(), text, type, created }];
   }
 
   warning(text: string) {
