@@ -110,9 +110,9 @@ const ContentTransactionTable = ({
       className='tableEditor'
       rows={transactions}
       columns={[
-        { dataIndex: 'date', title: Messages.util.date },
+        { fieldName: 'date', title: Messages.util.date, render: (value: string) => <>{value}</> },
         {
-          dataIndex: 'from_account',
+          fieldName: 'from_account',
           title: Messages.transactions.from_account,
           render: accountRender({
             moneeeyStore,

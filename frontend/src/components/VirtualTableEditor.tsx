@@ -12,7 +12,7 @@ export type ColumnDef<Row> = {
   fieldName?: keyof Row;
   defaultSortOrder?: 'descend' | 'ascend';
   sorter?: (a: Row, b: Row, asc: boolean) => number;
-  render?: (value: unknown, row: Row) => React.ReactNode;
+  render: (value: unknown, row: Row) => React.ReactNode;
 };
 
 type VirtualTableProps<Row> = {
@@ -110,7 +110,7 @@ const VirtualTable = function VirtualTableRenderer<Row>({
 
   const renderCell = ({ rowIndex, columnIndex }: GridRenderCell) => {
     const column = columns[columnIndex];
-    const renderer = column.render || ((o) => <>{o}</>);
+    const renderer = column.render;
     const row = rows[rowIndex];
     const value = column.fieldName && row && row[column.fieldName];
 

@@ -64,29 +64,30 @@ export default class PersistenceStore {
     };
 
     return new Promise((resolve, reject) => {
-      if (!this.databaseId) {
-        return;
+      if (this.databaseId) {
+        this.db
+          .sync(`/api/couchdb/${this.databaseId}`, { live: true, retry: true })
+          .on('change', (change) => {
+            const changedDocIds = change.change.docs.map((doc) => doc._id);
+            this.logger.info('sync change', { change: changedDocIds });
+            this.fetchLatest(changedDocIds);
+            resolve(setStatus(Status.ONLINE));
+          })
+          .on('paused', (info) => {
+            this.logger.info('sync paused', { info });
+            resolve(setStatus(Status.PAUSED));
+          })
+          .on('denied', (info) => {
+            this.logger.warn('sync denied', { info });
+            resolve(setStatus(Status.DENIED));
+          })
+          .on('error', (error) => {
+            this.logger.error('sync error', { error });
+            reject(setStatus(Status.ERROR));
+          });
+      } else {
+        resolve(setStatus(Status.OFFLINE));
       }
-      this.db
-        .sync(`/api/couchdb/${this.databaseId}`, { live: true, retry: true })
-        .on('change', (change) => {
-          const changedDocIds = change.change.docs.map((doc) => doc._id);
-          this.logger.info('sync change', { change: changedDocIds });
-          this.fetchLatest(changedDocIds);
-          resolve(setStatus(Status.ONLINE));
-        })
-        .on('paused', (info) => {
-          this.logger.info('sync paused', { info });
-          resolve(setStatus(Status.PAUSED));
-        })
-        .on('denied', (info) => {
-          this.logger.warn('sync denied', { info });
-          resolve(setStatus(Status.DENIED));
-        })
-        .on('error', (error) => {
-          this.logger.error('sync error', { error });
-          reject(setStatus(Status.ERROR));
-        });
     });
   }
 
@@ -142,9 +143,9 @@ export default class PersistenceStore {
     }
     if ((a.updated || '') > (b.updated || '')) {
       return resolve(a);
-    } else {
-      return resolve(b);
     }
+
+    return resolve(b);
   }
 
   async commit() {

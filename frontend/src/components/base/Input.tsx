@@ -84,14 +84,11 @@ const InputNumber = ({
   decimalSeparator,
   decimalScale,
 }: InputNumberProps) => {
-  const [currentValue, setCurrentValue] = useState(`${value}`);
-  const [lastFloatValue, setLastFloatValue] = useState(value);
+  const [currentValue, setCurrentValue] = useState<string | number>(value);
+
   useEffect(() => {
-    if (lastFloatValue !== value) {
-      setCurrentValue(`${value}`);
-      setLastFloatValue(value);
-    }
-  }, [lastFloatValue, value]);
+    setCurrentValue(value);
+  }, [value]);
 
   return InputContainer({
     prefix,
@@ -103,9 +100,10 @@ const InputNumber = ({
         className={`mn-input ${className || ''}`}
         value={currentValue}
         onValueChange={({ floatValue, formattedValue }) => {
-          setCurrentValue(formattedValue);
-          if (floatValue) {
-            setLastFloatValue(floatValue);
+          if (formattedValue) {
+            setCurrentValue(formattedValue);
+          }
+          if (floatValue && floatValue !== value) {
             onChange(floatValue);
           }
         }}

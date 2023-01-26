@@ -18,24 +18,24 @@ interface TabsProps {
 }
 
 const Tabs = (props: TabsProps & WithDataTestId) => {
-  const [selected, setSelected] = useState(props.items[0].key);
+  const [selectedIdx, setSelectedIdx] = useState(0);
 
   return (
     <section className='mn-tabs'>
       <nav data-test-id={props['data-test-id']}>
         <Space>
-          {props.items.map((item) => (
+          {props.items.map((item, idx) => (
             <LinkButton
               key={item.key}
-              onClick={() => setSelected(item.key)}
+              onClick={() => setSelectedIdx(idx)}
               data-test-id={`${props['data-test-id']}_${item.key}`}
-              className={item.key === selected ? 'mn-tab-active' : ''}>
+              className={idx === selectedIdx ? 'mn-tab-active' : ''}>
               {item.label}
             </LinkButton>
           ))}
         </Space>
       </nav>
-      {props.items.find((item) => item.key === selected)?.children}
+      {props.items[selectedIdx]?.children}
     </section>
   );
 };

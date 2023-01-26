@@ -2,6 +2,7 @@ import { head, isEmpty, shuffle } from 'lodash';
 
 import { TDateFormat } from '../../utils/Date';
 import { asyncProcess } from '../../utils/Utils';
+import Logger from '../Logger';
 import MoneeeyStore from '../MoneeeyStore';
 
 import {
@@ -14,6 +15,8 @@ import {
   importTransaction,
   retrieveColumns,
 } from './ImportContent';
+
+const logger = new Logger('txtImporter', null);
 
 const txtImportFromLines = ({
   moneeeyStore,
@@ -29,6 +32,8 @@ const txtImportFromLines = ({
   separator?: string;
 }): Promise<ImportResult> => {
   if (isEmpty(lines)) {
+    logger.warn('txtImportFromLines empty lines');
+
     return Promise.resolve({
       errors: [
         {
@@ -45,8 +50,12 @@ const txtImportFromLines = ({
   onProgress(30);
   const first10 = lines.slice(0, 10);
   const sep = isEmpty(separator) ? findSeparator(first10.join('\n')) : separator;
+  logger.info('txtImportFromLines sep', { first10, sep });
   const columns = findColumns((head(shuffle(first10)) || '').split(sep), data.config.dateFormat || TDateFormat);
+  logger.info('txtImportFromLines columns', { columns });
   if (columns.dateIndex === -1 || columns.valueIndex === -1) {
+    logger.warn('txtImportFromLines date or value column not found', { columns });
+
     return Promise.resolve({
       errors: [
         {
@@ -89,6 +98,7 @@ const txtImportFromLines = ({
           other_account,
           importer,
         });
+        logger.info('process line', { line, value, date, other, other_account, transaction });
         stt.transactions.push(transaction);
         stt.update[transaction.transaction_uuid] = Boolean(existing);
         stt.recommended_accounts[transaction.transaction_uuid] = accounts;
