@@ -118,14 +118,33 @@ export default class PersistenceStore {
   }
 
   resolveConflict<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, a: EntityType, b: EntityType) {
-    const revLevel = (rev: string | undefined) => (rev || '0-').split('-')[0];
-    const aIsMostRecent =
-      (a._rev && !b._rev) || revLevel(a._rev) > revLevel(b._rev) || (a.updated || '') > (b.updated || '');
-    const updated = aIsMostRecent ? a : b;
-    const outdated = aIsMostRecent ? b : a;
-    const resolved = { ...outdated, ...updated };
-    this.logger.info('resolve conflict', { updated, outdated, resolved });
-    store.merge(resolved, { setUpdated: false });
+    const resolve = (updated: EntityType) => {
+      const outdated = updated === a ? b : a;
+      const resolved = { ...outdated, ...updated };
+      this.logger.info('resolve conflict', { updated, outdated, resolved });
+      store.merge(resolved, { setUpdated: true });
+    };
+    if (a._rev && !b._rev) {
+      return resolve(a);
+    }
+    if (!a._rev && b._rev) {
+      return resolve(b);
+    }
+    if (a._rev && b._rev) {
+      const revLevel = (rev: string | undefined) => parseInt((rev || '0-').split('-')[0], 10);
+      const aRevLevel = revLevel(a._rev);
+      const bRevLevel = revLevel(b._rev);
+      if (aRevLevel > bRevLevel) {
+        return resolve(a);
+      } else if (bRevLevel > aRevLevel) {
+        return resolve(b);
+      }
+    }
+    if ((a.updated || '') > (b.updated || '')) {
+      return resolve(a);
+    } else {
+      return resolve(b);
+    }
   }
 
   async commit() {
