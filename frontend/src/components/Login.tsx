@@ -38,7 +38,6 @@ export default function Login() {
 
   useEffect(() => {
     if (searchParams.has('confirm_code')) {
-      // eslint-disable-next-line @typescript-eslint/no-extra-semi
       (async () => {
         const params_email = searchParams.get('email') || '';
         const auth_code = searchParams.get('auth_code') || '';

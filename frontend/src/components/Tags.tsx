@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 
 import TagsRoute from '../routes/TagsRoute';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
+import { identity } from '../utils/Utils';
 
 import Tag from './base/Tag';
 
@@ -14,10 +15,7 @@ const TagColors: { [_group: string]: string } = {
 
 const HighlightTagContext = React.createContext({
   tag: '',
-  setTag: (_v: string) => {
-    // eslint-disable-next-line no-unused-expressions
-    _v;
-  },
+  setTag: (value: string) => identity(value),
 });
 
 interface ITagsProp {

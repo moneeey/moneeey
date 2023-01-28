@@ -32,7 +32,6 @@ export const BaseReport = function ({ accounts, processFn, title, chartFn }: Bas
   const [progress, setProgress] = useState(0);
   const moneeeyStore = useMoneeeyStore();
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
     (async () => {
       const currentData = await asyncProcessTransactionsForAccounts({
         moneeeyStore,
