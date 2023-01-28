@@ -1,16 +1,19 @@
 import { ReactElement, useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import { keys } from 'lodash';
 
 import { Checkbox } from '../../components/base/Input';
 import Loading from '../../components/Loading';
 import { IAccount } from '../../entities/Account';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
+import { TDate } from '../../utils/Date';
 
 import DateGroupingSelector from './DateGroupingSelector';
 import {
   AsyncProcessTransactionFn,
   NewReportDataMap,
+  PeriodGroup,
   PeriodGroups,
   ReportDataMap,
   asyncProcessTransactionsForAccounts,
@@ -22,8 +25,11 @@ interface BaseReportProps {
   title: string;
   accounts: IAccount[];
   processFn: AsyncProcessTransactionFn;
-  chartFn: (data: ReportDataMap) => ReactElement;
+  chartFn: (data: ReportDataMap, period: PeriodGroup) => ReactElement;
 }
+
+const roundCofficient = 1e5;
+const roundPoint = (value: number) => Math.round(value * roundCofficient) / roundCofficient;
 
 export const BaseReport = function ({ accounts, processFn, title, chartFn }: BaseReportProps) {
   const [data, setData] = useState(NewReportDataMap());
@@ -41,6 +47,9 @@ export const BaseReport = function ({ accounts, processFn, title, chartFn }: Bas
         setProgress,
       });
       setProgress(0);
+      Array.from(currentData.points.values()).forEach((points) => {
+        keys(points).forEach((label) => (points[label] = roundPoint(points[label])));
+      });
       setData(currentData);
     })();
   }, [moneeeyStore, period, selectedAccounts]);
@@ -50,7 +59,7 @@ export const BaseReport = function ({ accounts, processFn, title, chartFn }: Bas
       <h2>{title}</h2>
       <DateGroupingSelector setPeriod={setPeriod} period={period} />
       <Loading loading={progress !== 0} progress={progress}>
-        {chartFn(data)}
+        {chartFn(data, period)}
       </Loading>
       <section className='includedAccountsArea'>
         {Messages.reports.include_accounts}
@@ -113,7 +122,13 @@ const BaseChart = function ({
   );
 };
 
-export const BaseColumnChart = function ({ data }: { data: ReportDataMap }) {
+export const BaseColumnChart = function ({
+  data,
+  xFormatter,
+}: {
+  data: ReportDataMap;
+  xFormatter: (v: TDate) => string;
+}) {
   return (
     <BaseChart
       data={data}
@@ -126,9 +141,9 @@ export const BaseColumnChart = function ({ data }: { data: ReportDataMap }) {
             height={props.height}
             data={props.rows}
             margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-            <XAxis dataKey='date' />
+            <XAxis dataKey='date' tickFormatter={xFormatter} />
             <CartesianGrid stroke='#fafafa' strokeDasharray='3 3' />
-            <Tooltip wrapperClassName='chartTooltip' />
+            <Tooltip wrapperClassName='chartTooltip' labelFormatter={xFormatter} />
             {props.columns.map((column) => (
               <Bar
                 key={column}
@@ -145,7 +160,14 @@ export const BaseColumnChart = function ({ data }: { data: ReportDataMap }) {
   );
 };
 
-export const BaseLineChart = function ({ data }: { data: ReportDataMap }) {
+export const BaseLineChart = function ({
+  data,
+  xFormatter,
+}: {
+  data: ReportDataMap;
+
+  xFormatter: (v: TDate) => string;
+}) {
   return (
     <BaseChart
       data={data}
@@ -158,8 +180,8 @@ export const BaseLineChart = function ({ data }: { data: ReportDataMap }) {
             height={props.height}
             data={props.rows}
             margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-            <XAxis dataKey='date' />
-            <Tooltip wrapperClassName='chartTooltip' />
+            <XAxis dataKey='date' tickFormatter={xFormatter} />
+            <Tooltip wrapperClassName='chartTooltip' labelFormatter={xFormatter} />
             <CartesianGrid stroke='#fafafa' strokeDasharray='3 3' />
             {props.columns.map((column, index) => (
               <Line key={column} type='monotone' dataKey={column} stroke={nextColor()} yAxisId={index} />

@@ -48,7 +48,7 @@ const IncomeVsExpensesReport = function () {
       accounts={accounts.allPayees}
       processFn={incomeVsExpensesProcess(moneeeyStore)}
       title={Messages.reports.income_vs_expenses}
-      chartFn={(data) => <BaseColumnChart data={data} />}
+      chartFn={(data, period) => <BaseColumnChart data={data} xFormatter={period.formatter} />}
     />
   );
 };

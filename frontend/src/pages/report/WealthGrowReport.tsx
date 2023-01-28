@@ -39,7 +39,7 @@ const WealthGrowReport = function () {
       accounts={accounts.allPayees}
       processFn={wealthGrowProcess(moneeeyStore)}
       title={Messages.reports.wealth_growth}
-      chartFn={(data) => {
+      chartFn={(data, period) => {
         const sorted = Array.from(data.points.entries()).sort(([keyA], [keyB]) => compareDates(keyA, keyB));
         sorted.forEach(([key, points], index) => {
           const category = Messages.reports.wealth;
@@ -51,7 +51,7 @@ const WealthGrowReport = function () {
           data.points.set(key, { [category]: withPrevious });
         });
 
-        return <BaseLineChart data={data} />;
+        return <BaseLineChart data={data} xFormatter={period.formatter} />;
       }}
     />
   );
