@@ -45,6 +45,8 @@ export const asyncProcessTransactionsForAccounts = async function ({
     },
     {
       state: NewReportDataMap(),
+      chunkSize: 400,
+      chunkThrottle: 10,
     }
   );
 
@@ -54,12 +56,12 @@ export const asyncProcessTransactionsForAccounts = async function ({
 export interface PeriodGroup {
   label: string;
   groupFn: (_date: Date) => Date;
-  formatter: (_date: Date) => string;
+  formatter: (_date: TDate) => string;
   order: number;
 }
 
-export const noopFormatter = <T extends object | number | string>(o: T): string => `${o.toString()}`;
-export const patternFormatter = (pattern: string) => (date: Date) => formatDateAs(formatDate(date), pattern);
+export const patternFormatter = (pattern: string) => (date: TDate) =>
+  date.length === TDateFormat.length ? formatDateAs(date, pattern) : date;
 
 export const dateToPeriod = function (period: PeriodGroup, date: TDate) {
   return formatDate(period.groupFn(parseDate(date)));
@@ -75,25 +77,25 @@ export const PeriodGroups: { [_name: string]: PeriodGroup } = {
   Week: {
     label: Messages.util.week,
     groupFn: startOfWeek,
-    formatter: patternFormatter('yyyy ww'),
+    formatter: patternFormatter('yyyy Lo'),
     order: 1,
   },
   Month: {
     label: Messages.util.month,
     groupFn: startOfMonth,
-    formatter: noopFormatter,
+    formatter: patternFormatter('yyyy-LL'),
     order: 2,
   },
   Quarter: {
     label: Messages.util.quarter,
     groupFn: startOfQuarter,
-    formatter: noopFormatter,
+    formatter: patternFormatter('yyyy QQQ'),
     order: 3,
   },
   Year: {
     label: Messages.util.year,
     groupFn: startOfYear,
-    formatter: noopFormatter,
+    formatter: patternFormatter('yyyy'),
     order: 4,
   },
 };

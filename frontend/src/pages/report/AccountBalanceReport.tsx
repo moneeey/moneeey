@@ -52,7 +52,7 @@ const AccountBalanceReport = observer(() => {
       accounts={accounts.allNonPayees}
       processFn={accountBalanceReport(moneeeyStore)}
       title={Messages.reports.account_balance}
-      chartFn={(data) => <BaseColumnChart data={data} />}
+      chartFn={(data, period) => <BaseColumnChart data={data} xFormatter={period.formatter} />}
     />
   );
 });

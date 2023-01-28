@@ -38,7 +38,7 @@ const TagExpensesReport = function () {
       accounts={accounts.allPayees}
       processFn={tagExpensesProcess(moneeeyStore)}
       title={Messages.reports.tag_expenses}
-      chartFn={(data) => <BaseColumnChart data={data} />}
+      chartFn={(data, period) => <BaseColumnChart data={data} xFormatter={period.formatter} />}
     />
   );
 };
