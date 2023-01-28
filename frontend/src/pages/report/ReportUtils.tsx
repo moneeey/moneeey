@@ -58,8 +58,7 @@ export interface PeriodGroup {
   order: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-export const noopFormatter = <T,>(o: T): string => `${o}`;
+export const noopFormatter = <T extends object | number | string>(o: T): string => `${o.toString()}`;
 export const patternFormatter = (pattern: string) => (date: Date) => formatDateAs(formatDate(date), pattern);
 
 export const dateToPeriod = function (period: PeriodGroup, date: TDate) {

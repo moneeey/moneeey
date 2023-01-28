@@ -1,4 +1,4 @@
-import { compact, isEmpty, isNumber, map, noop } from 'lodash';
+import { compact, isEmpty, isNumber, map } from 'lodash';
 import { Dispatch, SetStateAction } from 'react';
 
 import { PrimaryButton, SecondaryButton } from '../../components/base/Button';
