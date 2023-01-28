@@ -42,4 +42,8 @@ export interface EditorProps<TEntityType extends IBaseEntity, ValueEditorType, V
   onUpdate: (value: ValueEntityType, additional: object) => TEntityType;
 }
 
+export type Row = {
+  entityId: string;
+};
+
 export const NoSorter = (): false => false;
