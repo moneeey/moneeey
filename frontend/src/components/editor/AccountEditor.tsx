@@ -23,7 +23,7 @@ interface AccountEditorBaseProps<EntityType extends IBaseEntity>
 }
 
 const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: AccountEditorBaseProps<EntityType>) => {
-  const { accounts } = useMoneeeyStore();
+  const { accounts, transactions } = useMoneeeyStore();
   const currentAccount = accounts.byUuid(props.value);
   const value = currentAccount?.account_uuid || '';
   const tags = accounts.accountTags(props.value).filter((t) => t !== currentAccount?.name);
@@ -56,11 +56,14 @@ const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: Accou
                 kind: AccountKind.PAYEE,
                 name,
               };
-              if (props.entity && isTransaction(props.entity)) {
-                const transaction_currencies = [props.entity.from_account, props.entity.to_account].map(
-                  (account_uuid) => accounts.byUuid(account_uuid)?.currency_uuid
+              const transaction = transactions.byUuid(props.entityId);
+              if (transaction && isTransaction(transaction)) {
+                const transaction_currencies = compact(
+                  [transaction.from_account, transaction.to_account].map(
+                    (account_uuid) => accounts.byUuid(account_uuid)?.currency_uuid
+                  )
                 );
-                account.currency_uuid = head(compact(transaction_currencies)) || account.currency_uuid;
+                account.currency_uuid = head(transaction_currencies) || account.currency_uuid;
               }
               accounts.merge(account);
               onChange(undefined, account.account_uuid, undefined);

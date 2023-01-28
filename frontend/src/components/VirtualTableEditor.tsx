@@ -52,7 +52,6 @@ const Grid = <Row,>({
   return (
     <div
       className={`mn-virtualtable ${className || ''}`}
-      style={{ overflow: 'auto ' }}
       ref={(el) => {
         row.outerRef.current = el;
         col.outerRef.current = el;
