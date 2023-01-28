@@ -2,7 +2,7 @@ import { debounce, forEach, map, omit, uniqBy, values } from 'lodash';
 import { action, makeObservable, observable, observe, toJS } from 'mobx';
 import PouchDB from 'pouchdb';
 
-import { asyncProcess } from '../utils/Utils';
+import { StorageKind, asyncProcess, getStorage, setStorage } from '../utils/Utils';
 
 import { EntityType, IBaseEntity } from './Entity';
 import Logger from './Logger';
@@ -12,18 +12,30 @@ export enum Status {
   ONLINE = 'ONLINE',
   OFFLINE = 'OFFLINE',
   DENIED = 'DENIED',
-  PAUSED = 'PAUSED',
   ERROR = 'ERROR',
 }
+
+export type RemoteCouchDB = {
+  url: string;
+  username: string;
+  password: string;
+};
 
 export type PouchDBFactoryFn = () => PouchDB.Database;
 
 export const PouchDBFactory = () => new PouchDB('moneeey');
 
+export const PouchDBRemoteFactory = ({ url, username, password }: RemoteCouchDB) =>
+  new PouchDB(url, { auth: { username, password } });
+
 export default class PersistenceStore {
   public status: Status = Status.OFFLINE;
 
-  public databaseId = '';
+  public syncRemote: RemoteCouchDB = {
+    url: '',
+    username: '',
+    password: '',
+  };
 
   private db: PouchDB.Database;
 
@@ -53,29 +65,58 @@ export default class PersistenceStore {
 
     makeObservable(this, {
       status: observable,
-      databaseId: observable,
       sync: action,
     });
   }
 
-  sync() {
-    const setStatus = (status: Status) => {
-      this.status = status;
+  syncWith(remote: RemoteCouchDB) {
+    this.syncRemote = remote;
+    const setConfig = (key: string, value: string) => {
+      setStorage(key, value, StorageKind.PERMANENT);
     };
+    setConfig('sync_url', remote.url);
+    setConfig('sync_username', remote.username);
+    setConfig('sync_password', remote.password);
+    this.sync();
+  }
+
+  syncStart() {
+    const getConfig = (key: string) => getStorage(key, '', StorageKind.PERMANENT);
+    this.syncRemote.url = getConfig('sync_url');
+    this.syncRemote.username = getConfig('sync_username');
+    this.syncRemote.password = getConfig('sync_password');
+    this.sync();
+  }
+
+  sync() {
+    const setStatus = action((status: Status) => {
+      if (this.status !== status) {
+        this.status = status;
+      }
+    });
 
     return new Promise((resolve, reject) => {
-      if (this.databaseId) {
+      if (this.syncRemote.url) {
+        const remoteDb = PouchDBRemoteFactory(this.syncRemote);
         this.db
-          .sync(`/api/couchdb/${this.databaseId}`, { live: true, retry: true })
+          .sync(remoteDb, { live: true, retry: true })
+          .on('active', () => {
+            this.logger.info('sync active');
+            resolve(setStatus(Status.ONLINE));
+          })
+          .on('complete', (info) => {
+            this.logger.info('sync complete', { info });
+            resolve(setStatus(Status.OFFLINE));
+          })
           .on('change', (change) => {
-            const changedDocIds = change.change.docs.map((doc) => doc._id);
+            const changedDocIds = change.change.docs.map((doc) => ({ _id: doc._id, _rev: doc._rev }));
             this.logger.info('sync change', { change: changedDocIds });
             this.fetchLatest(changedDocIds);
             resolve(setStatus(Status.ONLINE));
           })
           .on('paused', (info) => {
             this.logger.info('sync paused', { info });
-            resolve(setStatus(Status.PAUSED));
+            resolve(setStatus(Status.ONLINE));
           })
           .on('denied', (info) => {
             this.logger.warn('sync denied', { info });
@@ -91,13 +132,22 @@ export default class PersistenceStore {
     });
   }
 
-  async fetchLatest(docIds: string[]) {
-    const docId = docIds.pop();
-    if (docId) {
-      this.logger.info('fetch latest', { docId });
-      await this.fetch(docId);
-      await this.fetchLatest(docIds);
+  async fetchLatest(docs: { _id: string; _rev: string }[]) {
+    const first = docs.pop();
+    if (!first) {
+      return;
     }
+
+    const { _id, _rev } = first;
+    if (this.entries[_id]?._rev === _rev) {
+      this.logger.info('fetch latest skipped', { _id, _rev });
+    } else {
+      this.logger.info('fetch latest', { _id, _rev });
+      const latest = await this.fetch(_id);
+      this.stores[latest.entity_type].merge(latest, { setUpdated: false });
+    }
+
+    await this.fetchLatest(docs);
   }
 
   load() {
@@ -195,11 +245,13 @@ export default class PersistenceStore {
   }
 
   async fetch(id: string) {
-    const entity = await this.db.get(id, { conflicts: true });
-    if (entity._conflicts) {
-      forEach(entity._conflicts, (rev) => this.db.remove(id, rev));
+    const actual = await this.db.get(id, { conflicts: true });
+    if (actual._conflicts) {
+      forEach(actual._conflicts, (rev) => this.db.remove(id, rev));
     }
-    this.entries[entity._id] = entity as IBaseEntity;
+    const entity = actual as IBaseEntity;
+    this.entries[entity._id || ''] = entity;
+    this.logger.info('sync fetch latest', { entity });
 
     return entity;
   }

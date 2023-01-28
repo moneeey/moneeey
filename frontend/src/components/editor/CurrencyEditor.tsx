@@ -7,10 +7,9 @@ import MappedStore from '../../shared/MappedStore';
 import MoneeeyStore from '../../shared/MoneeeyStore';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Select from '../base/Select';
-import { Row } from '../TableEditor';
 
 import { BaseEditor } from './BaseEditor';
-import { EditorProps } from './EditorProps';
+import { EditorProps, Row } from './EditorProps';
 
 export const CurrencyEditor = observer(
   <EntityType extends IBaseEntity>(props: EditorProps<EntityType, TCurrencyUUID, TCurrencyUUID>) => {

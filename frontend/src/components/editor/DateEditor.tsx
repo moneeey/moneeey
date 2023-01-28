@@ -5,10 +5,9 @@ import MappedStore from '../../shared/MappedStore';
 
 import { TDate, compareDates, formatDate, parseDateOrTime } from '../../utils/Date';
 import DatePicker from '../base/DatePicker';
-import { Row } from '../TableEditor';
 
 import { BaseEditor } from './BaseEditor';
-import { EditorProps } from './EditorProps';
+import { EditorProps, Row } from './EditorProps';
 
 export const DateEditor = observer(<EntityType extends IBaseEntity>(props: EditorProps<EntityType, Date, TDate>) => {
   const entity = props.store.byUuid(props.entityId);

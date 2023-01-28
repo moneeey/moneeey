@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { SecondaryButton } from '../components/base/Button';
 import Space from '../components/base/Space';
-import { TableEditor } from '../components/TableEditor';
+import TableEditor from '../components/TableEditor';
 import { AccountStore, TAccountUUID } from '../entities/Account';
 import CurrencyStore from '../entities/Currency';
 import TransactionStore, { ITransaction } from '../entities/Transaction';

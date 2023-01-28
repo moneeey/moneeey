@@ -8,11 +8,10 @@ import MappedStore from '../../shared/MappedStore';
 import MoneeeyStore from '../../shared/MoneeeyStore';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Select from '../base/Select';
-import { Row } from '../TableEditor';
 import { TagsFrom, TagsTo } from '../Tags';
 
 import { BaseEditor } from './BaseEditor';
-import { EditorProps, EditorType } from './EditorProps';
+import { EditorProps, EditorType, Row } from './EditorProps';
 
 interface AccountEditorBaseProps<EntityType extends IBaseEntity>
   extends EditorProps<EntityType, TAccountUUID, TAccountUUID> {

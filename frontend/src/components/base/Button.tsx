@@ -24,7 +24,7 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind & WithD
   function BaseButton(props: ButtonProps & Partial<WithDataTestId>) {
     return (
       <button {...base} {...props} className={`mn-button mn-button-${kind} ${props.className || ''}`}>
-        {props.children || props.title}
+        {props.children || props.title || base.title}
       </button>
     );
   };

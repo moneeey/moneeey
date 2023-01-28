@@ -140,7 +140,7 @@ export const AppMenu = observer(() => {
         },
         {
           key: 'sync',
-          label: Messages.menu.sync[persistence.status],
+          label: `${Messages.modal.sync} ${Messages.menu.sync[persistence.status]}`,
           icon:
             persistence.status === Status.ONLINE ? (
               <PlayCircleIcon color='green' {...iconProps} />

@@ -7,7 +7,7 @@ import { LinkButton } from '../../components/base/Button';
 import Card from '../../components/base/Card';
 import { TextTitle } from '../../components/base/Text';
 import Loading from '../../components/Loading';
-import { TableEditor } from '../../components/TableEditor';
+import TableEditor from '../../components/TableEditor';
 import { IBudget } from '../../entities/Budget';
 import { BudgetEnvelope } from '../../entities/BudgetEnvelope';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';

@@ -4,10 +4,9 @@ import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { InputNumber } from '../base/Input';
-import { Row } from '../TableEditor';
 
 import { BaseEditor } from './BaseEditor';
-import { EditorProps } from './EditorProps';
+import { EditorProps, Row } from './EditorProps';
 
 interface PrefixSuffix {
   prefix?: string;
