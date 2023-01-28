@@ -62,10 +62,6 @@ export default class PersistenceStore {
     this.logger = new Logger('persistence', parent);
     this.db = dbFactory();
     this._commit = debounce(() => this.commit(), 1000);
-    const getConfig = (key: string) => getStorage(key, '', StorageKind.PERMANENT);
-    this.syncRemote.url = getConfig('sync_url');
-    this.syncRemote.username = getConfig('sync_username');
-    this.syncRemote.password = getConfig('sync_password');
 
     makeObservable(this, {
       status: observable,
@@ -81,6 +77,14 @@ export default class PersistenceStore {
     setConfig('sync_url', remote.url);
     setConfig('sync_username', remote.username);
     setConfig('sync_password', remote.password);
+    this.sync();
+  }
+
+  syncStart() {
+    const getConfig = (key: string) => getStorage(key, '', StorageKind.PERMANENT);
+    this.syncRemote.url = getConfig('sync_url');
+    this.syncRemote.username = getConfig('sync_username');
+    this.syncRemote.password = getConfig('sync_password');
     this.sync();
   }
 
