@@ -56,7 +56,7 @@ const SelfHostedConfig = () => {
   const { persistence } = useMoneeeyStore();
   const [state, setState] = useState(persistence.syncRemote);
   const onLogin = () => {
-    persistence.syncWith(state, false);
+    persistence.syncWith(state);
   };
 
   return (

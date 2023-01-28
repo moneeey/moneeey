@@ -11,7 +11,7 @@ import Select from '../base/Select';
 import { TagsFrom, TagsTo } from '../Tags';
 
 import { BaseEditor } from './BaseEditor';
-import { EditorProps, EditorType } from './EditorProps';
+import { EditorProps, EditorType, Row } from './EditorProps';
 
 interface AccountEditorBaseProps<EntityType extends IBaseEntity>
   extends EditorProps<EntityType, TAccountUUID, TAccountUUID> {
