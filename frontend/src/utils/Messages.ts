@@ -25,10 +25,13 @@ const Messages = {
     failed: 'Login failed, please try again',
     welcome: 'Please check your email.',
     messages: [
-      'Personal Finance budgeting is knowledge and poer',
-      'Finance Independence is freedom, your goal is it',
-      'Built with privacy and private in mind, with E2E encryption',
-      'Own your data, export and import, your data is yours',
+      'Personal Finance with Moneeey uses budgeting',
+      'With Moneeey you will archive your Financial Independence',
+      'You will have freedom to live your life fully',
+      'Be the owner of your information',
+      'Built with privacy and private in mind',
+      'End-to-end encryption, your data is only yours',
+      'Import and export data',
     ],
   },
   login: {
@@ -141,6 +144,7 @@ const Messages = {
   modal: {
     landing: 'Welcome to Moneeey',
     start_tour: 'Start Tour',
+    sync: 'Sync',
   },
   tour: {
     welcome: 'Welcome to Moneeey',

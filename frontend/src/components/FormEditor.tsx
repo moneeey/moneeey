@@ -12,6 +12,25 @@ import { EntityEditorForField } from './editor/RenderEditor';
 import './FormEditor.less';
 import { TextNormal } from './base/Text';
 
+interface BaseFormEditor extends WithDataTestId {
+  className?: string;
+  items: {
+    label: string;
+    editor: JSX.Element;
+  }[];
+}
+
+export const BaseFormEditor = ({ className, 'data-test-id': dataTestId, items }: BaseFormEditor) => (
+  <section className={`formEditor ${className || ''}`} {...{ 'data-test-id': dataTestId }}>
+    {items.map((item) => (
+      <div className='entry' key={item.label}>
+        <TextNormal>{item.label}</TextNormal>
+        {item.editor}
+      </div>
+    ))}
+  </section>
+);
+
 interface FormEditorProps<T extends IBaseEntity, Context> extends WithDataTestId {
   className?: string;
   store: MappedStore<T>;
@@ -27,21 +46,21 @@ export default observer(
     context,
     'data-test-id': dataTestId,
   }: FormEditorProps<T, unknown>) => (
-    <section className={`formEditor ${className || ''}`} {...{ 'data-test-id': dataTestId }}>
-      {compact(values(store.schema()))
+    <BaseFormEditor
+      className={className}
+      {...{ 'data-test-id': dataTestId }}
+      items={compact(values(store.schema()))
         .sort((a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index)
-        .map((field: FieldProps<never>) => (
-          <div className='entry' key={field.field}>
-            <TextNormal>{field.title}</TextNormal>
-            {EntityEditorForField({
-              entityId,
-              context,
-              factory: store.factory,
-              field,
-              store,
-            })}
-          </div>
-        ))}
-    </section>
+        .map((field: FieldProps<never>) => ({
+          label: field.title,
+          editor: EntityEditorForField({
+            entityId,
+            context,
+            factory: store.factory,
+            field,
+            store,
+          }),
+        }))}
+    />
   )
 );

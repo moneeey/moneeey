@@ -18,6 +18,14 @@ const asyncTimeout = function <R>(fn: () => R | Promise<R>, delay: number): Prom
   });
 };
 
+const capitalize = (text: string): string => {
+  if (text) {
+    return text.charAt(0).toUpperCase() + text.substring(1);
+  }
+
+  return text;
+};
+
 const asyncProcess = async function <T, R>(
   values: T[],
   fn: (chnk: T[], state: R, percentage: number) => void,
@@ -50,12 +58,14 @@ enum StorageKind {
   SESSION,
 }
 
-const getStorage = function (key: string, defaault: string, storage: StorageKind) {
+const getStorage = function (key: string, defaultt: string, storage: StorageKind) {
   if (storage === StorageKind.PERMANENT) {
-    return window.localStorage.getItem(key) || defaault;
+    return window.localStorage.getItem(key) || defaultt;
   } else if (storage === StorageKind.SESSION) {
-    return window.sessionStorage.getItem(key) || defaault;
+    return window.sessionStorage.getItem(key) || defaultt;
   }
+
+  return defaultt;
 };
 
 const setStorage = function (key: string, value: string, storage: StorageKind) {
@@ -66,4 +76,4 @@ const setStorage = function (key: string, value: string, storage: StorageKind) {
   }
 };
 
-export { uuid, tokenize, asyncProcess, getStorage, setStorage, StorageKind, noop, identity };
+export { uuid, tokenize, asyncProcess, getStorage, setStorage, StorageKind, noop, identity, capitalize };
