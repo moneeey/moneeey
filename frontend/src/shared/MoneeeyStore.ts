@@ -64,7 +64,10 @@ export default class MoneeeyStore {
     initializeOnce(() => {
       this.config.init();
       this.currencies.addDefaults();
-      this.persistence.syncStart();
+      const { sync } = this.config.main;
+      if (sync) {
+        this.persistence.syncStart(sync);
+      }
     });
     this.loaded = true;
   }

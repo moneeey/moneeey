@@ -55,8 +55,8 @@ const asyncProcess = async function <T, R>(
 };
 
 enum StorageKind {
-  PERMANENT,
-  SESSION,
+  PERMANENT = 'PERMANENT',
+  SESSION = 'SESSION',
 }
 
 const getStorage = function (key: string, defaultt: string, storage: StorageKind) {

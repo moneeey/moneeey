@@ -2,7 +2,8 @@ import { debounce, forEach, map, omit, uniqBy, values } from 'lodash';
 import { action, makeObservable, observable, observe, toJS } from 'mobx';
 import PouchDB from 'pouchdb';
 
-import { StorageKind, asyncProcess, getStorage, setStorage } from '../utils/Utils';
+import { SyncConfig } from '../entities/Config';
+import { asyncProcess } from '../utils/Utils';
 
 import { EntityType, IBaseEntity } from './Entity';
 import Logger from './Logger';
@@ -15,26 +16,21 @@ export enum Status {
   ERROR = 'ERROR',
 }
 
-export type RemoteCouchDB = {
-  url: string;
-  username: string;
-  password: string;
-};
-
 export type PouchDBFactoryFn = () => PouchDB.Database;
 
 export const PouchDBFactory = () => new PouchDB('moneeey');
 
-export const PouchDBRemoteFactory = ({ url, username, password }: RemoteCouchDB) =>
+export const PouchDBRemoteFactory = ({ url, username, password }: SyncConfig) =>
   new PouchDB(url, { auth: { username, password } });
 
 export default class PersistenceStore {
   public status: Status = Status.OFFLINE;
 
-  public syncRemote: RemoteCouchDB = {
+  public syncRemote: SyncConfig = {
     url: '',
     username: '',
     password: '',
+    enabled: false,
   };
 
   private db: PouchDB.Database;
@@ -58,6 +54,8 @@ export default class PersistenceStore {
 
   private logger: Logger;
 
+  private syncing?: PouchDB.Replication.Sync<IBaseEntity>;
+
   constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
     this.logger = new Logger('persistence', parent);
     this.db = dbFactory();
@@ -69,22 +67,8 @@ export default class PersistenceStore {
     });
   }
 
-  syncWith(remote: RemoteCouchDB) {
+  syncStart(remote: SyncConfig) {
     this.syncRemote = remote;
-    const setConfig = (key: string, value: string) => {
-      setStorage(key, value, StorageKind.PERMANENT);
-    };
-    setConfig('sync_url', remote.url);
-    setConfig('sync_username', remote.username);
-    setConfig('sync_password', remote.password);
-    this.sync();
-  }
-
-  syncStart() {
-    const getConfig = (key: string) => getStorage(key, '', StorageKind.PERMANENT);
-    this.syncRemote.url = getConfig('sync_url');
-    this.syncRemote.username = getConfig('sync_username');
-    this.syncRemote.password = getConfig('sync_password');
     this.sync();
   }
 
@@ -95,10 +79,14 @@ export default class PersistenceStore {
       }
     });
 
+    if (this.syncing) {
+      this.syncing.cancel();
+    }
+
     return new Promise((resolve, reject) => {
-      if (this.syncRemote.url) {
+      if (this.syncRemote.url && this.syncRemote.enabled) {
         const remoteDb = PouchDBRemoteFactory(this.syncRemote);
-        this.db
+        this.syncing = this.db
           .sync(remoteDb, { live: true, retry: true })
           .on('active', () => {
             this.logger.info('sync active');
@@ -125,7 +113,7 @@ export default class PersistenceStore {
           .on('error', (error) => {
             this.logger.error('sync error', { error });
             reject(setStatus(Status.ERROR));
-          });
+          }) as typeof this.syncing;
       } else {
         resolve(setStatus(Status.OFFLINE));
       }

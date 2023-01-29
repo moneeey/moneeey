@@ -7,27 +7,39 @@ import Messages from '../../utils/Messages';
 import Modal from '../base/Modal';
 import { OkButton } from '../base/Button';
 import Tabs from '../base/Tabs';
-import { Input } from '../base/Input';
+import { Checkbox, Input } from '../base/Input';
 import { BaseFormEditor } from '../FormEditor';
+import { StorageKind } from '../../utils/Utils';
 
-const ConfigEditor = <TConfig extends { [key: string]: string }>({
+const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
   placeholder,
   field,
   state,
   setState,
 }: {
   placeholder: string;
-  field: Extract<keyof TConfig, string>;
+  field: Extract<keyof TConfig, string | boolean>;
   state: TConfig;
   setState: Dispatch<SetStateAction<TConfig>>;
-}) => (
-  <Input
-    onChange={(newValue) => setState({ ...state, [field]: newValue })}
-    value={state[field]}
-    placeholder={placeholder}
-    data-test-id={field}
-  />
-);
+}) =>
+  typeof state[field] === 'boolean' ? (
+    <Checkbox
+      onChange={(newValue) => setState({ ...state, [field]: newValue })}
+      value={state[field] as boolean}
+      placeholder={placeholder}
+      data-test-id={field}
+      key={field}>
+      {placeholder}
+    </Checkbox>
+  ) : (
+    <Input
+      onChange={(newValue) => setState({ ...state, [field]: newValue })}
+      value={state[field] as string}
+      placeholder={placeholder}
+      data-test-id={field}
+      key={field}
+    />
+  );
 
 const ProvidedConfig = () => {
   const [state, setState] = useState({ email: '' });
@@ -53,11 +65,23 @@ const ProvidedConfig = () => {
 };
 
 const SelfHostedConfig = () => {
-  const { persistence } = useMoneeeyStore();
-  const [state, setState] = useState(persistence.syncRemote);
-  const onLogin = () => {
-    persistence.syncWith(state);
+  const { persistence, config } = useMoneeeyStore();
+  const [state, setState] = useState(
+    config.main.sync || {
+      url: '',
+      username: '',
+      password: '',
+      enabled: false,
+    }
+  );
+  const syncWith = (enabled: boolean) => {
+    const newState = { ...state, enabled };
+    setState(newState);
+    config.merge({ ...config.main, sync: newState });
+    persistence.syncStart(newState);
   };
+  const onLogin = () => syncWith(true);
+  const onStop = () => syncWith(false);
 
   return (
     <BaseFormEditor
@@ -84,7 +108,11 @@ const SelfHostedConfig = () => {
         },
         {
           label: '',
-          editor: <OkButton onClick={onLogin} title='Login' />,
+          editor: state.enabled ? (
+            <OkButton onClick={onStop} title='Stop live synchronization' />
+          ) : (
+            <OkButton onClick={onLogin} title='Login' />
+          ),
         },
       ]}
     />
@@ -104,6 +132,7 @@ export default function SyncModal() {
         collaboration with related people.
         <Tabs
           data-test-id='syncSettings'
+          persist={StorageKind.PERMANENT}
           items={[
             {
               key: 'provided',

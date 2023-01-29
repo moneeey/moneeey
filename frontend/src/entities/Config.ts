@@ -10,6 +10,13 @@ import Messages from '../utils/Messages';
 
 import { TCurrencyUUID } from './Currency';
 
+export type SyncConfig = {
+  url: string;
+  username: string;
+  password: string;
+  enabled: boolean;
+};
+
 export interface IConfig extends IBaseEntity {
   date_format: string;
   decimal_separator: string;
@@ -17,6 +24,7 @@ export interface IConfig extends IBaseEntity {
   default_currency: TCurrencyUUID;
   view_months: number;
   view_archived: boolean;
+  sync?: SyncConfig;
 }
 
 export class ConfigStore extends MappedStore<IConfig> {
@@ -32,6 +40,12 @@ export class ConfigStore extends MappedStore<IConfig> {
           default_currency: '',
           view_months: 3,
           view_archived: false,
+          sync: {
+            enabled: false,
+            url: '',
+            username: '',
+            password: '',
+          },
           updated: currentDateTime(),
           created: currentDateTime(),
         } as IConfig),
