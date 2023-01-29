@@ -2,6 +2,20 @@ import { action, makeObservable, observable } from 'mobx';
 
 import { StorageKind, asyncTimeout, getStorage, setStorage } from '../utils/Utils';
 
+export enum IDatabaseLevel {
+  OWNER = 90,
+  USER = 50,
+  INVITED = 10,
+}
+
+export interface IDatabase {
+  _id: string;
+  _rev: string;
+  database_id: string;
+  description: string;
+  level: IDatabaseLevel;
+}
+
 export default class ManagementStore {
   auth_code = '';
 
@@ -55,17 +69,26 @@ export default class ManagementStore {
     }
   }
 
-  async post<T>(url: string, body: object) {
+  async post<T>(url: string, body: object, headers?: object) {
     const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        ...headers,
       },
     });
 
     return (await response.json()) as T;
+  }
+
+  authenticatedPost<T>(url: string, body: object, headers?: object) {
+    return this.post<T>(url, body, {
+      authorization: `Bearer ${this.auth_code}`,
+      email: this.email,
+      ...headers,
+    });
   }
 
   async start(email: string, onLoggedIn: () => void) {
@@ -114,5 +137,23 @@ export default class ManagementStore {
     this.loggedIn = success;
 
     return { success, error };
+  }
+
+  async logout() {
+    await this.post<{ success: boolean }>('/api/auth/logout', {
+      email: this.email,
+      auth_code: this.auth_code,
+    });
+    this.auth_code = '';
+    this.email = '';
+    this.saveToSession();
+  }
+
+  listDatabases() {
+    return this.authenticatedPost<{ databases: IDatabase[] }>('/api/storage/list', {});
+  }
+
+  createDatabase(description: string) {
+    return this.authenticatedPost<{ databaseId: string }>('/api/storage/create', { description });
   }
 }

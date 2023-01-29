@@ -12,9 +12,9 @@ export interface IEntity extends IUpdatable {
 }
 
 export enum IDatabaseLevel {
-  OWNER = 20,
-  USER = 10,
-  INVITED = 5
+  OWNER = 90,
+  USER = 50,
+  INVITED = 10,
 }
 
 export interface IDatabase extends IUpdatable {

@@ -41,6 +41,7 @@ const Messages = {
     code_expired: 'Confirm code expired, please try again',
     login_or_signup: 'Login or Sign up',
     email: 'Email',
+    logout: 'Logout',
   },
   import: {
     start: 'New import',
@@ -145,6 +146,27 @@ const Messages = {
     landing: 'Welcome to Moneeey',
     start_tour: 'Start Tour',
     sync: 'Sync',
+  },
+  sync: {
+    intro: `
+      Synchronizing your data allows you to use Moneeey from multiple devices in real time,
+      allowing even real time collaboration with related people.
+    `,
+    login: {
+      success: 'Successful logged in!',
+      started: 'A login email confirmation was sent to you, please confirm by clicking on its link.',
+      error: 'Unable to send login email confirmation.',
+    },
+    couchdb: {
+      url: 'CouchDB URL',
+      username: 'CouchDB Username',
+      password: 'CouchDB Password',
+    },
+    start: 'Start synchronization',
+    stop: 'Stop synchronization',
+    moneeey_account: 'Moneeey account',
+    database: 'Database',
+    select_db: 'Select',
   },
   tour: {
     welcome: 'Welcome to Moneeey',

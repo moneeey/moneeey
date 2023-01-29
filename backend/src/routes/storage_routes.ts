@@ -11,8 +11,10 @@ const authController = new AuthController(console, connect_pouch, smtp_send);
 const storageController = new StorageController(console, connect_pouch, smtp_send);
 
 router.post(
-  '/new',
-  HandleAuthAPI(authController, (req, _res, user) => storageController.create(user, req.body['description']))
+  "/create",
+  HandleAuthAPI(authController, (req, _res, user) =>
+    storageController.create(user, req.body["description"])
+  )
 );
 router.post(
   '/list',
