@@ -77,4 +77,4 @@ const setStorage = function (key: string, value: string, storage: StorageKind) {
   }
 };
 
-export { uuid, tokenize, asyncProcess, getStorage, setStorage, StorageKind, noop, identity, capitalize };
+export { uuid, tokenize, asyncProcess, asyncTimeout, getStorage, setStorage, StorageKind, noop, identity, capitalize };

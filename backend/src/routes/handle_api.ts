@@ -14,7 +14,7 @@ export const HandleAPI = (logger: Console, handle: HandleAPIFn) => {
       res.status(status).send(JSON.stringify(response));
     } catch (err) {
       logger.error('HandleAPI', err);
-      res.status(500).send('Ops!');
+      res.status(500).send("Ops! Internal error.");
     }
   };
 };

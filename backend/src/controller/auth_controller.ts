@@ -16,23 +16,37 @@ export default class AuthController extends DatabaseController {
   }
 
   async start(email: string) {
-    const mainDb = this.connect_main_db();
-    const user = await this.get_or_create_user(mainDb, email);
+    try {
+      const mainDb = this.connect_main_db();
+      const user = await this.get_or_create_user(mainDb, email);
 
-    const auth_code = this.generate_auth_code(email);
-    const confirm_code = this.generate_auth_code(auth_code + email);
-    const auth = { auth_code, confirm_code, created: tick(), updated: tick(), confirmed: false };
+      const auth_code = this.generate_auth_code(email);
+      const confirm_code = this.generate_auth_code(auth_code + email);
+      const auth = {
+        auth_code,
+        confirm_code,
+        created: tick(),
+        updated: tick(),
+        confirmed: false,
+      };
 
-    this.logger.debug('start - saving user with new auth');
-    await mainDb.put({ ...user, updated: tick(), auth: [...user.auth, auth] });
+      this.logger.debug("start - saving user with new auth");
+      await mainDb.put({
+        ...user,
+        updated: tick(),
+        auth: [...user.auth, auth],
+      });
 
-    const confirm_link = this.get_confirm_link(email, auth);
-    const complete_email = this.get_complete_email(confirm_link);
-    this.logger.debug('start - sending confirmation email');
-    await this.send_email(email, `${APP_DESC} login`, complete_email);
+      const confirm_link = this.get_confirm_link(email, auth);
+      const complete_email = this.get_complete_email(confirm_link);
+      this.logger.debug("start - sending confirmation email");
+      await this.send_email(email, `${APP_DESC} login`, complete_email);
 
-    this.logger.debug('start - success');
-    return { success: true, email, auth_code };
+      this.logger.debug("start - success");
+      return { success: true, email, auth_code };
+    } catch {
+      return { success: false };
+    }
   }
 
   async authenticate(email: string, auth_code: string) {
@@ -126,7 +140,7 @@ export default class AuthController extends DatabaseController {
         } as IUser;
       } else {
         this.logger.error('get_or_create_user', err);
-        throw err;
+        throw new Error("internal_error");
       }
     }
   }

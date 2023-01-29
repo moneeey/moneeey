@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, ReactElement, SetStateAction, useState } from 'react';
 
 import { NavigationModal } from '../../shared/Navigation';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
@@ -10,6 +10,7 @@ import Tabs from '../base/Tabs';
 import { Checkbox, Input } from '../base/Input';
 import { BaseFormEditor } from '../FormEditor';
 import { StorageKind } from '../../utils/Utils';
+import { Status } from '../Status';
 
 const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
   placeholder,
@@ -42,25 +43,42 @@ const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
   );
 
 const ProvidedConfig = () => {
+  const { management } = useMoneeeyStore();
   const [state, setState] = useState({ email: '' });
-  const onLogin = () => {
-    //
+  const [message, setMessage] = useState(undefined as ReactElement | undefined);
+
+  const onLoggedIn = () => {
+    setMessage(<Status type='success'>Successful logged in!</Status>);
+  };
+
+  const onLogin = async () => {
+    const { success } = await management.start(state.email, onLoggedIn);
+    if (success) {
+      setMessage(
+        <Status type='info'>A login email confirmation was sent to you, please confirm by clicking on its link.</Status>
+      );
+    } else {
+      setMessage(<Status type='error'>Unable to send login email confirmation.</Status>);
+    }
   };
 
   return (
-    <BaseFormEditor
-      data-test-id='providedSync'
-      items={[
-        {
-          label: 'Email',
-          editor: <ConfigEditor field='email' state={state} setState={setState} placeholder='Email' />,
-        },
-        {
-          label: '',
-          editor: <OkButton onClick={onLogin} title='Login' />,
-        },
-      ]}
-    />
+    <>
+      {message}
+      <BaseFormEditor
+        data-test-id='providedSync'
+        items={[
+          {
+            label: 'Email',
+            editor: <ConfigEditor field='email' state={state} setState={setState} placeholder='Email' />,
+          },
+          {
+            label: '',
+            editor: <OkButton onClick={onLogin} title='Login' />,
+          },
+        ]}
+      />
+    </>
   );
 };
 
