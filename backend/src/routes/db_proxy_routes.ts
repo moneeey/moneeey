@@ -10,25 +10,6 @@ const router: Router = express.Router();
 const authController = new AuthController(console, connect_pouch, smtp_send);
 const dbProxyController = new DbProxyController(console, connect_pouch);
 
-router.get("/", (req, res) => {
-  res.write(
-    JSON.stringify({
-      couchdb: "Welcome",
-      version: "0.0.0",
-      git_sha: "000000000",
-      uuid: "00000000000000000000000000000000",
-      features: [
-        "access-ready",
-        "partitioned",
-        "pluggable-storage-engines",
-        "reshard",
-        "scheduler",
-      ],
-      vendor: { name: "The Apache Software Foundation" },
-    })
-  );
-});
-
 router.all(
   "/:dbname/*",
   HandleAuthAPI(authController, (req, res, user) =>

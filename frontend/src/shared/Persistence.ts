@@ -75,7 +75,7 @@ export default class PersistenceStore {
       if (remote.url && remote.enabled) {
         const remoteDb = PouchDBRemoteFactory(remote);
         this.syncing = this.db
-          .sync(remoteDb, { live: true, retry: true })
+          .sync(remoteDb, { live: true, retry: true, batch_size: 25 })
           .on('active', () => {
             this.logger.info('sync active');
             resolve(setStatus(Status.ONLINE));
