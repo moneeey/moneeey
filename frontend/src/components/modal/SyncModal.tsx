@@ -11,10 +11,11 @@ import { LinkButton, OkButton } from '../base/Button';
 import Tabs from '../base/Tabs';
 import { Checkbox, Input } from '../base/Input';
 import { BaseFormEditor } from '../FormEditor';
-import { StorageKind } from '../../utils/Utils';
+import { StorageKind, getCurrentHost, setStorage } from '../../utils/Utils';
 import { Status } from '../Status';
 import ManagementStore, { IDatabase } from '../../shared/Management';
 import { TextTitle } from '../base/Text';
+import { SyncConfig } from '../../entities/Config';
 
 const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
   placeholder,
@@ -92,7 +93,7 @@ const loadDatabases = async (management: ManagementStore): Promise<IDatabase[]> 
 };
 
 const MoneeeyAccount = ({ setMessage }: { setMessage: Dispatch<SetStateAction<ReactElement | undefined>> }) => {
-  const { management } = useMoneeeyStore();
+  const { management, persistence } = useMoneeeyStore();
   const [state, setState] = useState({ databases: [] as IDatabase[] });
 
   useEffect(() => {
@@ -103,14 +104,23 @@ const MoneeeyAccount = ({ setMessage }: { setMessage: Dispatch<SetStateAction<Re
   }, []);
 
   const onLogout = () => management.logout();
-  const onSelectDb = (db: IDatabase) => alert(db.description);
+  const onSelectDb = (db: IDatabase) => {
+    const syncRemote: SyncConfig = {
+      enabled: true,
+      url: `${getCurrentHost()}/api/db/${db.realm_database_id}`,
+      username: management.email,
+      password: management.auth_code,
+    };
+    setStorage('moneeeySync', JSON.stringify(syncRemote), StorageKind.SESSION);
+    persistence.sync(syncRemote);
+  };
 
   return (
     <>
       <TextTitle>Databases</TextTitle>
       <ul>
         {state.databases.map((db) => (
-          <li key={db.database_id}>
+          <li key={db.realm_database_id}>
             {db.description}{' '}
             <LinkButton
               onClick={() => {
@@ -146,7 +156,7 @@ const MoneeeyAccountConfig = observer(() => {
 const DatabaseConfig = () => {
   const { persistence, config } = useMoneeeyStore();
   const [state, setState] = useState(
-    config.main.sync || {
+    config.main.couchSync || {
       url: '',
       username: '',
       password: '',
@@ -156,8 +166,8 @@ const DatabaseConfig = () => {
   const syncWith = (enabled: boolean) => {
     const newState = { ...state, enabled };
     setState(newState);
-    config.merge({ ...config.main, sync: newState });
-    persistence.syncStart(newState);
+    config.merge({ ...config.main, couchSync: newState });
+    persistence.sync(newState);
   };
   const onStart = () => syncWith(true);
   const onStop = () => syncWith(false);

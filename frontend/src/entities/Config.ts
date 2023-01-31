@@ -19,14 +19,14 @@ export type SyncConfig = {
 };
 
 export interface IConfig extends IBaseEntity {
-  database_id: string;
+  database_url: string;
   date_format: string;
   decimal_separator: string;
   thousand_separator: string;
   default_currency: TCurrencyUUID;
   view_months: number;
   view_archived: boolean;
-  sync?: SyncConfig;
+  couchSync?: SyncConfig;
 }
 
 export class ConfigStore extends MappedStore<IConfig> {
@@ -37,13 +37,13 @@ export class ConfigStore extends MappedStore<IConfig> {
         ({
           entity_type: EntityType.CONFIG,
           date_format: TDateFormat,
-          database_id: uuid(),
+          database_url: uuid(),
           decimal_separator: ',',
           thousand_separator: '.',
           default_currency: '',
           view_months: 3,
           view_archived: false,
-          sync: {
+          couchSync: {
             enabled: false,
             url: '',
             username: '',

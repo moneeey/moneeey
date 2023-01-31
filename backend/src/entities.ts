@@ -18,7 +18,8 @@ export enum IDatabaseLevel {
 }
 
 export interface IDatabase extends IUpdatable {
-  database_id: IID;
+  realm_host: string;
+  realm_database_id: string;
   description: string;
   level: IDatabaseLevel;
 }

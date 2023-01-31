@@ -136,7 +136,7 @@ export default class AuthController extends DatabaseController {
           updated: tick(),
           created: tick(),
           auth: [],
-          databases: []
+          databases: [],
         } as IUser;
       } else {
         this.logger.error('get_or_create_user', err);

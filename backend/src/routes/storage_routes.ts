@@ -21,15 +21,17 @@ router.post(
   HandleAuthAPI(authController, (_req, _res, user) => storageController.list(user))
 );
 router.post(
-  '/destroy',
-  HandleAuthAPI(authController, (req, _res, user) => storageController.destroy(user, req.body['database_id']))
+  "/destroy",
+  HandleAuthAPI(authController, (req, _res, user) =>
+    storageController.destroy(user, req.body["database_url"])
+  )
 );
 router.post(
   "/share",
   HandleAuthAPI(authController, (req, _res, user) =>
     storageController.share(
       user,
-      req.body["database_id"],
+      req.body["database_url"],
       req.body["toEmail"],
       req.body["level"]
     )

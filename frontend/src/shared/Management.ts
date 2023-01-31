@@ -11,7 +11,8 @@ export enum IDatabaseLevel {
 export interface IDatabase {
   _id: string;
   _rev: string;
-  database_id: string;
+  realm_host: string;
+  realm_database_id: string;
   description: string;
   level: IDatabaseLevel;
 }

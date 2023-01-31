@@ -1,4 +1,4 @@
-version: '3.3'
+version: "3.3"
 
 services:
   frontend:
@@ -69,7 +69,6 @@ services:
       - "--entrypoints.web.address=:80"
       - "--providers.docker=true"
       - "--providers.docker.exposedByDefault=false"
-      - "--log.level=DEBUG"
 
 networks:
   moneeey-network:

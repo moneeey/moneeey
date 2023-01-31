@@ -9,12 +9,17 @@ export default class DatabaseController {
     this.connect_pouch = connect_pouch;
   }
 
-  connect_db(dbName: string) {
-    return this.connect_pouch(COUCHDB_HOST + '/' + dbName, {
+  connect_db(
+    dbName: string,
+    host = COUCHDB_HOST,
+    username = COUCHDB_USERNAME,
+    password = COUCHDB_PASSWORD
+  ) {
+    return this.connect_pouch(host + "/" + dbName, {
       auth: {
-        username: COUCHDB_USERNAME,
-        password: COUCHDB_PASSWORD
-      }
+        username,
+        password,
+      },
     });
   }
 

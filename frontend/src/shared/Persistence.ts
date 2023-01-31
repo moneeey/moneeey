@@ -26,13 +26,6 @@ export const PouchDBRemoteFactory = ({ url, username, password }: SyncConfig) =>
 export default class PersistenceStore {
   public status: Status = Status.OFFLINE;
 
-  public syncRemote: SyncConfig = {
-    url: '',
-    username: '',
-    password: '',
-    enabled: false,
-  };
-
   private db: PouchDB.Database;
 
   private entries: {
@@ -67,12 +60,7 @@ export default class PersistenceStore {
     });
   }
 
-  syncStart(remote: SyncConfig) {
-    this.syncRemote = remote;
-    this.sync();
-  }
-
-  sync() {
+  sync(remote: SyncConfig) {
     const setStatus = action((status: Status) => {
       if (this.status !== status) {
         this.status = status;
@@ -84,8 +72,8 @@ export default class PersistenceStore {
     }
 
     return new Promise((resolve, reject) => {
-      if (this.syncRemote.url && this.syncRemote.enabled) {
-        const remoteDb = PouchDBRemoteFactory(this.syncRemote);
+      if (remote.url && remote.enabled) {
+        const remoteDb = PouchDBRemoteFactory(remote);
         this.syncing = this.db
           .sync(remoteDb, { live: true, retry: true })
           .on('active', () => {
@@ -197,26 +185,32 @@ export default class PersistenceStore {
     );
     this.syncables = [];
     try {
-      const responses = await this.db.bulkDocs(objects.map((sync) => sync.entity));
-      map(responses, async (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
-        const { error, status, ok, id, rev } = resp;
-        const current = objects.find((obj) => obj._id === id);
-        if (!current) {
-          return;
-        }
-        if (error && status === 409) {
-          const actual = await this.fetch(id);
-          this.resolveConflict(current.store, current.entity, actual);
-        } else if (error) {
-          this.logger.error('sync commit error on doc', { error, current });
-        } else if (ok) {
-          const entity = { ...current.entity, _rev: rev };
-          if (entity && entity._id) {
-            this.entries[entity._id] = entity as IBaseEntity;
-          }
-          current.store.merge(entity, { setUpdated: false });
-        }
-      });
+      return await asyncProcess(
+        objects.map((sync) => sync.entity),
+        async (chunk) => {
+          const responses = await this.db.bulkDocs(chunk);
+          map(responses, async (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
+            const { error, status, ok, id, rev } = resp;
+            const current = objects.find((obj) => obj._id === id);
+            if (!current) {
+              return;
+            }
+            if (error && status === 409) {
+              const actual = await this.fetch(id);
+              this.resolveConflict(current.store, current.entity, actual);
+            } else if (error) {
+              this.logger.error('sync commit error on doc', { error, current });
+            } else if (ok) {
+              const entity = { ...current.entity, _rev: rev };
+              if (entity && entity._id) {
+                this.entries[entity._id] = entity as IBaseEntity;
+              }
+              current.store.merge(entity, { setUpdated: false });
+            }
+          });
+        },
+        { state: {}, chunkSize: 50, chunkThrottle: 25 }
+      );
     } catch (err) {
       const error = err as PouchDB.Core.Error;
       this.logger.error('sync commit error', error);

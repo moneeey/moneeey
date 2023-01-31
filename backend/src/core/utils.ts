@@ -1,5 +1,5 @@
 import cryptojs from 'crypto-js';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from "nanoid";
 
 export function hash_value(prefix: string, value: string, rounds: number): string {
   const hsh = (input: string) => cryptojs.enc.Hex.stringify(cryptojs.SHA512(prefix + input));
@@ -7,7 +7,7 @@ export function hash_value(prefix: string, value: string, rounds: number): strin
 }
 
 export function uuid(): string {
-  return uuidv4();
+  return nanoid();
 }
 
 export function tick() {
@@ -19,3 +19,9 @@ export function validate_email(email: string): boolean {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(email);
 }
+
+export const b64decode = (str: string): string =>
+  Buffer.from(str, "base64").toString("binary");
+
+export const b64encode = (str: string): string =>
+  Buffer.from(str, "binary").toString("base64");

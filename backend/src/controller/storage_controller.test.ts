@@ -60,13 +60,13 @@ describe("storage_controller", () => {
           "my first database"
         )
       ).toEqual({
-        database_id:
-          "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+        database_url:
+          "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
       });
       expect(mainDb.history).toEqual([
         {
           connect: [
-            "http://couchdb:5984/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+            "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
             {
               auth: {
                 password: "dev",
@@ -96,9 +96,9 @@ describe("storage_controller", () => {
                 {
                   created: 123450004,
                   description: "my first database",
-                  database_id:
-                    "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
-                  level: 20,
+                  database_url:
+                    "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+                  level: 90,
                   updated: 123450005,
                 },
               ],
@@ -113,8 +113,8 @@ describe("storage_controller", () => {
           debug: [
             "storage - trying to create database",
             {
-              database:
-                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+              database_url:
+                "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
             },
           ],
         },
@@ -122,8 +122,8 @@ describe("storage_controller", () => {
           info: [
             "storage - successfuly created storage",
             {
-              database:
-                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+              database_url:
+                "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
             },
           ],
         },
@@ -141,8 +141,8 @@ describe("storage_controller", () => {
               {
                 created: tick(),
                 description: "my first database",
-                database_id:
-                  "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+                database_url:
+                  "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
                 level: 20,
                 updated: tick(),
               },
@@ -154,13 +154,13 @@ describe("storage_controller", () => {
           "my second database"
         )
       ).toEqual({
-        database_id:
-          "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+        database_url:
+          "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
       });
       expect(mainDb.history).toEqual([
         {
           connect: [
-            "http://couchdb:5984/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+            "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
             {
               auth: {
                 password: "dev",
@@ -189,18 +189,18 @@ describe("storage_controller", () => {
               databases: [
                 {
                   created: 123450001,
-                  database_id:
-                    "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+                  database_url:
+                    "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
                   description: "my first database",
                   level: 20,
                   updated: 123450002,
                 },
                 {
                   created: 123450006,
-                  database_id:
-                    "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+                  database_url:
+                    "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
                   description: "my second database",
-                  level: 20,
+                  level: 90,
                   updated: 123450007,
                 },
               ],
@@ -215,8 +215,8 @@ describe("storage_controller", () => {
           debug: [
             "storage - trying to create database",
             {
-              database:
-                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+              database_url:
+                "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
             },
           ],
         },
@@ -224,8 +224,8 @@ describe("storage_controller", () => {
           info: [
             "storage - successfuly created storage",
             {
-              database:
-                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+              database_url:
+                "http://localcouchdb.moneeey.io/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
             },
           ],
         },
@@ -244,14 +244,14 @@ describe("storage_controller", () => {
             databases: [
               {
                 created: tick(),
-                database_id: "existing-db-12345",
+                database_url: "existing-db-12345",
                 level: IDatabaseLevel.OWNER,
                 updated: tick(),
                 description: "hello",
               },
               {
                 created: tick(),
-                database_id: "another-db-54321",
+                database_url: "another-db-54321",
                 level: IDatabaseLevel.USER,
                 updated: tick(),
                 description: "world",
@@ -290,8 +290,8 @@ describe("storage_controller", () => {
                 {
                   created: 123450003,
                   description: "world",
-                  database_id: "another-db-54321",
-                  level: 10,
+                  database_url: "another-db-54321",
+                  level: 50,
                   updated: 123450004,
                 },
               ],
@@ -341,14 +341,14 @@ describe("storage_controller", () => {
             databases: [
               {
                 created: tick(),
-                database_id: "existing-db-12345",
+                database_url: "existing-db-12345",
                 level: IDatabaseLevel.OWNER,
                 updated: tick(),
                 description: "hello",
               },
               {
                 created: tick(),
-                database_id: "another-db-54321",
+                database_url: "another-db-54321",
                 level: IDatabaseLevel.USER,
                 updated: tick(),
                 description: "world",
@@ -374,6 +374,23 @@ describe("storage_controller", () => {
               error: "user_database_not_found",
             },
           ],
+        },
+      ]);
+    });
+  });
+
+  describe("realms", () => {
+    it("load all", () => {
+      expect(storageController.realms()).toEqual([
+        {
+          host: "http://localcouchdb.moneeey.io",
+          username: "dev",
+          password: "dev",
+        },
+        {
+          host: "http://localcouchdb.moneeey.io",
+          username: "dev",
+          password: "dev",
         },
       ]);
     });
