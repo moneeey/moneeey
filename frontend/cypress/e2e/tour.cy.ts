@@ -6,7 +6,7 @@ import '../support/cypress-indexeddb-namespace';
 
 describe('Tour spec', () => {
   before(() => {
-    cy.clearIndexedDb('_pouch_moneeey');
+    window.indexedDB.deleteDatabase('_pouch_moneeey');
     cy.visit('/');
     cy.viewport(1600, 900);
   });
