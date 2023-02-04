@@ -2,7 +2,6 @@
 /// <reference types="cypress" />
 
 import loc from '../support/locators';
-import '../support/cypress-indexeddb-namespace';
 
 describe('Tour spec', () => {
   before(() => {
