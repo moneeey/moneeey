@@ -51,14 +51,12 @@ const MoneeeyLogin = ({ setMessage }: { setMessage: Dispatch<SetStateAction<Reac
   const { management } = useMoneeeyStore();
   const [state, setState] = useState({ email: '' });
 
-  const onLoggedIn = () => {
-    setMessage(<Status type='success'>{Messages.sync.login.success}</Status>);
-  };
-
   const onLogin = async () => {
-    const { success } = await management.start(state.email, onLoggedIn);
+    const { success } = await management.start(state.email);
     if (success) {
       setMessage(<Status type='info'>{Messages.sync.login.started}</Status>);
+      await management.waitUntilLoggedIn();
+      setMessage(<Status type='success'>{Messages.sync.login.success}</Status>);
     } else {
       setMessage(<Status type='error'>{Messages.sync.login.error}</Status>);
     }
@@ -92,7 +90,7 @@ const loadDatabases = async (management: ManagementStore): Promise<IDatabase[]> 
   return databases;
 };
 
-const MoneeeyAccount = ({ setMessage }: { setMessage: Dispatch<SetStateAction<ReactElement | undefined>> }) => {
+const MoneeeyAccount = () => {
   const { management, persistence } = useMoneeeyStore();
   const [state, setState] = useState({ databases: [] as IDatabase[] });
 
@@ -148,7 +146,7 @@ const MoneeeyAccountConfig = observer(() => {
   return (
     <>
       {message}
-      {showAccount ? <MoneeeyAccount setMessage={setMessage} /> : <MoneeeyLogin setMessage={setMessage} />}
+      {showAccount ? <MoneeeyAccount /> : <MoneeeyLogin setMessage={setMessage} />}
     </>
   );
 });

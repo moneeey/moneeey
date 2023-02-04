@@ -92,7 +92,7 @@ export default class ManagementStore {
     });
   }
 
-  async start(email: string, onLoggedIn: () => void) {
+  async start(email: string) {
     this.email = email;
 
     const { success, auth_code } = await this.post<{ success: boolean; auth_code: string }>('/api/auth/start', {
@@ -101,18 +101,13 @@ export default class ManagementStore {
     this.auth_code = auth_code;
     this.saveToSession();
 
-    if (success) {
-      this.waitUntilLoggedIn(onLoggedIn);
-    }
-
     return { success };
   }
 
-  async waitUntilLoggedIn(onLoggedIn: () => void) {
-    if (await this.checkLoggedIn()) {
-      onLoggedIn();
-    } else {
-      await asyncTimeout(() => this.waitUntilLoggedIn(onLoggedIn), 2000);
+  async waitUntilLoggedIn() {
+    const isLoggedIn = await this.checkLoggedIn();
+    if (!isLoggedIn) {
+      await asyncTimeout(() => this.waitUntilLoggedIn(), 2000);
     }
   }
 
