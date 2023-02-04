@@ -8,7 +8,7 @@ type MailOptions = {
   from: string;
   to: string;
   subject: string;
-  text: string;
+  text?: string;
   html?: string;
 };
 
@@ -62,7 +62,6 @@ const sendgrid_send = async ({
     }),
   });
   if (res.status === 202) {
-    const ok = await res.text();
     return { success: true };
   } else {
     const error = await res.text();

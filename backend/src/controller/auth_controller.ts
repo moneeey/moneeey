@@ -48,10 +48,9 @@ export default class AuthController extends DatabaseController {
         auth: [...user.auth, auth],
       });
 
-      const confirm_link = this.get_confirm_link(email, auth);
-      const complete_email = this.get_complete_email(confirm_link);
+      const { html, text } = this.get_complete_email(email, auth);
       this.logger.debug("start - sending confirmation email");
-      await this.send_email(email, `${APP_DESC} login`, complete_email);
+      await this.send_email(email, `${APP_DESC} login`, html, text);
 
       this.logger.debug("start - success");
       return { success: true, email, auth_code };
@@ -115,28 +114,27 @@ export default class AuthController extends DatabaseController {
     return hash_value(HASH_PREFIX, auth_code, 256);
   }
 
-  async send_email(to: string, subject: string, content: string) {
+  async send_email(to: string, subject: string, html: string, text: string) {
     this.logger.info("send_email", { to, subject });
     try {
       await this.mail_send({
         from: APP_FROM_EMAIL,
         to,
         subject,
-        text: content,
-        html: content,
+        text,
+        html,
       });
     } catch (err) {
       this.logger.error("send_email", { err });
     }
   }
 
-  get_confirm_link(email: string, auth: IAuth) {
+  get_complete_email(email: string, auth: IAuth) {
     const link = `${APP_URL}/?auth_code=${auth.auth_code}&confirm_code=${auth.confirm_code}&email=${email}`;
-    return `<a href="${link}">${link}</a>`;
-  }
-
-  get_complete_email(loginLink: string) {
-    return `Please click the following link to complete your registration: ${loginLink}`;
+    return {
+      html: `Please click the following link to complete your registration: <a href="${link}">${link}</a>`,
+      text: `Please click the following link to complete your registration: ${link}`,
+    };
   }
 
   async get_or_create_user(mainDb: pouch_db, email: string): Promise<IUser> {
