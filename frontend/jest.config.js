@@ -1,6 +1,4 @@
-/* eslint-disable no-undef */
-/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
-
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
