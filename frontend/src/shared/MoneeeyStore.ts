@@ -56,6 +56,14 @@ export default class MoneeeyStore {
     });
   }
 
+  readMoneeySyncFromStorage() {
+    try {
+      return JSON.parse(getStorage('moneeeySync', '', StorageKind.SESSION)) as SyncConfig;
+    } catch (err) {
+      return null;
+    }
+  }
+
   readEntitiesIntoStores() {
     this.persistence.monitor(this.accounts, EntityType.ACCOUNT);
     this.persistence.monitor(this.currencies, EntityType.CURRENCY);
@@ -66,7 +74,7 @@ export default class MoneeeyStore {
       this.config.init();
       this.currencies.addDefaults();
       const { couchSync } = this.config.main;
-      const moneeeySync = JSON.parse(getStorage('moneeeySync', '', StorageKind.SESSION)) as SyncConfig;
+      const moneeeySync = this.readMoneeySyncFromStorage();
       if (moneeeySync && moneeeySync.enabled) {
         this.persistence.sync(moneeeySync);
       } else if (couchSync && couchSync.enabled) {
