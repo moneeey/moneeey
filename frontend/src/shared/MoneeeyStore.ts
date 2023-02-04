@@ -3,9 +3,10 @@ import { action, makeObservable, observable } from 'mobx';
 
 import AccountStore from '../entities/Account';
 import BudgetStore from '../entities/Budget';
-import ConfigStore from '../entities/Config';
+import ConfigStore, { SyncConfig } from '../entities/Config';
 import CurrencyStore from '../entities/Currency';
 import TransactionStore from '../entities/Transaction';
+import { StorageKind, getStorage } from '../utils/Utils';
 
 import { EntityType } from './Entity';
 import Importer from './import/Importer';
@@ -55,6 +56,14 @@ export default class MoneeeyStore {
     });
   }
 
+  readMoneeySyncFromStorage() {
+    try {
+      return JSON.parse(getStorage('moneeeySync', '', StorageKind.SESSION)) as SyncConfig;
+    } catch (err) {
+      return null;
+    }
+  }
+
   readEntitiesIntoStores() {
     this.persistence.monitor(this.accounts, EntityType.ACCOUNT);
     this.persistence.monitor(this.currencies, EntityType.CURRENCY);
@@ -64,7 +73,13 @@ export default class MoneeeyStore {
     initializeOnce(() => {
       this.config.init();
       this.currencies.addDefaults();
-      this.persistence.syncStart();
+      const { couchSync } = this.config.main;
+      const moneeeySync = this.readMoneeySyncFromStorage();
+      if (moneeeySync && moneeeySync.enabled) {
+        this.persistence.sync(moneeeySync);
+      } else if (couchSync && couchSync.enabled) {
+        this.persistence.sync(couchSync);
+      }
     });
     this.loaded = true;
   }

@@ -7,16 +7,26 @@ import MappedStore from '../shared/MappedStore';
 import MoneeeyStore from '../shared/MoneeeyStore';
 import { TDateFormat, currentDateTime } from '../utils/Date';
 import Messages from '../utils/Messages';
+import { uuid } from '../utils/Utils';
 
 import { TCurrencyUUID } from './Currency';
 
+export type SyncConfig = {
+  url: string;
+  username: string;
+  password: string;
+  enabled: boolean;
+};
+
 export interface IConfig extends IBaseEntity {
+  database_url: string;
   date_format: string;
   decimal_separator: string;
   thousand_separator: string;
   default_currency: TCurrencyUUID;
   view_months: number;
   view_archived: boolean;
+  couchSync?: SyncConfig;
 }
 
 export class ConfigStore extends MappedStore<IConfig> {
@@ -27,11 +37,18 @@ export class ConfigStore extends MappedStore<IConfig> {
         ({
           entity_type: EntityType.CONFIG,
           date_format: TDateFormat,
+          database_url: uuid(),
           decimal_separator: ',',
           thousand_separator: '.',
           default_currency: '',
           view_months: 3,
           view_archived: false,
+          couchSync: {
+            enabled: false,
+            url: '',
+            username: '',
+            password: '',
+          },
           updated: currentDateTime(),
           created: currentDateTime(),
         } as IConfig),

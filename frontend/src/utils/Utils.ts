@@ -1,7 +1,7 @@
 import { chunk } from 'lodash';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 
-const uuid = () => uuidv4();
+const uuid = () => nanoid();
 
 const noop = () => {
   // No-op
@@ -55,8 +55,8 @@ const asyncProcess = async function <T, R>(
 };
 
 enum StorageKind {
-  PERMANENT,
-  SESSION,
+  PERMANENT = 'PERMANENT',
+  SESSION = 'SESSION',
 }
 
 const getStorage = function (key: string, defaultt: string, storage: StorageKind) {
@@ -77,4 +77,20 @@ const setStorage = function (key: string, value: string, storage: StorageKind) {
   }
 };
 
-export { uuid, tokenize, asyncProcess, getStorage, setStorage, StorageKind, noop, identity, capitalize };
+const getCurrentHost = function () {
+  return `${window.location.protocol}//${window.location.host}`;
+};
+
+export {
+  uuid,
+  tokenize,
+  asyncProcess,
+  asyncTimeout,
+  getStorage,
+  setStorage,
+  StorageKind,
+  noop,
+  identity,
+  capitalize,
+  getCurrentHost,
+};

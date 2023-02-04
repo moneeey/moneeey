@@ -1,8 +1,13 @@
-import http from 'http';
-import express from 'express';
+import http from "http";
+import express from "express";
 
-import { defaultRoutes, authRoutes, storageRoutes } from './routes';
-import { PORT } from './core/config';
+import {
+  defaultRoutes,
+  authRoutes,
+  storageRoutes,
+  dbProxyRoutes,
+} from "./routes";
+import { PORT } from "./core/config";
 
 const app = express();
 
@@ -12,18 +17,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", defaultRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/storage", storageRoutes);
+app.use("/api/db", dbProxyRoutes);
 
-const server = http.createServer(app)
+const server = http.createServer(app);
 
-const terminateServer = () => server.close(() => console.info('Server terminated'));
+const terminateServer = () =>
+  server.close(() => console.info("Server terminated"));
 
-process.on('SIGINT', terminateServer);
+process.on("SIGINT", terminateServer);
 
-process.on('SIGTERM', terminateServer);
+process.on("SIGTERM", terminateServer);
 
 const main = () => {
   try {
-    server.listen(PORT, () => console.info(`Listening successfully on port ${PORT}`));
+    server.listen(PORT, () =>
+      console.info(`Listening successfully on port ${PORT}`)
+    );
   } catch ({ message }) {
     console.error(`Error occurred: ${message}`);
   }

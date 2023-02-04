@@ -8,6 +8,7 @@ describe('Tour spec', () => {
   before(() => {
     cy.clearIndexedDb('_pouch_moneeey');
     cy.visit('/');
+    cy.viewport(1600, 900);
   });
 
   it('Start tour', () => {

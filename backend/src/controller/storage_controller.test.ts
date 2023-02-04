@@ -1,8 +1,8 @@
 /* eslint-disable import/first */
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config({ path: "../sample.env" });
 
-import { tick, uuid } from "../core";
+import { REALMS, tick, uuid } from "../core";
 import { pouch_db } from "../core/pouch";
 import {
   ConsoleMock,
@@ -60,13 +60,17 @@ describe("storage_controller", () => {
           "my first database"
         )
       ).toEqual({
-        database_id:
-          "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+        created: 123450004,
+        description: "my first database",
+        level: 90,
+        realm_database_id: "user_db_uuiduuid-dcf7-6969-a608-420123450003",
+        realm_host: "http://couchdb:5984",
+        updated: 123450005,
       });
       expect(mainDb.history).toEqual([
         {
           connect: [
-            "http://couchdb:5984/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+            "http://couchdb:5984/user_db_uuiduuid-dcf7-6969-a608-420123450003",
             {
               auth: {
                 password: "dev",
@@ -96,9 +100,10 @@ describe("storage_controller", () => {
                 {
                   created: 123450004,
                   description: "my first database",
-                  database_id:
-                    "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
-                  level: 20,
+                  realm_database_id:
+                    "user_db_uuiduuid-dcf7-6969-a608-420123450003",
+                  realm_host: "http://couchdb:5984",
+                  level: 90,
                   updated: 123450005,
                 },
               ],
@@ -113,8 +118,8 @@ describe("storage_controller", () => {
           debug: [
             "storage - trying to create database",
             {
-              database:
-                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+              realm_database_id: "user_db_uuiduuid-dcf7-6969-a608-420123450003",
+              realm_host: "http://couchdb:5984",
             },
           ],
         },
@@ -122,8 +127,8 @@ describe("storage_controller", () => {
           info: [
             "storage - successfuly created storage",
             {
-              database:
-                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+              realm_database_id: "user_db_uuiduuid-dcf7-6969-a608-420123450003",
+              realm_host: "http://couchdb:5984",
             },
           ],
         },
@@ -141,8 +146,9 @@ describe("storage_controller", () => {
               {
                 created: tick(),
                 description: "my first database",
-                database_id:
+                realm_database_id:
                   "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+                realm_host: "http://localcouchdb.moneeey.io/",
                 level: 20,
                 updated: tick(),
               },
@@ -154,13 +160,17 @@ describe("storage_controller", () => {
           "my second database"
         )
       ).toEqual({
-        database_id:
-          "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+        created: 123450006,
+        description: "my second database",
+        level: 90,
+        realm_database_id: "user_db_uuiduuid-dcf7-6969-a608-420123450005",
+        realm_host: "http://couchdb:5984",
+        updated: 123450007,
       });
       expect(mainDb.history).toEqual([
         {
           connect: [
-            "http://couchdb:5984/user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+            "http://couchdb:5984/user_db_uuiduuid-dcf7-6969-a608-420123450005",
             {
               auth: {
                 password: "dev",
@@ -189,18 +199,20 @@ describe("storage_controller", () => {
               databases: [
                 {
                   created: 123450001,
-                  database_id:
+                  realm_database_id:
                     "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450003",
+                  realm_host: "http://localcouchdb.moneeey.io/",
                   description: "my first database",
                   level: 20,
                   updated: 123450002,
                 },
                 {
                   created: 123450006,
-                  database_id:
-                    "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
                   description: "my second database",
-                  level: 20,
+                  realm_database_id:
+                    "user_db_uuiduuid-dcf7-6969-a608-420123450005",
+                  realm_host: "http://couchdb:5984",
+                  level: 90,
                   updated: 123450007,
                 },
               ],
@@ -215,8 +227,8 @@ describe("storage_controller", () => {
           debug: [
             "storage - trying to create database",
             {
-              database:
-                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+              realm_database_id: "user_db_uuiduuid-dcf7-6969-a608-420123450005",
+              realm_host: "http://couchdb:5984",
             },
           ],
         },
@@ -224,8 +236,8 @@ describe("storage_controller", () => {
           info: [
             "storage - successfuly created storage",
             {
-              database:
-                "user-UUIDUUID-dcf7-6969-a608-420123450000_db_UUIDUUID-dcf7-6969-a608-420123450005",
+              realm_database_id: "user_db_uuiduuid-dcf7-6969-a608-420123450005",
+              realm_host: "http://couchdb:5984",
             },
           ],
         },
@@ -244,14 +256,16 @@ describe("storage_controller", () => {
             databases: [
               {
                 created: tick(),
-                database_id: "existing-db-12345",
+                realm_database_id: "existing-db-12345",
+                realm_host: "http://couchdb:5984",
                 level: IDatabaseLevel.OWNER,
                 updated: tick(),
                 description: "hello",
               },
               {
                 created: tick(),
-                database_id: "another-db-54321",
+                realm_database_id: "another-db-54321",
+                realm_host: "http://couchdb:5984",
                 level: IDatabaseLevel.USER,
                 updated: tick(),
                 description: "world",
@@ -290,8 +304,9 @@ describe("storage_controller", () => {
                 {
                   created: 123450003,
                   description: "world",
-                  database_id: "another-db-54321",
-                  level: 10,
+                  realm_database_id: "another-db-54321",
+                  realm_host: "http://couchdb:5984",
+                  level: 50,
                   updated: 123450004,
                 },
               ],
@@ -306,8 +321,9 @@ describe("storage_controller", () => {
           info: [
             "storage - will destroy",
             {
-              database: "existing-db-12345",
-              user: "moneeey@baroni.tech",
+              realm_database_id: "existing-db-12345",
+              realm_host: "http://couchdb:5984",
+              user: "user-UUIDUUID-dcf7-6969-a608-420123450000",
             },
           ],
         },
@@ -315,8 +331,9 @@ describe("storage_controller", () => {
           info: [
             "storage - destroyed",
             {
-              database: "existing-db-12345",
-              user: "moneeey@baroni.tech",
+              realm_database_id: "existing-db-12345",
+              realm_host: "http://couchdb:5984",
+              user: "user-UUIDUUID-dcf7-6969-a608-420123450000",
             },
           ],
         },
@@ -324,8 +341,9 @@ describe("storage_controller", () => {
           info: [
             "storage - user updated after destroying",
             {
-              database: "existing-db-12345",
-              user: "moneeey@baroni.tech",
+              realm_database_id: "existing-db-12345",
+              realm_host: "http://couchdb:5984",
+              user: "user-UUIDUUID-dcf7-6969-a608-420123450000",
             },
           ],
         },
@@ -341,14 +359,16 @@ describe("storage_controller", () => {
             databases: [
               {
                 created: tick(),
-                database_id: "existing-db-12345",
+                realm_database_id: "existing-db-12345",
+                realm_host: "http://couchdb:5984",
                 level: IDatabaseLevel.OWNER,
                 updated: tick(),
                 description: "hello",
               },
               {
                 created: tick(),
-                database_id: "another-db-54321",
+                realm_database_id: "another-db-54321",
+                realm_host: "http://couchdb:5984",
                 level: IDatabaseLevel.USER,
                 updated: tick(),
                 description: "world",
@@ -370,10 +390,67 @@ describe("storage_controller", () => {
           error: [
             "destroy - error_code",
             {
-              email: "moneeey@baroni.tech",
+              user: "user-UUIDUUID-dcf7-6969-a608-420123450000",
               error: "user_database_not_found",
             },
           ],
+        },
+      ]);
+    });
+
+    it("bad realm host", async () => {
+      expect(
+        await storageController.destroy(
+          {
+            _id: "user-" + uuid(),
+            auth: [],
+            databases: [
+              {
+                created: tick(),
+                realm_database_id: "existing-db-12345",
+                realm_host: "unknown_realm_host",
+                level: IDatabaseLevel.OWNER,
+                updated: tick(),
+                description: "hello",
+              },
+            ],
+            email: "moneeey@baroni.tech",
+            updated: tick(),
+            created: tick(),
+          },
+          "existing-db-12345"
+        )
+      ).toEqual({
+        error: "realm_not_found",
+        success: false,
+      });
+      expect(mainDb.history).toEqual([]);
+      expect(logger.history).toEqual([
+        {
+          error: [
+            "destroy - error_code",
+            {
+              user: "user-UUIDUUID-dcf7-6969-a608-420123450000",
+              error: "realm_not_found",
+            },
+          ],
+        },
+      ]);
+    });
+  });
+
+  describe("realms", () => {
+    it("load all", () => {
+      expect(REALMS).toEqual([
+        {
+          host: "http://couchdb:5984",
+          username: "dev",
+          password: "dev",
+        },
+        {
+          host: "http://couchdb:5984",
+          username: "dev",
+          password: "dev",
         },
       ]);
     });
