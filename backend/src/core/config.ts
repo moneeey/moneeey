@@ -54,3 +54,4 @@ export const MAX_AUTHENTICATION_SECONDS: number = 1 * 60 * 60 * 1000;
 export const MAX_AUTHENTICATION_LIFE_SECONDS: number = 7 * 24 * 60 * 60 * 1000;
 
 export const SMTP_URL: string = env("SMTP_URL");
+export const SENDGRID_APIKEY: string = env("SENDGRID_APIKEY");

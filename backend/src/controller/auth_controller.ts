@@ -1,4 +1,4 @@
-import { smtp_send_fn } from "../core";
+import { mail_send_fn } from "../core";
 import {
   APP_DESC,
   APP_FROM_EMAIL,
@@ -14,16 +14,16 @@ import DatabaseController from "./database_controller";
 
 export default class AuthController extends DatabaseController {
   logger: Console;
-  smtp_send: smtp_send_fn;
+  mail_send: mail_send_fn;
 
   constructor(
     logger: Console,
     connect_pouch: connect_pouch_fn,
-    smtp_send: smtp_send_fn
+    mail_send: mail_send_fn
   ) {
     super(logger, connect_pouch);
     this.logger = logger;
-    this.smtp_send = smtp_send;
+    this.mail_send = mail_send;
   }
 
   async start(email: string) {
@@ -118,10 +118,11 @@ export default class AuthController extends DatabaseController {
   async send_email(to: string, subject: string, content: string) {
     this.logger.info("send_email", { to, subject });
     try {
-      await this.smtp_send({
+      await this.mail_send({
         from: APP_FROM_EMAIL,
         to,
         subject,
+        text: content,
         html: content,
       });
     } catch (err) {
