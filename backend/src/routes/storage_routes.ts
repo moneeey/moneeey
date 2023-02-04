@@ -1,14 +1,18 @@
-import express, { Router } from 'express';
+import express, { Router } from "express";
 
-import { HandleAuthAPI } from './handle_api';
-import AuthController from '../controller/auth_controller';
-import StorageController from '../controller/storage_controller';
-import { smtp_send } from '../core';
-import connect_pouch from '../core/pouch';
+import { HandleAuthAPI } from "./handle_api";
+import AuthController from "../controller/auth_controller";
+import StorageController from "../controller/storage_controller";
+import { mail_send } from "../core";
+import connect_pouch from "../core/pouch";
 
 const router: Router = express.Router();
-const authController = new AuthController(console, connect_pouch, smtp_send);
-const storageController = new StorageController(console, connect_pouch, smtp_send);
+const authController = new AuthController(console, connect_pouch, mail_send);
+const storageController = new StorageController(
+  console,
+  connect_pouch,
+  mail_send
+);
 
 router.post(
   "/create",
@@ -17,8 +21,10 @@ router.post(
   )
 );
 router.post(
-  '/list',
-  HandleAuthAPI(authController, (_req, _res, user) => storageController.list(user))
+  "/list",
+  HandleAuthAPI(authController, (_req, _res, user) =>
+    storageController.list(user)
+  )
 );
 router.post(
   "/destroy",

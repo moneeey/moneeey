@@ -1,19 +1,19 @@
-import { connect_pouch_fn, REALMS, smtp_send_fn, tick, uuid } from "../core";
+import { connect_pouch_fn, REALMS, mail_send_fn, tick, uuid } from "../core";
 import { IDatabase, IDatabaseLevel, IID, IUser } from "../entities";
 import DatabaseController from "./database_controller";
 
 export default class StorageController extends DatabaseController {
   logger: Console;
-  smtp_send: smtp_send_fn;
+  mail_send: mail_send_fn;
 
   constructor(
     logger: Console,
     connect_pouch: connect_pouch_fn,
-    smtp_send: smtp_send_fn
+    mail_send: mail_send_fn
   ) {
     super(logger, connect_pouch);
     this.logger = logger;
-    this.smtp_send = smtp_send;
+    this.mail_send = mail_send;
   }
 
   async list(user: IUser) {

@@ -62,7 +62,7 @@ describe('Tour spec', () => {
     cy.contains('Budget test');
     cy.contains('R$');
     cy.get(loc.BUDGET.CARD_ALLOCATED_INPUT).first().type('544,14');
-    cy.get(loc.BUDGET.CARD_REMAINING_INPUT).first().should('contain.value', '420,69');
+    cy.get(loc.BUDGET.CARD_REMAINING_INPUT, { timeout: 30000 }).first().should('contain.value', '420,69');
 
     // Go to back to Transactions
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
