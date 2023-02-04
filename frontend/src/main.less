@@ -2,12 +2,12 @@
 @border-radius-status: 8px;
 
 @primary-color: rgba(255, 255, 255, 0.75);
-@secondary-color: rgba(255, 255, 255, 0.50);
+@secondary-color: rgba(255, 255, 255, 0.5);
 @dark-color: #20202080;
-@info-color: #B4E0FF;
-@danger-color: #FF9E9E;
-@warning-color: #FFFED2;
-@success-color: #B8FFB8;
+@info-color: #b4e0ff;
+@danger-color: #ff9e9e;
+@warning-color: #fffed2;
+@success-color: #b8ffb8;
 
 @component-background: #303030;
 @body-background: #303030;
@@ -25,4 +25,25 @@
 
 .white-space-preline {
   white-space: pre-line;
+}
+
+@font-face {
+  font-family: 'PTSerif';
+  src: local('PT Serif'), url('./fonts/PTSerif-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'PTMono';
+  src: local('PT Mono'), url('./fonts/PTMono-Regular.ttf');
+}
+
+body,
+input,
+button {
+  font-family: PTSerif, serif;
+  font-size: 14px;
+}
+
+.mn-input-number {
+  font-family: PTMono, mono;
 }

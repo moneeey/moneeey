@@ -97,7 +97,7 @@ const InputNumber = ({
     input: (
       <NumericFormat
         {...{ 'data-test-id': dataTestId }}
-        className={`mn-input ${className || ''}`}
+        className={`mn-input mn-input-number ${className || ''}`}
         value={currentValue}
         onValueChange={({ floatValue, formattedValue }) => {
           if (formattedValue) {
