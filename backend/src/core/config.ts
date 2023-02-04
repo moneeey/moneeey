@@ -1,5 +1,5 @@
-import fs from 'fs';
-import dotenv from 'dotenv';
+import fs from "fs";
+import dotenv from "dotenv";
 
 const PROD_ENV_FILE = "/run/secret/prod.env";
 const DEV_ENV_FILE = "/run/secret/dev.env";
@@ -50,6 +50,7 @@ export const REALMS: { host: string; username: string; password: string }[] =
   }));
 
 export const HASH_PREFIX: string = env("HASH_PREFIX");
-export const MAX_AUTHENTICATION_SECONDS: number = 48 * 60 * 60 * 1000;
+export const MAX_AUTHENTICATION_SECONDS: number = 1 * 60 * 60 * 1000;
+export const MAX_AUTHENTICATION_LIFE_SECONDS: number = 7 * 24 * 60 * 60 * 1000;
 
 export const SMTP_URL: string = env("SMTP_URL");

@@ -1,5 +1,5 @@
 import { connect_pouch_fn, REALMS, smtp_send_fn, tick, uuid } from "../core";
-import { IDatabaseLevel, IID, IUser } from "../entities";
+import { IDatabase, IDatabaseLevel, IID, IUser } from "../entities";
 import DatabaseController from "./database_controller";
 
 export default class StorageController extends DatabaseController {
@@ -54,7 +54,10 @@ export default class StorageController extends DatabaseController {
     }
   }
 
-  async create(user: IUser, description: string) {
+  async create(
+    user: IUser,
+    description: string
+  ): Promise<IDatabase | { error: string }> {
     const database = await this.create_database({
       email: user.email,
       userId: user._id,
