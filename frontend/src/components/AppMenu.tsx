@@ -9,6 +9,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { observer } from 'mobx-react';
 
+import favicon from '../../favicon.svg';
+
 import AccountRoute from '../routes/AccountRoute';
 import { AccountSettingsRoute } from '../routes/AccountSettingsRoute';
 import { CurrencySettingsRoute } from '../routes/CurrencySettingsRoute';
@@ -45,7 +47,11 @@ export const AppMenu = observer(() => {
   return (
     <Navbar
       data-test-id='appMenu'
-      header={Messages.menu.title}
+      header={
+        <span>
+          <img src={favicon} {...iconProps} /> {Messages.menu.title}
+        </span>
+      }
       items={[
         {
           key: 'dashboard',
