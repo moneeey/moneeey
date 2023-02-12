@@ -71,15 +71,16 @@ const Grid = <Row,>({
             className='mn-tr'
             style={{
               top: rowItem.isSticky ? 0 : rowItem.start,
+              position: rowItem.isSticky ? 'sticky' : undefined,
               width: '100%',
               height: `${ROW_HEIGHT}px`,
+              zIndex: rowItem.isSticky ? 9999999 : undefined,
             }}>
             {col.items.map((colItem) => (
               <div
                 key={colItem.index}
                 className={rowItem.isSticky ? 'mn-th' : 'mn-td'}
                 style={{
-                  position: rowItem.isSticky ? 'sticky' : undefined,
                   left: colItem.start,
                   height: `${rowItem.size}px`,
                   width: `${colItem.size}px`,
