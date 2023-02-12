@@ -38,7 +38,7 @@ const Grid = <Row,>({
   onGridDimensions,
   className,
 }: VirtualTableProps<Row> & GridRenderer) => {
-  const ref = useRef<HTMLDivElement | null>()
+  const ref = useRef<HTMLDivElement | null>();
   const row = useVirtual({
     itemCount: 1 + rows.length,
     itemSize: ROW_HEIGHT,
@@ -57,7 +57,7 @@ const Grid = <Row,>({
       ref={(el) => {
         row.outerRef.current = el;
         col.outerRef.current = el;
-        ref.current = el
+        ref.current = el;
         onGridDimensions(el?.clientWidth || 0, el?.clientHeight || 0);
       }}>
       <div
@@ -74,7 +74,7 @@ const Grid = <Row,>({
               position: rowItem.isSticky ? 'sticky' : undefined,
               width: '100%',
               height: `${ROW_HEIGHT}px`,
-              zIndex: rowItem.isSticky ? 9999999 : undefined,
+              zIndex: rowItem.isSticky ? 99900 : undefined,
             }}>
             {col.items.map((colItem) => (
               <div

@@ -1,7 +1,7 @@
 import {
-    ArrowDownOnSquareStackIcon,
-    BookmarkSlashIcon,
-    BookOpenIcon,
+  ArrowDownOnSquareStackIcon,
+  BookOpenIcon,
+  BookmarkSlashIcon,
   ChartPieIcon,
   ClipboardDocumentIcon,
   Cog6ToothIcon,
@@ -35,31 +35,31 @@ import { NavigationModal } from '../shared/Navigation';
 
 import Navbar from './base/Navbar';
 import { TextNormal, TextSecondary } from './base/Text';
-import { useRouteActive } from '../routes/RouteRenderer';
 
 export const AppMenu = observer(() => {
   const { navigation, accounts, currencies, persistence, transactions } = useMoneeeyStore();
-  const routeActive = useRouteActive()
+
   const getAccountCurrency = (account: IAccount) => {
     const curr = currencies.byUuid(account.currency_uuid);
 
     return curr?.short || curr?.name || '?';
   };
 
-  const iconProps = { className: 'icon-small', };
+  const iconProps = { className: 'icon-small' };
 
   const activeAccounts = accounts.allNonPayees.filter((t) => t.archived !== true);
   const unclassified = transactions.viewAllUnclassified().length;
+  const activePath = navigation.currentPath;
 
   const routeLink = (url: string) => ({
     onClick: () => navigation.navigate(url),
-    isActive: !!routeActive(url),
-  })
+    isActive: activePath === url,
+  });
 
   const modalLink = (modal: NavigationModal) => ({
     onClick: () => navigation.openModal(modal),
     isActive: navigation.modal === modal,
-  })
+  });
 
   return (
     <Navbar
@@ -143,25 +143,25 @@ export const AppMenu = observer(() => {
             {
               key: 'settings_general',
               label: Messages.menu.preferences,
-              icon: <WrenchScrewdriverIcon {...iconProps } />,
+              icon: <WrenchScrewdriverIcon {...iconProps} />,
               ...routeLink(SettingsRoute.url()),
             },
             {
               key: 'settings_currencies',
               label: Messages.menu.currencies,
-              icon: <CurrencyDollarIcon {...iconProps } />,
+              icon: <CurrencyDollarIcon {...iconProps} />,
               ...routeLink(CurrencySettingsRoute.url()),
             },
             {
               key: 'settings_accounts',
               label: Messages.menu.accounts,
-                icon: <WalletIcon {...iconProps} />,
+              icon: <WalletIcon {...iconProps} />,
               ...routeLink(AccountSettingsRoute.url()),
             },
             {
               key: 'settings_payees',
               label: Messages.menu.payees,
-              icon: <UsersIcon {...iconProps } />,
+              icon: <UsersIcon {...iconProps} />,
               ...routeLink(PayeeSettingsRoute.url()),
             },
           ],

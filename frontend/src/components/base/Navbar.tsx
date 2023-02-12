@@ -33,16 +33,18 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 
     return compact([
       <LinkButton
-        className={'item ' + (item.isActive ? 'active' : '')}
+        className={`item ${item.isActive ? 'active' : ''}`}
         data-test-id={`${dataTestId}_${item.key}`}
         onClick={item.onClick || (() => ({}))}
         key={item.key}
         title={item.label}>
         {item.icon} {item.customLabel || item.label}
       </LinkButton>,
-      item.children && <div key={`subitems_${item.key}`} className='subitems'>
-        {renderNavbarItems(dataTestId, item.children || [])}
-      </div>,
+      item.children && (
+        <div key={`subitems_${item.key}`} className='subitems'>
+          {renderNavbarItems(dataTestId, item.children || [])}
+        </div>
+      ),
     ]);
   });
 
