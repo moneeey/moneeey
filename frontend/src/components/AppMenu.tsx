@@ -1,11 +1,19 @@
 import {
+    ArrowDownOnSquareStackIcon,
+    BookmarkSlashIcon,
+    BookOpenIcon,
   ChartPieIcon,
   ClipboardDocumentIcon,
   Cog6ToothIcon,
   CurrencyDollarIcon,
   EnvelopeIcon,
+  IdentificationIcon,
   PlayCircleIcon,
+  QuestionMarkCircleIcon,
   StopCircleIcon,
+  UsersIcon,
+  WalletIcon,
+  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import { observer } from 'mobx-react';
 
@@ -37,9 +45,7 @@ export const AppMenu = observer(() => {
     return curr?.short || curr?.name || '?';
   };
 
-  const iconProps = {
-    style: { width: '1.2em', height: '1.2em' },
-  };
+  const iconProps = { className: 'icon-small', };
 
   const activeAccounts = accounts.allNonPayees.filter((t) => t.archived !== true);
   const unclassified = transactions.viewAllUnclassified().length;
@@ -72,6 +78,7 @@ export const AppMenu = observer(() => {
               .map((acct) => ({
                 key: `account_${acct._id || ''}`,
                 label: `${getAccountCurrency(acct)} ${acct.name}`,
+                icon: <WalletIcon {...iconProps} />,
                 customLabel: (
                   <TextNormal>
                     <TextSecondary>{getAccountCurrency(acct)}</TextSecondary> {acct.name}
@@ -81,17 +88,20 @@ export const AppMenu = observer(() => {
               })),
             {
               key: 'all',
+              icon: <BookOpenIcon {...iconProps} />,
               label: Messages.menu.all_transactions,
               onClick: () => navigation.navigate(AccountRoute.accountUrlForAll()),
             },
             {
               key: 'unassigned',
+              icon: <BookmarkSlashIcon {...iconProps} />,
               label: Messages.menu.unassigned(unclassified),
               onClick: () => navigation.navigate(AccountRoute.accountUrlForUnclassified()),
               visible: unclassified > 0,
             },
             {
               key: 'import',
+              icon: <ArrowDownOnSquareStackIcon {...iconProps} />,
               label: Messages.menu.import,
               onClick: () => navigation.navigate(ImportRoute.url()),
             },
@@ -120,21 +130,25 @@ export const AppMenu = observer(() => {
             {
               key: 'settings_general',
               label: Messages.menu.preferences,
+              icon: <WrenchScrewdriverIcon {...iconProps } />,
               onClick: () => navigation.navigate(SettingsRoute.url()),
             },
             {
               key: 'settings_currencies',
               label: Messages.menu.currencies,
+              icon: <CurrencyDollarIcon {...iconProps } />,
               onClick: () => navigation.navigate(CurrencySettingsRoute.url()),
             },
             {
               key: 'settings_accounts',
               label: Messages.menu.accounts,
+                icon: <WalletIcon {...iconProps} />,
               onClick: () => navigation.navigate(AccountSettingsRoute.url()),
             },
             {
               key: 'settings_payees',
               label: Messages.menu.payees,
+              icon: <UsersIcon {...iconProps } />,
               onClick: () => navigation.navigate(PayeeSettingsRoute.url()),
             },
           ],
@@ -142,6 +156,7 @@ export const AppMenu = observer(() => {
         {
           key: 'settings_landing',
           label: Messages.menu.start_tour,
+          icon: <QuestionMarkCircleIcon {...iconProps} />,
           onClick: () => navigation.openModal(NavigationModal.LANDING),
         },
         {

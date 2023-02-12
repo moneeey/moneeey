@@ -12,7 +12,7 @@ interface NavbarItem {
   key: string;
   label: string;
   customLabel?: ReactNode;
-  icon?: ReactNode;
+  icon: ReactNode;
   onClick: () => void;
   children?: Array<NavbarItem>;
   visible?: boolean;

@@ -57,10 +57,10 @@ export const BaseReport = function ({ accounts, processFn, title, chartFn }: Bas
   return (
     <>
       <h2>{title}</h2>
-      <DateGroupingSelector setPeriod={setPeriod} period={period} />
       <Loading loading={progress !== 0} progress={progress}>
         {chartFn(data, period)}
       </Loading>
+      <DateGroupingSelector setPeriod={setPeriod} period={period} />
       <section className='includedAccountsArea'>
         {Messages.reports.include_accounts}
         {accounts.map((account) => (
