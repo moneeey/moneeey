@@ -82,6 +82,6 @@ export default observer(
       [store]
     );
 
-    return <VirtualTable className='tableEditor' columns={columns} rows={entities} />;
+    return <VirtualTable className='tableEditor' columns={columns} rows={entities} isNewEntity={(row) => row.entityId === newEntityId} />;
   }
 );

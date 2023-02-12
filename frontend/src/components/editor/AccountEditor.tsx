@@ -142,6 +142,11 @@ export const AccountSorter =
     const entityB = store.byUuid(b?.entityId || '');
     const acctUuidA = (entityA?.[field] as TAccountUUID | undefined) || '';
     const acctUuidB = (entityB?.[field] as TAccountUUID | undefined) || '';
+    if (acctUuidA && !acctUuidB) {
+      return -1;
+    } else if (!acctUuidA && acctUuidB) {
+      return +1;
+    }
     const av = moneeeyStore.accounts.nameForUuid(`${acctUuidA}`);
     const bv = moneeeyStore.accounts.nameForUuid(`${acctUuidB}`);
 
