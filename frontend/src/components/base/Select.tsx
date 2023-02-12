@@ -44,6 +44,7 @@ const Select = ({
       <SelectComponent
         className={`mn-input mn-select ${className || ''} ${dataTestId}`}
         classNamePrefix={'react-select'}
+        menuPlacement='auto'
         isMulti={false}
         options={options}
         value={options.find((opt) => opt.value === value)}
@@ -81,6 +82,7 @@ const MultiSelect = ({
       <SelectComponent
         className={`mn-input mn-select ${className || ''} ${dataTestId}`}
         classNamePrefix={'react-select'}
+        menuPlacement='auto'
         isMulti={true}
         options={options}
         value={(value || []).map((val) => options.find((opt) => opt.value === val))}

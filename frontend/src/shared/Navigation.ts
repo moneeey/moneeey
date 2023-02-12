@@ -29,6 +29,8 @@ export default class NavigationStore {
 
   logger: Logger;
 
+  currentPath = '/';
+
   constructor(parent: Logger) {
     this.logger = new Logger('navigationStore', parent);
 
@@ -42,6 +44,7 @@ export default class NavigationStore {
       navigate: action,
       modal: computed,
       openModal: action,
+      currentPath: observable,
     });
   }
 

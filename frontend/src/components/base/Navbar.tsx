@@ -1,4 +1,5 @@
 import { Bars3Icon } from '@heroicons/react/24/outline';
+import { compact } from 'lodash';
 import { ReactNode, useState } from 'react';
 
 import { LinkButton } from './Button';
@@ -12,7 +13,8 @@ interface NavbarItem {
   key: string;
   label: string;
   customLabel?: ReactNode;
-  icon?: ReactNode;
+  isActive: boolean;
+  icon: ReactNode;
   onClick: () => void;
   children?: Array<NavbarItem>;
   visible?: boolean;
@@ -29,19 +31,21 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
       return [];
     }
 
-    return [
+    return compact([
       <LinkButton
-        className={'item'}
+        className={`item ${item.isActive ? 'active' : ''}`}
         data-test-id={`${dataTestId}_${item.key}`}
         onClick={item.onClick || (() => ({}))}
         key={item.key}
         title={item.label}>
         {item.icon} {item.customLabel || item.label}
       </LinkButton>,
-      <div key={`subitems_${item.key}`} className='subitems'>
-        {renderNavbarItems(dataTestId, item.children || [])}
-      </div>,
-    ];
+      item.children && (
+        <div key={`subitems_${item.key}`} className='subitems'>
+          {renderNavbarItems(dataTestId, item.children || [])}
+        </div>
+      ),
+    ]);
   });
 
 const Navbar = (props: NavbarProps & WithDataTestId) => {
