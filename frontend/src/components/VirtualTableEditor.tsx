@@ -1,5 +1,7 @@
-import React, { ReactNode, useRef, useState } from 'react';
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import React, { ReactNode, useRef, useState, useMemo } from 'react';
 import useVirtual from 'react-cool-virtual';
+import { NoSorter } from './editor/EditorProps';
 
 import './VirtualTableEditor.less';
 
@@ -19,6 +21,7 @@ type VirtualTableProps<Row> = {
   className?: string;
   columns: ColumnDef<Row>[];
   rows: Row[];
+  isNewEntity?: (row: Row) => boolean;
 };
 
 type GridRenderCell = {
@@ -26,18 +29,25 @@ type GridRenderCell = {
   columnIndex: number;
 };
 
-type GridRenderer = {
+type GridRenderer<Row> = {
   renderCell: (props: GridRenderCell) => ReactNode;
   onGridDimensions: (width: number, height: number) => void;
+  onGridClick: (column: ColumnDef<Row>, rowIndex: number) => void;
+  sort: {
+    column: ColumnDef<Row>,
+    order?: 'descend' | 'ascend'
+  },
 };
 
-const Grid = <Row,>({
+const VirtualGrid = <Row,>({
   rows,
   columns,
   renderCell,
+  sort,
   onGridDimensions,
+  onGridClick,
   className,
-}: VirtualTableProps<Row> & GridRenderer) => {
+}: VirtualTableProps<Row> & GridRenderer<Row>) => {
   const ref = useRef<HTMLDivElement | null>();
   const row = useVirtual({
     itemCount: 1 + rows.length,
@@ -50,6 +60,14 @@ const Grid = <Row,>({
     itemSize: (idx) => columns[idx].width || 60,
     onResize: ({ width, height }) => onGridDimensions(width, height),
   });
+
+  const SortIcon = (order?: 'descend' | 'ascend') => {
+    if (order === 'ascend') {
+      return <ChevronUpIcon className="icon-small" />
+    }  else {
+      return <ChevronDownIcon className="icon-small" />
+    }
+  }
 
   return (
     <div
@@ -84,10 +102,13 @@ const Grid = <Row,>({
                   left: colItem.start,
                   height: `${rowItem.size}px`,
                   width: `${colItem.size}px`,
-                }}>
+                }}
+                onClick={() => onGridClick(columns[colItem.index], rowItem.index)}
+                >
                 {rowItem.isSticky
                   ? columns[colItem.index].title
                   : renderCell({ rowIndex: rowItem.index - 1, columnIndex: colItem.index })}
+                {rowItem.index === 0 && sort.column.sorter === columns[colItem.index].sorter ? SortIcon(sort.order) : ''}
               </div>
             ))}
           </div>
@@ -100,9 +121,14 @@ const Grid = <Row,>({
 const VirtualTable = function VirtualTableRenderer<Row>({
   columns: originalColumns,
   rows,
+  isNewEntity,
   className,
 }: VirtualTableProps<Row>) {
   const [viewportWidth, setViewportWidth] = useState(0);
+  const [sort, setSort] = useState(() => {
+    const column = originalColumns.find(col => !!col.defaultSortOrder) || originalColumns[0]
+    return { column, order: column.defaultSortOrder }
+  })
   const columnsWithWidth = originalColumns.filter((col) => col.width);
   const columnsWithWidthTotalWidth = columnsWithWidth.reduce((total, cur) => total + (cur.width || 0), 0);
   const autoColumnSize = Math.max(
@@ -120,13 +146,30 @@ const VirtualTable = function VirtualTableRenderer<Row>({
   };
   const columns = originalColumns.map((col) => ({ ...col, width: col.width || autoColumnSize }));
 
+  const sortedRows = useMemo(() => rows.sort((a: Row, b: Row) => {
+    if (isNewEntity && isNewEntity(a)) return +1
+    if (isNewEntity && isNewEntity(b)) return -1
+    const sortFn = sort.column.sorter || (() => 0);
+    return sortFn(a, b, sort.order === 'ascend')
+  }), [rows, sort]);
+
   return (
-    <Grid
+    <VirtualGrid
       columns={columns}
-      rows={rows}
+      rows={sortedRows}
       renderCell={renderCell}
       className={className}
+      sort={sort}
       onGridDimensions={(width) => setViewportWidth(width - 32)}
+      onGridClick={(column, rowIdx) => {
+        if (rowIdx === 0) {
+          if (sort.column.sorter !== column.sorter) {
+            setSort({ column, order: 'ascend'});
+          } else {
+            setSort({ column, order: sort.order === 'ascend' ? 'descend' : 'ascend'});
+          }
+        }
+      }}
     />
   );
 };
