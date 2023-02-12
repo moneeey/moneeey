@@ -7,7 +7,6 @@ import {
   Cog6ToothIcon,
   CurrencyDollarIcon,
   EnvelopeIcon,
-  IdentificationIcon,
   PlayCircleIcon,
   QuestionMarkCircleIcon,
   StopCircleIcon,

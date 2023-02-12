@@ -53,7 +53,7 @@ export const EditorTypeConfig: Record<
   [EditorType.DATE]: {
     render: DateEditor,
     sorter: DateSorter,
-    width: 142,
+    width: 90,
   },
   [EditorType.ACCOUNT]: {
     render: AccountEditor,
@@ -83,7 +83,7 @@ export const EditorTypeConfig: Record<
   [EditorType.TRANSACTION_VALUE]: {
     render: TransactionValueEditor,
     sorter: TransactionValueSorter,
-    width: 320,
+    width: 200,
   },
   [EditorType.BUDGET_VALUE]: {
     render: BudgetValueEditor,

@@ -1,9 +1,9 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useRef, useState } from 'react';
 import useVirtual from 'react-cool-virtual';
 
 import './VirtualTableEditor.less';
 
-const MIN_COLUMN_WIDTH = 60;
+const MIN_COLUMN_WIDTH = 100;
 const ROW_HEIGHT = 26;
 
 export type ColumnDef<Row> = {
@@ -38,6 +38,7 @@ const Grid = <Row,>({
   onGridDimensions,
   className,
 }: VirtualTableProps<Row> & GridRenderer) => {
+  const ref = useRef<HTMLDivElement | null>()
   const row = useVirtual({
     itemCount: 1 + rows.length,
     itemSize: ROW_HEIGHT,
@@ -47,6 +48,7 @@ const Grid = <Row,>({
     horizontal: true,
     itemCount: columns.length,
     itemSize: (idx) => columns[idx].width || 60,
+    onResize: ({ width, height }) => onGridDimensions(width, height),
   });
 
   return (
@@ -55,6 +57,7 @@ const Grid = <Row,>({
       ref={(el) => {
         row.outerRef.current = el;
         col.outerRef.current = el;
+        ref.current = el
         onGridDimensions(el?.clientWidth || 0, el?.clientHeight || 0);
       }}>
       <div
@@ -74,7 +77,6 @@ const Grid = <Row,>({
             {col.items.map((colItem) => (
               <div
                 key={colItem.index}
-                ref={colItem.measureRef}
                 className={rowItem.isSticky ? 'mn-th' : 'mn-td'}
                 style={{
                   position: rowItem.isSticky ? 'sticky' : undefined,
