@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { observer } from 'mobx-react';
-import { Route, Routes, useParams } from 'react-router-dom';
+import { Route, Routes, useMatch, useParams } from 'react-router-dom';
 
 import { IAppParameters, IRouteParameters, Route as MyRoute } from './Route';
 
@@ -46,4 +46,8 @@ const RouteRenderer = observer(
   }
 );
 
-export { RouteRenderer, RouteRenderer as default };
+const useRouteActive = () => {
+  return useMatch;
+}
+
+export { RouteRenderer, useRouteActive, RouteRenderer as default };
