@@ -22,9 +22,12 @@ export default class TagsStore {
     return Array.from(this.available).sort();
   }
 
+  unregister = (tag: string) => {
+    this.available.delete(tag);
+  };
+
   register = (tag: string) => {
     if (!this.available.has(tag)) {
-      this.logger.info('new tag', { tag });
       this.available.add(tag);
     }
   };
