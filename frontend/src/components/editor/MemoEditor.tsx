@@ -12,7 +12,7 @@ import { TextSorter } from './TextEditor';
 
 export const MemoEditor = observer(<EntityType extends IBaseEntity>(props: EditorProps<EntityType, string, string>) => {
   const tagsForText = (text: string): string[] =>
-    Array.from(text.matchAll(/[^#](#\w+)/g)).map((m: RegExpMatchArray) => m[1].replace('#', ''));
+    Array.from(text.matchAll(/[^#]?(#\w+)/g)).map((m: RegExpMatchArray) => m[1].replace('#', ''));
 
   const entity = props.store.byUuid(props.entityId);
   const value = entity?.[props.field.field] as string;

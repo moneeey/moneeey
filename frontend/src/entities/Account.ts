@@ -110,7 +110,11 @@ export class AccountStore extends MappedStore<IAccount> {
   }
 
   merge(item: IAccount, options: { setUpdated: boolean } = { setUpdated: true }) {
+    const oldName = this.byUuid(item.account_uuid)?.name || '';
     super.merge(item, options);
+    if (item.name !== oldName) {
+      this.moneeeyStore.tags.unregister(oldName);
+    }
     this.moneeeyStore.tags.register(item.name);
   }
 
