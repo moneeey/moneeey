@@ -48,12 +48,12 @@ export const EditorTypeConfig: Record<
   [EditorType.CHECKBOX]: {
     render: CheckboxEditor,
     sorter: CheckboxSorter,
-    width: 100,
+    width: 120,
   },
   [EditorType.DATE]: {
     render: DateEditor,
     sorter: DateSorter,
-    width: 90,
+    width: 120,
   },
   [EditorType.ACCOUNT]: {
     render: AccountEditor,

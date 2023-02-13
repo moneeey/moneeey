@@ -1,5 +1,3 @@
-import { range } from 'lodash';
-
 import { ITransaction } from '../../entities/Transaction';
 import { EntityType } from '../Entity';
 
@@ -121,28 +119,75 @@ fdescribe('Importer', () => {
         from_value: 300,
       }),
     ];
-    const scoreMap = tokenTransactionAccountScoreMap(transactions, getTransactionTokens);
+    const scoreMap = tokenTransactionAccountScoreMap(transactions, getTransactionTokens, 2);
 
-    expect(tokenMatchScoreMap(['transfer', 'to', 'fernando'], scoreMap, 4)).toEqual([
-      { id: 'banco', score: 1.7894736842105263 },
-      { id: 'fernando', score: 1.7894736842105263 },
-      { id: 'chocolate', score: 0.8421052631578947 },
-      { id: 'lua', score: 0.8421052631578947 },
-    ]);
-    expect(tokenMatchScoreMap(['transfer', 'to', 'chocolate'], scoreMap, 4)).toEqual([
-      { id: 'banco', score: 1.7894736842105263 },
-      { id: 'chocolate', score: 1.7894736842105263 },
-      { id: 'fernando', score: 0.8421052631578947 },
-      { id: 'lua', score: 0.8421052631578947 },
-    ]);
-    expect(tokenMatchScoreMap(['market'], scoreMap, 4)).toEqual([
-      { id: 'banco', score: 0.8947368421052632 },
-      { id: 'market_dolly', score: 0.8947368421052632 },
-      { id: 'market_super', score: 0.8947368421052632 },
-    ]);
-    expect(tokenMatchScoreMap(['salary'], scoreMap, 4)).toEqual([
-      { id: 'banco', score: 0.9473684210526316 },
-      { id: 'xyz_company', score: 0.9473684210526316 },
+    const queries = [['transfer', 'to', 'fernando'], ['transfer', 'to', 'chocolate'], ['market'], ['salary']];
+
+    expect(queries.map((query) => ({ query, matches: tokenMatchScoreMap(query, scoreMap, 4) }))).toEqual([
+      {
+        query: ['transfer', 'to', 'fernando'],
+        matches: [
+          {
+            id: 'banco',
+            score: 0.9473684210526316,
+          },
+          {
+            id: 'fernando',
+            score: 0.8947368421052632,
+          },
+          {
+            id: 'chocolate',
+            score: 0.8421052631578947,
+          },
+          {
+            id: 'lua',
+            score: 0.8421052631578947,
+          },
+        ],
+      },
+      {
+        query: ['transfer', 'to', 'chocolate'],
+        matches: [
+          {
+            id: 'banco',
+            score: 0.9473684210526316,
+          },
+          {
+            id: 'chocolate',
+            score: 0.8947368421052632,
+          },
+          {
+            id: 'fernando',
+            score: 0.8421052631578947,
+          },
+          {
+            id: 'lua',
+            score: 0.8421052631578947,
+          },
+        ],
+      },
+      {
+        query: ['market'],
+        matches: [
+          {
+            id: 'market_dolly',
+            score: 0.8947368421052632,
+          },
+          {
+            id: 'market_super',
+            score: 0.8947368421052632,
+          },
+        ],
+      },
+      {
+        query: ['salary'],
+        matches: [
+          {
+            id: 'xyz_company',
+            score: 0.9473684210526316,
+          },
+        ],
+      },
     ]);
   });
 });
