@@ -1,7 +1,7 @@
-import { head, isEmpty, shuffle } from 'lodash';
+import { compact, head, isEmpty, shuffle } from 'lodash';
 
 import { TDateFormat } from '../../utils/Date';
-import { asyncProcess } from '../../utils/Utils';
+import { asyncProcess, tokenize } from '../../utils/Utils';
 import Logger from '../Logger';
 import MoneeeyStore from '../MoneeeyStore';
 
@@ -70,6 +70,7 @@ const txtImportFromLines = ({
   }
   onProgress(60);
   const { tokenMap } = importer;
+  logger.info('tokenMap', tokenMap);
   onProgress(90);
 
   return asyncProcess<string, ImportResult>(
@@ -88,8 +89,9 @@ const txtImportFromLines = ({
           return;
         }
         const { value, date, other } = retrieveColumns(tokens, columns, dateFormat || TDateFormat);
-        const accounts = importer.findAccountsForTokens(referenceAccount, tokenMap, other);
-        const other_account = accounts[0] || '';
+        const query_tokens = compact(other.flatMap(tokenize));
+        const accounts = importer.findAccountsForTokens(referenceAccount, tokenMap, query_tokens);
+        const other_account = accounts[0]?.account_uuid || '';
         const { transaction, existing } = importTransaction({
           date,
           line,
@@ -98,10 +100,19 @@ const txtImportFromLines = ({
           other_account,
           importer,
         });
-        logger.info('process line', { line, value, date, other, other_account, transaction });
+        logger.info('process line', {
+          line,
+          value,
+          date,
+          other,
+          other_account,
+          query_tokens,
+          recommended_accounts: accounts,
+          transaction,
+        });
         stt.transactions.push(transaction);
         stt.update[transaction.transaction_uuid] = Boolean(existing);
-        stt.recommended_accounts[transaction.transaction_uuid] = accounts;
+        stt.recommended_accounts[transaction.transaction_uuid] = accounts.map((a) => a.account_uuid);
       });
     },
     {

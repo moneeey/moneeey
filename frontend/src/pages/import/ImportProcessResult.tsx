@@ -112,8 +112,9 @@ const ContentTransactionTable = ({
       className='tableEditor'
       rows={transactions}
       columns={[
-        { fieldName: 'date', title: Messages.util.date, render: noOpRender },
+        { width: 120, fieldName: 'date', title: Messages.util.date, render: noOpRender },
         {
+          width: 280,
           fieldName: 'from_account',
           title: Messages.transactions.from_account,
           render: accountRender({
@@ -125,6 +126,7 @@ const ContentTransactionTable = ({
           }),
         },
         {
+          width: 280,
           fieldName: 'to_account',
           title: Messages.transactions.to_account,
           render: accountRender({
@@ -135,8 +137,8 @@ const ContentTransactionTable = ({
             setResult,
           }),
         },
+        { width: 120, fieldName: 'from_value', title: Messages.transactions.amount, render: noOpRender },
         { fieldName: 'memo', title: Messages.transactions.memo, render: noOpRender },
-        { fieldName: 'from_value', title: Messages.transactions.amount, render: noOpRender },
       ].map((col) => ({
         ...col,
         render: rendererForCol(col, moneeeyStore),
