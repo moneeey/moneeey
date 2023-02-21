@@ -32,6 +32,8 @@ export interface FieldProps<ValueEditorType> {
   defaultSortOrder?: 'descend' | 'ascend';
   width?: number;
   validate?: (value: ValueEditorType) => validation;
+  readValue?: (entity: Row) => ValueEditorType;
+  isLoading?: (entity: Row) => boolean;
 }
 
 export interface EditorProps<TEntityType extends IBaseEntity, ValueEditorType, ValueEntityType> {

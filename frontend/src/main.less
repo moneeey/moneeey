@@ -18,6 +18,7 @@
 
 @table-tr1-color: #212224;
 @table-tr2-color: #414244;
+@table-tr-hover-color: #808080;
 
 .icon-small {
   height: 1em;
@@ -35,6 +36,12 @@
   white-space: pre-line;
 }
 
+.mn-input {
+  color: @primary-color;
+  height: 1.2em;
+  line-height: 1em;
+}
+
 @font-face {
   font-family: 'PTSerif';
   src: local('PT Serif'), url('./fonts/PTSerif-Regular.ttf');
@@ -47,9 +54,11 @@
 
 body,
 input,
+select,
+label,
 button {
   font-family: PTSerif, serif;
-  font-size: 1.1em;
+  font-size: 1.1rem;
 }
 
 .mn-input-number {

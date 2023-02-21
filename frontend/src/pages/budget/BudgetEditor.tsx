@@ -5,6 +5,7 @@ import Drawer from '../../components/base/Drawer';
 import { Checkbox, Input } from '../../components/base/Input';
 import Select, { MultiSelect } from '../../components/base/Select';
 import Space, { VerticalSpace } from '../../components/base/Space';
+import { TextTitle } from '../../components/base/Text';
 import { IBudget } from '../../entities/Budget';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
@@ -34,17 +35,7 @@ const BudgetEditor = ({
     <Drawer
       className='editor'
       data-test-id='budgetEditorDrawer'
-      header={
-        <>
-          <Space>
-            <span className='title'>{editing.name || ''}</span>
-            <SecondaryButton onClick={onClose}>{Messages.util.close}</SecondaryButton>
-            <PrimaryButton data-test-id='budgetSave' onClick={onSave} disabled={!editing.name}>
-              {Messages.budget.save}
-            </PrimaryButton>
-          </Space>
-        </>
-      }>
+      header={<TextTitle className='title'>{editing.name || ''}</TextTitle>}>
       <VerticalSpace>
         <label>{Messages.util.name}</label>
         <Input
@@ -85,6 +76,12 @@ const BudgetEditor = ({
           onChange={(archived) => setEditing({ ...editing, archived })}>
           {Messages.util.archived}
         </Checkbox>
+        <Space>
+          <SecondaryButton onClick={onClose}>{Messages.util.close}</SecondaryButton>
+          <PrimaryButton data-test-id='budgetSave' onClick={onSave} disabled={!editing.name}>
+            {Messages.budget.save}
+          </PrimaryButton>
+        </Space>
       </VerticalSpace>
     </Drawer>
   );

@@ -1,4 +1,6 @@
+import { debounce } from 'lodash';
 import { action } from 'mobx';
+import { observer } from 'mobx-react-lite';
 
 import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
@@ -115,29 +117,41 @@ export const EntityEditorForField = <T extends IBaseEntity, Context, TField>({
   factory: (id?: string) => T;
 } & Row) => {
   const key = `${entityId}_${field.field}`;
-  const onUpdate = action((value: unknown, additional: object = {}) =>
-    store.merge({
-      ...(store.byUuid(entityId) || factory(entityId)),
-      [field.field]: value,
-      ...additional,
-    } as T)
+  const onUpdate = debounce(
+    action((value: unknown, additional: object = {}) => {
+      store.merge({
+        ...(store.byUuid(entityId) || factory(entityId)),
+        [field.field]: value,
+        ...additional,
+      } as T);
+    }),
+    400
   );
 
-  const config = EditorTypeConfig[field.editor];
-  const Editor = config.render;
+  const MonitorLoading = observer(() => {
+    const isLoading = field.isLoading && field.isLoading({ entityId }) === true;
+    if (isLoading) {
+      return <span>Loading</span>;
+    }
 
-  return (
-    <Editor
-      {...{
-        store,
-        entityId,
-        key,
-        field,
-        onUpdate,
-        context,
-      }}
-    />
-  );
+    const config = EditorTypeConfig[field.editor];
+    const Editor = config.render;
+
+    return (
+      <Editor
+        {...{
+          store,
+          entityId,
+          key,
+          field,
+          onUpdate,
+          context,
+        }}
+      />
+    );
+  });
+
+  return <MonitorLoading />;
 };
 
 export const TableColumnDefForField = <T extends IBaseEntity, Context>({
@@ -163,13 +177,16 @@ export const TableColumnDefForField = <T extends IBaseEntity, Context>({
     fieldName: field.field,
     defaultSortOrder: field.defaultSortOrder,
     sorter,
-    render: (_value: unknown, { entityId }: Row) =>
-      EntityEditorForField({
-        entityId,
-        context,
-        store,
-        field,
-        factory,
-      }),
+    render: (_value: unknown, { entityId }: Row) => (
+      <EntityEditorForField
+        {...{
+          entityId,
+          context,
+          store,
+          field,
+          factory,
+        }}
+      />
+    ),
   };
 };

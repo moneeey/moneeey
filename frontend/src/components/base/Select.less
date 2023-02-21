@@ -1,9 +1,8 @@
 @import '../../main.less';
 
 .mn-select {
-  height: 24px;
-  min-height: 24px;
-  line-height: 24px;
+  &:extend(.mn-input);
+  width: 100%;
 
   input,
   .react-select__single-value,
@@ -13,37 +12,42 @@
   .react-select__indicator,
   .react-select__indicators,
   .react-select__indicator-separator {
-    min-height: 24px;
-    height: 24px;
     margin: 0;
     border-radius: 0 !important;
+    padding: 0;
+    min-height: 0;
+    &:extend(.mn-input);
   }
 
   .react-select__indicator {
     padding: 3px;
   }
 
-  .react-select__menu-list,
-  .react-select__indicators,
-  .react-select__value-container {
-    background-color: @table-tr1-color;
-  }
-
-  .react-select__option--is-focused {
-    background-color: @table-tr2-color;
-    opacity: 0.5;
-  }
-
-  .react-select__single-value {
-    color: @primary-color;
-  }
-
-  .react-select__indicator-separator, .react-select__control {
+  .react-select__indicator-separator,
+  .react-select__control {
     border: 0;
     background-color: transparent;
   }
+}
 
-  .react-select__menu-list {
-    height: 12em;
-  }
+.react-select__menu-list,
+.react-select__indicators,
+.react-select__value-container {
+  background-color: @table-tr1-color;
+}
+
+.react-select__option--is-focused {
+  background-color: @table-tr2-color;
+  opacity: 0.5;
+}
+
+.react-select__single-value {
+  color: @primary-color;
+}
+
+.react-select__menu-list {
+  height: 16em;
+}
+.react-select__menu-portal {
+  z-index: 999999 !important;
 }

@@ -54,3 +54,4 @@ export const isDateBetween = (date: Date, min: Date, max: Date) => isDateGreater
 
 export const startOfMonthOffset = (date: Date, offset: number) => startOfMonth(add(date, { months: offset }));
 export const dateDistanceInSecs = (a: Date, b: Date) => Math.abs(differenceInSeconds(a, b));
+export const addDay = (date: Date, offset: number) => add(date, { days: offset });

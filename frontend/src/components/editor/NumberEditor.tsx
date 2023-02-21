@@ -43,9 +43,12 @@ export const BaseNumberEditor = observer(
 );
 
 export const NumberEditor = observer(
-  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number | string, number> & PrefixSuffix) => {
+  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number, number> & PrefixSuffix) => {
     const entity = props.store.byUuid(props.entityId);
-    const value = (entity?.[props.field.field] as number) || 0;
+    const value =
+      props.field.readValue && props.entityId
+        ? props.field.readValue({ entityId: props.entityId })
+        : (entity?.[props.field.field] as number) || 0;
 
     return <BaseNumberEditor {...props} value={value} rev={entity?._rev || ''} />;
   }

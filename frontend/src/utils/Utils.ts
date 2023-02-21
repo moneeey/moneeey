@@ -19,6 +19,12 @@ const asyncTimeout = function <R>(fn: () => R | Promise<R>, delay: number): Prom
   });
 };
 
+const asyncSleep = function (delay: number): Promise<void> {
+  return asyncTimeout(() => {
+    // Sleeping... Zzzzz
+  }, delay);
+};
+
 const capitalize = (text: string): string => {
   if (text) {
     return text.charAt(0).toUpperCase() + text.substring(1);
@@ -34,7 +40,7 @@ const asyncProcess = async function <T, R>(
     state?: R;
     chunkSize?: number;
     chunkThrottle?: number;
-  }
+  } = {}
 ): Promise<R> {
   const chunks = chunk(values, options.chunkSize || 50);
   const tasksTotal = chunks.length;
@@ -46,7 +52,10 @@ const asyncProcess = async function <T, R>(
       return;
     }
     const percentage = Math.round((1 - chunks.length / tasksTotal) * 10000) / 100;
-    await asyncTimeout(() => fn(chnk || [], state, percentage), options.chunkThrottle || 20);
+    fn(chnk || [], state, percentage);
+    if (chunks.length) {
+      await asyncSleep(options.chunkThrottle || 20);
+    }
     await process();
   };
   await process();
@@ -85,6 +94,7 @@ export {
   uuid,
   tokenize,
   asyncProcess,
+  asyncSleep,
   asyncTimeout,
   getStorage,
   setStorage,

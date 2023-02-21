@@ -1,4 +1,4 @@
-import { ITransaction } from '../../entities/Transaction';
+import { ITransaction, mockTransaction } from '../../entities/Transaction';
 import { EntityType } from '../Entity';
 
 import {
@@ -8,17 +8,6 @@ import {
   tokenTransactionAccountScoreMap,
   tokensForTransactions,
 } from './Importer';
-
-const mockTransaction = (
-  data: Pick<ITransaction, 'transaction_uuid' | 'from_account' | 'to_account' | 'from_value'> & Partial<ITransaction>
-) => ({
-  entity_type: EntityType.TRANSACTION,
-  to_value: data.from_value,
-  date: '2023-02-01',
-  memo: '',
-  tags: [],
-  ...data,
-});
 
 const getTransactionTokens = (transaction: ITransaction) => [...transaction.tags];
 
@@ -34,7 +23,7 @@ fdescribe('Importer', () => {
       ['transaction', 0.7],
     ]);
 
-  fit('tokenScoreMap', () => {
+  it('tokenScoreMap', () => {
     expect(
       tokenScoreMap([
         'transaction',
@@ -51,7 +40,7 @@ fdescribe('Importer', () => {
     ).toEqual(expectedTokenMap());
   });
 
-  fit('tokenTopScores', () => {
+  it('tokenTopScores', () => {
     expect(tokenTopScores(['transaction', 'pix', 'fernando'], expectedTokenMap(), 3)).toEqual([
       { score: 0.9, token: 'fernando' },
       { score: 0.8, token: 'pix' },
@@ -59,7 +48,7 @@ fdescribe('Importer', () => {
     ]);
   });
 
-  fit('tokenTransactionScoreMap', () => {
+  it('tokenTransactionScoreMap', () => {
     const transaction = mockTransaction({
       transaction_uuid: 't1',
       from_account: 'a',
@@ -72,7 +61,7 @@ fdescribe('Importer', () => {
     expect(tokensForTransactions(transaction, getTransactionTokens)).toEqual(['tagX', 'hello', 'world']);
   });
 
-  fit('tokenTransactionAccountScoreMap and tokenMatchScoreMap', () => {
+  it('tokenTransactionAccountScoreMap and tokenMatchScoreMap', () => {
     const transactions: ITransaction[] = [
       mockTransaction({
         transaction_uuid: 't1',

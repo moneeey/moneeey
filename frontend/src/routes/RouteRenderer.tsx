@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { action } from 'mobx';
 import { observer } from 'mobx-react';
+import { useEffect } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 
 import { IAppParameters, IRouteParameters, Route as MyRoute } from './Route';
@@ -13,9 +14,11 @@ interface IMappedRoute {
 const RouteElem = observer(({ route, app }: { route: MyRoute<IRouteParameters>; app: IAppParameters }) => {
   const parameters = _.reduce(useParams(), (accum, value, key) => ({ ...accum, [key]: value }), {});
 
-  action(() => {
-    app.moneeeyStore.navigation.currentPath = route.url(parameters);
-  })();
+  useEffect(() => {
+    action(() => {
+      app.moneeeyStore.navigation.currentPath = route.url(parameters);
+    })();
+  }, []);
 
   return (
     <aside className='mainArea'>

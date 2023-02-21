@@ -68,7 +68,7 @@ export default observer(
 
     const columns = useMemo(
       () =>
-        compact(values(store.schema()))
+        compact([...values(store.schema()), ...values(store.additionalSchema ? store.additionalSchema() : [])])
           .sort((a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index)
           .map((field: FieldProps<never>) => {
             return TableColumnDefForField({
@@ -82,6 +82,13 @@ export default observer(
       [store]
     );
 
-    return <VirtualTable className='tableEditor' columns={columns} rows={entities} isNewEntity={(row) => row.entityId === newEntityId} />;
+    return (
+      <VirtualTable
+        className='tableEditor'
+        columns={columns}
+        rows={entities}
+        isNewEntity={(row) => row.entityId === newEntityId}
+      />
+    );
   }
 );
