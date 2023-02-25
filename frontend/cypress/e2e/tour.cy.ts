@@ -28,6 +28,7 @@ describe('Tour spec', () => {
 
     // Type account in table to create a new account
     cy.get(loc.ACCOUNTS.NAME_INPUT).type('Account test');
+    cy.wait(1000);
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
 
     // Create a transaction
