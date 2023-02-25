@@ -6,7 +6,10 @@ import RunningBalance from './RunningBalance';
 describe('RunningBalance', () => {
   const dateOffset = (offset: number) => formatDate(addDay(parseDate(currentDate()), offset));
 
-  const testRunningBalances = async function (transactions: ITransaction[], expected: Map<string, number>) {
+  const testRunningBalances = async function (
+    transactions: ITransaction[],
+    expected: Map<string, { from_balance: number; to_balance: number }>
+  ) {
     const r = new RunningBalance();
     await r.processAll(transactions);
     expect(new Map(r.transactionRunningBalance)).toEqual(expected);
@@ -27,7 +30,7 @@ describe('RunningBalance', () => {
           from_value: 300,
         }),
       ],
-      new Map([['t-single', 300]])
+      new Map([['t-single', { from_balance: -300, to_balance: 300 }]])
     );
   });
 
@@ -50,8 +53,8 @@ describe('RunningBalance', () => {
         }),
       ],
       new Map([
-        ['t-two-1', 300],
-        ['t-two-2', 800],
+        ['t-two-1', { from_balance: -300, to_balance: 300 }],
+        ['t-two-2', { from_balance: -800, to_balance: 800 }],
       ])
     );
   });
@@ -89,10 +92,10 @@ describe('RunningBalance', () => {
         }),
       ],
       new Map([
-        ['t-four-1', 200],
-        ['t-four-2', 500],
-        ['t-four-3', 1500],
-        ['t-four-4', 3500],
+        ['t-four-1', { from_balance: -200, to_balance: 200 }],
+        ['t-four-2', { from_balance: -500, to_balance: 500 }],
+        ['t-four-3', { from_balance: -1500, to_balance: 1500 }],
+        ['t-four-4', { from_balance: -3500, to_balance: 3500 }],
       ])
     );
   });
@@ -123,9 +126,9 @@ describe('RunningBalance', () => {
         }),
       ],
       new Map([
-        ['t-three-1', 200],
-        ['t-three-2', 300],
-        ['t-three-3', 400],
+        ['t-three-1', { from_balance: -200, to_balance: 200 }],
+        ['t-three-2', { from_balance: -300, to_balance: 300 }],
+        ['t-three-3', { from_balance: -400, to_balance: 400 }],
       ])
     );
   });
@@ -205,16 +208,16 @@ describe('RunningBalance', () => {
         }),
       ],
       new Map([
-        ['t-multi-1', 200],
-        ['t-multi-2', 300],
-        ['t-multi-3', 400],
-        ['t-multi-4', 800],
-        ['t-multi-5', 400],
-        ['t-multi-6', 1200],
-        ['t-multi-7', 1700],
-        ['t-multi-8', 2700],
-        ['t-multi-9', 3800],
-        ['t-multi-10', 13800],
+        ['t-multi-1', { from_balance: -200, to_balance: 200 }],
+        ['t-multi-2', { from_balance: -300, to_balance: 300 }],
+        ['t-multi-3', { from_balance: -400, to_balance: 400 }],
+        ['t-multi-4', { from_balance: -800, to_balance: 800 }],
+        ['t-multi-5', { from_balance: -400, to_balance: 400 }],
+        ['t-multi-6', { from_balance: -1200, to_balance: 1200 }],
+        ['t-multi-7', { from_balance: -1700, to_balance: 1700 }],
+        ['t-multi-8', { from_balance: -2700, to_balance: 2700 }],
+        ['t-multi-9', { from_balance: -3800, to_balance: 3800 }],
+        ['t-multi-10', { from_balance: -13800, to_balance: 13800 }],
       ])
     );
   });
