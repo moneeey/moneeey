@@ -49,7 +49,7 @@ export const NumberEditor = observer(
     const entity = props.store.byUuid(props.entityId);
     const value =
       props.field.readValue && props.entityId
-        ? props.field.readValue({ entityId: props.entityId })
+        ? props.field.readValue({ entityId: props.entityId }, (props.context || {}) as object)
         : (entity?.[props.field.field] as number) || 0;
 
     return <BaseNumberEditor {...props} value={value} rev={entity?._rev || ''} />;

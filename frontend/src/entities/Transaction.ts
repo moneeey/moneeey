@@ -91,17 +91,31 @@ class TransactionStore extends MappedStore<ITransaction> {
         },
       }),
       additionalSchema: () => ({
-        runningBalance: {
+        running_balance: {
           title: Messages.transactions.running_balance,
           field: 'running_balance',
           index: 5,
           editor: EditorType.NUMBER,
           readOnly: true,
           isLoading: ({ entityId }: Row) => {
-            return this.runningBalance.transactionRunningBalance.get(entityId) === null;
+            return this.runningBalance.transactionRunningBalance.get(entityId)?.from_balance === null;
           },
-          readValue: ({ entityId }: Row) => {
-            return this.runningBalance.transactionRunningBalance.get(entityId) || 0;
+          readValue: ({ entityId }: Row, context: object) => {
+            const balances = this.runningBalance.transactionRunningBalance.get(entityId);
+            if ('referenceAccount' in context) {
+              const { referenceAccount } = context;
+              if (referenceAccount) {
+                const transaction = this.byUuid(entityId);
+                if (referenceAccount === transaction?.from_account) {
+                  return balances?.from_balance;
+                }
+                if (referenceAccount === transaction?.to_account) {
+                  return balances?.to_balance;
+                }
+              }
+            }
+
+            return balances?.from_balance || 0;
           },
         },
       }),
@@ -155,7 +169,8 @@ class TransactionStore extends MappedStore<ITransaction> {
     return (row: ITransaction) =>
       accountSet.has(row.from_account) ||
       accountSet.has(row.to_account) ||
-      (isEmpty(row.from_account) && isEmpty(row.to_account));
+      isEmpty(row.from_account) ||
+      isEmpty(row.to_account);
   }
 
   viewAllWithAccounts(accounts: TAccountUUID[]) {

@@ -33,7 +33,7 @@ export interface FieldProps<ValueEditorType> {
   defaultSortOrder?: 'descend' | 'ascend';
   width?: number;
   validate?: (value: ValueEditorType) => validation;
-  readValue?: (entity: Row) => ValueEditorType;
+  readValue?: (entity: Row, context: object) => ValueEditorType;
   isLoading?: (entity: Row) => boolean;
 }
 

@@ -5,8 +5,13 @@ import { ITransaction, TTransactionUUID } from '../entities/Transaction';
 
 import { asyncProcess } from './Utils';
 
+type FromToBalance = {
+  from_balance: null | number;
+  to_balance: null | number;
+};
+
 export default class RunningBalance {
-  transactionRunningBalance = new Map<TTransactionUUID, null | number>();
+  transactionRunningBalance = new Map<TTransactionUUID, FromToBalance>();
 
   constructor() {
     makeObservable(this, {
@@ -24,11 +29,13 @@ export default class RunningBalance {
             const previous = state.accountBalance.get(account) || 0;
             const balance = amount + previous;
             state.accountBalance.set(account, balance);
-            state.transactionBalance.set(item.transaction_uuid, balance);
+
+            return balance;
           };
           chunk.forEach((item) => {
-            changeRunningBalance(item, item.from_account, -item.from_value);
-            changeRunningBalance(item, item.to_account, item.to_value);
+            const from_balance = changeRunningBalance(item, item.from_account, -item.from_value);
+            const to_balance = changeRunningBalance(item, item.to_account, item.to_value);
+            state.transactionBalance.set(item.transaction_uuid, { from_balance, to_balance });
           });
         },
         {
@@ -36,26 +43,29 @@ export default class RunningBalance {
           chunkThrottle: 200,
           state: {
             accountBalance: new Map<TAccountUUID, number>(),
-            transactionBalance: new Map<TTransactionUUID, null | number>(),
+            transactionBalance: new Map<TTransactionUUID, FromToBalance>(),
           },
         }
       )
     ).transactionBalance;
   }
 
-  update(transaction_uuid: TTransactionUUID, balance: number | null) {
-    this.transactionRunningBalance.set(transaction_uuid, balance);
+  update(transaction_uuid: TTransactionUUID, balances: FromToBalance) {
+    this.transactionRunningBalance.set(transaction_uuid, balances);
   }
 
   async processAll(transactions: ITransaction[]) {
     for (const t of transactions) {
       if (!this.transactionRunningBalance.has(t.transaction_uuid)) {
-        this.update(t.transaction_uuid, null);
+        this.update(t.transaction_uuid, {
+          from_balance: null,
+          to_balance: null,
+        });
       }
     }
-    const balances = await this.calculateTransactionRunningBalances(transactions);
-    for (const [key, value] of balances) {
-      this.update(key, value);
+    const transactionBalances = await this.calculateTransactionRunningBalances(transactions);
+    for (const [transaction_uuid, balances] of transactionBalances) {
+      this.update(transaction_uuid, balances);
     }
   }
 }
