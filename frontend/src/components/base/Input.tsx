@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import { ReactNode, useEffect, useState } from 'react';
 import { NumericFormat } from 'react-number-format';
 
@@ -44,8 +45,20 @@ const Input = ({
   prefix,
   suffix,
   isError,
-}: InputProps<string>) =>
-  InputContainer({
+}: InputProps<string>) => {
+  const [currentValue, setCurrentValue] = useState<string>(value);
+
+  useEffect(() => {
+    const tmr = setTimeout(() => {
+      if (currentValue && currentValue !== value) {
+        onChange(currentValue);
+      }
+    }, 500);
+
+    return () => clearTimeout(tmr);
+  }, [currentValue]);
+
+  return InputContainer({
     prefix,
     suffix,
     isError,
@@ -54,14 +67,16 @@ const Input = ({
         {...{ 'data-test-id': dataTestId }}
         type='text'
         className={`mn-input ${className || ''}`}
-        value={value}
-        onChange={({ target: { value: newValue } }) => onChange(newValue)}
+        value={currentValue}
+        onChange={({ target: { value: newValue } }) => setCurrentValue(newValue)}
+        onBlur={() => onChange(currentValue)}
         placeholder={placeholder}
         disabled={disabled}
         readOnly={readOnly}
       />
     ),
   });
+};
 
 type InputNumberProps = InputProps<number> & {
   thousandSeparator: string;
@@ -85,10 +100,21 @@ const InputNumber = ({
   decimalScale,
 }: InputNumberProps) => {
   const [currentValue, setCurrentValue] = useState<string | number>(value);
+  const [currentFloatValue, setCurrentFloatValue] = useState<number | null>(null);
 
   useEffect(() => {
     setCurrentValue(value);
   }, [value]);
+
+  useEffect(() => {
+    const tmr = setTimeout(() => {
+      if (currentFloatValue) {
+        onChange(currentFloatValue);
+      }
+    }, 500);
+
+    return () => clearTimeout(tmr);
+  }, [currentFloatValue]);
 
   return InputContainer({
     prefix,
@@ -104,9 +130,10 @@ const InputNumber = ({
             setCurrentValue(formattedValue);
           }
           if (floatValue && floatValue !== value) {
-            onChange(floatValue);
+            setCurrentFloatValue(floatValue);
           }
         }}
+        onBlur={() => currentFloatValue !== null && onChange(currentFloatValue)}
         placeholder={placeholder}
         thousandsGroupStyle='thousand'
         thousandSeparator={thousandSeparator}

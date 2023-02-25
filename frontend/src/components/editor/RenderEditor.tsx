@@ -118,16 +118,13 @@ export const EntityEditorForField = <T extends IBaseEntity, Context, TField>({
   factory: (id?: string) => T;
 } & Row) => {
   const key = `${entityId}_${field.field}`;
-  const onUpdate = debounce(
-    action((value: unknown, additional: object = {}) => {
-      store.merge({
-        ...(store.byUuid(entityId) || factory(entityId)),
-        [field.field]: value,
-        ...additional,
-      } as T);
-    }),
-    400
-  );
+  const onUpdate = action((value: unknown, additional: object = {}) => {
+    store.merge({
+      ...(store.byUuid(entityId) || factory(entityId)),
+      [field.field]: value,
+      ...additional,
+    } as T);
+  });
 
   const MonitorLoading = observer(() => {
     const isLoading = field.isLoading && field.isLoading({ entityId }) === true;

@@ -14,22 +14,16 @@ const BudgetEditor = ({
   editing,
   setEditing,
 }: {
-  editing?: IBudget;
+  editing: IBudget;
   setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
 }) => {
   const { budget, tags, currencies, config } = useMoneeeyStore();
 
   const onClose = () => setEditing(undefined);
   const onSave = () => {
-    if (editing) {
-      budget.merge(editing);
-      setEditing(undefined);
-    }
+    budget.merge(editing);
+    setEditing(undefined);
   };
-
-  if (!editing) {
-    return <div />;
-  }
 
   return (
     <Drawer
@@ -42,7 +36,7 @@ const BudgetEditor = ({
           data-test-id='budgetName'
           placeholder={Messages.util.name}
           value={editing.name}
-          onChange={(name) => setEditing({ ...editing, name })}
+          onChange={(name) => setEditing((current) => current && { ...current, name })}
         />
         <label>{Messages.util.currency}</label>
         <Select
@@ -54,7 +48,9 @@ const BudgetEditor = ({
           }))}
           value={editing.currency_uuid}
           onChange={(currency_uuid) =>
-            setEditing({ ...editing, currency_uuid: currency_uuid || config.main.default_currency })
+            setEditing(
+              (current) => current && { ...current, currency_uuid: currency_uuid || config.main.default_currency }
+            )
           }
         />
         <label>{Messages.util.tags}</label>
@@ -65,7 +61,7 @@ const BudgetEditor = ({
           value={editing.tags}
           onCreate={(tagName) => {
             tags.register(tagName);
-            setEditing({ ...editing, tags: [...editing.tags, tagName] });
+            setEditing((current) => current && { ...current, tags: [...editing.tags, tagName] });
           }}
           onChange={(new_tags: readonly string[]) => setEditing({ ...editing, tags: [...new_tags] })}
         />
