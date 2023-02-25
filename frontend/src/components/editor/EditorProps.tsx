@@ -1,5 +1,6 @@
 import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
+import { Row } from '../VirtualTableEditor';
 
 interface validation {
   valid: boolean;
@@ -32,6 +33,8 @@ export interface FieldProps<ValueEditorType> {
   defaultSortOrder?: 'descend' | 'ascend';
   width?: number;
   validate?: (value: ValueEditorType) => validation;
+  readValue?: (entity: Row, context: object) => ValueEditorType;
+  isLoading?: (entity: Row) => boolean;
 }
 
 export interface EditorProps<TEntityType extends IBaseEntity, ValueEditorType, ValueEntityType> {
@@ -41,9 +44,5 @@ export interface EditorProps<TEntityType extends IBaseEntity, ValueEditorType, V
   context?: unknown;
   onUpdate: (value: ValueEntityType, additional: object) => TEntityType;
 }
-
-export type Row = {
-  entityId: string;
-};
 
 export const NoSorter = (): false => false;

@@ -1,8 +1,11 @@
+import { debounce } from 'lodash';
 import { action } from 'mobx';
+import { observer } from 'mobx-react-lite';
 
 import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
 import MoneeeyStore from '../../shared/MoneeeyStore';
+import { ColumnDef, Row } from '../VirtualTableEditor';
 
 import { AccountEditor, AccountSorter } from './AccountEditor';
 import { AccountTypeEditor, AccountTypeSorter } from './AccountTypeEditor';
@@ -10,7 +13,7 @@ import { BudgetValueEditor, BudgetValueSorter } from './BudgetValueEditor';
 import { CheckboxEditor, CheckboxSorter } from './CheckboxEditor';
 import { CurrencyEditor, CurrencySorter } from './CurrencyEditor';
 import { DateEditor, DateSorter } from './DateEditor';
-import { EditorProps, EditorType, FieldProps, Row } from './EditorProps';
+import { EditorProps, EditorType, FieldProps } from './EditorProps';
 import { LabelEditor, LabelSorter } from './LabelEditor';
 import { LinkEditor, LinkSorter } from './LinkEditor';
 import { MemoEditor, MemoSorter } from './MemoEditor';
@@ -115,29 +118,38 @@ export const EntityEditorForField = <T extends IBaseEntity, Context, TField>({
   factory: (id?: string) => T;
 } & Row) => {
   const key = `${entityId}_${field.field}`;
-  const onUpdate = action((value: unknown, additional: object = {}) =>
+  const onUpdate = action((value: unknown, additional: object = {}) => {
     store.merge({
       ...(store.byUuid(entityId) || factory(entityId)),
       [field.field]: value,
       ...additional,
-    } as T)
-  );
+    } as T);
+  });
 
-  const config = EditorTypeConfig[field.editor];
-  const Editor = config.render;
+  const MonitorLoading = observer(() => {
+    const isLoading = field.isLoading && field.isLoading({ entityId }) === true;
+    if (isLoading) {
+      return <span>Loading</span>;
+    }
 
-  return (
-    <Editor
-      {...{
-        store,
-        entityId,
-        key,
-        field,
-        onUpdate,
-        context,
-      }}
-    />
-  );
+    const config = EditorTypeConfig[field.editor];
+    const Editor = config.render;
+
+    return (
+      <Editor
+        {...{
+          store,
+          entityId,
+          key,
+          field,
+          onUpdate,
+          context,
+        }}
+      />
+    );
+  });
+
+  return <MonitorLoading />;
 };
 
 export const TableColumnDefForField = <T extends IBaseEntity, Context>({
@@ -152,24 +164,27 @@ export const TableColumnDefForField = <T extends IBaseEntity, Context>({
   store: MappedStore<T>;
   field: FieldProps<never>;
   factory: (id?: string) => T;
-}) => {
+}): ColumnDef => {
   const config = EditorTypeConfig[field.editor];
-  const sorter = config.sorter(store, field.field as keyof T, moneeeyStore);
+  const sorter = config.sorter(store, field.field as keyof T, moneeeyStore) || (() => 0);
   const { width } = config;
 
   return {
     width: width || field.width,
     title: field.title,
-    fieldName: field.field,
     defaultSortOrder: field.defaultSortOrder,
+    index: field.index,
     sorter,
-    render: (_value: unknown, { entityId }: Row) =>
-      EntityEditorForField({
-        entityId,
-        context,
-        store,
-        field,
-        factory,
-      }),
+    render: ({ entityId }: Row) => (
+      <EntityEditorForField
+        {...{
+          entityId,
+          context,
+          store,
+          field,
+          factory,
+        }}
+      />
+    ),
   };
 };

@@ -3,9 +3,10 @@ import { observer } from 'mobx-react';
 import { Input } from '../base/Input';
 import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
+import { Row } from '../VirtualTableEditor';
 
 import { BaseEditor } from './BaseEditor';
-import { EditorProps, Row } from './EditorProps';
+import { EditorProps } from './EditorProps';
 
 export const TextEditor = observer(<EntityType extends IBaseEntity>(props: EditorProps<EntityType, string, string>) => {
   const entity = props.store.byUuid(props.entityId);

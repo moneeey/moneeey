@@ -4,67 +4,56 @@
   width: 100%;
   max-height: 90vh;
   min-height: 30vh;
-    overflow: auto;
-}
+  overflow: auto;
 
-.mn-input,
-.mn-datepicker,
-.mn-select input {
-  border: 0 !important;
-  width: 100% !important;
-  color: @primary-color;
-  background-color: @table-tr1-color;
-}
+  .mn-input,
+  .mn-datepicker,
+  .mn-select input {
+    border: 0 !important;
+    width: 100% !important;
+    color: @primary-color;
+    background-color: @table-tr1-color;
+  }
 
-.mn-virtualtable .mn-tr {
-  display: flex;
-}
+  .mn-tr {
+    display: flex;
+  }
 
-.mn-virtualtable .mn-th {
-  font-weight: bold;
-}
-.mn-virtualtable .mn-tr .mn-td,
-.mn-virtualtable .mn-tr .mn-th,
-.mn-virtualtable .mn-tr .mn-input,
-.mn-virtualtable .mn-tr .mn-input-prefix,
-.mn-virtualtable .mn-tr .mn-input-suffix,
-.mn-virtualtable .mn-tr .mn-datepicker,
-.mn-virtualtable .mn-tr .mn-select .react-select__indicators,
-.mn-virtualtable .mn-tr .mn-select .react-select__value-container {
-  height: 24px;
-  line-height: 24px;
-}
+  .mn-th {
+    font-weight: bold;
+  }
 
-.mn-virtualtable .mn-tr .mn-th,
-.mn-virtualtable .mn-tr:nth-child(1n) .mn-td,
-.mn-virtualtable .mn-tr:nth-child(1n) .mn-input,
-.mn-virtualtable .mn-tr:nth-child(1n) .mn-input-prefix,
-.mn-virtualtable .mn-tr:nth-child(1n) .mn-input-suffix,
-.mn-virtualtable .mn-tr:nth-child(1n) .mn-datepicker,
-.mn-virtualtable .mn-tr:nth-child(1n) .mn-select .react-select__menu-list,
-.mn-virtualtable .mn-tr:nth-child(1n) .mn-select .react-select__indicators,
-.mn-virtualtable .mn-tr:nth-child(1n) .mn-select .react-select__value-container {
-  background-color: @table-tr1-color;
-}
+  .mn-tr .mn-th,
+  .mn-tr:nth-child(1n) .mn-td,
+  .mn-tr:nth-child(1n) .mn-input,
+  .mn-tr:nth-child(1n) .mn-input-prefix,
+  .mn-tr:nth-child(1n) .mn-input-suffix,
+  .mn-tr:nth-child(1n) .mn-datepicker,
+  .mn-tr:nth-child(1n) .mn-select .react-select__menu-list,
+  .mn-tr:nth-child(1n) .mn-select .react-select__indicators,
+  .mn-tr:nth-child(1n) .mn-select .react-select__value-container {
+    background-color: @table-tr1-color;
+  }
 
-.mn-virtualtable .mn-tr:nth-child(2n) .mn-td,
-.mn-virtualtable .mn-tr:nth-child(2n) .mn-th,
-.mn-virtualtable .mn-tr:nth-child(2n) .mn-input,
-.mn-virtualtable .mn-tr:nth-child(2n) .mn-input-prefix,
-.mn-virtualtable .mn-tr:nth-child(2n) .mn-input-suffix,
-.mn-virtualtable .mn-tr:nth-child(2n) .mn-datepicker,
-.mn-virtualtable .mn-tr:nth-child(2n) .mn-select .react-select__menu-list,
-.mn-virtualtable .mn-tr:nth-child(2n) .mn-select .react-select__indicators,
-.mn-virtualtable .mn-tr:nth-child(2n) .mn-select .react-select__value-container {
-  background-color: @table-tr2-color;
-}
+  .mn-tr:nth-child(2n) .mn-td,
+  .mn-tr:nth-child(2n) .mn-th,
+  .mn-tr:nth-child(2n) .mn-input,
+  .mn-tr:nth-child(2n) .mn-input-prefix,
+  .mn-tr:nth-child(2n) .mn-input-suffix,
+  .mn-tr:nth-child(2n) .mn-datepicker,
+  .mn-tr:nth-child(2n) .mn-select .react-select__menu-list,
+  .mn-tr:nth-child(2n) .mn-select .react-select__indicators,
+  .mn-tr:nth-child(2n) .mn-select .react-select__value-container {
+    background-color: @table-tr2-color;
+  }
 
-.mn-virtualtable .mn-tr:hover .mn-td,
-.mn-virtualtable .mn-tr:hover .mn-input,
-.mn-virtualtable .mn-tr:hover .mn-input-prefix,
-.mn-virtualtable .mn-tr:hover .mn-input-suffix,
-.mn-virtualtable .mn-tr:hover .mn-datepicker,
-.mn-virtualtable .mn-tr:hover .mn-select .react-select__indicators,
-.mn-virtualtable .mn-tr:hover .mn-select .react-select__value-container {
-  background-color: #808080;
+  .mn-tr:hover .mn-td,
+  .mn-tr:hover .mn-input,
+  .mn-tr:hover .mn-input-prefix,
+  .mn-tr:hover .mn-input-suffix,
+  .mn-tr:hover .mn-datepicker,
+  .mn-tr:hover .mn-select .react-select__indicators,
+  .mn-tr:hover .mn-select .react-select__value-container {
+    background-color: @table-tr-hover-color;
+  }
 }

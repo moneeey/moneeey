@@ -45,7 +45,12 @@ export default class NavigationStore {
       modal: computed,
       openModal: action,
       currentPath: observable,
+      updateCurrentPath: action,
     });
+  }
+
+  updateCurrentPath(path: string) {
+    this.currentPath = path;
   }
 
   navigate(url: string) {

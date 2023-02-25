@@ -61,7 +61,7 @@ const Budget = observer(() => {
         viewArchived={viewArchived}
         viewMonths={viewMonths}
       />
-      <BudgetEditor editing={editing} setEditing={setEditing} />
+      {editing && <BudgetEditor editing={editing} setEditing={setEditing} />}
     </section>
   );
 });

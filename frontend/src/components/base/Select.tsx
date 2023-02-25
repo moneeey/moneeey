@@ -45,6 +45,7 @@ const Select = ({
         className={`mn-input mn-select ${className || ''} ${dataTestId}`}
         classNamePrefix={'react-select'}
         menuPlacement='auto'
+        menuPortalTarget={document.body}
         isMulti={false}
         options={options}
         value={options.find((opt) => opt.value === value)}
@@ -83,6 +84,8 @@ const MultiSelect = ({
         className={`mn-input mn-select ${className || ''} ${dataTestId}`}
         classNamePrefix={'react-select'}
         menuPlacement='auto'
+        styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+        menuPortalTarget={document.body}
         isMulti={true}
         options={options}
         value={(value || []).map((val) => options.find((opt) => opt.value === val))}

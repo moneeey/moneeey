@@ -50,6 +50,7 @@ export const AppMenu = observer(() => {
   const activeAccounts = accounts.allNonPayees.filter((t) => t.archived !== true);
   const unclassified = transactions.viewAllUnclassified().length;
   const activePath = navigation.currentPath;
+  const hasTransactions = transactions.all.length > 0;
 
   const routeLink = (url: string) => ({
     onClick: () => navigation.navigate(url),
@@ -123,14 +124,14 @@ export const AppMenu = observer(() => {
           key: 'budget',
           label: Messages.menu.budget,
           icon: <EnvelopeIcon {...iconProps} />,
-          visible: transactions.all.length > 0,
+          visible: hasTransactions,
           ...routeLink(BudgetRoute.url()),
         },
         {
           key: 'reports',
           label: Messages.menu.reports,
           icon: <ChartPieIcon {...iconProps} />,
-          visible: transactions.all.length > 0,
+          visible: hasTransactions,
           ...routeLink(ReportsRoute.url()),
         },
         {

@@ -4,13 +4,14 @@ import { observer } from 'mobx-react';
 import { IBaseEntity } from '../shared/Entity';
 import MappedStore from '../shared/MappedStore';
 
-import { FieldProps, Row } from './editor/EditorProps';
+import { FieldProps } from './editor/EditorProps';
 
 import { WithDataTestId } from './base/Common';
 import { EntityEditorForField } from './editor/RenderEditor';
 
 import './FormEditor.less';
 import { TextNormal } from './base/Text';
+import { Row } from './VirtualTableEditor';
 
 interface BaseFormEditor extends WithDataTestId {
   className?: string;

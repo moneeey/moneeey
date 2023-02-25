@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react';
+import { compact } from 'lodash';
 
 import TransactionTable from '../tables/TransactionTable';
 import { IAccount } from '../entities/Account';
@@ -23,7 +24,7 @@ const AccountTransactions = observer(
   ({ account_name, moneeyStore: { transactions, accounts, currencies } }: AccountTransactionProps) => {
     const account = accounts.find((acc: IAccount) => slugify(acc.name) === account_name);
     const account_uuid = account?.account_uuid || '';
-    const filterByAccount = transactions.filterByAccounts([account_uuid]);
+    const filterByAccount = transactions.filterByAccounts(compact([account_uuid]));
     const schemaFilter = (row: ITransaction) => account_name === 'all' || filterByAccount(row);
     const referenceAccount = account_uuid;
 

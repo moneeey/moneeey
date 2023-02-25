@@ -1,14 +1,16 @@
 import { computed, makeObservable, observable } from 'mobx';
 
-import { isEmpty } from 'lodash';
+import { debounce, isEmpty } from 'lodash';
 
 import { TDate, compareDates, currentDate, currentDateTime, parseDate } from '../utils/Date';
 import { uuid } from '../utils/Utils';
 import { EditorType } from '../components/editor/EditorProps';
 import { EntityType, IBaseEntity, TMonetary, isEntityType } from '../shared/Entity';
+import { Row } from '../components/VirtualTableEditor';
 import MappedStore from '../shared/MappedStore';
 import MoneeeyStore from '../shared/MoneeeyStore';
 import Messages from '../utils/Messages';
+import RunningBalance from '../utils/RunningBalance';
 
 import { AccountStore, TAccountUUID } from './Account';
 
@@ -29,6 +31,8 @@ class TransactionStore extends MappedStore<ITransaction> {
   oldest_dt: Date = new Date();
 
   newest_dt: Date = new Date();
+
+  runningBalance = new RunningBalance();
 
   constructor(moneeeyStore: MoneeeyStore) {
     super(moneeeyStore, {
@@ -66,17 +70,17 @@ class TransactionStore extends MappedStore<ITransaction> {
           index: 2,
           editor: EditorType.ACCOUNT,
         },
-        memo: {
-          title: Messages.transactions.memo,
-          field: 'memo',
-          index: 3,
-          editor: EditorType.MEMO,
-        },
         from_value: {
           title: Messages.transactions.amount,
           field: 'from_value',
-          index: 4,
+          index: 3,
           editor: EditorType.TRANSACTION_VALUE,
+        },
+        memo: {
+          title: Messages.transactions.memo,
+          field: 'memo',
+          index: 4,
+          editor: EditorType.MEMO,
         },
         created: {
           title: Messages.util.created,
@@ -86,6 +90,35 @@ class TransactionStore extends MappedStore<ITransaction> {
           editor: EditorType.DATE,
         },
       }),
+      additionalSchema: () => ({
+        running_balance: {
+          title: Messages.transactions.running_balance,
+          field: 'running_balance',
+          index: 5,
+          editor: EditorType.NUMBER,
+          readOnly: true,
+          isLoading: ({ entityId }: Row) => {
+            return this.runningBalance.transactionRunningBalance.get(entityId)?.from_balance === null;
+          },
+          readValue: ({ entityId }: Row, context: object) => {
+            const balances = this.runningBalance.transactionRunningBalance.get(entityId);
+            if ('referenceAccount' in context) {
+              const { referenceAccount } = context;
+              if (referenceAccount) {
+                const transaction = this.byUuid(entityId);
+                if (referenceAccount === transaction?.from_account) {
+                  return balances?.from_balance;
+                }
+                if (referenceAccount === transaction?.to_account) {
+                  return balances?.to_balance;
+                }
+              }
+            }
+
+            return balances?.from_balance || 0;
+          },
+        },
+      }),
     });
     makeObservable(this, {
       sorted: computed,
@@ -93,6 +126,10 @@ class TransactionStore extends MappedStore<ITransaction> {
       newest_dt: observable,
     });
   }
+
+  updateRunningBalance = debounce(() => {
+    this.runningBalance.processAll(this.moneeeyStore.transactions.sorted);
+  }, 1000);
 
   merge(item: ITransaction, options: { setUpdated: boolean } = { setUpdated: true }) {
     super.merge(item, options);
@@ -106,6 +143,7 @@ class TransactionStore extends MappedStore<ITransaction> {
           this.oldest_dt = new Date(dt);
         }
       }
+      this.updateRunningBalance();
     }
   }
 
@@ -115,6 +153,10 @@ class TransactionStore extends MappedStore<ITransaction> {
 
   get sorted() {
     return this.sortTransactions(this.all);
+  }
+
+  findAllAfter(date: TDate) {
+    return this.sorted.filter((t) => t.date >= date);
   }
 
   viewAllWithAccount(account: TAccountUUID) {
@@ -127,7 +169,8 @@ class TransactionStore extends MappedStore<ITransaction> {
     return (row: ITransaction) =>
       accountSet.has(row.from_account) ||
       accountSet.has(row.to_account) ||
-      (isEmpty(row.from_account) && isEmpty(row.to_account));
+      isEmpty(row.from_account) ||
+      isEmpty(row.to_account);
   }
 
   viewAllWithAccounts(accounts: TAccountUUID[]) {
@@ -163,4 +206,15 @@ class TransactionStore extends MappedStore<ITransaction> {
 
 const isTransaction = isEntityType<ITransaction>(EntityType.TRANSACTION);
 
-export { TransactionStore, TransactionStore as default, isTransaction };
+const mockTransaction = (
+  data: Pick<ITransaction, 'transaction_uuid' | 'from_account' | 'to_account' | 'from_value'> & Partial<ITransaction>
+) => ({
+  entity_type: EntityType.TRANSACTION,
+  to_value: data.from_value,
+  date: '2023-02-01',
+  memo: '',
+  tags: [],
+  ...data,
+});
+
+export { TransactionStore, TransactionStore as default, isTransaction, mockTransaction };

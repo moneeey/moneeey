@@ -127,6 +127,7 @@ const Messages = {
     memo: 'Memo',
     from_account: 'From',
     to_account: 'To',
+    running_balance: 'Running',
   },
   dashboard: {
     recent_transactions: 'Recent transactions',

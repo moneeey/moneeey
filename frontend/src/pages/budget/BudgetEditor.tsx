@@ -5,6 +5,7 @@ import Drawer from '../../components/base/Drawer';
 import { Checkbox, Input } from '../../components/base/Input';
 import Select, { MultiSelect } from '../../components/base/Select';
 import Space, { VerticalSpace } from '../../components/base/Space';
+import { TextTitle } from '../../components/base/Text';
 import { IBudget } from '../../entities/Budget';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
@@ -13,45 +14,29 @@ const BudgetEditor = ({
   editing,
   setEditing,
 }: {
-  editing?: IBudget;
+  editing: IBudget;
   setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
 }) => {
   const { budget, tags, currencies, config } = useMoneeeyStore();
 
   const onClose = () => setEditing(undefined);
   const onSave = () => {
-    if (editing) {
-      budget.merge(editing);
-      setEditing(undefined);
-    }
+    budget.merge(editing);
+    setEditing(undefined);
   };
-
-  if (!editing) {
-    return <div />;
-  }
 
   return (
     <Drawer
       className='editor'
       data-test-id='budgetEditorDrawer'
-      header={
-        <>
-          <Space>
-            <span className='title'>{editing.name || ''}</span>
-            <SecondaryButton onClick={onClose}>{Messages.util.close}</SecondaryButton>
-            <PrimaryButton data-test-id='budgetSave' onClick={onSave} disabled={!editing.name}>
-              {Messages.budget.save}
-            </PrimaryButton>
-          </Space>
-        </>
-      }>
+      header={<TextTitle className='title'>{editing.name || ''}</TextTitle>}>
       <VerticalSpace>
         <label>{Messages.util.name}</label>
         <Input
           data-test-id='budgetName'
           placeholder={Messages.util.name}
           value={editing.name}
-          onChange={(name) => setEditing({ ...editing, name })}
+          onChange={(name) => setEditing((current) => current && { ...current, name })}
         />
         <label>{Messages.util.currency}</label>
         <Select
@@ -63,7 +48,9 @@ const BudgetEditor = ({
           }))}
           value={editing.currency_uuid}
           onChange={(currency_uuid) =>
-            setEditing({ ...editing, currency_uuid: currency_uuid || config.main.default_currency })
+            setEditing(
+              (current) => current && { ...current, currency_uuid: currency_uuid || config.main.default_currency }
+            )
           }
         />
         <label>{Messages.util.tags}</label>
@@ -74,7 +61,7 @@ const BudgetEditor = ({
           value={editing.tags}
           onCreate={(tagName) => {
             tags.register(tagName);
-            setEditing({ ...editing, tags: [...editing.tags, tagName] });
+            setEditing((current) => current && { ...current, tags: [...editing.tags, tagName] });
           }}
           onChange={(new_tags: readonly string[]) => setEditing({ ...editing, tags: [...new_tags] })}
         />
@@ -85,6 +72,12 @@ const BudgetEditor = ({
           onChange={(archived) => setEditing({ ...editing, archived })}>
           {Messages.util.archived}
         </Checkbox>
+        <Space>
+          <SecondaryButton onClick={onClose}>{Messages.util.close}</SecondaryButton>
+          <PrimaryButton data-test-id='budgetSave' onClick={onSave} disabled={!editing.name}>
+            {Messages.budget.save}
+          </PrimaryButton>
+        </Space>
       </VerticalSpace>
     </Drawer>
   );

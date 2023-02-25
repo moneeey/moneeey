@@ -1,4 +1,4 @@
-import { compact, uniq, values } from 'lodash';
+import { compact, flatten, uniq, values } from 'lodash';
 import { observer } from 'mobx-react';
 import { useMemo, useState } from 'react';
 
@@ -7,8 +7,8 @@ import MappedStore from '../shared/MappedStore';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
 import { currentDateTime, dateDistanceInSecs, parseDateTime } from '../utils/Date';
 
-import { FieldProps, Row } from './editor/EditorProps';
-import VirtualTable, { ColumnDef } from './VirtualTableEditor';
+import { FieldProps } from './editor/EditorProps';
+import VirtualTable from './VirtualTableEditor';
 
 import './TableEditor.less';
 import { WithDataTestId } from './base/Common';
@@ -68,20 +68,27 @@ export default observer(
 
     const columns = useMemo(
       () =>
-        compact(values(store.schema()))
-          .sort((a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index)
-          .map((field: FieldProps<never>) => {
+        compact(flatten([...values(store.schema()), ...values(store.additionalSchema ? store.additionalSchema() : [])]))
+          .map((field) => {
             return TableColumnDefForField({
               context,
               factory,
-              field,
+              field: field as FieldProps<never>,
               moneeeyStore,
               store,
             });
-          }) as ColumnDef<Row>[],
+          })
+          .sort((a, b) => a.index - b.index),
       [store]
     );
 
-    return <VirtualTable className='tableEditor' columns={columns} rows={entities} isNewEntity={(row) => row.entityId === newEntityId} />;
+    return (
+      <VirtualTable
+        className='tableEditor'
+        columns={columns}
+        rows={entities}
+        isNewEntity={(row) => row.entityId === newEntityId}
+      />
+    );
   }
 );
