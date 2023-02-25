@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
 import MoneeeyStore from '../../shared/MoneeeyStore';
+import { ColumnDef, Row } from '../VirtualTableEditor';
 
 import { AccountEditor, AccountSorter } from './AccountEditor';
 import { AccountTypeEditor, AccountTypeSorter } from './AccountTypeEditor';
@@ -12,7 +13,7 @@ import { BudgetValueEditor, BudgetValueSorter } from './BudgetValueEditor';
 import { CheckboxEditor, CheckboxSorter } from './CheckboxEditor';
 import { CurrencyEditor, CurrencySorter } from './CurrencyEditor';
 import { DateEditor, DateSorter } from './DateEditor';
-import { EditorProps, EditorType, FieldProps, Row } from './EditorProps';
+import { EditorProps, EditorType, FieldProps } from './EditorProps';
 import { LabelEditor, LabelSorter } from './LabelEditor';
 import { LinkEditor, LinkSorter } from './LinkEditor';
 import { MemoEditor, MemoSorter } from './MemoEditor';
@@ -166,18 +167,18 @@ export const TableColumnDefForField = <T extends IBaseEntity, Context>({
   store: MappedStore<T>;
   field: FieldProps<never>;
   factory: (id?: string) => T;
-}) => {
+}): ColumnDef => {
   const config = EditorTypeConfig[field.editor];
-  const sorter = config.sorter(store, field.field as keyof T, moneeeyStore);
+  const sorter = config.sorter(store, field.field as keyof T, moneeeyStore) || (() => 0);
   const { width } = config;
 
   return {
     width: width || field.width,
     title: field.title,
-    fieldName: field.field,
     defaultSortOrder: field.defaultSortOrder,
+    index: field.index,
     sorter,
-    render: (_value: unknown, { entityId }: Row) => (
+    render: ({ entityId }: Row) => (
       <EntityEditorForField
         {...{
           entityId,

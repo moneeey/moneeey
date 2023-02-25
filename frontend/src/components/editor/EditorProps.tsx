@@ -1,5 +1,6 @@
 import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
+import { Row } from '../VirtualTableEditor';
 
 interface validation {
   valid: boolean;
@@ -43,9 +44,5 @@ export interface EditorProps<TEntityType extends IBaseEntity, ValueEditorType, V
   context?: unknown;
   onUpdate: (value: ValueEntityType, additional: object) => TEntityType;
 }
-
-export type Row = {
-  entityId: string;
-};
 
 export const NoSorter = (): false => false;

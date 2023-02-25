@@ -4,13 +4,15 @@ import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { InputNumber } from '../base/Input';
+import { Row } from '../VirtualTableEditor';
 
 import { BaseEditor } from './BaseEditor';
-import { EditorProps, Row } from './EditorProps';
+import { EditorProps } from './EditorProps';
 
 interface PrefixSuffix {
   prefix?: string;
   suffix?: string;
+  decimalScale?: number;
 }
 
 interface ValueRev {
@@ -20,7 +22,7 @@ interface ValueRev {
 
 export const BaseNumberEditor = observer(
   <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number, number> & PrefixSuffix & ValueRev) => {
-    const { prefix, suffix } = props;
+    const { prefix, suffix, decimalScale } = props;
     const { config } = useMoneeeyStore();
     const { thousand_separator: thousandSeparator, decimal_separator: decimalSeparator } = config.main;
 
@@ -33,7 +35,7 @@ export const BaseNumberEditor = observer(
         }}
         Composed={(baseProps, onChange) => (
           <InputNumber
-            {...{ ...baseProps, prefix, suffix, decimalSeparator, thousandSeparator, decimalScale: 20 }}
+            {...{ ...baseProps, prefix, suffix, decimalSeparator, thousandSeparator, decimalScale: decimalScale || 20 }}
             onChange={(newValue) => onChange(newValue, newValue)}
           />
         )}

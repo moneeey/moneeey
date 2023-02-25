@@ -9,7 +9,7 @@ import { EditorProps } from './EditorProps';
 import { BaseNumberEditor, NumberSorter } from './NumberEditor';
 
 export const BudgetValueEditor = observer(
-  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number | string, number>) => {
+  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number, number>) => {
     const entity = props.store.byUuid(props.entityId) as BudgetEnvelope | undefined;
     const { currencies } = useMoneeeyStore();
 

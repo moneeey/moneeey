@@ -1,5 +1,4 @@
 import { ITransaction, mockTransaction } from '../../entities/Transaction';
-import { EntityType } from '../Entity';
 
 import {
   tokenMatchScoreMap,

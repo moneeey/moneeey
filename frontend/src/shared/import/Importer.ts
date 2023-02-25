@@ -3,7 +3,6 @@ import { compact, filter, flatten, isEmpty, keys } from 'lodash';
 import { AccountKind, TAccountUUID } from '../../entities/Account';
 import { ITransaction } from '../../entities/Transaction';
 import { tokenize } from '../../utils/Utils';
-import { EntityType } from '../Entity';
 import MoneeeyStore from '../MoneeeyStore';
 
 export const tokenScoreMap = function (tokens: string[]): Map<string, number> {

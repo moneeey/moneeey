@@ -7,18 +7,22 @@ import './VirtualTableEditor.less';
 const MIN_COLUMN_WIDTH = 100;
 const ROW_HEIGHT = 26;
 
-export type ColumnDef<Row> = {
-  width?: number;
-  title: string;
-  fieldName?: keyof Row;
-  defaultSortOrder?: 'descend' | 'ascend';
-  sorter?: (a: Row, b: Row, asc: boolean) => number;
-  render: (value: unknown, row: Row) => React.ReactNode;
+export type Row = {
+  entityId: string;
 };
 
-type VirtualTableProps<Row> = {
+export type ColumnDef = {
+  width?: number;
+  title: string;
+  index: number;
+  defaultSortOrder?: 'descend' | 'ascend';
+  sorter?: (a: Row, b: Row, asc: boolean) => number;
+  render: (row: Row) => React.ReactNode;
+};
+
+type VirtualTableProps = {
   className?: string;
-  columns: ColumnDef<Row>[];
+  columns: ColumnDef[];
   rows: Row[];
   isNewEntity?: (row: Row) => boolean;
 };
@@ -28,17 +32,17 @@ type GridRenderCell = {
   columnIndex: number;
 };
 
-type GridRenderer<Row> = {
+type GridRenderer = {
   renderCell: (props: GridRenderCell) => ReactNode;
   onGridDimensions: (width: number, height: number) => void;
-  onGridClick: (column: ColumnDef<Row>, rowIndex: number) => void;
+  onGridClick: (column: ColumnDef, rowIndex: number) => void;
   sort: {
-    column: ColumnDef<Row>;
+    column: ColumnDef;
     order?: 'descend' | 'ascend';
   };
 };
 
-const VirtualGrid = <Row,>({
+const VirtualGrid = ({
   rows,
   columns,
   renderCell,
@@ -46,7 +50,7 @@ const VirtualGrid = <Row,>({
   onGridDimensions,
   onGridClick,
   className,
-}: VirtualTableProps<Row> & GridRenderer<Row>) => {
+}: VirtualTableProps & GridRenderer) => {
   const ref = useRef<HTMLDivElement | null>();
   const row = useVirtual({
     itemCount: 1 + rows.length,
@@ -120,12 +124,12 @@ const VirtualGrid = <Row,>({
   );
 };
 
-const VirtualTable = function VirtualTableRenderer<Row>({
+const VirtualTable = function VirtualTableRenderer({
   columns: originalColumns,
   rows,
   isNewEntity,
   className,
-}: VirtualTableProps<Row>) {
+}: VirtualTableProps) {
   const [viewportWidth, setViewportWidth] = useState(0);
   const [sort, setSort] = useState(() => {
     const column = originalColumns.find((col) => Boolean(col.defaultSortOrder)) || originalColumns[0];
@@ -143,9 +147,8 @@ const VirtualTable = function VirtualTableRenderer<Row>({
     const column = columns[columnIndex];
     const renderer = column.render;
     const row = rows[rowIndex];
-    const value = column.fieldName && row && row[column.fieldName];
 
-    return row && renderer(value, row);
+    return row && renderer(row);
   };
   const columns = originalColumns.map((col) => ({ ...col, width: col.width || autoColumnSize }));
 

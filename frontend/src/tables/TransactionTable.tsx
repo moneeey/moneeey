@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { SecondaryButton } from '../components/base/Button';
 import Space from '../components/base/Space';
@@ -15,7 +15,7 @@ interface TransactionSettingsProps {
   referenceAccount: TAccountUUID;
 }
 
-const TransactionTable = observer(({ transactions, schemaFilter, referenceAccount }: TransactionSettingsProps) => {
+const TransactionTable = observer(({ transactions, schemaFilter }: TransactionSettingsProps) => {
   const [date, setDate] = useState(startOfMonthOffset(transactions.newest_dt, -1));
   const starting = startOfMonthOffset(date, -2);
   const ending = startOfMonthOffset(date, +2);
