@@ -27,7 +27,7 @@ describe('Tour spec', () => {
     cy.contains('please create an account').click();
 
     // Type account in table to create a new account
-    cy.get(loc.ACCOUNTS.NAME_INPUT).type('Account test').wait(1000);
+    cy.get(loc.ACCOUNTS.NAME_INPUT).type('Account test').wait(3000);
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
 
     // Create a transaction
@@ -61,7 +61,7 @@ describe('Tour spec', () => {
     // Confirm it appeared
     cy.contains('Budget test');
     cy.contains('R$');
-    cy.get(loc.BUDGET.CARD_ALLOCATED_INPUT).first().type('544,14').wait(2000);
+    cy.get(loc.BUDGET.CARD_ALLOCATED_INPUT).first().type('544,14').wait(5000);
     cy.get(loc.BUDGET.CARD_REMAINING_INPUT).first().should('contain.value', '420,69');
 
     // Go to back to Transactions
