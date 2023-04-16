@@ -45,6 +45,8 @@ export default class PersistenceStore {
 
   private syncing?: PouchDB.Replication.Sync<IBaseEntity>;
 
+  private bypassMonitor = new Set<string>();
+
   constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
     this.logger = new Logger('persistence', parent);
     this.db = dbFactory();
@@ -113,7 +115,7 @@ export default class PersistenceStore {
     const { _id, _rev } = first;
     this.logger.info('fetch latest', { _id, _rev });
     const latest = await this.fetch(_id);
-    this.stores[latest.entity_type].merge(latest, { setUpdated: false });
+    this.mergeBypassingMonitor(this.stores[latest.entity_type], latest);
 
     await this.fetchLatest(docs);
   }
@@ -126,7 +128,7 @@ export default class PersistenceStore {
       this.logger.info('loaded docs', { total: docs.total_rows });
       map([...(docs.rows.map((d) => d.doc) as unknown[] as IBaseEntity[])], (entity) => {
         if (entity.entity_type && this.stores[entity.entity_type]) {
-          this.stores[entity.entity_type].merge(entity, { setUpdated: false });
+          this.mergeBypassingMonitor(this.stores[entity.entity_type], entity);
         }
       });
     } catch (err) {
@@ -192,7 +194,7 @@ export default class PersistenceStore {
               this.logger.error('sync commit error on doc', { error, current });
             } else if (ok) {
               const entity = { ...current.entity, _rev: rev };
-              current.store.merge(entity, { setUpdated: false });
+              this.mergeBypassingMonitor(current.store, entity);
             }
           });
         },
@@ -205,6 +207,11 @@ export default class PersistenceStore {
   }
 
   persist<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, item: EntityType) {
+    if (item._id && this.bypassMonitor.has(item._id)) {
+      this.logger.log('persist bypass', { uuid: store.getUuid(item), item });
+
+      return;
+    }
     this.logger.log('persist', { uuid: store.getUuid(item), item });
     this.syncables.push({ store: store as never, uuid: store.getUuid(item) });
     this._commit();
@@ -221,6 +228,19 @@ export default class PersistenceStore {
     return entity;
   }
 
+  mergeBypassingMonitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType>, entity: TEntityType) {
+    try {
+      if (entity._id) {
+        this.bypassMonitor.add(entity._id);
+      }
+      store.merge(entity, { setUpdated: false });
+    } finally {
+      if (entity._id) {
+        this.bypassMonitor.delete(entity._id);
+      }
+    }
+  }
+
   monitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType>, type: EntityType) {
     this.stores[type] = store;
     observe(store.itemsByUuid, (changes) => {
@@ -230,10 +250,10 @@ export default class PersistenceStore {
         const oldRev = changes.oldValue._rev;
         const newRev = changes.newValue._rev;
         if (oldRev === newRev) {
-          this.logger.info('dirty, will persist', changes);
+          this.logger.info('monitor - dirty', changes);
           this.persist(store, changes.newValue);
         } else {
-          this.logger.info('synced new rev', changes);
+          this.logger.info('monitor - synced', changes);
         }
       }
     });
