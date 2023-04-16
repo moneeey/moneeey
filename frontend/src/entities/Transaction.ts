@@ -32,7 +32,7 @@ class TransactionStore extends MappedStore<ITransaction> {
 
   newest_dt: Date = new Date();
 
-  runningBalance = new RunningBalance();
+  runningBalance: RunningBalance;
 
   constructor(moneeeyStore: MoneeeyStore) {
     super(moneeeyStore, {
@@ -125,6 +125,7 @@ class TransactionStore extends MappedStore<ITransaction> {
       oldest_dt: observable,
       newest_dt: observable,
     });
+    this.runningBalance = new RunningBalance(this.moneeeyStore.logger);
   }
 
   updateRunningBalance = debounce(() => {
