@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { observer } from 'mobx-react';
 
@@ -42,8 +42,9 @@ const Search = () => {
 const AppContent = observer(() => {
   const moneeeyStore = useMoneeeyStore();
   const [menuExpanded, setMenuExpanded] = useState(true);
+  const { loaded } = moneeeyStore;
 
-  return moneeeyStore.loaded ? (
+  return loaded ? (
     <section className='appContent'>
       <header>
         <TextTitle onClick={() => setMenuExpanded(!menuExpanded)}>
@@ -65,6 +66,10 @@ const AppContent = observer(() => {
 
 export const App = () => {
   const moneeeyStore = React.useMemo(() => new MoneeeyStore(PouchDBFactory), []);
+
+  useEffect(() => {
+    moneeeyStore.load();
+  }, [moneeeyStore]);
 
   return (
     <BrowserRouter>

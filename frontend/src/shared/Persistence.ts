@@ -28,10 +28,6 @@ export default class PersistenceStore {
 
   private db: PouchDB.Database;
 
-  private entries: {
-    [_id: string]: IBaseEntity;
-  } = {};
-
   private syncables: {
     uuid: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,33 +111,27 @@ export default class PersistenceStore {
     }
 
     const { _id, _rev } = first;
-    if (this.entries[_id]?._rev === _rev) {
-      this.logger.info('fetch latest skipped', { _id, _rev });
-    } else {
-      this.logger.info('fetch latest', { _id, _rev });
-      const latest = await this.fetch(_id);
-      this.stores[latest.entity_type].merge(latest, { setUpdated: false });
-    }
+    this.logger.info('fetch latest', { _id, _rev });
+    const latest = await this.fetch(_id);
+    this.stores[latest.entity_type].merge(latest, { setUpdated: false });
 
     await this.fetchLatest(docs);
   }
 
-  load() {
-    return new Promise((resolve) => {
-      this.db
-        .allDocs({
-          include_docs: true,
-        })
-        .then((docs) => {
-          this.logger.info('loaded docs', { total: docs.total_rows });
-          map([...(docs.rows.map((d) => d.doc) as unknown[] as IBaseEntity[])], (entity) => {
-            if (entity._id) {
-              this.entries[entity._id] = entity;
-            }
-          });
-          resolve(this.entries);
-        });
-    });
+  async load() {
+    try {
+      const docs = await this.db.allDocs({
+        include_docs: true,
+      });
+      this.logger.info('loaded docs', { total: docs.total_rows });
+      map([...(docs.rows.map((d) => d.doc) as unknown[] as IBaseEntity[])], (entity) => {
+        if (entity.entity_type && this.stores[entity.entity_type]) {
+          this.stores[entity.entity_type].merge(entity, { setUpdated: false });
+        }
+      });
+    } catch (err) {
+      this.logger.error('load docs error', { err });
+    }
   }
 
   resolveConflict<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, a: EntityType, b: EntityType) {
@@ -202,9 +192,6 @@ export default class PersistenceStore {
               this.logger.error('sync commit error on doc', { error, current });
             } else if (ok) {
               const entity = { ...current.entity, _rev: rev };
-              if (entity && entity._id) {
-                this.entries[entity._id] = entity as IBaseEntity;
-              }
               current.store.merge(entity, { setUpdated: false });
             }
           });
@@ -218,11 +205,8 @@ export default class PersistenceStore {
   }
 
   persist<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, item: EntityType) {
-    this.logger.log('sync will persist', { uuid: store.getUuid(item), item });
+    this.logger.log('persist', { uuid: store.getUuid(item), item });
     this.syncables.push({ store: store as never, uuid: store.getUuid(item) });
-    if (item && item._id) {
-      this.entries[item._id] = item;
-    }
     this._commit();
   }
 
@@ -232,19 +216,13 @@ export default class PersistenceStore {
       forEach(actual._conflicts, (rev) => this.db.remove(id, rev));
     }
     const entity = actual as IBaseEntity;
-    this.entries[entity._id || ''] = entity;
-    this.logger.info('sync fetch latest', { entity });
+    this.logger.info('fetch latest', { entity });
 
     return entity;
   }
 
-  retrieve(type: EntityType) {
-    return values(this.entries).filter((e) => e.entity_type === type);
-  }
-
   monitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType>, type: EntityType) {
     this.stores[type] = store;
-    this.retrieve(type).forEach((e) => store.merge(e as TEntityType, { setUpdated: false }));
     observe(store.itemsByUuid, (changes) => {
       if (changes.type === 'add') {
         this.persist(store, changes.newValue);
@@ -252,10 +230,10 @@ export default class PersistenceStore {
         const oldRev = changes.oldValue._rev;
         const newRev = changes.newValue._rev;
         if (oldRev === newRev) {
-          this.logger.info('monitor - same rev, will persist', changes);
+          this.logger.info('dirty, will persist', changes);
           this.persist(store, changes.newValue);
         } else {
-          this.logger.info('monitor - different rev, not persisting', changes);
+          this.logger.info('synced new rev', changes);
         }
       }
     });
@@ -264,7 +242,7 @@ export default class PersistenceStore {
   async exportAll(onProgress: (perc: number) => void) {
     return (
       await asyncProcess(
-        values(this.entries),
+        values(this.stores).flatMap((store) => Array.from(store.itemsByUuid.values())),
         (chunk, state, percentage) => {
           onProgress(percentage);
           state.result = `${state.result + chunk.map((entity) => JSON.stringify(toJS(entity))).join('\n')}\n`;

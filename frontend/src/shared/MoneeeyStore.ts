@@ -1,4 +1,3 @@
-import { debounce, once } from 'lodash';
 import { action, makeObservable, observable } from 'mobx';
 
 import AccountStore from '../entities/Account';
@@ -15,11 +14,6 @@ import ManagementStore from './Management';
 import NavigationStore from './Navigation';
 import PersistenceStore, { PouchDBFactoryFn } from './Persistence';
 import TagsStore from './Tags';
-
-const initializeOnce = debounce(
-  once((cb: () => void) => cb()),
-  100
-);
 
 export default class MoneeeyStore {
   loaded = false;
@@ -47,13 +41,14 @@ export default class MoneeeyStore {
   persistence: PersistenceStore;
 
   constructor(dbFactory: PouchDBFactoryFn) {
-    makeObservable(this, { loaded: observable, readEntitiesIntoStores: action });
+    makeObservable(this, { loaded: observable, load: action, setLoaded: action });
 
     this.persistence = new PersistenceStore(dbFactory, this.logger);
-
-    this.persistence.load().then(() => {
-      this.readEntitiesIntoStores();
-    });
+    this.persistence.monitor(this.accounts, EntityType.ACCOUNT);
+    this.persistence.monitor(this.currencies, EntityType.CURRENCY);
+    this.persistence.monitor(this.transactions, EntityType.TRANSACTION);
+    this.persistence.monitor(this.budget, EntityType.BUDGET);
+    this.persistence.monitor(this.config, EntityType.CONFIG);
   }
 
   readMoneeySyncFromStorage() {
@@ -64,23 +59,22 @@ export default class MoneeeyStore {
     }
   }
 
-  readEntitiesIntoStores() {
-    this.persistence.monitor(this.accounts, EntityType.ACCOUNT);
-    this.persistence.monitor(this.currencies, EntityType.CURRENCY);
-    this.persistence.monitor(this.transactions, EntityType.TRANSACTION);
-    this.persistence.monitor(this.budget, EntityType.BUDGET);
-    this.persistence.monitor(this.config, EntityType.CONFIG);
-    initializeOnce(() => {
-      this.config.init();
-      this.currencies.addDefaults();
-      const { couchSync } = this.config.main;
-      const moneeeySync = this.readMoneeySyncFromStorage();
-      if (moneeeySync && moneeeySync.enabled) {
-        this.persistence.sync(moneeeySync);
-      } else if (couchSync && couchSync.enabled) {
-        this.persistence.sync(couchSync);
-      }
-    });
-    this.loaded = true;
+  async load() {
+    this.setLoaded(false);
+    await this.persistence.load();
+    this.config.init();
+    this.currencies.addDefaults();
+    const { couchSync } = this.config.main;
+    const moneeeySync = this.readMoneeySyncFromStorage();
+    if (moneeeySync && moneeeySync.enabled) {
+      this.persistence.sync(moneeeySync);
+    } else if (couchSync && couchSync.enabled) {
+      this.persistence.sync(couchSync);
+    }
+    this.setLoaded(true);
+  }
+
+  setLoaded(loaded: boolean) {
+    this.loaded = loaded;
   }
 }
