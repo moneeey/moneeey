@@ -26,7 +26,6 @@ const RecentTransactions = observer(
             referenceAccount,
           }}
         />
-        ;
       </>
     );
   }
@@ -37,8 +36,8 @@ export default function Dashboard() {
 
   return (
     <div className='dashboardArea'>
-      <WealthGrowReport />
       <RecentTransactions moneeyStore={moneeeyStore} />
+      <WealthGrowReport />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 const Messages = {
   menu: {
     title: 'Moneeey',
+    search: 'Search',
     dashboard: 'Dashboard',
     transactions: 'Transactions',
     unassigned: (amount: number) => `Unassigned (${amount})`,
@@ -79,6 +80,7 @@ const Messages = {
     year: 'Year',
     ok: 'Ok',
     cancel: 'Cancel',
+    clear: 'Clear',
   },
   settings: {
     reload_page: 'Reload your page',

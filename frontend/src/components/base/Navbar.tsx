@@ -1,13 +1,11 @@
-import { Bars3Icon } from '@heroicons/react/24/outline';
 import { compact } from 'lodash';
-import { ReactNode, useState } from 'react';
+import { ReactNode } from 'react';
 
 import { LinkButton } from './Button';
 
 import { WithDataTestId } from './Common';
 
 import './Navbar.less';
-import { TextTitle } from './Text';
 
 interface NavbarItem {
   key: string;
@@ -49,17 +47,9 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
   });
 
 const Navbar = (props: NavbarProps & WithDataTestId) => {
-  const [isExpanded, setExpanded] = useState(true);
-
   return (
-    <nav className={`mn-navbar ${isExpanded ? 'expanded' : ''}`} data-test-id={props['data-test-id']}>
-      <header>
-        <TextTitle onClick={() => setExpanded(!isExpanded)}>
-          {isExpanded && props.header}
-          <Bars3Icon />
-        </TextTitle>
-      </header>
-      {isExpanded && <section>{renderNavbarItems(props['data-test-id'], props.items)}</section>}
+    <nav className='mn-navbar' data-test-id={props['data-test-id']}>
+      {renderNavbarItems(props['data-test-id'], props.items)}
     </nav>
   );
 };
