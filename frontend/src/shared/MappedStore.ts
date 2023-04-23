@@ -63,6 +63,17 @@ export default class MappedStore<T extends IBaseEntity> {
     });
   }
 
+  readField(entityId: string, field: keyof T) {
+    const current = this.byUuid(entityId) || this.factory(entityId);
+
+    return current[field];
+  }
+
+  update(entityId: string, delta: Partial<T>) {
+    const current = this.byUuid(entityId) || this.factory(entityId);
+    this.merge({ ...current, ...delta });
+  }
+
   remove(item: T) {
     const uuid = this.getUuid(item);
     this.itemsByUuid.delete(uuid);

@@ -149,7 +149,7 @@ export const EntityEditorForField = <T extends IBaseEntity, Context, TField>({
     );
   });
 
-  return <MonitorLoading />;
+  return <MonitorLoading key={key} />;
 };
 
 export const TableColumnDefForField = <T extends IBaseEntity, Context>({
