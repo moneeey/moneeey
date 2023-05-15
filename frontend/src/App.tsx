@@ -25,23 +25,10 @@ import MoneeeyTourProvider from './components/tour/Tour';
 
 import { PouchDBFactory } from './shared/Persistence';
 import { TextTitle } from './components/base/Text';
-import { Input } from './components/base/Input';
-import { LinkButton } from './components/base/Button';
-
-const Search = () => {
-  const [search, setSearch] = useState('');
-
-  return (
-    <section className='searchArea'>
-      {search && <LinkButton onClick={() => setSearch('')} title={Messages.util.clear} />}
-      <Input data-test-id='search' placeholder={Messages.menu.search} onChange={setSearch} value={search} />
-    </section>
-  );
-};
 
 const AppContent = observer(() => {
   const moneeeyStore = useMoneeeyStore();
-  const [menuExpanded, setMenuExpanded] = useState(true);
+  const [menuExpanded, setMenuExpanded] = useState(false);
   const { loaded } = moneeeyStore;
 
   return loaded ? (
@@ -52,7 +39,6 @@ const AppContent = observer(() => {
           <img src={favicon} />
           {Messages.menu.title}
         </TextTitle>
-        <Search />
       </header>
       <section>
         {menuExpanded && <AppMenu />}

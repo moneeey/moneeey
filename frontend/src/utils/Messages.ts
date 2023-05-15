@@ -25,14 +25,14 @@ const Messages = {
   landing: {
     failed: 'Login failed, please try again',
     welcome: 'Please check your email.',
+    title: 'Introducing Moneeey',
     messages: [
-      'Personal Finance with Moneeey uses budgeting',
-      'With Moneeey you will archive your Financial Independence',
-      'You will have freedom to live your life fully',
-      'Be the owner of your information',
-      'Built with privacy and private in mind',
-      'End-to-end encryption, your data is only yours',
-      'Import and export data',
+      "Budget with ease using Moneeey's intuitive interface",
+      'Achieve financial independence and live life to the fullest',
+      'Take ownership of your sensitive information',
+      'Built with privacy and security in mind',
+      'Enjoy end-to-end encryption for maximum data protection',
+      'Seamlessly import and export your financial data',
     ],
   },
   login: {
