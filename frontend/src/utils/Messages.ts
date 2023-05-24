@@ -52,7 +52,7 @@ const Messages = {
       import.`,
     drop_here: 'Drop the files here ...',
     click_or_drop_here: 'Drag and drop files here, or click to select files',
-    supported_formats: 'Supported: TXT, CSV, OFX',
+    supported_formats: 'Supported: TXT, CSV, OFX, PDF',
     unknown_mode: (mode: string) => `Unknown mode ${mode}`,
     new_import: 'New import',
     configuration: 'Configuration',
@@ -60,6 +60,7 @@ const Messages = {
     updated: 'Updated',
     unchanged: 'Unchanged',
     import_transactions: 'Import transactions',
+    invert_from_to_accounts: 'Invert from and to accounts',
     changed_description: (from_value: string, to_value: string) => `Changed from\n${from_value}\nto\n${to_value}`,
   },
   util: {

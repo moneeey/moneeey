@@ -103,8 +103,8 @@ export const importTransaction = function ({
     tags: [],
     from_account: value < 0 ? referenceAccount : other_account,
     to_account: value < 0 ? other_account : referenceAccount,
-    from_value: value,
-    to_value: value,
+    from_value: Math.abs(value),
+    to_value: Math.abs(value),
     import_data: line,
     updated: currentDateTime(),
   };
