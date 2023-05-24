@@ -12,7 +12,7 @@ describe('Tour spec', () => {
 
   it('Start tour', () => {
     // Landing modal
-    cy.contains('Welcome to Moneeey');
+    cy.contains('Introducing Moneeey');
     cy.contains('Start Tour').click();
 
     // Started tour, see currencies
@@ -43,10 +43,6 @@ describe('Tour spec', () => {
     cy.get(loc.TRANSACTIONS.TO_INPUT).first().type('Gas Station{enter}');
     cy.get(loc.TRANSACTIONS.AMOUNT_INPUT).first().type('123,45{enter}');
 
-    // Go to Import
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
-    cy.contains('New import');
-
     // Go to Budget
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
 
@@ -68,6 +64,10 @@ describe('Tour spec', () => {
     cy.get(loc.BUDGET.CARD_ALLOCATED_INPUT).first().type('544,14');
     cy.wait(3000);
     cy.get(loc.BUDGET.CARD_REMAINING_INPUT).first().should('contain.value', '420,69');
+
+    // Go to Import
+    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
+    cy.contains('New import');
 
     // Go to back to Transactions
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();

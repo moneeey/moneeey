@@ -33,12 +33,12 @@ export default function TourSteps({ navigation, accounts, budget }: MoneeeyStore
       canGoNextStep: () => checkStoreIsNotEmpty(accounts, Messages.tour.please_create_account),
     },
     { content: Messages.tour.insert_transactions, action: navigateTo(AccountRoute.accountUrlForAll()) },
-    { content: Messages.tour.import, action: navigateTo(ImportRoute.url()) },
     {
       content: Messages.tour.create_budgets,
       action: navigateTo(BudgetRoute.url()),
       canGoNextStep: () => checkStoreIsNotEmpty(budget, Messages.tour.please_create_budget),
     },
+    { content: Messages.tour.import, action: navigateTo(ImportRoute.url()) },
     { content: Messages.tour.your_turn, action: navigateTo(AccountRoute.accountUrlForAll()) },
     { content: '', action: (tour) => tour.close() },
   ];
