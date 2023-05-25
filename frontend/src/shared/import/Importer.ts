@@ -52,23 +52,23 @@ export const tokenTransactionAccountScoreMap = function (
     accounts: compact([t.from_account, t.to_account]),
   }));
 
-  const allTokens = accountsAndTokens.flatMap((aat) => aat.tokens);
+  const allTokens = accountsAndTokens.flatMap(({ tokens }) => tokens);
   const scoreMap = tokenScoreMap(allTokens);
 
-  const topAccountTokens = accountsAndTokens.map((aat) => ({
-    ...aat,
-    tokens: tokenTopScores(aat.tokens, scoreMap, 5),
+  const topAccountTokens = accountsAndTokens.map(({ tokens, accounts }) => ({
+    accounts,
+    tokens: tokenTopScores(tokens, scoreMap, 5),
   }));
 
   const topAccountScoreMap = topAccountTokens.reduce((accum, aat) => {
     aat.accounts.forEach((account) => {
       const accountTokens = accum[account] || {};
-      aat.tokens.forEach((st) => {
-        if (st.token in accountTokens) {
-          accountTokens[st.token] += st.score;
-          accountTokens[st.token] /= 2;
+      aat.tokens.forEach(({ token, score }) => {
+        if (token in accountTokens) {
+          accountTokens[token] += score;
+          accountTokens[token] /= 2;
         } else {
-          accountTokens[st.token] = st.score;
+          accountTokens[token] = score;
         }
       });
       accum[account] = accountTokens;

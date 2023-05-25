@@ -1,4 +1,4 @@
-import { chunk } from 'lodash';
+import { chunk, compact } from 'lodash';
 import { nanoid } from 'nanoid';
 
 const uuid = () => nanoid();
@@ -9,7 +9,7 @@ const noop = () => {
 
 const identity = (o: unknown) => o;
 
-const tokenize = (text: string | undefined) => (text || '').toLowerCase().split(/[\W\d]/);
+const tokenize = (text: string | undefined) => compact((text || '').toLowerCase().split(/[\W\d]/));
 
 const asyncTimeout = function <R>(fn: () => R | Promise<R>, delay: number): Promise<R> {
   return new Promise((resolve) => {
