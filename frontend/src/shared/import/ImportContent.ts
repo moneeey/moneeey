@@ -112,8 +112,9 @@ export const importTransaction = function ({
   const existing = importer.findForImportId(import_id);
   if (existing) {
     transaction.transaction_uuid = existing.transaction_uuid;
-    if ((existing.memo || '').indexOf(transaction.memo) === -1) {
-      transaction.memo = `${existing.memo};${transaction.memo}`;
+    transaction.memo = existing.memo;
+    if ((transaction.memo || '').indexOf(line) === -1) {
+      transaction.memo = `${transaction.memo};${line}`;
     }
     transaction.tags = existing.tags;
     transaction.from_account = transaction.from_account || existing.from_account;

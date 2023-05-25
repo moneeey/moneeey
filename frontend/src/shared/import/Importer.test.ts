@@ -64,7 +64,20 @@ describe('Importer', () => {
     expect(tokenize('some@bad*boys')).toEqual(['some', 'bad', 'boys']);
   });
 
-  it('tokenScoreMap', () => {
+  it('tokenScoreMap simple', () => {
+    const tokens = '1223334444'.split('');
+
+    expect(tokenScoreMap(tokens)).toMatchInlineSnapshot(`
+      Map {
+        "1" => 0.9,
+        "2" => 0.8,
+        "3" => 0.7,
+        "4" => 0.6,
+      }
+    `);
+  });
+
+  it('tokenScoreMap random numbers', () => {
     const tokens =
       '2836788741484086466019596043251807718469095087302450890762989257138040064396808737591754583512735764'.split('');
 
@@ -85,21 +98,17 @@ describe('Importer', () => {
   });
 
   it('tokenTopScores', () => {
-    expect(
-      tokenTopScores(
-        ['transaction', 'pix', 'fernando'],
-        new Map([
-          ['fernando', 0.9],
-          ['gas', 0.9],
-          ['oil', 0.9],
-          ['pix', 0.8],
-          ['restaurant', 0.9],
-          ['station', 0.9],
-          ['transaction', 0.7],
-        ]),
-        3
-      )
-    ).toEqual([
+    const scores = new Map([
+      ['fernando', 0.9],
+      ['gas', 0.9],
+      ['oil', 0.9],
+      ['pix', 0.8],
+      ['restaurant', 0.9],
+      ['station', 0.9],
+      ['transaction', 0.7],
+    ]);
+
+    expect(tokenTopScores(['transaction', 'pix', 'fernando', 'pix'], scores, 3)).toEqual([
       { score: 0.9, token: 'fernando' },
       { score: 0.8, token: 'pix' },
       { score: 0.7, token: 'transaction' },
@@ -112,122 +121,144 @@ describe('Importer', () => {
       from_account: 'a',
       to_account: 'b',
       from_value: 12,
-      memo: 'hello world',
+      memo: 'hello de world',
       tags: ['tagX'],
     });
 
     expect(tokensForTransactions(transaction, getTransactionTokens)).toEqual(['tagX', 'hello', 'world']);
   });
 
-  it('tokenTransactionAccountScoreMap and tokenMatchScoreMap', () => {
-    const scoreMap = tokenTransactionAccountScoreMap(sampleTransactions, getTransactionTokens, 2);
+  const sampleScoreMap = () => tokenTransactionAccountScoreMap(sampleTransactions, getTransactionTokens, 2);
 
-    expect(scoreMap).toMatchInlineSnapshot(`
+  it('tokenTransactionAccountScoreMap', () => {
+    expect(sampleScoreMap()).toMatchInlineSnapshot(`
       {
         "banco": {
-          "chocolate": 0.9473684210526316,
-          "fernando": 0.9473684210526316,
+          "chocolate": 0.9375,
+          "fernando": 0.9375,
         },
         "chocolate": {
-          "chocolate": 0.9473684210526316,
-          "transfer": 0.8421052631578947,
+          "chocolate": 0.9375,
+          "transfer": 0.8125,
         },
         "fernando": {
-          "fernando": 0.9473684210526316,
-          "transfer": 0.8421052631578947,
+          "fernando": 0.9375,
+          "transfer": 0.8125,
         },
         "lua": {
-          "lua": 0.9473684210526316,
-          "transfer": 0.8421052631578947,
+          "lua": 0.9375,
+          "transfer": 0.8125,
         },
         "market_dolly": {
-          "dolly": 0.9473684210526316,
-          "market": 0.8947368421052632,
+          "dolly": 0.9375,
+          "market": 0.875,
         },
         "market_super": {
-          "market": 0.8947368421052632,
-          "super": 0.9473684210526316,
+          "market": 0.875,
+          "super": 0.9375,
         },
         "xyz_company": {
-          "salary": 0.9473684210526316,
-          "xyz": 0.9473684210526316,
+          "salary": 0.9375,
+          "xyz": 0.9375,
         },
       }
     `);
+  });
 
-    const query = (tokens: string[]) => tokenMatchScoreMap(tokens, scoreMap, 4);
+  it('tokenMatchScoreMap', () => {
+    const scoreMap = sampleScoreMap();
+    const query = (tokens: string[]) => ({
+      query: tokens,
+      result: tokenMatchScoreMap(tokens, scoreMap, 3),
+    });
 
     expect(query(['transfer', 'to', 'fernando'])).toMatchInlineSnapshot(`
-      [
-        {
-          "id": "banco",
-          "score": 0.9473684210526316,
-        },
-        {
-          "id": "fernando",
-          "score": 0.8947368421052632,
-        },
-        {
-          "id": "chocolate",
-          "score": 0.8421052631578947,
-        },
-        {
-          "id": "lua",
-          "score": 0.8421052631578947,
-        },
-      ]
+      {
+        "query": [
+          "transfer",
+          "to",
+          "fernando",
+        ],
+        "result": [
+          {
+            "id": "fernando",
+            "score": 0.5833333333333334,
+          },
+          {
+            "id": "banco",
+            "score": 0.3125,
+          },
+          {
+            "id": "chocolate",
+            "score": 0.2708333333333333,
+          },
+        ],
+      }
     `);
+
     expect(query(['transfer', 'to', 'chocolate'])).toMatchInlineSnapshot(`
-      [
-        {
-          "id": "banco",
-          "score": 0.9473684210526316,
-        },
-        {
-          "id": "chocolate",
-          "score": 0.8947368421052632,
-        },
-        {
-          "id": "fernando",
-          "score": 0.8421052631578947,
-        },
-        {
-          "id": "lua",
-          "score": 0.8421052631578947,
-        },
-      ]
+      {
+        "query": [
+          "transfer",
+          "to",
+          "chocolate",
+        ],
+        "result": [
+          {
+            "id": "chocolate",
+            "score": 0.5833333333333334,
+          },
+          {
+            "id": "banco",
+            "score": 0.3125,
+          },
+          {
+            "id": "fernando",
+            "score": 0.2708333333333333,
+          },
+        ],
+      }
     `);
+
     expect(query(['market'])).toMatchInlineSnapshot(`
-      [
-        {
-          "id": "market_dolly",
-          "score": 0.8947368421052632,
-        },
-        {
-          "id": "market_super",
-          "score": 0.8947368421052632,
-        },
-      ]
+      {
+        "query": [
+          "market",
+        ],
+        "result": [
+          {
+            "id": "market_dolly",
+            "score": 0.875,
+          },
+          {
+            "id": "market_super",
+            "score": 0.875,
+          },
+        ],
+      }
     `);
+
     expect(query(['transfer', 'salary'])).toMatchInlineSnapshot(`
-      [
-        {
-          "id": "xyz_company",
-          "score": 0.9473684210526316,
-        },
-        {
-          "id": "fernando",
-          "score": 0.8421052631578947,
-        },
-        {
-          "id": "chocolate",
-          "score": 0.8421052631578947,
-        },
-        {
-          "id": "lua",
-          "score": 0.8421052631578947,
-        },
-      ]
+      {
+        "query": [
+          "transfer",
+          "salary",
+        ],
+        "result": [
+          {
+            "id": "xyz_company",
+            "score": 0.46875,
+          },
+          {
+            "id": "fernando",
+            "score": 0.40625,
+          },
+          {
+            "id": "chocolate",
+            "score": 0.40625,
+          },
+        ],
+      }
     `);
   });
 });
