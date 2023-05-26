@@ -17,6 +17,7 @@ export class AccountSettingsRouter extends Route<IAccountSettingsRoute> {
       <AccountTable
         currencies={app.moneeeyStore.currencies}
         accounts={app.moneeeyStore.accounts}
+        navigation={app.moneeeyStore.navigation}
         kind={AccountKind.CHECKING}
         schemaFilter={(row) => row.kind !== AccountKind.PAYEE}
       />

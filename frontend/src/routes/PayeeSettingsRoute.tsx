@@ -17,6 +17,7 @@ export class PayeeSettingsRouter extends Route<IPayeeSettingsRoute> {
       <AccountTable
         accounts={app.moneeeyStore.accounts}
         currencies={app.moneeeyStore.currencies}
+        navigation={app.moneeeyStore.navigation}
         kind={AccountKind.PAYEE}
         schemaFilter={(row) => row.kind === AccountKind.PAYEE}
       />

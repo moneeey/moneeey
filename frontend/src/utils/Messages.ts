@@ -150,6 +150,15 @@ const Messages = {
     landing: 'Welcome to Moneeey',
     start_tour: 'Start Tour',
     sync: 'Sync',
+    merge_accounts: 'Merge accounts',
+  },
+  merge_accounts: {
+    submit: 'Merge accounts',
+    description:
+      'Merge two accounts into a single, moving all transactions with source account into the target account.',
+    source: 'Source account (deleted)',
+    target: 'Target account (merged into)',
+    success: 'Accounts merged successfully',
   },
   sync: {
     intro: `

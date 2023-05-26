@@ -8,6 +8,7 @@ export enum NavigationModal {
   NONE = 'NONE',
   LANDING = 'LANDING',
   SYNC = 'SYNC',
+  MERGE_ACCOUNTS = 'MERGE_ACCOUNTS',
 }
 
 type NotificationType = 'warning' | 'success' | 'info' | 'error';

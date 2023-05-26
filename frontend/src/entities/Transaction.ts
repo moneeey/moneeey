@@ -203,6 +203,14 @@ class TransactionStore extends MappedStore<ITransaction> {
 
     return [...from_acct, ...to_acct, ...transaction.tags];
   }
+
+  replaceAccount(from_uuid: TAccountUUID, to_uuid: TAccountUUID) {
+    this.viewAllWithAccount(from_uuid).forEach((t) => {
+      const from_account = t.from_account === from_uuid ? to_uuid : t.from_account;
+      const to_account = t.to_account === from_uuid ? to_uuid : t.to_account;
+      this.merge({ ...t, from_account, to_account });
+    });
+  }
 }
 
 const isTransaction = isEntityType<ITransaction>(EntityType.TRANSACTION);
