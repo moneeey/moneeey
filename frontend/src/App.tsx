@@ -25,6 +25,7 @@ import MoneeeyTourProvider from './components/tour/Tour';
 
 import { PouchDBFactory } from './shared/Persistence';
 import { TextTitle } from './components/base/Text';
+import initSw from './sw';
 
 const AppContent = observer(() => {
   const moneeeyStore = useMoneeeyStore();
@@ -72,5 +73,7 @@ export const App = () => {
     </BrowserRouter>
   );
 };
+
+initSw();
 
 export default App;
