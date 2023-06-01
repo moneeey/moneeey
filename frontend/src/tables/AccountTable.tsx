@@ -24,7 +24,7 @@ const AccountTable = observer(({ accounts, schemaFilter, kind, navigation }: Acc
         title={Messages.modal.merge_accounts}
       />
     </Space>
-    <TableEditor
+    <TableEditor<IAccount>
       data-test-id={`accountTable${kind}`}
       store={accounts}
       schemaFilter={schemaFilter}

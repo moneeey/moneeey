@@ -68,7 +68,7 @@ export default class RunningBalance {
   }
 
   async processAll(transactions: ITransaction[]) {
-    this.version++;
+    this.version += 1;
     for (const t of transactions) {
       if (!this.transactionRunningBalance.has(t.transaction_uuid)) {
         this.update(t.transaction_uuid, {

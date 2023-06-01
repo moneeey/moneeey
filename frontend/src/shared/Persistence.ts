@@ -262,6 +262,7 @@ export default class PersistenceStore {
   async exportAll(onProgress: (perc: number) => void) {
     return (
       await asyncProcess(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         values(this.stores).flatMap((store) => Array.from(store.itemsByUuid.values())),
         (chunk, state, percentage) => {
           onProgress(percentage);
