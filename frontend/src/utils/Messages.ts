@@ -1,6 +1,7 @@
 const Messages = {
   menu: {
     title: 'Moneeey',
+    search: 'Search',
     dashboard: 'Dashboard',
     transactions: 'Transactions',
     unassigned: (amount: number) => `Unassigned (${amount})`,
@@ -24,14 +25,14 @@ const Messages = {
   landing: {
     failed: 'Login failed, please try again',
     welcome: 'Please check your email.',
+    title: 'Introducing Moneeey',
     messages: [
-      'Personal Finance with Moneeey uses budgeting',
-      'With Moneeey you will archive your Financial Independence',
-      'You will have freedom to live your life fully',
-      'Be the owner of your information',
-      'Built with privacy and private in mind',
-      'End-to-end encryption, your data is only yours',
-      'Import and export data',
+      "Budget with ease using Moneeey's intuitive interface",
+      'Achieve financial independence and live life to the fullest',
+      'Take ownership of your sensitive information',
+      'Built with privacy and security in mind',
+      'Enjoy end-to-end encryption for maximum data protection',
+      'Seamlessly import and export your financial data',
     ],
   },
   login: {
@@ -51,7 +52,7 @@ const Messages = {
       import.`,
     drop_here: 'Drop the files here ...',
     click_or_drop_here: 'Drag and drop files here, or click to select files',
-    supported_formats: 'Supported: TXT, CSV, OFX',
+    supported_formats: 'Supported: TXT, CSV, OFX, PDF',
     unknown_mode: (mode: string) => `Unknown mode ${mode}`,
     new_import: 'New import',
     configuration: 'Configuration',
@@ -59,6 +60,7 @@ const Messages = {
     updated: 'Updated',
     unchanged: 'Unchanged',
     import_transactions: 'Import transactions',
+    invert_from_to_accounts: 'Invert from and to accounts',
     changed_description: (from_value: string, to_value: string) => `Changed from\n${from_value}\nto\n${to_value}`,
   },
   util: {
@@ -79,6 +81,7 @@ const Messages = {
     year: 'Year',
     ok: 'Ok',
     cancel: 'Cancel',
+    clear: 'Clear',
   },
   settings: {
     reload_page: 'Reload your page',
@@ -147,6 +150,15 @@ const Messages = {
     landing: 'Welcome to Moneeey',
     start_tour: 'Start Tour',
     sync: 'Sync',
+    merge_accounts: 'Merge accounts',
+  },
+  merge_accounts: {
+    submit: 'Merge accounts',
+    description:
+      'Merge two accounts into a single, moving all transactions with source account into the target account.',
+    source: 'Source account (deleted)',
+    target: 'Target account (merged into)',
+    success: 'Accounts merged successfully',
   },
   sync: {
     intro: `

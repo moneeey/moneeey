@@ -12,7 +12,45 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 32 * 1024 * 1024,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+      },
+      includeAssets: ['**/*.{js,css,html,ico,png,svg}'],
+      manifest: {
+        name: 'Moneeey',
+        short_name: 'Moneeey',
+        description: 'Moneeey - Personal Finance Software',
+        id: '/',
+        scope: '/',
+        start_url: '/',
+        icons: [
+          {
+            src: 'favicon.svg',
+            sizes: '64x64',
+            type: 'image/svg',
+            purpose: 'any',
+          },
+          {
+            src: 'favicon.144x144.svg',
+            sizes: '144x144',
+            type: 'image/svg',
+            purpose: 'any',
+          },
+          {
+            src: 'favicon.192x192.svg',
+            sizes: '192x192',
+            type: 'image/svg',
+            purpose: 'any',
+          },
+          {
+            src: 'favicon.512x512.svg',
+            sizes: '512x512',
+            type: 'image/svg',
+            purpose: 'any',
+          },
+        ],
+        background_color: '#696969',
+        theme_color: '#696969',
       },
     }),
     react(),

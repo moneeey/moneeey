@@ -103,8 +103,8 @@ export const importTransaction = function ({
     tags: [],
     from_account: value < 0 ? referenceAccount : other_account,
     to_account: value < 0 ? other_account : referenceAccount,
-    from_value: value,
-    to_value: value,
+    from_value: Math.abs(value),
+    to_value: Math.abs(value),
     import_data: line,
     updated: currentDateTime(),
   };
@@ -112,8 +112,9 @@ export const importTransaction = function ({
   const existing = importer.findForImportId(import_id);
   if (existing) {
     transaction.transaction_uuid = existing.transaction_uuid;
-    if ((existing.memo || '').indexOf(transaction.memo) === -1) {
-      transaction.memo = `${existing.memo};${transaction.memo}`;
+    transaction.memo = existing.memo;
+    if ((transaction.memo || '').indexOf(line) === -1) {
+      transaction.memo = `${transaction.memo};${line}`;
     }
     transaction.tags = existing.tags;
     transaction.from_account = transaction.from_account || existing.from_account;

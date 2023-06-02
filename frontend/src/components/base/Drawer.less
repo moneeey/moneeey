@@ -10,6 +10,15 @@
   border: 1px solid @border-color-base;
   height: 100%;
   width: 15em;
-  z-index: 99910;
+  z-index: 99915;
   padding: 1em;
+
+  .shadow-borders();
+
+  @media (max-width: 600px) {
+    width: 100%;
+    left: 0;
+    top: unset;
+    height: unset;
+  }
 }

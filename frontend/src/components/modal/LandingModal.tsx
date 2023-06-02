@@ -24,7 +24,7 @@ const LandingModal = function () {
   return (
     <Modal
       modalId={NavigationModal.LANDING}
-      title={Messages.modal.landing}
+      title={Messages.landing.title}
       footer={
         <OkCancel
           onOk={() => {

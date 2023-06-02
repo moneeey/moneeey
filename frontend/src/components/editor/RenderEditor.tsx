@@ -1,4 +1,3 @@
-import { debounce } from 'lodash';
 import { action } from 'mobx';
 import { observer } from 'mobx-react-lite';
 
@@ -149,7 +148,7 @@ export const EntityEditorForField = <T extends IBaseEntity, Context, TField>({
     );
   });
 
-  return <MonitorLoading />;
+  return <MonitorLoading key={key} />;
 };
 
 export const TableColumnDefForField = <T extends IBaseEntity, Context>({

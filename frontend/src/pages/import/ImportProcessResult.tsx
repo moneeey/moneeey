@@ -221,6 +221,17 @@ const ImportProcessResult = ({
     close();
   };
 
+  const onInvertFromTo = () => {
+    setResult({
+      ...result,
+      transactions: result.transactions.map((t) => {
+        const { from_account, to_account } = t;
+
+        return { ...t, from_account: to_account, to_account: from_account };
+      }),
+    });
+  };
+
   return (
     <>
       {map(result.errors, (err) => (
@@ -230,25 +241,24 @@ const ImportProcessResult = ({
           </TextDanger>
         </p>
       ))}
-      <TextNormal>{Messages.import.success(task.input.name)}</TextNormal>
-      <ContentTransactionTable
-        moneeeyStore={moneeeyStore}
-        task={task}
-        transactions={result.transactions.filter((t) => result.update[t.transaction_uuid])}
-        result={result}
-        setResult={setResult}
-      />
-      <ContentTransactionTable
-        moneeeyStore={moneeeyStore}
-        task={task}
-        transactions={result.transactions.filter((t) => !result.update[t.transaction_uuid])}
-        result={result}
-        setResult={setResult}
-      />
+      <p>
+        <TextNormal>{Messages.import.success(task.input.name)}</TextNormal>
+      </p>
       <Space>
         <SecondaryButton onClick={close}>{Messages.util.close}</SecondaryButton>
         <PrimaryButton onClick={onImport}>{Messages.import.import_transactions}</PrimaryButton>
+        <SecondaryButton onClick={onInvertFromTo}>{Messages.import.invert_from_to_accounts}</SecondaryButton>
       </Space>
+      <ContentTransactionTable
+        moneeeyStore={moneeeyStore}
+        task={task}
+        transactions={[
+          ...result.transactions.filter((t) => result.update[t.transaction_uuid]),
+          ...result.transactions.filter((t) => !result.update[t.transaction_uuid]),
+        ]}
+        result={result}
+        setResult={setResult}
+      />
     </>
   );
 };

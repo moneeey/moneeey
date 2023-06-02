@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { observer } from 'mobx-react';
 
 import { BrowserRouter } from 'react-router-dom';
+
+import { Bars3Icon } from '@heroicons/react/24/outline';
+
+import favicon from '../favicon.svg';
 
 import './App.less';
 
@@ -20,18 +24,28 @@ import { TagsHighlightProvider } from './components/Tags';
 import MoneeeyTourProvider from './components/tour/Tour';
 
 import { PouchDBFactory } from './shared/Persistence';
+import { TextTitle } from './components/base/Text';
+import initSw from './sw';
 
-const LoadedApp = observer(() => {
+const AppContent = observer(() => {
   const moneeeyStore = useMoneeeyStore();
+  const [menuExpanded, setMenuExpanded] = useState(false);
+  const { loaded } = moneeeyStore;
 
-  return moneeeyStore.loaded ? (
-    <>
-      <AppMenu />
-      <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
-      <Navigator />
-      <Modals />
-      <Notifications />
-    </>
+  return loaded ? (
+    <section className='appContent'>
+      <header>
+        <TextTitle onClick={() => setMenuExpanded(!menuExpanded)}>
+          <Bars3Icon />
+          <img src={favicon} />
+          {Messages.menu.title}
+        </TextTitle>
+      </header>
+      <section>
+        {menuExpanded && <AppMenu />}
+        <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
+      </section>
+    </section>
   ) : (
     <p>{Messages.util.loading}</p>
   );
@@ -40,17 +54,26 @@ const LoadedApp = observer(() => {
 export const App = () => {
   const moneeeyStore = React.useMemo(() => new MoneeeyStore(PouchDBFactory), []);
 
+  useEffect(() => {
+    moneeeyStore.load();
+  }, [moneeeyStore]);
+
   return (
     <BrowserRouter>
       <MoneeeyStoreProvider value={moneeeyStore}>
         <MoneeeyTourProvider>
           <TagsHighlightProvider>
-            <LoadedApp />
+            <AppContent />
+            <Navigator />
+            <Modals />
+            <Notifications />
           </TagsHighlightProvider>
         </MoneeeyTourProvider>
       </MoneeeyStoreProvider>
     </BrowserRouter>
   );
 };
+
+initSw();
 
 export default App;

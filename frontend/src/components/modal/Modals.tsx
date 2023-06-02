@@ -1,4 +1,5 @@
 import LandingModal from './LandingModal';
+import MergeAccountsModal from './MergeAccountsModal';
 import SyncModal from './SyncModal';
 
 const Modals = function () {
@@ -6,6 +7,7 @@ const Modals = function () {
     <>
       <LandingModal />
       <SyncModal />
+      <MergeAccountsModal />
     </>
   );
 };

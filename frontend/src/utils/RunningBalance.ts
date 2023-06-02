@@ -2,6 +2,7 @@ import { action, makeObservable, observable } from 'mobx';
 
 import { TAccountUUID } from '../entities/Account';
 import { ITransaction, TTransactionUUID } from '../entities/Transaction';
+import Logger from '../shared/Logger';
 
 import { asyncProcess } from './Utils';
 
@@ -13,18 +14,30 @@ type FromToBalance = {
 export default class RunningBalance {
   transactionRunningBalance = new Map<TTransactionUUID, FromToBalance>();
 
-  constructor() {
+  version = 0;
+
+  logger: Logger;
+
+  constructor(parent?: Logger) {
     makeObservable(this, {
       transactionRunningBalance: observable,
       update: action,
     });
+    this.logger = new Logger('runningBalance', parent);
   }
 
   async calculateTransactionRunningBalances(items: ITransaction[]) {
+    const forVersion = this.version;
+
     return (
       await asyncProcess(
         items,
         (chunk, state) => {
+          if (forVersion !== this.version) {
+            this.logger.info('calculateTransactionRunningBalances aborted');
+
+            return;
+          }
           const changeRunningBalance = (item: ITransaction, account: TAccountUUID, amount: number) => {
             const previous = state.accountBalance.get(account) || 0;
             const balance = amount + previous;
@@ -39,8 +52,8 @@ export default class RunningBalance {
           });
         },
         {
-          chunkSize: 200,
-          chunkThrottle: 200,
+          chunkSize: 50,
+          chunkThrottle: 50,
           state: {
             accountBalance: new Map<TAccountUUID, number>(),
             transactionBalance: new Map<TTransactionUUID, FromToBalance>(),
@@ -55,6 +68,7 @@ export default class RunningBalance {
   }
 
   async processAll(transactions: ITransaction[]) {
+    this.version += 1;
     for (const t of transactions) {
       if (!this.transactionRunningBalance.has(t.transaction_uuid)) {
         this.update(t.transaction_uuid, {

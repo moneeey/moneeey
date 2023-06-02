@@ -88,31 +88,35 @@ const txtImportFromLines = ({
 
           return;
         }
-        const { value, date, other } = retrieveColumns(tokens, columns, dateFormat || TDateFormat);
-        const query_tokens = compact(other.flatMap(tokenize));
-        const accounts = importer.findAccountsForTokens(referenceAccount, tokenMap, query_tokens);
-        const other_account = accounts[0]?.account_uuid || '';
-        const { transaction, existing } = importTransaction({
-          date,
-          line,
-          value,
-          referenceAccount,
-          other_account,
-          importer,
-        });
-        logger.info('process line', {
-          line,
-          value,
-          date,
-          other,
-          other_account,
-          query_tokens,
-          recommended_accounts: accounts,
-          transaction,
-        });
-        stt.transactions.push(transaction);
-        stt.update[transaction.transaction_uuid] = Boolean(existing);
-        stt.recommended_accounts[transaction.transaction_uuid] = accounts.map((a) => a.account_uuid);
+        try {
+          const { value, date, other } = retrieveColumns(tokens, columns, dateFormat || TDateFormat);
+          const query_tokens = compact(other.flatMap(tokenize));
+          const accounts = importer.findAccountsForTokens(referenceAccount, tokenMap, query_tokens);
+          const other_account = accounts[0]?.account_uuid || '';
+          const { transaction, existing } = importTransaction({
+            date,
+            line,
+            value,
+            referenceAccount,
+            other_account,
+            importer,
+          });
+          logger.info('process line', {
+            line,
+            value,
+            date,
+            other,
+            other_account,
+            query_tokens,
+            recommended_accounts: accounts,
+            transaction,
+          });
+          stt.transactions.push(transaction);
+          stt.update[transaction.transaction_uuid] = Boolean(existing);
+          stt.recommended_accounts[transaction.transaction_uuid] = accounts.map((a) => a.account_uuid);
+        } catch (err) {
+          logger.error('process line error', { err, line });
+        }
       });
     },
     {

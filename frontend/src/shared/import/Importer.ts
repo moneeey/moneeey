@@ -37,7 +37,7 @@ export const tokensForTransactions = function (
       ...tokenize(transaction.memo),
       ...tokenize(transaction.import_data),
     ])
-  );
+  ).filter((token) => token.length > 2);
 };
 
 type ScoreMap = { [id: string]: { [token: string]: number } };
@@ -52,23 +52,23 @@ export const tokenTransactionAccountScoreMap = function (
     accounts: compact([t.from_account, t.to_account]),
   }));
 
-  const allTokens = accountsAndTokens.flatMap((aat) => aat.tokens);
+  const allTokens = accountsAndTokens.flatMap(({ tokens }) => tokens);
   const scoreMap = tokenScoreMap(allTokens);
 
-  const topAccountTokens = accountsAndTokens.map((aat) => ({
-    ...aat,
-    tokens: tokenTopScores(aat.tokens, scoreMap, 5),
+  const topAccountTokens = accountsAndTokens.map(({ tokens, accounts }) => ({
+    accounts,
+    tokens: tokenTopScores(tokens, scoreMap, 5),
   }));
 
   const topAccountScoreMap = topAccountTokens.reduce((accum, aat) => {
     aat.accounts.forEach((account) => {
       const accountTokens = accum[account] || {};
-      aat.tokens.forEach((st) => {
-        if (st.token in accountTokens) {
-          accountTokens[st.token] += st.score;
-          accountTokens[st.token] /= 2;
+      aat.tokens.forEach(({ token, score }) => {
+        if (token in accountTokens) {
+          accountTokens[token] += score;
+          accountTokens[token] /= 2;
         } else {
-          accountTokens[st.token] = st.score;
+          accountTokens[token] = score;
         }
       });
       accum[account] = accountTokens;
@@ -94,21 +94,11 @@ export const tokenTransactionAccountScoreMap = function (
 export const tokenMatchScoreMap = function (tokens: string[], scoreMap: ScoreMap, sampleSize: number) {
   return keys(scoreMap)
     .map((id) => {
-      let score = 0;
-      let first = true;
-      const scores = scoreMap[id] || {};
-      tokens.forEach((token) => {
-        if (token in scores) {
-          score += scores[token];
-          if (first) {
-            first = false;
-          } else {
-            score /= 2;
-          }
-        }
-      });
+      const groupScores = scoreMap[id] || {};
+      const scores = tokens.map((token) => groupScores[token] || 0);
+      const total = scores.reduce((a, b) => a + b, 0);
 
-      return { id, score };
+      return { id, score: total / scores.length };
     })
     .filter((si) => si.score > 0)
     .sort((a, b) => b.score - a.score)
