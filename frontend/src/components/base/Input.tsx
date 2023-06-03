@@ -48,14 +48,12 @@ const Input = ({
   const [currentValue, setCurrentValue] = useState<string>(value);
 
   useEffect(() => {
-    const tmr = setTimeout(() => {
-      if (currentValue && currentValue !== value) {
+    return () => {
+      if (currentValue !== value) {
         onChange(currentValue);
       }
-    }, 500);
-
-    return () => clearTimeout(tmr);
-  }, [currentValue]);
+    };
+  }, []);
 
   return InputContainer({
     prefix,
@@ -106,14 +104,12 @@ const InputNumber = ({
   }, [value]);
 
   useEffect(() => {
-    const tmr = setTimeout(() => {
-      if (currentFloatValue) {
+    return () => {
+      if (currentFloatValue && currentFloatValue !== value) {
         onChange(currentFloatValue);
       }
-    }, 500);
-
-    return () => clearTimeout(tmr);
-  }, [currentFloatValue]);
+    };
+  }, []);
 
   return InputContainer({
     prefix,
