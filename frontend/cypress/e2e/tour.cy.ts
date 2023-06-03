@@ -28,7 +28,7 @@ describe('Tour spec', () => {
 
     // Type account in table to create a new account
     cy.get(loc.ACCOUNTS.NAME_INPUT).type('Account test');
-    cy.wait(1000);
+    cy.get(loc.ACCOUNTS.NAME_INPUT).blur();
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
 
     // Create a transaction
@@ -37,11 +37,11 @@ describe('Tour spec', () => {
 
     // Wait persistence/pouchdb to sync that new account
     cy.get(loc.TRANSACTIONS.TO_INPUT).should('have.length', 2);
-    cy.wait(500);
 
     // Create new payee
     cy.get(loc.TRANSACTIONS.TO_INPUT).first().type('Gas Station{enter}');
     cy.get(loc.TRANSACTIONS.AMOUNT_INPUT).first().type('123,45{enter}');
+    cy.get(loc.TRANSACTIONS.AMOUNT_INPUT).first().blur();
 
     // Go to Budget
     cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
@@ -62,7 +62,7 @@ describe('Tour spec', () => {
     cy.contains('Budget test');
     cy.contains('R$');
     cy.get(loc.BUDGET.CARD_ALLOCATED_INPUT).first().type('544,14');
-    cy.wait(3000);
+    cy.get(loc.BUDGET.CARD_ALLOCATED_INPUT).first().blur();
     cy.get(loc.BUDGET.CARD_REMAINING_INPUT).first().should('contain.value', '420,69');
 
     // Go to Import

@@ -1,3 +1,4 @@
+import { includes } from 'lodash';
 import { registerSW } from 'virtual:pwa-register';
 
 export const autoReload = function () {
@@ -16,5 +17,7 @@ export const askConfirm = function () {
 };
 
 export default function initSw() {
-  autoReload();
+  if (!includes(['local.moneeey.io', '127.0.0.1:42069'], window.location.host)) {
+    autoReload();
+  }
 }
