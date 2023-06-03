@@ -3,11 +3,80 @@ name: CI/CD
 on: push
 
 jobs:
-  CI:
+  INSTALL:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.17"
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            backend/node_modules
+            frontend/node_modules
+            /home/runner/.cache/Cypress
+          key: ${{ runner.os }}-moneeey-${{ hashFiles('backend/package.json') }}-${{ hashFiles('frontend/package.json') }}
+
+      - run: yarn install --frozen-lockfile
+        name: Install frontend
+        working-directory: frontend
+
+      - run: yarn install --frozen-lockfile
+        name: Install backend
+        working-directory: backend
+
+  TEST:
+    needs: INSTALL
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         service: [backend, frontend]
+    defaults:
+      run:
+        working-directory: ${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.17"
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            backend/node_modules
+            frontend/node_modules
+            /home/runner/.cache/Cypress
+          key: ${{ runner.os }}-moneeey-${{ hashFiles('backend/package.json') }}-${{ hashFiles('frontend/package.json') }}
+
+      - run: yarn test
+        name: Test
+
+      - name: Cypress
+        uses: cypress-io/github-action@v4
+        if: matrix.service == 'frontend'
+        env:
+          CYPRESS_BASE_URL: "http://127.0.0.1:42069"
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          NODE_OPTIONS: "--max_old_space_size=4096"
+        with:
+          install: false
+          record: true
+          build: yarn build
+          start: npx http-serve dist -p 42069 && sleep 2 && wait-on 'http://127.0.0.1:42069'
+          working-directory: frontend
+          browser: chrome
+
+  PACKAGE:
     runs-on: ubuntu-latest
+    needs: TEST
+    if: startsWith(github.ref, 'refs/tags/')
+    strategy:
+      matrix:
+        service: [backend, frontend]
     permissions:
       contents: read
       packages: write
@@ -19,128 +88,51 @@ jobs:
       run:
         working-directory: ${{ matrix.service }}
     steps:
-    # Install node 16.17
-    - uses: actions/setup-node@v3
-      with:
-        node-version: '16.17'
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
 
-    # Run tests
-    - uses: actions/checkout@v3
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
-    # Cache node_modules
-    - uses: actions/cache@v2
-      with:
-        path: |
-          backend/node_modules
-          frontend/node_modules
-          /home/runner/.cache/Cypress
-        key: ${{ runner.os }}-moneeey-${{ matrix.service }}-${{ hashFiles('**/package.json') }}
+      - name: Log into Github Docker registry
+        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    # Install node_modules
-    - run: yarn install --frozen-lockfile
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-    # Basic tests
-    - run: yarn test
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile.prod
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
-    # Cypress
-    - name: Cypress run
-      uses: cypress-io/github-action@v4
-      if: matrix.service == 'frontend'
-      env:
-        CYPRESS_BASE_URL: 'http://127.0.0.1:42069'
-        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-        NODE_OPTIONS: '--max_old_space_size=4096'
+      - name: Write updated cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-      with:
-        install: true
-        record: true
-        build: yarn build
-        start: npx http-serve dist -p 42069 && sleep 2 && wait-on 'http://127.0.0.1:42069'
-        working-directory: frontend
-        browser: chrome
-
-
-    # Install the cosign tool except on PR
-    # https://github.com/sigstore/cosign-installer
-    # - name: Install cosign
-    #   if: startsWith(github.ref, 'refs/tags/')
-    #   uses: sigstore/cosign-installer@7e0881f8fe90b25e305bbf0309761e9314607e25
-    #   with:
-    #     cosign-release: 'v1.9.0'
-
-    # Workaround: https://github.com/docker/build-push-action/issues/461
-    - name: Setup Docker buildx
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
-
-    # Create cache for buildx
-    - name: Cache Docker layers
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
-
-    # Login against a Docker registry except on PR
-    # https://github.com/docker/login-action
-    - name: Log into Github Docker registry
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    # Extract metadata (tags, labels) for Docker
-    # https://github.com/docker/metadata-action
-    - name: Extract Docker metadata
-      if: startsWith(github.ref, 'refs/tags/')
-      id: meta
-      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-    # Build and push Docker image with Buildx (don't push on PR)
-    # https://github.com/docker/build-push-action
-    - name: Build and push Docker image
-      if: startsWith(github.ref, 'refs/tags/')
-      id: build-and-push
-      uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-      with:
-        context: ./${{ matrix.service }}
-        file: ./${{ matrix.service }}/Dockerfile.prod
-        push: ${{ github.event_name != 'pull_request' }}
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-
-    # Save updated cache
-    - name: Write updated cache
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        rm -rf /tmp/.buildx-cache
-        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-    # Sign the resulting Docker image digest except on PRs.
-    # This will only write to the public Rekor transparency log when the Docker
-    # repository is public to avoid leaking data.  If you would like to publish
-    # transparency data even for private images, pass --force to cosign below.
-    # https://github.com/sigstore/cosign
-    # - name: Sign the published Docker image
-    #   if: startsWith(github.ref, 'refs/tags/')
-    #   env:
-    #     COSIGN_EXPERIMENTAL: "true"
-    #   # This step uses the identity token to provision an ephemeral certificate
-    #   # against the sigstore community Fulcio instance.
-    #   run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
-
-  CD:
+  DEPLOY:
     runs-on: [self-hosted]
     if: startsWith(github.ref, 'refs/tags/')
-    needs: CI
+    needs: PACKAGE
     env:
       FRONTEND_IMAGE: ghcr.io/${{ github.repository }}-frontend:${{ github.ref_name }}
       BACKEND_IMAGE: ghcr.io/${{ github.repository }}-backend:${{ github.ref_name }}
@@ -149,11 +141,10 @@ jobs:
       packages: read
     steps:
       # Download docker-compose.prod.yaml, updates image and deploy. TODO: Change to docker swarm
-    - name: deploy
-      run: |
-        cd ~/moneeey && \
-        curl https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/docker-compose.prod.yaml > docker-compose.yaml && \
-        sed -i 's@FRONTEND_IMAGE@${{ env.FRONTEND_IMAGE }}@' docker-compose.yaml && \
-        sed -i 's@BACKEND_IMAGE@${{ env.BACKEND_IMAGE }}@' docker-compose.yaml && \
-        docker-compose up --remove-orphans -d
-
+      - name: deploy
+        run: |
+          cd ~/moneeey && \
+          curl https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/docker-compose.prod.yaml > docker-compose.yaml && \
+          sed -i 's@FRONTEND_IMAGE@${{ env.FRONTEND_IMAGE }}@' docker-compose.yaml && \
+          sed -i 's@BACKEND_IMAGE@${{ env.BACKEND_IMAGE }}@' docker-compose.yaml && \
+          docker-compose up --remove-orphans -d
