@@ -8,6 +8,18 @@ export default defineConfig({
     port: 4270,
     host: '0.0.0.0',
   },
+  build: {
+    chunkSizeWarningLimit: 32 * 1024 * 1024,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules/')) {
+            return /node_modules\/([@-_\d\w]+)/.exec(id)[1];
+          }
+        },
+      },
+    },
+  },
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',

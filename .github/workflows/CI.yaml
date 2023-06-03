@@ -70,9 +70,9 @@ jobs:
           working-directory: frontend
           browser: chrome
 
-      # if: startsWith(github.ref, 'refs/tags/')
   PACKAGE:
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     needs: TEST
     strategy:
       matrix:
