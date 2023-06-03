@@ -13,9 +13,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         maximumFileSizeToCacheInBytes: 32 * 1024 * 1024,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,ttf}'],
       },
-      includeAssets: ['**/*.{js,css,html,ico,png,svg}'],
+      includeAssets: ['**/*.{js,css,html,ico,png,svg,ttf}'],
       manifest: {
         name: 'Moneeey',
         short_name: 'Moneeey',
