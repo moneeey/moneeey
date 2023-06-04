@@ -1,7 +1,5 @@
 import { ReactNode } from 'react';
 
-import './Loading.less';
-
 interface LoadingProps {
   loading: boolean;
   progress?: number;

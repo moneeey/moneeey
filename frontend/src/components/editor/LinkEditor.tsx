@@ -12,6 +12,7 @@ export const LinkEditor = observer(<EntityType extends IBaseEntity>(props: Edito
 
   return (
     <LinkButton
+      className='p-0'
       onClick={() => {
         // The next lines don't make me any proud!
 

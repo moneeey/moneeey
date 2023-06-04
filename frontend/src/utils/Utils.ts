@@ -90,6 +90,8 @@ const getCurrentHost = function () {
   return `${window.location.protocol}//${window.location.host}`;
 };
 
+export type ClassNameType = React.HTMLProps<HTMLElement>['className'];
+
 export {
   uuid,
   tokenize,

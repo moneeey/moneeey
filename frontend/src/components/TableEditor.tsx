@@ -10,7 +10,6 @@ import { currentDateTime, dateDistanceInSecs, parseDateTime } from '../utils/Dat
 import { FieldProps } from './editor/EditorProps';
 import VirtualTable from './VirtualTableEditor';
 
-import './TableEditor.less';
 import { WithDataTestId } from './base/Common';
 import { TableColumnDefForField } from './editor/RenderEditor';
 
@@ -82,13 +81,6 @@ export default observer(
       [store]
     );
 
-    return (
-      <VirtualTable
-        className='tableEditor'
-        columns={columns}
-        rows={entities}
-        isNewEntity={(row) => row.entityId === newEntityId}
-      />
-    );
+    return <VirtualTable columns={columns} rows={entities} isNewEntity={(row) => row.entityId === newEntityId} />;
   }
 );

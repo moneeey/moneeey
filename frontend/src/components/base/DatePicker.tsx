@@ -3,9 +3,7 @@ import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
 import { WithDataTestId } from './Common';
-import { InputContainer, InputProps } from './Input';
-
-import './DatePicker.less';
+import { BaseInputClzz, InputContainer, InputProps } from './Input';
 
 type DatePickerProps = InputProps<Date> & WithDataTestId;
 
@@ -27,7 +25,9 @@ const DatePicker = ({
     input: (
       <ReactDatePicker
         {...{ 'data-test-id': dataTestId }}
-        className={`mn-datepicker ${className || ''}`}
+        popperPlacement='auto'
+        fixedHeight
+        className={`${BaseInputClzz || ''} z-50 ${className || ''}`}
         selected={value}
         onChange={(newValue: Date) => newValue && onChange(newValue)}
         readOnly={readOnly}

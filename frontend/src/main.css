@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: 'PTSerif';
+    src: local('PT Serif'), url('./fonts/PTSerif-Regular.ttf');
+  }
+
+  @font-face {
+    font-family: 'PTMono';
+    src: local('PT Mono'), url('./fonts/PTMono-Regular.ttf');
+  }
+
+  .App {
+    @apply bg-background-900;
+  }
+}

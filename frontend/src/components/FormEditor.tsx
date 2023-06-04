@@ -9,7 +9,6 @@ import { FieldProps } from './editor/EditorProps';
 import { WithDataTestId } from './base/Common';
 import { EntityEditorForField } from './editor/RenderEditor';
 
-import './FormEditor.less';
 import { TextNormal } from './base/Text';
 import { Row } from './VirtualTableEditor';
 

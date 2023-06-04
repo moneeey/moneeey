@@ -1,5 +1,6 @@
 import {
   ArrowDownOnSquareStackIcon,
+  Bars3Icon,
   BookOpenIcon,
   BookmarkSlashIcon,
   ChartPieIcon,
@@ -15,8 +16,7 @@ import {
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import { observer } from 'mobx-react';
-
-import favicon from '../../favicon.svg';
+import { Dispatch, SetStateAction, useState } from 'react';
 
 import AccountRoute from '../routes/AccountRoute';
 import { AccountSettingsRoute } from '../routes/AccountSettingsRoute';
@@ -33,10 +33,14 @@ import BudgetRoute from '../routes/BudgetRoute';
 import Messages from '../utils/Messages';
 import { NavigationModal } from '../shared/Navigation';
 
-import Navbar from './base/Navbar';
-import { TextNormal, TextSecondary } from './base/Text';
+import RouteRenderer from '../routes/RouteRenderer';
+import MoneeeyStore from '../shared/MoneeeyStore';
 
-export const AppMenu = observer(() => {
+import Navbar from './base/Navbar';
+import { TextNormal, TextSecondary, TextTitle } from './base/Text';
+import Icon, { FavIcon } from './base/Icon';
+
+const Menu = observer(() => {
   const { navigation, accounts, currencies, persistence, transactions } = useMoneeeyStore();
 
   const getAccountCurrency = (account: IAccount) => {
@@ -44,8 +48,6 @@ export const AppMenu = observer(() => {
 
     return curr?.short || curr?.name || '?';
   };
-
-  const iconProps = { className: 'icon-small' };
 
   const activeAccounts = accounts.allNonPayees.filter((t) => t.archived !== true);
   const unclassified = transactions.viewAllUnclassified().length;
@@ -64,24 +66,20 @@ export const AppMenu = observer(() => {
 
   return (
     <Navbar
+      className='px-2'
       data-test-id='appMenu'
-      header={
-        <span>
-          <img src={favicon} {...iconProps} /> {Messages.menu.title}
-        </span>
-      }
       items={[
         {
           key: 'dashboard',
           label: Messages.menu.dashboard,
-          icon: <ClipboardDocumentIcon {...iconProps} />,
+          icon: <ClipboardDocumentIcon />,
           visible: activeAccounts.length > 0,
           ...routeLink(HomeRoute.url()),
         },
         {
           key: 'transactions',
           label: Messages.menu.transactions,
-          icon: <CurrencyDollarIcon {...iconProps} />,
+          icon: <CurrencyDollarIcon />,
           visible: activeAccounts.length > 0,
           ...routeLink(AccountRoute.accountUrlForAll()),
           isActive: false,
@@ -91,7 +89,7 @@ export const AppMenu = observer(() => {
               .map((acct) => ({
                 key: `account_${acct._id || ''}`,
                 label: `${getAccountCurrency(acct)} ${acct.name}`,
-                icon: <WalletIcon {...iconProps} />,
+                icon: <WalletIcon />,
                 customLabel: (
                   <TextNormal>
                     <TextSecondary>{getAccountCurrency(acct)}</TextSecondary> {acct.name}
@@ -101,20 +99,20 @@ export const AppMenu = observer(() => {
               })),
             {
               key: 'all',
-              icon: <BookOpenIcon {...iconProps} />,
+              icon: <BookOpenIcon />,
               label: Messages.menu.all_transactions,
               ...routeLink(AccountRoute.accountUrlForAll()),
             },
             {
               key: 'unassigned',
-              icon: <BookmarkSlashIcon {...iconProps} />,
+              icon: <BookmarkSlashIcon />,
               label: Messages.menu.unassigned(unclassified),
               visible: unclassified > 0,
               ...routeLink(AccountRoute.accountUrlForUnclassified()),
             },
             {
               key: 'import',
-              icon: <ArrowDownOnSquareStackIcon {...iconProps} />,
+              icon: <ArrowDownOnSquareStackIcon />,
               label: Messages.menu.import,
               ...routeLink(ImportRoute.url()),
             },
@@ -123,46 +121,46 @@ export const AppMenu = observer(() => {
         {
           key: 'budget',
           label: Messages.menu.budget,
-          icon: <EnvelopeIcon {...iconProps} />,
+          icon: <EnvelopeIcon />,
           visible: hasTransactions,
           ...routeLink(BudgetRoute.url()),
         },
         {
           key: 'reports',
           label: Messages.menu.reports,
-          icon: <ChartPieIcon {...iconProps} />,
+          icon: <ChartPieIcon />,
           visible: hasTransactions,
           ...routeLink(ReportsRoute.url()),
         },
         {
           key: 'settings',
           label: Messages.menu.settings,
-          icon: <Cog6ToothIcon {...iconProps} />,
+          icon: <Cog6ToothIcon />,
           ...routeLink(SettingsRoute.url()),
           isActive: false,
           children: [
             {
               key: 'settings_general',
               label: Messages.menu.preferences,
-              icon: <WrenchScrewdriverIcon {...iconProps} />,
+              icon: <WrenchScrewdriverIcon />,
               ...routeLink(SettingsRoute.url()),
             },
             {
               key: 'settings_currencies',
               label: Messages.menu.currencies,
-              icon: <CurrencyDollarIcon {...iconProps} />,
+              icon: <CurrencyDollarIcon />,
               ...routeLink(CurrencySettingsRoute.url()),
             },
             {
               key: 'settings_accounts',
               label: Messages.menu.accounts,
-              icon: <WalletIcon {...iconProps} />,
+              icon: <WalletIcon />,
               ...routeLink(AccountSettingsRoute.url()),
             },
             {
               key: 'settings_payees',
               label: Messages.menu.payees,
-              icon: <UsersIcon {...iconProps} />,
+              icon: <UsersIcon />,
               ...routeLink(PayeeSettingsRoute.url()),
             },
           ],
@@ -170,18 +168,14 @@ export const AppMenu = observer(() => {
         {
           key: 'settings_landing',
           label: Messages.menu.start_tour,
-          icon: <QuestionMarkCircleIcon {...iconProps} />,
+          icon: <QuestionMarkCircleIcon />,
           ...modalLink(NavigationModal.LANDING),
         },
         {
           key: 'sync',
           label: `${Messages.modal.sync} ${Messages.menu.sync[persistence.status]}`,
           icon:
-            persistence.status === Status.ONLINE ? (
-              <PlayCircleIcon color='green' {...iconProps} />
-            ) : (
-              <StopCircleIcon color='red' {...iconProps} />
-            ),
+            persistence.status === Status.ONLINE ? <PlayCircleIcon color='green' /> : <StopCircleIcon color='red' />,
           ...modalLink(NavigationModal.SYNC),
         },
       ]}
@@ -189,4 +183,34 @@ export const AppMenu = observer(() => {
   );
 });
 
-export default AppMenu;
+const Header = ({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => (
+  <header className='sticky left-0 right-0 top-0 bg-background-800 p-2'>
+    <TextTitle className='flex flex-row items-center gap-1' onClick={() => setExpanded((value) => !value)}>
+      <Icon>
+        <Bars3Icon />
+      </Icon>
+      <FavIcon />
+      {Messages.menu.title}
+    </TextTitle>
+  </header>
+);
+
+const Content = ({ expanded, moneeeyStore }: { expanded: boolean; moneeeyStore: MoneeeyStore }) => (
+  <section className='flex grow flex-row'>
+    {expanded && <Menu />}
+    <section className='grow overflow-hidden p-4'>
+      <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
+    </section>
+  </section>
+);
+
+export default function AppMenu({ moneeeyStore }: { moneeeyStore: MoneeeyStore }) {
+  const [expanded, setExpanded] = useState(true);
+
+  return (
+    <section className='flex h-screen flex-col'>
+      <Header setExpanded={setExpanded} />
+      <Content expanded={expanded} moneeeyStore={moneeeyStore} />
+    </section>
+  );
+}

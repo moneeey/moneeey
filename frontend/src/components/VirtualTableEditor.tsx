@@ -2,10 +2,9 @@ import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import React, { ReactNode, useMemo, useRef, useState } from 'react';
 import useVirtual from 'react-cool-virtual';
 
-import './VirtualTableEditor.less';
-
 const MIN_COLUMN_WIDTH = 100;
-const ROW_HEIGHT = 26;
+
+const ROW_HEIGHT = 24;
 
 export type Row = {
   entityId: string;
@@ -76,7 +75,7 @@ const VirtualGrid = ({
 
   return (
     <div
-      className={`mn-virtualtable ${className || ''}`}
+      className={`overflow-auto ${className || ''}`}
       ref={(el) => {
         row.outerRef.current = el;
         col.outerRef.current = el;
@@ -84,41 +83,30 @@ const VirtualGrid = ({
         onGridDimensions(el?.clientWidth || 0, el?.clientHeight || 0);
       }}>
       <div
+        className='relative block'
         ref={(el) => {
           row.innerRef.current = el;
           col.innerRef.current = el;
         }}>
-        {row.items.map((rowItem) => (
-          <div
-            key={rowItem.index}
-            className='mn-tr'
-            style={{
-              top: rowItem.isSticky ? 0 : rowItem.start,
-              position: rowItem.isSticky ? 'sticky' : undefined,
-              width: '100%',
-              height: `${ROW_HEIGHT}px`,
-              zIndex: rowItem.isSticky ? 99900 : undefined,
-            }}>
-            {col.items.map((colItem) => (
-              <div
-                key={colItem.index}
-                className={rowItem.isSticky ? 'mn-th' : 'mn-td'}
-                style={{
-                  left: colItem.start,
-                  height: `${rowItem.size}px`,
-                  width: `${colItem.size}px`,
-                }}
-                onClick={() => onGridClick(columns[colItem.index], rowItem.index)}>
-                {rowItem.isSticky
-                  ? columns[colItem.index].title
-                  : renderCell({ rowIndex: rowItem.index - 1, columnIndex: colItem.index })}
-                {rowItem.index === 0 && sort.column.sorter === columns[colItem.index].sorter
-                  ? SortIcon(sort.order)
-                  : ''}
-              </div>
-            ))}
-          </div>
-        ))}
+        {row.items.map((rowItem) =>
+          col.items.map((colItem) => (
+            <div
+              key={`${rowItem.index}_${colItem.index}`}
+              className={`absolute bg-background-800 ${rowItem.index === 0 ? 'font-semibold' : ''}`}
+              style={{
+                top: rowItem.isSticky ? 0 : rowItem.start,
+                left: colItem.start,
+                height: rowItem.size,
+                width: colItem.size,
+              }}
+              onClick={() => onGridClick(columns[colItem.index], rowItem.index)}>
+              {rowItem.isSticky
+                ? columns[colItem.index].title
+                : renderCell({ rowIndex: rowItem.index - 1, columnIndex: colItem.index })}
+              {rowItem.index === 0 && sort.column.sorter === columns[colItem.index].sorter ? SortIcon(sort.order) : ''}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

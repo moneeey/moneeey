@@ -167,11 +167,7 @@ class TransactionStore extends MappedStore<ITransaction> {
   filterByAccounts(accounts: TAccountUUID[]) {
     const accountSet = new Set(accounts);
 
-    return (row: ITransaction) =>
-      accountSet.has(row.from_account) ||
-      accountSet.has(row.to_account) ||
-      isEmpty(row.from_account) ||
-      isEmpty(row.to_account);
+    return (row: ITransaction) => accountSet.has(row.from_account) || accountSet.has(row.to_account);
   }
 
   viewAllWithAccounts(accounts: TAccountUUID[]) {

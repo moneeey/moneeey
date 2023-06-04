@@ -4,7 +4,6 @@ import Messages from '../../utils/Messages';
 
 import { WithDataTestId } from './Common';
 import Space from './Space';
-import './Button.less';
 
 type ButtonType = 'primary' | 'secondary' | 'link' | 'danger';
 
@@ -20,10 +19,20 @@ type WithButtonKind = {
   kind: ButtonType;
 };
 
+const styles: Record<ButtonType, string> = {
+  primary: 'bg-primary-600',
+  secondary: 'bg-primary-400',
+  link: 'bg-transparent border-0',
+  danger: 'bg-danger-400',
+};
+
 const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind & WithDataTestId) =>
   function BaseButton(props: ButtonProps & Partial<WithDataTestId>) {
     return (
-      <button {...base} {...props} className={`mn-button mn-button-${kind} ${props.className || ''}`}>
+      <button
+        {...base}
+        {...props}
+        className={`flex whitespace-nowrap rounded p-2 ${styles[kind]} ${props.className || ''}`}>
         {props.children || props.title || base.title}
       </button>
     );

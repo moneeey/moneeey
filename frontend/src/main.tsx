@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import './polyfills';
 import App from './App';
 
-import './main.less';
+import './main.css';
 
 ReactDOM.createRoot(document.querySelector('.App') as HTMLElement).render(
   <React.StrictMode>

@@ -12,8 +12,6 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { TDateFormat } from '../../utils/Date';
 import Messages from '../../utils/Messages';
 
-import './ImportStarter.less';
-
 export interface FileUploaderProps {
   onFile: (input: ImportInput) => void;
   error: string | false;

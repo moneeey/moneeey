@@ -1,4 +1,5 @@
 import { action, computed, makeObservable, observable } from 'mobx';
+import { StatusType } from '../components/Status';
 
 import { uuid } from '../utils/Utils';
 
@@ -11,7 +12,8 @@ export enum NavigationModal {
   MERGE_ACCOUNTS = 'MERGE_ACCOUNTS',
 }
 
-type NotificationType = 'warning' | 'success' | 'info' | 'error';
+type NotificationType = StatusType;
+
 export type NotificationData = {
   id: string;
   created: Date;

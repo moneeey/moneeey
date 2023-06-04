@@ -17,11 +17,7 @@ const RouteElem = observer(({ route, app }: { route: MyRoute<IRouteParameters>; 
     app.moneeeyStore.navigation.updateCurrentPath(route.url(parameters));
   }, [route, app, parameters]);
 
-  return (
-    <aside className='mainArea'>
-      <section className='mainAreaInner'>{route.render({ parameters, app })}</section>
-    </aside>
-  );
+  return <>{route.render({ parameters, app })}</>;
 });
 
 const RouteRenderer = observer(

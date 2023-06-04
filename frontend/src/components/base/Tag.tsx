@@ -1,7 +1,5 @@
 import { MouseEventHandler } from 'react';
 
-import './Tag.less';
-
 interface TagProps {
   title: string;
   color?: string;
@@ -21,7 +19,7 @@ const contrastColor = (hexcolor: string) => {
 
 const Tag = (props: TagProps) => (
   <span
-    className='mn-tag'
+    className='m-0 mr-1 p-1'
     {...props}
     style={{
       backgroundColor: props.color,

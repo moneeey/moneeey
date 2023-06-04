@@ -7,8 +7,6 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { EditorProps } from './EditorProps';
 import { BaseNumberEditor, NumberSorter } from './NumberEditor';
 
-import './TransactionValueEditor.less';
-
 export const TransactionValueEditor = observer(
   <EntityType extends IBaseEntity>(props: EditorProps<EntityType, number, number>) => {
     const entity = props.store.byUuid(props.entityId) as ITransaction | undefined;

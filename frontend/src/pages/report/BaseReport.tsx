@@ -19,8 +19,6 @@ import {
   asyncProcessTransactionsForAccounts,
 } from './ReportUtils';
 
-import './BaseReport.less';
-
 interface BaseReportProps {
   title: string;
   accounts: IAccount[];

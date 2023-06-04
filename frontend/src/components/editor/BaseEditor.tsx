@@ -6,8 +6,6 @@ import { WithDataTestId } from '../base/Common';
 
 import { EditorProps } from './EditorProps';
 
-import './BaseEditor.less';
-
 type OnChange<EntityType, ValueEditorType, ValueEntityType> = (
   value?: ValueEntityType,
   editorValue?: ValueEditorType,

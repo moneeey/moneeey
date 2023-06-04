@@ -4,8 +4,7 @@ import { ReactNode } from 'react';
 import { LinkButton } from './Button';
 
 import { WithDataTestId } from './Common';
-
-import './Navbar.less';
+import Icon from './Icon';
 
 interface NavbarItem {
   key: string;
@@ -19,8 +18,8 @@ interface NavbarItem {
 }
 
 interface NavbarProps {
-  header?: string | ReactNode;
   items: Array<NavbarItem>;
+  className?: string;
 }
 
 const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
@@ -31,15 +30,15 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 
     return compact([
       <LinkButton
-        className={`item ${item.isActive ? 'active' : ''}`}
+        className={`!p-0 hover:opacity-75 ${item.isActive ? 'opacity-75' : ''}`}
         data-test-id={`${dataTestId}_${item.key}`}
         onClick={item.onClick || (() => ({}))}
         key={item.key}
         title={item.label}>
-        {item.icon} {item.customLabel || item.label}
+        {item.icon && <Icon>{item.icon}</Icon>} {item.customLabel || item.label}
       </LinkButton>,
       item.children && (
-        <div key={`subitems_${item.key}`} className='subitems'>
+        <div key={`subitems_${item.key}`} className='flex flex-col pl-4'>
           {renderNavbarItems(dataTestId, item.children || [])}
         </div>
       ),
@@ -48,7 +47,9 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 
 const Navbar = (props: NavbarProps & WithDataTestId) => {
   return (
-    <nav className='mn-navbar' data-test-id={props['data-test-id']}>
+    <nav
+      className={`bottom-0 left-0 top-0 w-60 bg-background-800 ${props.className}`}
+      data-test-id={props['data-test-id']}>
       {renderNavbarItems(props['data-test-id'], props.items)}
     </nav>
   );

@@ -5,7 +5,6 @@ import { StorageKind, getStorage, setStorage } from '../../utils/Utils';
 import { LinkButton } from './Button';
 import { WithDataTestId } from './Common';
 import Space from './Space';
-import './Tabs.less';
 
 interface TabItem {
   key: string;
@@ -34,15 +33,15 @@ const Tabs = (props: TabsProps & WithDataTestId) => {
   };
 
   return (
-    <section className='mn-tabs'>
+    <section>
       <nav data-test-id={props['data-test-id']}>
-        <Space>
+        <Space className='border-b border-b-background-300'>
           {props.items.map((item, idx) => (
             <LinkButton
               key={item.key}
               onClick={() => onChange(idx)}
               data-test-id={`${props['data-test-id']}_${item.key}`}
-              className={idx === selectedIdx ? 'mn-tab-active' : ''}>
+              className={idx === selectedIdx ? 'underline' : ''}>
               {item.label}
             </LinkButton>
           ))}

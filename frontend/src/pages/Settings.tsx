@@ -3,13 +3,11 @@ import { useState } from 'react';
 import { PrimaryButton, SecondaryButton } from '../components/base/Button';
 import Drawer from '../components/base/Drawer';
 import { TextArea } from '../components/base/Input';
-import Space from '../components/base/Space';
+import Space, { VerticalSpace } from '../components/base/Space';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
 import ConfigTable from '../tables/ConfigTable';
 import Messages from '../utils/Messages';
 import { noop } from '../utils/Utils';
-
-import './Settings.less';
 
 type Action = {
   title: string;
@@ -73,29 +71,37 @@ export default function Settings() {
   };
 
   return (
-    <section className='settingsArea'>
+    <VerticalSpace>
       <Space>
         <PrimaryButton onClick={onExportData}>{Messages.settings.export_data}</PrimaryButton>
         <SecondaryButton onClick={onImportData}>{Messages.settings.import_data}</SecondaryButton>
         <SecondaryButton onClick={onClearData}>{Messages.settings.clear_all}</SecondaryButton>
         {action && (
-          <Drawer {...{ 'data-test-id': 'accountSettings' }} header={action.title}>
+          <Drawer
+            {...{ 'data-test-id': 'accountSettings' }}
+            header={action.title}
+            footer={
+              <Space>
+                <SecondaryButton onClick={() => setAction(undefined)} title={Messages.util.close} />
+                {action.submitFn && (
+                  <PrimaryButton
+                    onClick={() => action.submitFn && action.submitFn(action)}
+                    title={action.submitTitle}
+                  />
+                )}
+              </Space>
+            }>
             <TextArea
               data-test-id='importExportOutput'
               value={action.content}
               onChange={(value) => setAction((cont) => cont && { ...cont, content: value })}
               placeholder={'Data'}
+              rows={16}
             />
-            <Space>
-              <SecondaryButton onClick={() => setAction(undefined)} title={Messages.util.close} />
-              {action.submitFn && (
-                <PrimaryButton onClick={() => action.submitFn && action.submitFn(action)} title={action.submitTitle} />
-              )}
-            </Space>
           </Drawer>
         )}
       </Space>
       <ConfigTable config={moneeeyStore.config} />
-    </section>
+    </VerticalSpace>
   );
 }
