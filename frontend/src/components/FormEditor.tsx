@@ -11,6 +11,7 @@ import { EntityEditorForField } from './editor/RenderEditor';
 
 import { TextNormal } from './base/Text';
 import { Row } from './VirtualTableEditor';
+import { VerticalSpace } from './base/Space';
 
 interface BaseFormEditor extends WithDataTestId {
   className?: string;
@@ -21,14 +22,14 @@ interface BaseFormEditor extends WithDataTestId {
 }
 
 export const BaseFormEditor = ({ className, 'data-test-id': dataTestId, items }: BaseFormEditor) => (
-  <section className={`formEditor ${className || ''}`} {...{ 'data-test-id': dataTestId }}>
+  <VerticalSpace className={`${className || ''}`} {...{ 'data-test-id': dataTestId }}>
     {items.map((item) => (
       <div className='entry' key={item.label}>
         <TextNormal>{item.label}</TextNormal>
         {item.editor}
       </div>
     ))}
-  </section>
+  </VerticalSpace>
 );
 
 interface FormEditorProps<T extends IBaseEntity, Context> extends WithDataTestId {

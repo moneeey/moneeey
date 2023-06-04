@@ -11,6 +11,13 @@ export interface StatusProps {
   onDismiss?: () => void;
 }
 
+const styles: Record<StatusType, string> = {
+  success: 'bg-success-300 text-success-900',
+  info: 'bg-info-300 text-info-900',
+  warning: 'bg-warning-300 text-warning-900',
+  error: 'bg-error-300 text-error-900',
+};
+
 export const Status = ({ type, children, onDismiss }: StatusProps) => {
   const [dismissed, setDismiss] = useState(false);
 
@@ -21,19 +28,8 @@ export const Status = ({ type, children, onDismiss }: StatusProps) => {
     }
   };
 
-  let colors = '';
-  if (type === 'warning') {
-    colors = 'bg-warning-400 text-warning-50';
-  } else if (type === 'error') {
-    colors = 'bg-error-400 text-error-50';
-  } else if (type === 'info') {
-    colors = 'bg-info-400 text-info-50';
-  } else if (type === 'success') {
-    colors = 'bg-success-400 text-success-50';
-  }
-
   return dismissed ? null : (
-    <div className={`mb-2 rounded-lg p-2 text-sm ${colors} flex flex-row`} onClick={doDismiss}>
+    <div className={`mb-2 rounded-lg p-2 text-sm ${styles[type]} flex flex-row`} onClick={doDismiss}>
       <div className='grow'>{children}</div>
       <Icon>
         <XMarkIcon />

@@ -10,7 +10,7 @@ const locators = {
     CURRENCY_INPUT: '[class*="budgetCurrency"]',
     NAME_INPUT: '[data-test-id="budgetName"]',
     TAGS_INPUT: '[class*="budgetTags"]',
-    CURRENCY_OPTION_BRL: '.react-select__option:contains("Real brasileiro")',
+    CURRENCY_OPTION_BRL: '.mn-select__option:contains("Real brasileiro")',
     SAVE_BUTTON: '[data-test-id="budgetSave"]',
     CARD_ALLOCATED_INPUT: '[data-test-id^="editorAllocated"]',
     CARD_REMAINING_INPUT: '[data-test-id^="editorRemaining"]',
@@ -19,7 +19,7 @@ const locators = {
     FROM_INPUT: '[class*="editorFrom_"]',
     TO_INPUT: '[class*="editorTo_"]',
     AMOUNT_INPUT: '[data-test-id^="editorAmount"]',
-    ACCOUNT_OPTION_ACCOUNT_TEST: '.react-select__option:contains("Account test")',
+    ACCOUNT_OPTION_ACCOUNT_TEST: '.mn-select__option:contains("Account test")',
   },
 };
 

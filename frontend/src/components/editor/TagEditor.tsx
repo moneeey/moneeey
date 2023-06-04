@@ -27,7 +27,7 @@ export const TagEditor = observer(
           value: currentValue,
           rev: entity?._rev || '',
         }}
-        Composed={(baseProps, onChange) => (
+        Composed={({ onChange, ...baseProps }) => (
           <MultiSelect
             {...baseProps}
             value={currentValue}

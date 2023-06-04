@@ -35,7 +35,7 @@ const Notifications = observer(() => {
   }, [notifications]);
 
   return (
-    <section className='fixed right-0 top-0 z-50'>
+    <section className='fixed right-0 top-0 z-50 m-4'>
       {visible.map((data) => (
         <Status
           key={data.id}

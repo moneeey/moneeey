@@ -20,7 +20,7 @@ export const AccountTypeEditor = observer(
           value,
           rev: entity?._rev || '',
         }}
-        Composed={(baseProps, onChange) => (
+        Composed={({ onChange, ...baseProps }) => (
           <Select
             {...baseProps}
             options={Object.values(AccountKind).map((accountType) => ({

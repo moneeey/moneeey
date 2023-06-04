@@ -1,6 +1,7 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import React, { ReactNode, useMemo, useRef, useState } from 'react';
 import useVirtual from 'react-cool-virtual';
+import Icon from './base/Icon';
 
 const MIN_COLUMN_WIDTH = 100;
 
@@ -65,9 +66,17 @@ const VirtualGrid = ({
 
   const SortIcon = (order?: 'descend' | 'ascend') => {
     if (order === 'ascend') {
-      return <ChevronUpIcon className='icon-small' />;
+      return (
+        <Icon>
+          <ChevronUpIcon className='icon-small' />
+        </Icon>
+      );
     } else if (order === 'descend') {
-      return <ChevronDownIcon className='icon-small' />;
+      return (
+        <Icon>
+          <ChevronDownIcon className='icon-small' />
+        </Icon>
+      );
     }
 
     return <span />;
@@ -76,6 +85,7 @@ const VirtualGrid = ({
   return (
     <div
       className={`overflow-auto ${className || ''}`}
+      style={{ maxHeight: '80vh' }}
       ref={(el) => {
         row.outerRef.current = el;
         col.outerRef.current = el;
@@ -83,7 +93,7 @@ const VirtualGrid = ({
         onGridDimensions(el?.clientWidth || 0, el?.clientHeight || 0);
       }}>
       <div
-        className='relative block'
+        className='relative'
         ref={(el) => {
           row.innerRef.current = el;
           col.innerRef.current = el;
@@ -92,7 +102,7 @@ const VirtualGrid = ({
           col.items.map((colItem) => (
             <div
               key={`${rowItem.index}_${colItem.index}`}
-              className={`absolute bg-background-800 ${rowItem.index === 0 ? 'font-semibold' : ''}`}
+              className={`flew-col absolute flex bg-background-800 ${rowItem.index === 0 ? 'z-10 font-semibold' : ''}`}
               style={{
                 top: rowItem.isSticky ? 0 : rowItem.start,
                 left: colItem.start,

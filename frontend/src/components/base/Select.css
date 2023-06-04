@@ -12,7 +12,8 @@
 
   line-height: 24px;
   height: 24px;
-  min-height: 24px !important;
+  min-height: 24px;
+  max-height: 24px;
 }
 
 .mn-select__indicator {

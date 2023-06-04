@@ -184,7 +184,7 @@ const Menu = observer(() => {
 });
 
 const Header = ({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => (
-  <header className='sticky left-0 right-0 top-0 bg-background-800 p-2'>
+  <header className='sticky left-0 right-0 top-0 z-30 bg-background-800 p-2'>
     <TextTitle className='flex flex-row items-center gap-1' onClick={() => setExpanded((value) => !value)}>
       <Icon>
         <Bars3Icon />

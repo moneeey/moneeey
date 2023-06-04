@@ -28,7 +28,7 @@ const Modal = observer(({ title, modalId, footer, onClose, isOpen, children, cla
 
   return visible ? (
     <article
-      className={`fixed left-20 top-32 z-50 mx-auto rounded-lg bg-background-600 p-4 shadow-xl ${className || ''}`}>
+      className={`fixed left-20 top-48 z-50 mx-auto rounded-lg bg-background-600 p-4 shadow-xl ${className || ''}`}>
       <Card
         header={
           <div className='flex justify-between align-middle'>

@@ -28,7 +28,7 @@ export const MemoEditor = observer(<EntityType extends IBaseEntity>(props: Edito
         value,
         rev: entity?._rev || '',
       }}
-      Composed={(baseProps, onChange) => (
+      Composed={({ onChange, ...baseProps }) => (
         <Input
           {...baseProps}
           onChange={(newValue) => {

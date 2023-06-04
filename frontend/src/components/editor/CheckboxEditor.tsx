@@ -18,7 +18,7 @@ export const CheckboxEditor = observer(
           value,
           rev: entity?._rev || '',
         }}
-        Composed={(baseProps, onChange) => (
+        Composed={({ onChange, ...baseProps }) => (
           <Checkbox
             {...{ ...baseProps, 'data-test-id': baseProps['data-test-id'] || '' }}
             onChange={(newValue) => onChange(newValue, newValue)}>

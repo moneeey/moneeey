@@ -47,7 +47,7 @@ const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: Accou
           value,
           rev: props.rev || '',
         }}
-        Composed={(baseProps, onChange) => (
+        Composed={({ onChange, ...baseProps }) => (
           <Select
             {...baseProps}
             options={options}

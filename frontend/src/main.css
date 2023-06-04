@@ -13,6 +13,7 @@
     src: local('PT Mono'), url('./fonts/PTMono-Regular.ttf');
   }
 
+  body,
   .App {
     @apply bg-background-900;
   }

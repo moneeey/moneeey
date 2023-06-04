@@ -20,10 +20,10 @@ type WithButtonKind = {
 };
 
 const styles: Record<ButtonType, string> = {
-  primary: 'bg-primary-600',
-  secondary: 'bg-primary-400',
+  primary: 'bg-primary-300 text-primary-900',
+  secondary: 'bg-secondary-300 text-secondary-900',
   link: 'bg-transparent border-0',
-  danger: 'bg-danger-400',
+  danger: 'bg-danger-300 text-danger-900',
 };
 
 const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind & WithDataTestId) =>

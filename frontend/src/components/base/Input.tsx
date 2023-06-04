@@ -24,10 +24,11 @@ type InputContainerProps = {
   suffix: AddonType;
   isError: boolean | undefined;
   input: ReactNode;
+  baseClassname?: string;
 };
 
-export const InputContainer = ({ prefix, suffix, isError, input }: InputContainerProps) => (
-  <div className={`${BaseInputClzz} flex ${isError ? 'text-red-400' : ''}`}>
+export const InputContainer = ({ baseClassname, prefix, suffix, isError, input }: InputContainerProps) => (
+  <div className={`${baseClassname || BaseInputClzz} flex ${isError ? 'text-red-400' : ''}`}>
     {prefix}
     <div className='grow'>{input}</div>
     {suffix}
@@ -192,6 +193,7 @@ const Checkbox = ({
 }: CheckboxProps) =>
   InputContainer({
     prefix,
+    baseClassname: 'color-white bg-transparent',
     suffix: suffix || children,
     isError,
     input: (

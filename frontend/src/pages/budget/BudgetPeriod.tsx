@@ -58,11 +58,10 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
   return (
     <Card
       data-test-id={`budget_period_${formatDateMonth(startingDate)}`}
-      className='period'
       header={
-        <TextTitle className='periodTitle'>
-          {formatDateMonth(startingDate)}
-          <LinkButton onClick={onNewBudget}>
+        <TextTitle className='flex flex-row justify-between'>
+          <div>{formatDateMonth(startingDate)}</div>
+          <LinkButton onClick={onNewBudget} className='text-sm'>
             <PlusCircleIcon style={{ color: 'lightgreen', width: '1.2em', height: '1.2em', marginRight: '0.5em' }} />
             {Messages.budget.new}
           </LinkButton>
