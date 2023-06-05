@@ -149,7 +149,6 @@ const ContentTransactionTable = ({
 }) =>
   isEmpty(transactions) ? null : (
     <VirtualTable
-      className='tableEditor'
       rows={transactions.map((t) => ({ entityId: t.transaction_uuid }))}
       columns={[
         {
