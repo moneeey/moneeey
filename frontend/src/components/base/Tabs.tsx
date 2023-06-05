@@ -32,22 +32,24 @@ const Tabs = (props: TabsProps & WithDataTestId) => {
     }
   };
 
+  const activeTab = Math.min(props.items.length - 1, selectedIdx);
+
   return (
-    <section>
+    <section className='flex grow flex-col'>
       <nav data-test-id={props['data-test-id']}>
-        <Space className='border-b border-b-background-300'>
+        <Space className='max-w-max overflow-hidden border-b border-b-background-300'>
           {props.items.map((item, idx) => (
             <LinkButton
               key={item.key}
               onClick={() => onChange(idx)}
               data-test-id={`${props['data-test-id']}_${item.key}`}
-              className={idx === selectedIdx ? 'underline' : ''}>
+              className={idx === activeTab ? 'underline' : ''}>
               {item.label}
             </LinkButton>
           ))}
         </Space>
       </nav>
-      {props.items[selectedIdx]?.children}
+      {props.items[activeTab]?.children}
     </section>
   );
 };

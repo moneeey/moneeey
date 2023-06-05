@@ -109,15 +109,13 @@ const VirtualTable = function VirtualTableRenderer({ columns: originalColumns, r
           const Renderer = column.render;
           const row = sortedRows[rowIndex];
 
-          const result = row ? (
-            <span style={style}>
+          return row ? (
+            <span style={style} className={rowIndex % 2 === 0 ? 'bg-background-800' : 'bg-background-600'}>
               <Renderer entityId={row.entityId} />
             </span>
           ) : (
             <span style={style} />
           );
-
-          return result;
         };
 
         const Grid = ({
@@ -153,7 +151,7 @@ const VirtualTable = function VirtualTableRenderer({ columns: originalColumns, r
         return (
           <>
             <Grid
-              className='bg-background-700 pl-2 pr-2'
+              className='overflow-hidden bg-background-700 pl-2 pr-2'
               gridHeight={ROW_HEIGHT}
               rowCount={1}
               RenderCell={({ columnIndex, rowIndex, style }) => (

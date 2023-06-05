@@ -33,7 +33,7 @@ const Modal = observer(({ title, modalId, footer, onClose, isOpen, children, cla
         header={
           <div className='flex justify-between align-middle'>
             <TextTitle className='m-0'>{title}</TextTitle>
-            <Icon className='m-1 mr-4 cursor-pointer'>
+            <Icon className='m-1 mr-4 cursor-pointer hover:opacity-75'>
               <XCircleIcon onClick={onCloseFn} />
             </Icon>
           </div>

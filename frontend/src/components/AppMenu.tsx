@@ -184,8 +184,8 @@ const Menu = observer(() => {
 });
 
 const Header = ({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => (
-  <header className='sticky left-0 right-0 top-0 z-30 bg-background-800 p-2'>
-    <TextTitle className='flex flex-row items-center gap-1' onClick={() => setExpanded((value) => !value)}>
+  <header className='sticky left-0 right-0 top-0 z-30 bg-background-800 p-2 '>
+    <TextTitle className='flex flex-row items-center gap-1 text-2xl' onClick={() => setExpanded((value) => !value)}>
       <Icon>
         <Bars3Icon />
       </Icon>
@@ -198,7 +198,7 @@ const Header = ({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>
 const Content = ({ expanded, moneeeyStore }: { expanded: boolean; moneeeyStore: MoneeeyStore }) => (
   <section className='flex grow flex-row'>
     {expanded && <Menu />}
-    <section className='grow overflow-hidden p-4'>
+    <section className='flex grow flex-col overflow-hidden p-4'>
       <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
     </section>
   </section>

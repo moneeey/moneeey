@@ -21,6 +21,7 @@ interface AccountEditorBaseProps<EntityType extends IBaseEntity>
   rev?: string;
   entity?: EntityType;
   clearable?: boolean;
+  className?: string;
 }
 
 const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: AccountEditorBaseProps<EntityType>) => {
@@ -49,6 +50,7 @@ const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: Accou
         }}
         Composed={({ onChange, ...baseProps }) => (
           <Select
+            className={props.className}
             {...baseProps}
             options={options}
             onCreate={(name) => {
@@ -81,6 +83,7 @@ const AccountEditorBase = observer(<EntityType extends IBaseEntity>(props: Accou
 });
 
 interface AccountSelectorProps {
+  className?: string;
   account: TAccountUUID;
   accounts: IAccount[];
   title: string;
@@ -88,8 +91,9 @@ interface AccountSelectorProps {
   clearable?: boolean;
 }
 
-export const AccountSelector = ({ account, accounts, onSelect, clearable, title }: AccountSelectorProps) => (
+export const AccountSelector = ({ className, account, accounts, onSelect, clearable, title }: AccountSelectorProps) => (
   <AccountEditorBase
+    className={className}
     clearable={clearable}
     accounts={accounts}
     value={account}

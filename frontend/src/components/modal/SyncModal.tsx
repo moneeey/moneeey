@@ -70,11 +70,8 @@ const MoneeeyLogin = ({ setMessage }: { setMessage: Dispatch<SetStateAction<Reac
           label: Messages.login.email,
           editor: <ConfigEditor field='email' state={state} setState={setState} placeholder={Messages.login.email} />,
         },
-        {
-          label: '',
-          editor: <OkButton onClick={onLogin} title={Messages.login.login_or_signup} />,
-        },
       ]}
+      footer={<OkButton onClick={onLogin} title={Messages.login.login_or_signup} />}
     />
   );
 };
@@ -207,15 +204,14 @@ const DatabaseConfig = () => {
             />
           ),
         },
-        {
-          label: '',
-          editor: state.enabled ? (
-            <OkButton onClick={onStop} title={Messages.sync.stop} />
-          ) : (
-            <OkButton onClick={onStart} title={Messages.sync.start} />
-          ),
-        },
       ]}
+      footer={
+        state.enabled ? (
+          <OkButton onClick={onStop} title={Messages.sync.stop} />
+        ) : (
+          <OkButton onClick={onStart} title={Messages.sync.start} />
+        )
+      }
     />
   );
 };
