@@ -11,6 +11,7 @@ const Reports = function () {
   return (
     <Tabs
       data-test-id='reportTabs'
+      className='grow'
       items={[
         {
           label: Messages.reports.account_balance,
