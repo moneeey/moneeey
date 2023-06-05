@@ -15,7 +15,7 @@ const RecentTransactions = observer(
     const referenceAccount = '';
 
     return (
-      <>
+      <div className='h-40'>
         <b>{Messages.dashboard.recent_transactions}</b>
         <TransactionTable
           {...{
@@ -25,8 +25,9 @@ const RecentTransactions = observer(
             schemaFilter,
             referenceAccount,
           }}
+          creatable={false}
         />
-      </>
+      </div>
     );
   }
 );
@@ -35,7 +36,7 @@ export default function Dashboard() {
   const moneeeyStore = useMoneeeyStore();
 
   return (
-    <div className='dashboardArea'>
+    <div className='flex flex-col'>
       <RecentTransactions moneeyStore={moneeeyStore} />
       <WealthGrowReport />
     </div>
