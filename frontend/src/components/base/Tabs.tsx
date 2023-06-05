@@ -37,7 +37,7 @@ const Tabs = (props: TabsProps & WithDataTestId) => {
   return (
     <section className={`flex grow flex-col p-2 ${props.className || ''}`}>
       <nav data-test-id={props['data-test-id']}>
-        <Space className='mb-2 max-w-max overflow-hidden border-b border-b-background-300'>
+        <Space className='no-scrollbar mb-2 max-w-max border-b border-b-background-300'>
           {props.items.map((item, idx) => (
             <LinkButton
               key={item.key}

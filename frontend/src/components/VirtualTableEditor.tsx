@@ -1,11 +1,11 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import { useMemo, useState } from 'react';
-import VirtualizedGrid, { GridCellRenderer } from 'react-virtualized/dist/commonjs/Grid';
+import { Dispatch, SetStateAction, useMemo, useState } from 'react';
+import VirtualizedGrid, { GridCellRenderer, ScrollParams } from 'react-virtualized/dist/commonjs/Grid';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 
 import Icon from './base/Icon';
 
-const MIN_COLUMN_WIDTH = 100;
+const MIN_COLUMN_WIDTH = 80;
 
 const ROW_HEIGHT = 24;
 
@@ -13,13 +13,20 @@ export type Row = {
   entityId: string;
 };
 
+type SortOrder = 'descend' | 'ascend';
+
 export type ColumnDef = {
   width?: number;
   title: string;
   index: number;
-  defaultSortOrder?: 'descend' | 'ascend';
+  defaultSortOrder?: SortOrder;
   sorter?: (a: Row, b: Row, asc: boolean) => number;
   render: (row: Row) => JSX.Element;
+};
+
+type SortColumn = {
+  order: SortOrder;
+  column: ColumnDef;
 };
 
 type VirtualTableProps = {
@@ -30,8 +37,11 @@ type VirtualTableProps = {
 
 type GridRenderCell = {
   rowIndex: number;
-  columnIndex: number;
+  column: ColumnDef;
+  row: Row;
   style: object;
+  setSort: Dispatch<SetStateAction<SortColumn>>;
+  sort: SortColumn;
 };
 
 const SortIcon = ({ order }: { order?: 'descend' | 'ascend' }) => {
@@ -52,14 +62,147 @@ const SortIcon = ({ order }: { order?: 'descend' | 'ascend' }) => {
   return <span />;
 };
 
-const VirtualTable = function VirtualTableRenderer({ columns: originalColumns, rows, isNewEntity }: VirtualTableProps) {
-  const [sort, setSort] = useState(() => {
-    const column = originalColumns.find((col) => Boolean(col.defaultSortOrder)) || originalColumns[0];
+type ScrollData = {
+  scrollLeft: number;
+  scrollTop: number;
+};
 
-    return { column, order: column.defaultSortOrder };
+const VirtualGrid = ({
+  className,
+  gridHeight,
+  width,
+  rows,
+  columns,
+  sort,
+  setSort,
+  scroll,
+  setScroll,
+  RenderCell,
+}: {
+  className: string;
+  gridHeight: number;
+  width: number;
+  rows: Row[];
+  columns: ColumnDef[];
+  setScroll: Dispatch<SetStateAction<ScrollData>>;
+  scroll: ScrollData;
+  setSort: Dispatch<SetStateAction<SortColumn>>;
+  sort: SortColumn;
+  RenderCell: (props: GridRenderCell) => JSX.Element;
+}) => (
+  <VirtualizedGrid
+    className={className}
+    height={gridHeight}
+    width={width}
+    rowCount={rows.length}
+    rowHeight={ROW_HEIGHT}
+    columnWidth={({ index }) => columns[index].width || MIN_COLUMN_WIDTH}
+    columnCount={columns.length}
+    onScroll={({ scrollLeft, scrollTop }) => setScroll({ scrollLeft, scrollTop })}
+    scrollLeft={scroll.scrollLeft}
+    scrollTop={scroll.scrollTop}
+    cellRenderer={({ columnIndex, rowIndex, style, key }) => (
+      <RenderCell
+        key={key}
+        style={style}
+        column={columns[columnIndex]}
+        rowIndex={rowIndex}
+        row={rows[rowIndex]}
+        sort={sort}
+        setSort={setSort}
+      />
+    )}
+  />
+);
+
+const HeaderCell = ({ column, style, sort, setSort }: GridRenderCell) => {
+  const onClick = () => {
+    if (sort.column.sorter === column.sorter) {
+      setSort({ column, order: sort.order === 'ascend' ? 'descend' : 'ascend' });
+    } else {
+      setSort({ column, order: 'ascend' });
+    }
+  };
+
+  return (
+    <span className='font-semibold' onClick={onClick} style={style}>
+      {column.title} {sort.column.sorter === column.sorter && <SortIcon order={sort.order} />}
+    </span>
+  );
+};
+
+const ContentCell = ({ rowIndex, row, column, style }: GridRenderCell) => {
+  const Renderer = column.render;
+
+  return row ? (
+    <span style={style} className={rowIndex % 2 === 0 ? 'bg-background-800' : 'bg-background-600'}>
+      <Renderer entityId={row.entityId} />
+    </span>
+  ) : (
+    <span style={style} />
+  );
+};
+
+const VirtualTableGrid = ({
+  width,
+  height,
+  columns,
+  rows,
+  setSort,
+  sort,
+}: {
+  width: number;
+  height: number;
+  columns: ColumnDef[];
+  rows: Row[];
+  setSort: Dispatch<SetStateAction<SortColumn>>;
+  sort: SortColumn;
+}) => {
+  const [scroll, setScroll] = useState({ scrollTop: 0, scrollLeft: 0 } as ScrollData);
+  const calculatedColumns = useMemo(() => {
+    const withWidth = columns.filter((col) => col.width);
+    const totalWidth = withWidth.reduce((total, cur) => total + (cur.width || 0), 0);
+    const autoColumnSize = Math.max((width - totalWidth - 32) / (columns.length - withWidth.length), MIN_COLUMN_WIDTH);
+
+    return columns.map((col) => ({ ...col, width: col.width || autoColumnSize }));
+  }, [columns, width]);
+
+  const common = {
+    scroll,
+    setScroll,
+    sort,
+    setSort,
+    width,
+    columns: calculatedColumns,
+  };
+
+  return (
+    <>
+      <VirtualGrid
+        className='!overflow-hidden bg-background-700 pl-2 pr-2'
+        gridHeight={ROW_HEIGHT}
+        {...common}
+        scroll={{ scrollTop: 0, scrollLeft: scroll.scrollLeft }}
+        rows={[{ entityId: 'Header' }]}
+        RenderCell={HeaderCell}
+      />
+      <VirtualGrid
+        className='bg-background-800 pb-2 pl-2 pr-2'
+        gridHeight={height - ROW_HEIGHT}
+        {...common}
+        rows={rows}
+        RenderCell={ContentCell}
+      />
+    </>
+  );
+};
+
+const VirtualTable = function VirtualTableRenderer({ columns, rows, isNewEntity }: VirtualTableProps) {
+  const [sort, setSort] = useState(() => {
+    const column = columns.find((col) => Boolean(col.defaultSortOrder)) || columns[0];
+
+    return { column, order: column.defaultSortOrder || 'ascend' };
   });
-  const columnsWithWidth = originalColumns.filter((col) => col.width);
-  const columnsWithWidthTotalWidth = columnsWithWidth.reduce((total, cur) => total + (cur.width || 0), 0);
 
   const sortedRows = useMemo(
     () =>
@@ -79,106 +222,16 @@ const VirtualTable = function VirtualTableRenderer({ columns: originalColumns, r
 
   return (
     <AutoSizer>
-      {({ width, height }: { width: number; height: number }) => {
-        const autoColumnSize = Math.max(
-          (width - columnsWithWidthTotalWidth - 32) / (originalColumns.length - columnsWithWidth.length),
-          MIN_COLUMN_WIDTH
-        );
-
-        const columns = originalColumns.map((col) => ({ ...col, width: col.width || autoColumnSize }));
-
-        const HeaderCell = ({ columnIndex, style }: GridRenderCell) => {
-          const column = columns[columnIndex];
-          const onClick = () => {
-            if (sort.column.sorter === column.sorter) {
-              setSort({ column, order: sort.order === 'ascend' ? 'descend' : 'ascend' });
-            } else {
-              setSort({ column, order: 'ascend' });
-            }
-          };
-
-          return (
-            <span className='font-semibold' onClick={onClick} style={style}>
-              {column.title} {sort.column.sorter === column.sorter && <SortIcon order={sort.order} />}
-            </span>
-          );
-        };
-
-        const ContentCell = ({ rowIndex, columnIndex, style }: GridRenderCell) => {
-          const column = columns[columnIndex];
-          const Renderer = column.render;
-          const row = sortedRows[rowIndex];
-
-          return row ? (
-            <span style={style} className={rowIndex % 2 === 0 ? 'bg-background-800' : 'bg-background-600'}>
-              <Renderer entityId={row.entityId} />
-            </span>
-          ) : (
-            <span style={style} />
-          );
-        };
-
-        const Grid = ({
-          className,
-          gridHeight,
-          rowCount,
-          RenderCell,
-        }: {
-          className: string;
-          gridHeight: number;
-          rowCount: number;
-          RenderCell: (props: GridRenderCell) => JSX.Element;
-        }) => (
-          <VirtualizedGrid
-            className={className}
-            height={gridHeight}
-            width={width}
-            rowCount={rowCount}
-            rowHeight={ROW_HEIGHT}
-            columnWidth={({ index }) => columns[index].width}
-            columnCount={columns.length}
-            cellRenderer={({ columnIndex, rowIndex, style }) => (
-              <RenderCell
-                key={`${columnIndex}_${rowIndex}`}
-                style={style}
-                columnIndex={columnIndex}
-                rowIndex={rowIndex}
-              />
-            )}
-          />
-        );
-
-        return (
-          <>
-            <Grid
-              className='overflow-hidden bg-background-700 pl-2 pr-2'
-              gridHeight={ROW_HEIGHT}
-              rowCount={1}
-              RenderCell={({ columnIndex, rowIndex, style }) => (
-                <HeaderCell
-                  key={`${columnIndex}_${rowIndex}`}
-                  style={style}
-                  columnIndex={columnIndex}
-                  rowIndex={rowIndex}
-                />
-              )}
-            />
-            <Grid
-              className='bg-background-800 pb-2 pl-2 pr-2'
-              gridHeight={height - ROW_HEIGHT}
-              rowCount={sortedRows.length}
-              RenderCell={({ columnIndex, rowIndex, style }) => (
-                <ContentCell
-                  key={`${columnIndex}_${rowIndex}`}
-                  style={style}
-                  columnIndex={columnIndex}
-                  rowIndex={rowIndex}
-                />
-              )}
-            />
-          </>
-        );
-      }}
+      {({ width, height }: { width: number; height: number }) => (
+        <VirtualTableGrid
+          width={width}
+          height={height}
+          columns={columns}
+          rows={sortedRows}
+          setSort={setSort}
+          sort={sort}
+        />
+      )}
     </AutoSizer>
   );
 };

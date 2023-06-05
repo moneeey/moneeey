@@ -15,6 +15,18 @@
 
   body,
   .App {
-    @apply bg-background-900;
+    @apply overflow-hidden bg-background-900;
+  }
+}
+
+@layer utilities {
+  /* Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }

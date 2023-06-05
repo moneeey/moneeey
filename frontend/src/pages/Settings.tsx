@@ -92,7 +92,7 @@ export default function Settings() {
               </Space>
             }>
             <TextArea
-              className='bg-background-900'
+              className='bg-background-500'
               data-test-id='importExportOutput'
               value={action.content}
               onChange={(value) => setAction((cont) => cont && { ...cont, content: value })}
