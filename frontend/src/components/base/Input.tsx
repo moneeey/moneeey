@@ -194,19 +194,22 @@ const Checkbox = ({
   InputContainer({
     prefix,
     baseClassname: 'color-white bg-transparent',
-    suffix: suffix || children,
+    suffix,
     isError,
     input: (
-      <input
-        {...{ 'data-test-id': dataTestId }}
-        type='checkbox'
-        className={`${className || ''}`}
-        checked={value}
-        onChange={({ target: { checked: newValue } }) => onChange(newValue)}
-        placeholder={placeholder}
-        disabled={disabled}
-        readOnly={readOnly}
-      />
+      <label>
+        <input
+          {...{ 'data-test-id': dataTestId }}
+          type='checkbox'
+          className={`${className || ''} mr-2`}
+          checked={value}
+          onChange={({ target: { checked: newValue } }) => onChange(newValue)}
+          placeholder={placeholder}
+          disabled={disabled}
+          readOnly={readOnly}
+        />
+        {children}
+      </label>
     ),
   });
 

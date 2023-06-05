@@ -32,46 +32,54 @@ const BudgetEditor = ({
       header={<TextTitle className='title'>{editing.name || ''}</TextTitle>}>
       <VerticalSpace>
         <label>{Messages.util.name}</label>
-        <Input
-          data-test-id='budgetName'
-          placeholder={Messages.util.name}
-          value={editing.name}
-          onChange={(name) => setEditing((current) => current && { ...current, name })}
-        />
+        <div className='bg-background-900 p-2'>
+          <Input
+            data-test-id='budgetName'
+            placeholder={Messages.util.name}
+            value={editing.name}
+            onChange={(name) => setEditing((current) => current && { ...current, name })}
+          />
+        </div>
         <label>{Messages.util.currency}</label>
-        <Select
-          data-test-id='budgetCurrency'
-          placeholder={Messages.util.currency}
-          options={currencies.all.map((c) => ({
-            label: c.name,
-            value: c.currency_uuid,
-          }))}
-          value={editing.currency_uuid}
-          onChange={(currency_uuid) =>
-            setEditing(
-              (current) => current && { ...current, currency_uuid: currency_uuid || config.main.default_currency }
-            )
-          }
-        />
+        <div className='bg-background-900 p-2'>
+          <Select
+            data-test-id='budgetCurrency'
+            placeholder={Messages.util.currency}
+            options={currencies.all.map((c) => ({
+              label: c.name,
+              value: c.currency_uuid,
+            }))}
+            value={editing.currency_uuid}
+            onChange={(currency_uuid) =>
+              setEditing(
+                (current) => current && { ...current, currency_uuid: currency_uuid || config.main.default_currency }
+              )
+            }
+          />
+        </div>
         <label>{Messages.util.tags}</label>
-        <MultiSelect
-          data-test-id='budgetTags'
-          placeholder={Messages.util.tags}
-          options={tags.all.map((t) => ({ label: t, value: t }))}
-          value={editing.tags}
-          onCreate={(tagName) => {
-            tags.register(tagName);
-            setEditing((current) => current && { ...current, tags: [...editing.tags, tagName] });
-          }}
-          onChange={(new_tags: readonly string[]) => setEditing({ ...editing, tags: [...new_tags] })}
-        />
-        <Checkbox
-          data-test-id='budgetIsArchived'
-          value={editing.archived}
-          placeholder={Messages.util.archived}
-          onChange={(archived) => setEditing({ ...editing, archived })}>
-          {Messages.util.archived}
-        </Checkbox>
+        <div className='bg-background-900 p-2'>
+          <MultiSelect
+            data-test-id='budgetTags'
+            placeholder={Messages.util.tags}
+            options={tags.all.map((t) => ({ label: t, value: t }))}
+            value={editing.tags}
+            onCreate={(tagName) => {
+              tags.register(tagName);
+              setEditing((current) => current && { ...current, tags: [...editing.tags, tagName] });
+            }}
+            onChange={(new_tags: readonly string[]) => setEditing({ ...editing, tags: [...new_tags] })}
+          />
+        </div>
+        <div className='bg-background-900 p-2'>
+          <Checkbox
+            data-test-id='budgetIsArchived'
+            value={editing.archived}
+            placeholder={Messages.util.archived}
+            onChange={(archived) => setEditing({ ...editing, archived })}>
+            {Messages.util.archived}
+          </Checkbox>
+        </div>
         <Space>
           <SecondaryButton onClick={onClose}>{Messages.util.close}</SecondaryButton>
           <PrimaryButton data-test-id='budgetSave' onClick={onSave} disabled={!editing.name}>

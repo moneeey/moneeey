@@ -7,7 +7,7 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
 
 import Modal from '../base/Modal';
-import { LinkButton, OkButton } from '../base/Button';
+import { CancelButton, LinkButton, OkButton } from '../base/Button';
 import Tabs from '../base/Tabs';
 import { Checkbox, Input } from '../base/Input';
 import { BaseFormEditor } from '../FormEditor';
@@ -223,7 +223,7 @@ export default function SyncModal() {
     <Modal
       modalId={NavigationModal.SYNC}
       title={Messages.modal.sync}
-      footer={<OkButton onClick={() => navigation.closeModal()} />}>
+      footer={<CancelButton onClick={() => navigation.closeModal()} title={Messages.util.close} />}>
       <>
         <span className='white-space-preline'>{Messages.sync.intro}</span>
         <Tabs

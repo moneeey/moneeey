@@ -110,35 +110,41 @@ const ImportStarter = function ({
   };
 
   return (
-    <VerticalSpace>
+    <VerticalSpace className='mt-2 bg-background-800 p-2'>
       <TextTitle>{Messages.import.new_import}</TextTitle>
       <TextSubtitle>{Messages.import.configuration}</TextSubtitle>
       <div>
         {Messages.settings.reference_account}
-        <ReferenceAccountSelector
-          referenceAccount={config.referenceAccount}
-          onReferenceAccount={(referenceAccount) =>
-            setConfig((currentConfig) => ({ ...currentConfig, referenceAccount }))
-          }
-        />
+        <div className='bg-background-900 p-2'>
+          <ReferenceAccountSelector
+            referenceAccount={config.referenceAccount}
+            onReferenceAccount={(referenceAccount) =>
+              setConfig((currentConfig) => ({ ...currentConfig, referenceAccount }))
+            }
+          />
+        </div>
       </div>
       <div>
         {Messages.util.date_format}
-        <Input
-          data-test-id='inputDateFormat'
-          placeholder={TDateFormat}
-          value={config.dateFormat}
-          onChange={(dateFormat) => setConfig((currentConfig) => ({ ...currentConfig, dateFormat }))}
-        />
+        <div className='bg-background-900 p-2'>
+          <Input
+            data-test-id='inputDateFormat'
+            placeholder={TDateFormat}
+            value={config.dateFormat}
+            onChange={(dateFormat) => setConfig((currentConfig) => ({ ...currentConfig, dateFormat }))}
+          />
+        </div>
       </div>
       <div>
         {Messages.settings.decimal_separator}
-        <Input
-          data-test-id='inputDecimalSeparator'
-          placeholder={'. or ,'}
-          value={config.decimalSeparator}
-          onChange={(decimalSeparator) => setConfig((currentConfig) => ({ ...currentConfig, decimalSeparator }))}
-        />
+        <div className='bg-background-900 p-2'>
+          <Input
+            data-test-id='inputDecimalSeparator'
+            placeholder={'. or ,'}
+            value={config.decimalSeparator}
+            onChange={(decimalSeparator) => setConfig((currentConfig) => ({ ...currentConfig, decimalSeparator }))}
+          />
+        </div>
       </div>
       <div className='rounded bg-secondary-200 p-4 text-secondary-900'>
         {!error && <FileUploader onFile={onFile} error={error} />}

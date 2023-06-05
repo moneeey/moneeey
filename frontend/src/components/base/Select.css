@@ -45,7 +45,9 @@
 
 .mn-select__menu,
 .mn-select__menu-list {
-  @apply h-32;
+  height: 12em !important;
+  min-height: 12em !important;
+  max-height: 12em !important;
 }
 
 .mn-select-changed .mn-select__single-value {

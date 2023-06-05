@@ -9,8 +9,9 @@ import { TAccountUUID } from '../../entities/Account';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { AccountSelector } from '../editor/AccountEditor';
 import { VerticalSpace } from '../base/Space';
+import { observer } from 'mobx-react-lite';
 
-export default function MergeAccountsModal() {
+export const MergeAccountsModal = observer(function MergeAccountsModal() {
   const { navigation, accounts, transactions } = useMoneeeyStore();
   const [state, setState] = useState({ source_account: '', target_account: '' });
 
@@ -61,4 +62,6 @@ export default function MergeAccountsModal() {
       </VerticalSpace>
     </Modal>
   );
-}
+});
+
+export default MergeAccountsModal;
