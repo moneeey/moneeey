@@ -5,7 +5,7 @@ import { ITransaction } from '../../entities/Transaction';
 import { tokenize } from '../../utils/Utils';
 import MoneeeyStore from '../MoneeeyStore';
 
-export const tokenScoreMap = function (tokens: string[]): Map<string, number> {
+export const tokenWeightMap = function (tokens: string[]): Map<string, number> {
   const scores = new Map<string, number>();
   tokens.forEach((token) => scores.set(token, (scores.get(token) || 0) + 1));
   scores.forEach((frequency, token) => scores.set(token, 1 - frequency / tokens.length));
@@ -15,94 +15,69 @@ export const tokenScoreMap = function (tokens: string[]): Map<string, number> {
 
 export const tokenTopScores = function (
   tokens: string[],
-  scores: Map<string, number>,
-  sampleSize: number
+  scores: Map<string, number>
 ): { token: string; score: number }[] {
   return Array.from(new Set(tokens).values())
     .map((token) => ({
       token,
       score: scores.get(token) || 0,
     }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, sampleSize);
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score);
 };
 
-export const tokensForTransactions = function (
-  transaction: ITransaction,
-  getAllTransactionTags: (transaction: ITransaction) => string[]
-) {
+export const tokensForTransactions = function (transaction: ITransaction) {
   return compact(
-    flatten([
-      ...getAllTransactionTags(transaction),
-      ...tokenize(transaction.memo),
-      ...tokenize(transaction.import_data),
-    ])
+    flatten([...tokenize(transaction.memo), ...tokenize(transaction.import_data), ...transaction.tags.map(tokenize)])
   ).filter((token) => token.length > 2);
 };
 
 type ScoreMap = { [id: string]: { [token: string]: number } };
 
-export const tokenTransactionAccountScoreMap = function (
-  transactions: ITransaction[],
-  getAllTransactionTags: (transaction: ITransaction) => string[],
-  sampleSize: number
-): ScoreMap {
-  const accountsAndTokens = transactions.map((t) => ({
-    tokens: tokensForTransactions(t, getAllTransactionTags),
-    accounts: compact([t.from_account, t.to_account]),
-  }));
+export const tokenTransactionAccountScoreMap = function (transactions: ITransaction[]): ScoreMap {
+  const allAccountTokens = transactions.reduce((rs, t) => {
+    const tokens = tokensForTransactions(t);
+    const accounts = compact([t.from_account, t.to_account]);
+    accounts.forEach((account_uuid) => rs.set(account_uuid, [...(rs.get(account_uuid) || []), ...tokens]));
 
-  const allTokens = accountsAndTokens.flatMap(({ tokens }) => tokens);
-  const scoreMap = tokenScoreMap(allTokens);
+    return rs;
+  }, new Map<TAccountUUID, string[]>());
 
-  const topAccountTokens = accountsAndTokens.map(({ tokens, accounts }) => ({
-    accounts,
-    tokens: tokenTopScores(tokens, scoreMap, 5),
-  }));
+  const weightMap = tokenWeightMap(flatten(Array.from(allAccountTokens.values())));
 
-  const topAccountScoreMap = topAccountTokens.reduce((accum, aat) => {
-    aat.accounts.forEach((account) => {
-      const accountTokens = accum[account] || {};
-      aat.tokens.forEach(({ token, score }) => {
-        if (token in accountTokens) {
-          accountTokens[token] += score;
-          accountTokens[token] /= 2;
-        } else {
-          accountTokens[token] = score;
-        }
-      });
-      accum[account] = accountTokens;
-    });
+  return Array.from(allAccountTokens.entries()).reduce((rs, [account_uuid, tokens]) => {
+    const topScores = tokenTopScores(tokens, weightMap);
 
-    return accum;
+    const scores = topScores.reduce((rs, score) => ({ ...rs, [score.token]: score.score }), {});
+
+    return { ...rs, [account_uuid]: scores };
   }, {} as ScoreMap);
-
-  keys(topAccountScoreMap).forEach((id) => {
-    const scores = topAccountScoreMap[id];
-    keys(scores)
-      .map((token) => ({ token, score: scores[token] }))
-      .sort((a, b) => b.score - a.score)
-      .slice(sampleSize)
-      .forEach((smallScore) => {
-        delete topAccountScoreMap[id][smallScore.token];
-      });
-  });
-
-  return topAccountScoreMap;
 };
 
-export const tokenMatchScoreMap = function (tokens: string[], scoreMap: ScoreMap, sampleSize: number) {
+export const tokenMatchScoreMap = function (tokens: string[], scoreMap: ScoreMap) {
   return keys(scoreMap)
     .map((id) => {
-      const groupScores = scoreMap[id] || {};
-      const scores = tokens.map((token) => groupScores[token] || 0);
+      const accountTokenScores = scoreMap[id] || {};
+      const domain = keys(accountTokenScores).length;
+      const scores = tokens.map((token) => accountTokenScores[token] || 0);
       const total = scores.reduce((a, b) => a + b, 0);
+      const matching = scores.filter((s) => s > 0).length;
+      const match = tokens
+        .map((token, idx) => ({ token, score: scores[idx] }))
+        .filter((m) => m.score > 0)
+        .reduce((rs, m) => ({ ...rs, [m.token]: m.score }), {});
 
-      return { id, score: total / scores.length };
+      return {
+        id,
+        total,
+        matching,
+        domain,
+        score: matching + total / domain,
+        match,
+      };
     })
     .filter((si) => si.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, sampleSize);
+    .sort((a, b) => b.score - a.score);
 };
 
 class Importer {
@@ -113,12 +88,12 @@ class Importer {
   }
 
   get tokenMap() {
-    return tokenTransactionAccountScoreMap(this.moneeeyStore.transactions.all, (t) => t.tags.flatMap(tokenize), 10);
+    return tokenTransactionAccountScoreMap(this.moneeeyStore.transactions.all);
   }
 
   findAccountsForTokens(referenceAccount: TAccountUUID, tokenMap: ScoreMap, tokens: string[]) {
     const allTokenized = compact(flatten(tokens.map((s) => tokenize(s))));
-    const matchingTransactionAccounts = tokenMatchScoreMap(allTokenized, tokenMap, 10);
+    const matchingTransactionAccounts = tokenMatchScoreMap(allTokenized, tokenMap);
     const nonReferenceAccount = filter(
       flatten(matchingTransactionAccounts),
       (match) => !isEmpty(match.id) && match.id !== referenceAccount
@@ -128,10 +103,11 @@ class Importer {
       this.moneeeyStore.accounts.byUuid(account_uuid)?.kind === AccountKind.PAYEE ? 0 : -0.1;
 
     return nonReferenceAccount
-      .map((match) => ({
-        account_uuid: match.id,
-        name: this.moneeeyStore.accounts.nameForUuid(match.id),
-        score: match.score + accountScore(match.id),
+      .map(({ id: account_uuid, ...rest }) => ({
+        ...rest,
+        account_uuid,
+        name: this.moneeeyStore.accounts.nameForUuid(account_uuid),
+        score: rest.score + accountScore(account_uuid),
       }))
       .sort((a, b) => b.score - a.score);
   }
