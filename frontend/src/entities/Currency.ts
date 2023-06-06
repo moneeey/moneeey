@@ -82,13 +82,6 @@ export class CurrencyStore extends MappedStore<ICurrency> {
           index: 5,
           editor: EditorType.TAG,
         },
-        created: {
-          title: Messages.util.created,
-          field: 'created',
-          readOnly: true,
-          index: 6,
-          editor: EditorType.DATE,
-        },
       }),
     });
 

@@ -7,7 +7,7 @@ export default function Icon({ children, className }: { children: ReactNode | Re
 }
 
 export const FavIcon = () => (
-  <Icon>
+  <Icon className='h-6 w-6'>
     <img src={favicon} />
   </Icon>
 );

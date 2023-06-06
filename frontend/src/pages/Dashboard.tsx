@@ -6,7 +6,7 @@ import MoneeeyStore from '../shared/MoneeeyStore';
 import { ITransaction } from '../entities/Transaction';
 import Messages from '../utils/Messages';
 
-import WealthGrowReport from './report/WealthGrowReport';
+import AccountBalanceReport from './report/AccountBalanceReport';
 
 const RecentTransactions = observer(
   ({ moneeyStore: { transactions, accounts, currencies } }: { moneeyStore: MoneeeyStore }) => {
@@ -36,9 +36,9 @@ export default function Dashboard() {
   const moneeeyStore = useMoneeeyStore();
 
   return (
-    <div className='flex flex-col'>
+    <div className='flex flex-col gap-4'>
       <RecentTransactions moneeyStore={moneeeyStore} />
-      <WealthGrowReport />
+      <AccountBalanceReport />
     </div>
   );
 }

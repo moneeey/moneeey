@@ -24,19 +24,17 @@ const BudgetPeriods = observer(
   ({ startingDate, setEditing, viewArchived, viewMonths }: PeriodProps & { viewMonths: number }) => {
     const [progress, setProgress] = useState(0);
 
-    return (
+    return map(range(0, viewMonths), (offset) => (
       <Loading loading={progress !== 0 && progress !== 100} progress={progress}>
-        {map(range(0, viewMonths), (offset) => (
-          <BudgetPeriod
-            key={offset}
-            startingDate={startOfMonthOffset(startingDate, offset)}
-            setEditing={setEditing}
-            viewArchived={viewArchived}
-            setProgress={setProgress}
-          />
-        ))}
+        <BudgetPeriod
+          key={offset}
+          startingDate={startOfMonthOffset(startingDate, offset)}
+          setEditing={setEditing}
+          viewArchived={viewArchived}
+          setProgress={setProgress}
+        />
       </Loading>
-    );
+    ));
   }
 );
 

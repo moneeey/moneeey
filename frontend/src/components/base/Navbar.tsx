@@ -30,7 +30,7 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 
     return compact([
       <LinkButton
-        className={`!p-0 no-underline hover:opacity-75 ${item.isActive ? 'opacity-75' : ''}`}
+        className={`flex items-center gap-1 !p-0 no-underline hover:opacity-75 ${item.isActive ? 'opacity-75' : ''}`}
         data-test-id={`${dataTestId}_${item.key}`}
         onClick={item.onClick || (() => ({}))}
         key={item.key}
@@ -38,7 +38,7 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
         {item.icon && <Icon>{item.icon}</Icon>} {item.customLabel || item.label}
       </LinkButton>,
       item.children && (
-        <div key={`subitems_${item.key}`} className='flex flex-col pl-4'>
+        <div key={`subitems_${item.key}`} className='flex flex-col pl-4 align-middle'>
           {renderNavbarItems(dataTestId, item.children || [])}
         </div>
       ),

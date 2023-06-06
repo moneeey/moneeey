@@ -82,13 +82,6 @@ class TransactionStore extends MappedStore<ITransaction> {
           index: 4,
           editor: EditorType.MEMO,
         },
-        created: {
-          title: Messages.util.created,
-          field: 'created',
-          readOnly: true,
-          index: 7,
-          editor: EditorType.DATE,
-        },
       }),
       additionalSchema: () => ({
         running_balance: {
@@ -97,12 +90,15 @@ class TransactionStore extends MappedStore<ITransaction> {
           index: 5,
           editor: EditorType.NUMBER,
           readOnly: true,
+          isVisible: (context: object) => {
+            return 'referenceAccount' in context && !isEmpty(context.referenceAccount);
+          },
           isLoading: ({ entityId }: Row) => {
             return this.runningBalance.transactionRunningBalance.get(entityId)?.from_balance === null;
           },
           readValue: ({ entityId }: Row, context: object) => {
             const balances = this.runningBalance.transactionRunningBalance.get(entityId);
-            if ('referenceAccount' in context) {
+            if ('referenceAccount' in context && !isEmpty(context.referenceAccount)) {
               const { referenceAccount } = context;
               if (referenceAccount) {
                 const transaction = this.byUuid(entityId);
