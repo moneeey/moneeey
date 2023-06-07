@@ -3,13 +3,11 @@ import { tokenize } from '../../utils/Utils';
 
 import {
   tokenMatchScoreMap,
-  tokenScoreMap,
+  tokenWeightMap,
   tokenTopScores,
   tokenTransactionAccountScoreMap,
   tokensForTransactions,
 } from './Importer';
-
-const getTransactionTokens = (transaction: ITransaction) => [...transaction.tags];
 
 const sampleTransactions: ITransaction[] = [
   mockTransaction({
@@ -67,7 +65,7 @@ describe('Importer', () => {
   it('tokenScoreMap simple', () => {
     const tokens = '1223334444'.split('');
 
-    expect(tokenScoreMap(tokens)).toMatchInlineSnapshot(`
+    expect(tokenWeightMap(tokens)).toMatchInlineSnapshot(`
       Map {
         "1" => 0.9,
         "2" => 0.8,
@@ -81,7 +79,7 @@ describe('Importer', () => {
     const tokens =
       '2836788741484086466019596043251807718469095087302450890762989257138040064396808737591754583512735764'.split('');
 
-    expect(tokenScoreMap(tokens)).toMatchInlineSnapshot(`
+    expect(tokenWeightMap(tokens)).toMatchInlineSnapshot(`
       Map {
         "2" => 0.94,
         "8" => 0.86,
@@ -108,7 +106,7 @@ describe('Importer', () => {
       ['transaction', 0.7],
     ]);
 
-    expect(tokenTopScores(['transaction', 'pix', 'fernando', 'pix'], scores, 3)).toEqual([
+    expect(tokenTopScores(['transaction', 'pix', 'fernando', 'pix'], scores)).toEqual([
       { score: 0.9, token: 'fernando' },
       { score: 0.8, token: 'pix' },
       { score: 0.7, token: 'transaction' },
@@ -125,17 +123,26 @@ describe('Importer', () => {
       tags: ['tagX'],
     });
 
-    expect(tokensForTransactions(transaction, getTransactionTokens)).toEqual(['tagX', 'hello', 'world']);
+    expect(tokensForTransactions(transaction)).toEqual(['hello', 'world', 'tagx']);
   });
 
-  const sampleScoreMap = () => tokenTransactionAccountScoreMap(sampleTransactions, getTransactionTokens, 2);
+  const sampleScoreMap = () => tokenTransactionAccountScoreMap(sampleTransactions);
 
   it('tokenTransactionAccountScoreMap', () => {
     expect(sampleScoreMap()).toMatchInlineSnapshot(`
       {
         "banco": {
           "chocolate": 0.9375,
+          "company": 0.9375,
+          "dolly": 0.9375,
           "fernando": 0.9375,
+          "groceries": 0.8125,
+          "lua": 0.9375,
+          "market": 0.875,
+          "salary": 0.9375,
+          "super": 0.9375,
+          "transfer": 0.8125,
+          "xyz": 0.9375,
         },
         "chocolate": {
           "chocolate": 0.9375,
@@ -151,13 +158,16 @@ describe('Importer', () => {
         },
         "market_dolly": {
           "dolly": 0.9375,
+          "groceries": 0.8125,
           "market": 0.875,
         },
         "market_super": {
+          "groceries": 0.8125,
           "market": 0.875,
           "super": 0.9375,
         },
         "xyz_company": {
+          "company": 0.9375,
           "salary": 0.9375,
           "xyz": 0.9375,
         },
@@ -165,100 +175,196 @@ describe('Importer', () => {
     `);
   });
 
-  it('tokenMatchScoreMap', () => {
-    const scoreMap = sampleScoreMap();
-    const query = (tokens: string[]) => ({
+  describe('tokenMatchScoreMap', () => {
+    const queryTokenMatchScoreMap = (tokens: string[]) => ({
       query: tokens,
-      result: tokenMatchScoreMap(tokens, scoreMap, 3),
+      result: tokenMatchScoreMap(tokens, sampleScoreMap()),
     });
 
-    expect(query(['transfer', 'to', 'fernando'])).toMatchInlineSnapshot(`
-      {
-        "query": [
-          "transfer",
-          "to",
-          "fernando",
-        ],
-        "result": [
-          {
-            "id": "fernando",
-            "score": 0.5833333333333334,
-          },
-          {
-            "id": "banco",
-            "score": 0.3125,
-          },
-          {
-            "id": "chocolate",
-            "score": 0.2708333333333333,
-          },
-        ],
-      }
-    `);
+    it('transfer to fernando', () => {
+      expect(queryTokenMatchScoreMap(['transfer', 'to', 'fernando'])).toMatchInlineSnapshot(`
+        {
+          "query": [
+            "transfer",
+            "to",
+            "fernando",
+          ],
+          "result": [
+            {
+              "domain": 2,
+              "id": "fernando",
+              "match": {
+                "fernando": 0.9375,
+                "transfer": 0.8125,
+              },
+              "matching": 2,
+              "score": 2.875,
+              "total": 1.75,
+            },
+            {
+              "domain": 11,
+              "id": "banco",
+              "match": {
+                "fernando": 0.9375,
+                "transfer": 0.8125,
+              },
+              "matching": 2,
+              "score": 2.159090909090909,
+              "total": 1.75,
+            },
+            {
+              "domain": 2,
+              "id": "chocolate",
+              "match": {
+                "transfer": 0.8125,
+              },
+              "matching": 1,
+              "score": 1.40625,
+              "total": 0.8125,
+            },
+            {
+              "domain": 2,
+              "id": "lua",
+              "match": {
+                "transfer": 0.8125,
+              },
+              "matching": 1,
+              "score": 1.40625,
+              "total": 0.8125,
+            },
+          ],
+        }
+      `);
+    });
 
-    expect(query(['transfer', 'to', 'chocolate'])).toMatchInlineSnapshot(`
-      {
-        "query": [
-          "transfer",
-          "to",
-          "chocolate",
-        ],
-        "result": [
-          {
-            "id": "chocolate",
-            "score": 0.5833333333333334,
-          },
-          {
-            "id": "banco",
-            "score": 0.3125,
-          },
-          {
-            "id": "fernando",
-            "score": 0.2708333333333333,
-          },
-        ],
-      }
-    `);
+    it('transfer to chocolate', () => {
+      expect(queryTokenMatchScoreMap(['transfer', 'to', 'chocolate'])).toMatchInlineSnapshot(`
+        {
+          "query": [
+            "transfer",
+            "to",
+            "chocolate",
+          ],
+          "result": [
+            {
+              "domain": 2,
+              "id": "chocolate",
+              "match": {
+                "chocolate": 0.9375,
+                "transfer": 0.8125,
+              },
+              "matching": 2,
+              "score": 2.875,
+              "total": 1.75,
+            },
+            {
+              "domain": 11,
+              "id": "banco",
+              "match": {
+                "chocolate": 0.9375,
+                "transfer": 0.8125,
+              },
+              "matching": 2,
+              "score": 2.159090909090909,
+              "total": 1.75,
+            },
+            {
+              "domain": 2,
+              "id": "fernando",
+              "match": {
+                "transfer": 0.8125,
+              },
+              "matching": 1,
+              "score": 1.40625,
+              "total": 0.8125,
+            },
+            {
+              "domain": 2,
+              "id": "lua",
+              "match": {
+                "transfer": 0.8125,
+              },
+              "matching": 1,
+              "score": 1.40625,
+              "total": 0.8125,
+            },
+          ],
+        }
+      `);
+    });
 
-    expect(query(['market'])).toMatchInlineSnapshot(`
-      {
-        "query": [
-          "market",
-        ],
-        "result": [
-          {
-            "id": "market_dolly",
-            "score": 0.875,
-          },
-          {
-            "id": "market_super",
-            "score": 0.875,
-          },
-        ],
-      }
-    `);
+    it('market', () => {
+      expect(queryTokenMatchScoreMap(['market'])).toMatchInlineSnapshot(`
+        {
+          "query": [
+            "market",
+          ],
+          "result": [
+            {
+              "domain": 3,
+              "id": "market_dolly",
+              "match": {
+                "market": 0.875,
+              },
+              "matching": 1,
+              "score": 1.2916666666666667,
+              "total": 0.875,
+            },
+            {
+              "domain": 3,
+              "id": "market_super",
+              "match": {
+                "market": 0.875,
+              },
+              "matching": 1,
+              "score": 1.2916666666666667,
+              "total": 0.875,
+            },
+            {
+              "domain": 11,
+              "id": "banco",
+              "match": {
+                "market": 0.875,
+              },
+              "matching": 1,
+              "score": 1.0795454545454546,
+              "total": 0.875,
+            },
+          ],
+        }
+      `);
+    });
 
-    expect(query(['transfer', 'salary'])).toMatchInlineSnapshot(`
-      {
-        "query": [
-          "transfer",
-          "salary",
-        ],
-        "result": [
-          {
-            "id": "xyz_company",
-            "score": 0.46875,
-          },
-          {
-            "id": "fernando",
-            "score": 0.40625,
-          },
-          {
-            "id": "chocolate",
-            "score": 0.40625,
-          },
-        ],
-      }
-    `);
+    it('salary', () => {
+      expect(queryTokenMatchScoreMap(['salary'])).toMatchInlineSnapshot(`
+        {
+          "query": [
+            "salary",
+          ],
+          "result": [
+            {
+              "domain": 3,
+              "id": "xyz_company",
+              "match": {
+                "salary": 0.9375,
+              },
+              "matching": 1,
+              "score": 1.3125,
+              "total": 0.9375,
+            },
+            {
+              "domain": 11,
+              "id": "banco",
+              "match": {
+                "salary": 0.9375,
+              },
+              "matching": 1,
+              "score": 1.0852272727272727,
+              "total": 0.9375,
+            },
+          ],
+        }
+      `);
+    });
   });
 });

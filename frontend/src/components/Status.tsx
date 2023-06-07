@@ -1,15 +1,24 @@
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { ReactNode, useState } from 'react';
 
-import './Status.less';
+import Icon from './base/Icon';
 
-interface StatusProps {
-  type: 'error' | 'success' | 'info' | 'warning';
+export type StatusType = 'warning' | 'success' | 'info' | 'error';
+
+export interface StatusProps {
+  type: StatusType;
   children: string | ReactNode | ReactNode[];
   onDismiss?: () => void;
 }
 
-const Status = ({ type, children, onDismiss }: StatusProps) => {
+const styles: Record<StatusType, string> = {
+  success: 'bg-success-300 text-success-900',
+  info: 'bg-info-300 text-info-900',
+  warning: 'bg-warning-300 text-warning-900',
+  error: 'bg-error-300 text-error-900',
+};
+
+export const Status = ({ type, children, onDismiss }: StatusProps) => {
   const [dismissed, setDismiss] = useState(false);
 
   const doDismiss = () => {
@@ -20,15 +29,11 @@ const Status = ({ type, children, onDismiss }: StatusProps) => {
   };
 
   return dismissed ? null : (
-    <p className={`mn-status mn-status-${type}`} onClick={doDismiss}>
-      {children}
-      <span className='close'>
+    <div className={`mb-2 rounded-lg p-2 text-sm ${styles[type]} flex flex-row`} onClick={doDismiss}>
+      <div className='grow'>{children}</div>
+      <Icon>
         <XMarkIcon />
-      </span>
-    </p>
+      </Icon>
+    </div>
   );
 };
-
-export type { StatusProps };
-
-export { Status };

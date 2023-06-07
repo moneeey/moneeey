@@ -33,7 +33,7 @@ export const BaseNumberEditor = observer(
           value: props.value,
           rev: props.rev || '',
         }}
-        Composed={(baseProps, onChange) => (
+        Composed={({ onChange, ...baseProps }) => (
           <InputNumber
             {...{ ...baseProps, prefix, suffix, decimalSeparator, thousandSeparator, decimalScale: decimalScale || 20 }}
             onChange={(newValue) => onChange(newValue, newValue)}

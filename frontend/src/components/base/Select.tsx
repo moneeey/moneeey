@@ -5,7 +5,7 @@ import CreatableReactSelect from 'react-select/creatable';
 import { WithDataTestId } from './Common';
 import { InputContainer, InputProps } from './Input';
 
-import './Select.less';
+import './Select.css';
 
 type Option = {
   label: string | ReactNode;
@@ -42,8 +42,9 @@ const Select = ({
     isError,
     input: (
       <SelectComponent
-        className={`mn-input mn-select ${className || ''} ${dataTestId}`}
-        classNamePrefix={'react-select'}
+        className={`mn-select ${className || ''} ${dataTestId}`}
+        classNamePrefix={'mn-select'}
+        unstyled={true}
         menuPlacement='auto'
         menuPortalTarget={document.body}
         isMulti={false}
@@ -81,10 +82,10 @@ const MultiSelect = ({
     isError,
     input: (
       <SelectComponent
-        className={`mn-input mn-select ${className || ''} ${dataTestId}`}
-        classNamePrefix={'react-select'}
+        className={`mn-select ${className || ''} ${dataTestId}`}
+        classNamePrefix={'mn-select'}
+        unstyled={true}
         menuPlacement='auto'
-        styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
         menuPortalTarget={document.body}
         isMulti={true}
         options={options}

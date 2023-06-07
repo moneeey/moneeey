@@ -9,7 +9,6 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { formatDateMonth, startOfMonthOffset } from '../../utils/Date';
 import Messages from '../../utils/Messages';
 
-import './Budget.less';
 import BudgetEditor from './BudgetEditor';
 import BudgetPeriods from './BudgetPeriod';
 
@@ -30,8 +29,8 @@ const Budget = observer(() => {
   const viewArchived = config.main?.view_archived === true;
 
   return (
-    <section className='budgetArea'>
-      <Space className='control'>
+    <section>
+      <Space>
         <MonthDateSelector date={startingDate} setDate={setStartingDate} />
         <div>
           {Messages.budget.show_months}

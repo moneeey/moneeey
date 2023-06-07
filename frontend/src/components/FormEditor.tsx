@@ -9,27 +9,30 @@ import { FieldProps } from './editor/EditorProps';
 import { WithDataTestId } from './base/Common';
 import { EntityEditorForField } from './editor/RenderEditor';
 
-import './FormEditor.less';
 import { TextNormal } from './base/Text';
 import { Row } from './VirtualTableEditor';
+import { VerticalSpace } from './base/Space';
+import { ReactNode } from 'react';
 
 interface BaseFormEditor extends WithDataTestId {
   className?: string;
+  footer?: ReactNode;
   items: {
     label: string;
     editor: JSX.Element;
   }[];
 }
 
-export const BaseFormEditor = ({ className, 'data-test-id': dataTestId, items }: BaseFormEditor) => (
-  <section className={`formEditor ${className || ''}`} {...{ 'data-test-id': dataTestId }}>
+export const BaseFormEditor = ({ className, 'data-test-id': dataTestId, items, footer }: BaseFormEditor) => (
+  <VerticalSpace className={`bg-background-800 p-4 ${className || ''}`} {...{ 'data-test-id': dataTestId }}>
     {items.map((item) => (
-      <div className='entry' key={item.label}>
+      <div key={item.label}>
         <TextNormal>{item.label}</TextNormal>
-        {item.editor}
+        <div className='bg-background-900 p-2'>{item.editor}</div>
       </div>
     ))}
-  </section>
+    <footer>{footer}</footer>
+  </VerticalSpace>
 );
 
 interface FormEditorProps<T extends IBaseEntity, Context> extends WithDataTestId {

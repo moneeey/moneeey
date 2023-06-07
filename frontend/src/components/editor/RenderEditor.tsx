@@ -55,7 +55,7 @@ export const EditorTypeConfig: Record<
   [EditorType.DATE]: {
     render: DateEditor,
     sorter: DateSorter,
-    width: 120,
+    width: 90,
   },
   [EditorType.ACCOUNT]: {
     render: AccountEditor,

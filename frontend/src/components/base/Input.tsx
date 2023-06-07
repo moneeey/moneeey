@@ -1,9 +1,10 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { NumericFormat } from 'react-number-format';
+import { ClassNameType } from '../../utils/Utils';
 
 import { WithDataTestId } from './Common';
 
-import './Input.less';
+export const BaseInputClzz: ClassNameType = 'w-full color-white bg-transparent';
 
 export type InputProps<T> = WithDataTestId & {
   className?: string;
@@ -23,13 +24,14 @@ type InputContainerProps = {
   suffix: AddonType;
   isError: boolean | undefined;
   input: ReactNode;
+  baseClassname?: string;
 };
 
-export const InputContainer = ({ prefix, suffix, isError, input }: InputContainerProps) => (
-  <div className={`mn-input-container ${isError ? 'error' : ''}`}>
-    {prefix && <div className='mn-input-prefix'>{prefix}</div>}
-    {input}
-    {suffix && <div className='mn-input-suffix'>{suffix}</div>}
+export const InputContainer = ({ baseClassname, prefix, suffix, isError, input }: InputContainerProps) => (
+  <div className={`${baseClassname || BaseInputClzz} flex ${isError ? 'text-red-400' : ''}`}>
+    {prefix}
+    <div className='grow'>{input}</div>
+    {suffix}
   </div>
 );
 
@@ -63,7 +65,7 @@ const Input = ({
       <input
         {...{ 'data-test-id': dataTestId }}
         type='text'
-        className={`mn-input ${className || ''}`}
+        className={`${BaseInputClzz} ${className || ''}`}
         value={currentValue}
         onChange={({ target: { value: newValue } }) => setCurrentValue(newValue)}
         onBlur={() => onChange(currentValue)}
@@ -118,7 +120,7 @@ const InputNumber = ({
     input: (
       <NumericFormat
         {...{ 'data-test-id': dataTestId }}
-        className={`mn-input mn-input-number ${className || ''}`}
+        className={`${BaseInputClzz} font-mono ${className || ''}`}
         value={currentValue}
         onValueChange={({ floatValue, formattedValue }) => {
           if (formattedValue) {
@@ -152,7 +154,8 @@ const TextArea = ({
   disabled,
   readOnly,
   isError,
-}: InputProps<string>) =>
+  rows,
+}: InputProps<string> & { rows?: number }) =>
   InputContainer({
     prefix,
     suffix,
@@ -160,12 +163,13 @@ const TextArea = ({
     input: (
       <textarea
         {...{ 'data-test-id': dataTestId }}
-        className={`mn-input ${className || ''}`}
+        className={`${BaseInputClzz} ${className || ''}`}
         value={value}
         onChange={({ target: { value: newValue } }) => onChange(newValue)}
         placeholder={placeholder}
         disabled={disabled}
         readOnly={readOnly}
+        rows={rows}
       />
     ),
   });
@@ -189,19 +193,23 @@ const Checkbox = ({
 }: CheckboxProps) =>
   InputContainer({
     prefix,
-    suffix: suffix || children,
+    baseClassname: 'color-white bg-transparent',
+    suffix,
     isError,
     input: (
-      <input
-        {...{ 'data-test-id': dataTestId }}
-        type='checkbox'
-        className={`mn-input-checkbox ${className || ''}`}
-        checked={value}
-        onChange={({ target: { checked: newValue } }) => onChange(newValue)}
-        placeholder={placeholder}
-        disabled={disabled}
-        readOnly={readOnly}
-      />
+      <label>
+        <input
+          {...{ 'data-test-id': dataTestId }}
+          type='checkbox'
+          className={`${className || ''} mr-2`}
+          checked={value}
+          onChange={({ target: { checked: newValue } }) => onChange(newValue)}
+          placeholder={placeholder}
+          disabled={disabled}
+          readOnly={readOnly}
+        />
+        {children}
+      </label>
     ),
   });
 

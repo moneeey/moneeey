@@ -6,8 +6,6 @@ import { WithDataTestId } from '../base/Common';
 
 import { EditorProps } from './EditorProps';
 
-import './BaseEditor.less';
-
 type OnChange<EntityType, ValueEditorType, ValueEntityType> = (
   value?: ValueEntityType,
   editorValue?: ValueEditorType,
@@ -25,8 +23,9 @@ export interface BaseEditorProps<EntityType extends IBaseEntity, ValueEditorType
   value: ValueEditorType;
   rev: string;
   Composed: (
-    baseProps: BaseProps<ValueEditorType>,
-    onChange: OnChange<EntityType, ValueEditorType, ValueEntityType>
+    props: BaseProps<ValueEditorType> & {
+      onChange: OnChange<EntityType, ValueEditorType, ValueEntityType>;
+    }
   ) => JSX.Element;
 }
 
@@ -61,15 +60,15 @@ export const BaseEditor = function <EntityType extends IBaseEntity, ValueEditorT
 
   return (
     <label>
-      {Composed(
-        {
+      <Composed
+        {...{
           'data-test-id': `editor${(title || '').replace(' ', '_')}_${rev}`,
           readOnly: Boolean(readOnly),
           placeholder: title || '',
           value: currentValue,
-        },
-        onChange
-      )}
+          onChange,
+        }}
+      />
       {error && <TextDanger className='baseEditor-error'>{error}</TextDanger>}
     </label>
   );

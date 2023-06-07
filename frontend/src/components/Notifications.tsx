@@ -6,7 +6,6 @@ import { NotificationData } from '../shared/Navigation';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
 
 import { Status } from './Status';
-import './Notifications.less';
 
 const MAX_NOTIFICATION_LIFE = 2000;
 
@@ -36,7 +35,7 @@ const Notifications = observer(() => {
   }, [notifications]);
 
   return (
-    <section className='mn-notifications'>
+    <section className='fixed right-0 top-0 z-50 m-4'>
       {visible.map((data) => (
         <Status
           key={data.id}

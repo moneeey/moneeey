@@ -5,7 +5,6 @@ import { StorageKind, getStorage, setStorage } from '../../utils/Utils';
 import { LinkButton } from './Button';
 import { WithDataTestId } from './Common';
 import Space from './Space';
-import './Tabs.less';
 
 interface TabItem {
   key: string;
@@ -33,22 +32,24 @@ const Tabs = (props: TabsProps & WithDataTestId) => {
     }
   };
 
+  const activeTab = Math.min(props.items.length - 1, selectedIdx);
+
   return (
-    <section className='mn-tabs'>
+    <section className={`flex grow flex-col p-2 ${props.className || ''}`}>
       <nav data-test-id={props['data-test-id']}>
-        <Space>
+        <Space className='no-scrollbar mb-2 max-w-max border-b border-b-background-300'>
           {props.items.map((item, idx) => (
             <LinkButton
               key={item.key}
               onClick={() => onChange(idx)}
               data-test-id={`${props['data-test-id']}_${item.key}`}
-              className={idx === selectedIdx ? 'mn-tab-active' : ''}>
+              className={idx === activeTab ? 'underline' : ''}>
               {item.label}
             </LinkButton>
           ))}
         </Space>
       </nav>
-      {props.items[selectedIdx]?.children}
+      {props.items[activeTab]?.children}
     </section>
   );
 };

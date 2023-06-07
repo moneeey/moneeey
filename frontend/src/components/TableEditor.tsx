@@ -7,12 +7,11 @@ import MappedStore from '../shared/MappedStore';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
 import { currentDateTime, dateDistanceInSecs, parseDateTime } from '../utils/Date';
 
-import { FieldProps } from './editor/EditorProps';
 import VirtualTable from './VirtualTableEditor';
 
-import './TableEditor.less';
 import { WithDataTestId } from './base/Common';
 import { TableColumnDefForField } from './editor/RenderEditor';
+import { FieldProps } from './editor/EditorProps';
 
 interface TableEditorProps<T extends IBaseEntity, Context> extends WithDataTestId {
   store: MappedStore<T>;
@@ -66,29 +65,25 @@ export default observer(
       [storeIds, store, schemaFilter, newEntityId]
     );
 
-    const columns = useMemo(
-      () =>
-        compact(flatten([...values(store.schema()), ...values(store.additionalSchema ? store.additionalSchema() : [])]))
-          .map((field) => {
-            return TableColumnDefForField({
-              context,
-              factory,
-              field: field as FieldProps<never>,
-              moneeeyStore,
-              store,
-            });
-          })
-          .sort((a, b) => a.index - b.index),
-      [store]
-    );
+    const columns = useMemo(() => {
+      const schemaFields = values(store.schema());
+      const additionalFields = values(store.additionalSchema ? store.additionalSchema() : []);
+      const allFields = compact(flatten([schemaFields, additionalFields])) as FieldProps<never>[];
 
-    return (
-      <VirtualTable
-        className='tableEditor'
-        columns={columns}
-        rows={entities}
-        isNewEntity={(row) => row.entityId === newEntityId}
-      />
-    );
+      return allFields
+        .filter((field) => !field.isVisible || field.isVisible(context as object))
+        .sort((a, b) => a.index - b.index)
+        .map((field) => {
+          return TableColumnDefForField({
+            context,
+            factory,
+            field,
+            moneeeyStore,
+            store,
+          });
+        });
+    }, [store, context]);
+
+    return <VirtualTable columns={columns} rows={entities} isNewEntity={(row) => row.entityId === newEntityId} />;
   }
 );

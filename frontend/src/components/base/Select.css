@@ -1,0 +1,59 @@
+.mn-select input,
+.mn-select__single-value,
+.mn-select__control,
+.mn-select__menu-list,
+.mn-select__input-container,
+.mn-select__value-container,
+.mn-select__placeholder,
+.mn-select__indicator,
+.mn-select__indicators,
+.mn-select__indicator-separator {
+  @apply m-0 border-0 bg-transparent p-0 text-white;
+
+  line-height: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+}
+
+.mn-select__indicator {
+  @apply p-1;
+}
+
+.mn-select__menu-portal,
+.mn-select__menu,
+.mn-select__menu-list {
+  @apply bg-background-400;
+}
+
+.mn-select__option--is-focused {
+  @apply bg-background-500;
+}
+
+.mn-select__single-value {
+  @apply z-10;
+}
+
+.mn-select__menu-portal,
+.mn-select__menu,
+.mn-select__menu-list {
+  @apply bg-background-400;
+}
+.mn-select__menu-portal {
+  z-index: 999999 !important;
+}
+
+.mn-select__menu,
+.mn-select__menu-list {
+  height: 12em !important;
+  min-height: 12em !important;
+  max-height: 12em !important;
+}
+
+.mn-select-changed .mn-select__single-value {
+  @apply text-orange-200;
+}
+
+.mn-select-new .mn-select__single-value {
+  @apply text-green-200;
+}

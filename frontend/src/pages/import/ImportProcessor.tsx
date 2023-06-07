@@ -16,6 +16,7 @@ import Messages from '../../utils/Messages';
 import Loading from '../../components/Loading';
 
 import { ImportProcessResult } from './ImportProcessResult';
+import { TextTitle } from '../../components/base/Text';
 
 export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
   txt: txtImport(),
@@ -61,14 +62,14 @@ const ImportProcess = function ({ task, close }: { task: ImportTask; close: () =
   }, [task]);
 
   return (
-    <>
-      <h4>
+    <div className='mt-2 flex grow flex-col bg-background-800 p-2'>
+      <TextTitle>
         {Messages.import.processing} <strong>{task.input.mode}</strong> {task.input.name}
-      </h4>
+      </TextTitle>
       <Loading loading={progress !== 100} progress={progress}>
         {result && <ImportProcessResult {...{ task, result, setResult, close }} />}
       </Loading>
-    </>
+    </div>
   );
 };
 

@@ -25,9 +25,9 @@ const BudgetPeriods = observer(
     const [progress, setProgress] = useState(0);
 
     return (
-      <Loading loading={progress !== 0 && progress !== 100} progress={progress}>
-        <div className='periods'>
-          {map(range(0, viewMonths), (offset) => (
+      <>
+        {map(range(0, viewMonths), (offset) => (
+          <Loading loading={progress !== 0 && progress !== 100} progress={progress}>
             <BudgetPeriod
               key={offset}
               startingDate={startOfMonthOffset(startingDate, offset)}
@@ -35,9 +35,9 @@ const BudgetPeriods = observer(
               viewArchived={viewArchived}
               setProgress={setProgress}
             />
-          ))}
-        </div>
-      </Loading>
+          </Loading>
+        ))}
+      </>
     );
   }
 );
@@ -58,25 +58,26 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
   return (
     <Card
       data-test-id={`budget_period_${formatDateMonth(startingDate)}`}
-      className='period'
       header={
-        <TextTitle className='periodTitle'>
-          {formatDateMonth(startingDate)}
-          <LinkButton onClick={onNewBudget}>
+        <TextTitle className='flex flex-row justify-between'>
+          <div>{formatDateMonth(startingDate)}</div>
+          <LinkButton onClick={onNewBudget} className='text-sm'>
             <PlusCircleIcon style={{ color: 'lightgreen', width: '1.2em', height: '1.2em', marginRight: '0.5em' }} />
             {Messages.budget.new}
           </LinkButton>
         </TextTitle>
       }>
-      <TableEditor
-        data-test-id={`budget_period_table_${formatDateMonth(startingDate)}`}
-        store={budget.envelopes}
-        factory={budget.envelopes.factory}
-        creatable={false}
-        schemaFilter={(b) => b.starting === starting && (!b.budget.archived || viewArchived)}
-        context={{ name: (env: BudgetEnvelope) => setEditing(env.budget) }}
-        showRecentEntries={false}
-      />
+      <div style={{ minHeight: '10em' }}>
+        <TableEditor
+          data-test-id={`budget_period_table_${formatDateMonth(startingDate)}`}
+          store={budget.envelopes}
+          factory={budget.envelopes.factory}
+          creatable={false}
+          schemaFilter={(b) => b.starting === starting && (!b.budget.archived || viewArchived)}
+          context={{ name: (env: BudgetEnvelope) => setEditing(env.budget) }}
+          showRecentEntries={false}
+        />
+      </div>
     </Card>
   );
 });

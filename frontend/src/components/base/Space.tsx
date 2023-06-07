@@ -1,14 +1,12 @@
 import { ReactNode } from 'react';
 
-import './Space.less';
+import { ClassNameType } from '../../utils/Utils';
 
-const BaseSpace = (baseClassname: string) =>
+const BaseSpace = (baseClassname: ClassNameType) =>
   function Spacer({ children, className }: { children: ReactNode | ReactNode[]; className?: string }) {
-    return <div className={`${baseClassname} ${className || ''}`}>{children}</div>;
+    return <div className={` ${baseClassname || ''} ${className || ''}`}>{children}</div>;
   };
 
-const Space = BaseSpace('mn-horizontal-space');
-const VerticalSpace = BaseSpace('mn-vertical-space');
-
+export const Space = BaseSpace('flex flex-row items-center gap-4');
+export const VerticalSpace = BaseSpace('flex flex-col gap-4');
 export default Space;
-export { Space, VerticalSpace };

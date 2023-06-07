@@ -7,7 +7,7 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
 
 import Modal from '../base/Modal';
-import { LinkButton, OkButton } from '../base/Button';
+import { CancelButton, LinkButton, OkButton } from '../base/Button';
 import Tabs from '../base/Tabs';
 import { Checkbox, Input } from '../base/Input';
 import { BaseFormEditor } from '../FormEditor';
@@ -70,11 +70,8 @@ const MoneeeyLogin = ({ setMessage }: { setMessage: Dispatch<SetStateAction<Reac
           label: Messages.login.email,
           editor: <ConfigEditor field='email' state={state} setState={setState} placeholder={Messages.login.email} />,
         },
-        {
-          label: '',
-          editor: <OkButton onClick={onLogin} title={Messages.login.login_or_signup} />,
-        },
       ]}
+      footer={<OkButton onClick={onLogin} title={Messages.login.login_or_signup} />}
     />
   );
 };
@@ -207,15 +204,14 @@ const DatabaseConfig = () => {
             />
           ),
         },
-        {
-          label: '',
-          editor: state.enabled ? (
-            <OkButton onClick={onStop} title={Messages.sync.stop} />
-          ) : (
-            <OkButton onClick={onStart} title={Messages.sync.start} />
-          ),
-        },
       ]}
+      footer={
+        state.enabled ? (
+          <OkButton onClick={onStop} title={Messages.sync.stop} />
+        ) : (
+          <OkButton onClick={onStart} title={Messages.sync.start} />
+        )
+      }
     />
   );
 };
@@ -227,7 +223,7 @@ export default function SyncModal() {
     <Modal
       modalId={NavigationModal.SYNC}
       title={Messages.modal.sync}
-      footer={<OkButton onClick={() => navigation.closeModal()} />}>
+      footer={<CancelButton onClick={() => navigation.closeModal()} title={Messages.util.close} />}>
       <>
         <span className='white-space-preline'>{Messages.sync.intro}</span>
         <Tabs

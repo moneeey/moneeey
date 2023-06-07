@@ -22,7 +22,7 @@ export const DateEditor = observer(<EntityType extends IBaseEntity>(props: Edito
         value,
         rev: entity?._rev || '',
       }}
-      Composed={(baseProps, onChange) => (
+      Composed={({ onChange, ...baseProps }) => (
         <DatePicker {...baseProps} onChange={(newValue) => onChange(formatDate(newValue), newValue)} />
       )}
     />

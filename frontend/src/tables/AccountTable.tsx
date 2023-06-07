@@ -17,19 +17,21 @@ interface AccountSettingsProps {
 }
 
 const AccountTable = observer(({ accounts, schemaFilter, kind, navigation }: AccountSettingsProps) => (
-  <VerticalSpace>
+  <VerticalSpace className='h-full grow'>
     <Space>
       <LinkButton
         onClick={() => navigation.openModal(NavigationModal.MERGE_ACCOUNTS)}
         title={Messages.modal.merge_accounts}
       />
     </Space>
-    <TableEditor<IAccount>
-      data-test-id={`accountTable${kind}`}
-      store={accounts}
-      schemaFilter={schemaFilter}
-      factory={(id?: string) => ({ ...accounts.factory(id), kind })}
-    />
+    <div className='grow'>
+      <TableEditor<IAccount>
+        data-test-id={`accountTable${kind}`}
+        store={accounts}
+        schemaFilter={schemaFilter}
+        factory={(id?: string) => ({ ...accounts.factory(id), kind })}
+      />
+    </div>
   </VerticalSpace>
 ));
 

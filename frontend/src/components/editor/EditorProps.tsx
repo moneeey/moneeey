@@ -35,6 +35,7 @@ export interface FieldProps<ValueEditorType> {
   validate?: (value: ValueEditorType) => validation;
   readValue?: (entity: Row, context: object) => ValueEditorType;
   isLoading?: (entity: Row) => boolean;
+  isVisible?: (context: object) => boolean;
 }
 
 export interface EditorProps<TEntityType extends IBaseEntity, ValueEditorType, ValueEntityType> {

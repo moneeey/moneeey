@@ -1,7 +1,5 @@
 import { ReactNode } from 'react';
 
-import './Text.less';
-
 interface TextProps {
   onClick?: () => void;
   children: string | ReactNode | ReactNode[];
@@ -9,24 +7,23 @@ interface TextProps {
 }
 
 type BaseElementType = Extract<keyof JSX.IntrinsicElements, 'p' | 'span' | 'h1' | 'h2'>;
-type BaseType = 'title' | 'subtitle' | 'normal' | 'paragraph' | 'secondary' | 'danger' | 'warning' | 'success';
 
-const BaseText = (type: BaseType, ElementTyp: BaseElementType) =>
+const BaseText = (clzz: HTMLElement['className'], ElementTyp: BaseElementType) =>
   function Text({ children, className, onClick }: TextProps) {
     return (
-      <ElementTyp className={`mn-text-${type} ${className || ''}`} onClick={onClick}>
+      <ElementTyp className={`${clzz} ${className || ''}`} onClick={onClick}>
         {children}
       </ElementTyp>
     );
   };
 
-const TextTitle = BaseText('title', 'h1');
-const TextSubtitle = BaseText('subtitle', 'h2');
-const TextParagraph = BaseText('paragraph', 'p');
-const TextNormal = BaseText('normal', 'span');
-const TextSecondary = BaseText('secondary', 'span');
-const TextDanger = BaseText('danger', 'span');
-const TextWarning = BaseText('warning', 'span');
-const TextSuccess = BaseText('success', 'span');
+const TextTitle = BaseText('text-xl', 'h1');
+const TextSubtitle = BaseText('', 'h2');
+const TextParagraph = BaseText('', 'p');
+const TextNormal = BaseText('', 'span');
+const TextSecondary = BaseText('opacity-75', 'span');
+const TextDanger = BaseText('text-red', 'span');
+const TextWarning = BaseText('text-yellow', 'span');
+const TextSuccess = BaseText('text-green', 'span');
 
 export { TextTitle, TextSubtitle, TextParagraph, TextNormal, TextSecondary, TextDanger, TextWarning, TextSuccess };

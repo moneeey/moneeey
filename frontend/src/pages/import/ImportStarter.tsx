@@ -4,6 +4,8 @@ import { Dispatch, useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 import { Input } from '../../components/base/Input';
+import { VerticalSpace } from '../../components/base/Space';
+import { TextSubtitle, TextTitle } from '../../components/base/Text';
 import { AccountSelector } from '../../components/editor/AccountEditor';
 import { TAccountUUID } from '../../entities/Account';
 import ConfigStore from '../../entities/Config';
@@ -11,8 +13,6 @@ import { FileUploaderMode, ImportConfig, ImportInput, ImportTask } from '../../s
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { TDateFormat } from '../../utils/Date';
 import Messages from '../../utils/Messages';
-
-import './ImportStarter.less';
 
 export interface FileUploaderProps {
   onFile: (input: ImportInput) => void;
@@ -44,8 +44,7 @@ const FileUploader = function ({ onFile, error }: FileUploaderProps) {
     accept: {
       'text/plain': ['.txt', '.csv'],
       'application/x-ofx': ['.ofx'],
-
-      // 'application/x-pdf': ['.pdf'],
+      'application/x-pdf': ['.pdf'],
     },
   });
 
@@ -111,42 +110,46 @@ const ImportStarter = function ({
   };
 
   return (
-    <>
-      <h2>{Messages.import.new_import}</h2>
-      <section className='importStarter'>
-        <section className='importSettings'>
-          <h3>{Messages.import.configuration}</h3>
-          <div className='referenceAccount'>
-            {Messages.settings.reference_account}
-            <ReferenceAccountSelector
-              referenceAccount={config.referenceAccount}
-              onReferenceAccount={(referenceAccount) =>
-                setConfig((currentConfig) => ({ ...currentConfig, referenceAccount }))
-              }
-            />
-          </div>
-          <div>
-            {Messages.util.date_format}
-            <Input
-              data-test-id='inputDateFormat'
-              placeholder={TDateFormat}
-              value={config.dateFormat}
-              onChange={(dateFormat) => setConfig((currentConfig) => ({ ...currentConfig, dateFormat }))}
-            />
-          </div>
-          <div>
-            {Messages.settings.decimal_separator}
-            <Input
-              data-test-id='inputDecimalSeparator'
-              placeholder={'. or ,'}
-              value={config.decimalSeparator}
-              onChange={(decimalSeparator) => setConfig((currentConfig) => ({ ...currentConfig, decimalSeparator }))}
-            />
-          </div>
-        </section>
+    <VerticalSpace className='mt-2 bg-background-800 p-2'>
+      <TextTitle>{Messages.import.new_import}</TextTitle>
+      <TextSubtitle>{Messages.import.configuration}</TextSubtitle>
+      <div>
+        {Messages.settings.reference_account}
+        <div className='bg-background-900 p-2'>
+          <ReferenceAccountSelector
+            referenceAccount={config.referenceAccount}
+            onReferenceAccount={(referenceAccount) =>
+              setConfig((currentConfig) => ({ ...currentConfig, referenceAccount }))
+            }
+          />
+        </div>
+      </div>
+      <div>
+        {Messages.util.date_format}
+        <div className='bg-background-900 p-2'>
+          <Input
+            data-test-id='inputDateFormat'
+            placeholder={TDateFormat}
+            value={config.dateFormat}
+            onChange={(dateFormat) => setConfig((currentConfig) => ({ ...currentConfig, dateFormat }))}
+          />
+        </div>
+      </div>
+      <div>
+        {Messages.settings.decimal_separator}
+        <div className='bg-background-900 p-2'>
+          <Input
+            data-test-id='inputDecimalSeparator'
+            placeholder={'. or ,'}
+            value={config.decimalSeparator}
+            onChange={(decimalSeparator) => setConfig((currentConfig) => ({ ...currentConfig, decimalSeparator }))}
+          />
+        </div>
+      </div>
+      <div className='rounded bg-secondary-200 p-4 text-secondary-900'>
         {!error && <FileUploader onFile={onFile} error={error} />}
-      </section>
-    </>
+      </div>
+    </VerticalSpace>
   );
 };
 

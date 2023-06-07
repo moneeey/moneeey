@@ -58,6 +58,7 @@ const Messages = {
     configuration: 'Configuration',
     select_reference_account: 'Please select reference account',
     updated: 'Updated',
+    new: 'New',
     unchanged: 'Unchanged',
     import_transactions: 'Import transactions',
     invert_from_to_accounts: 'Invert from and to accounts',

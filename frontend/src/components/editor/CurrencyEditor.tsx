@@ -25,7 +25,7 @@ export const CurrencyEditor = observer(
           value,
           rev: entity?._rev || '',
         }}
-        Composed={(baseProps, onChange) => (
+        Composed={({ onChange, ...baseProps }) => (
           <Select
             {...baseProps}
             options={_(currencies.all)
