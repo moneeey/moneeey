@@ -48,7 +48,7 @@ export const tokenTransactionAccountScoreMap = function (transactions: ITransact
   return Array.from(allAccountTokens.entries()).reduce((rs, [account_uuid, tokens]) => {
     const topScores = tokenTopScores(tokens, weightMap);
 
-    const scores = topScores.reduce((rs, score) => ({ ...rs, [score.token]: score.score }), {});
+    const scores = topScores.reduce((rss, score) => ({ ...rss, [score.token]: score.score }), {});
 
     return { ...rs, [account_uuid]: scores };
   }, {} as ScoreMap);

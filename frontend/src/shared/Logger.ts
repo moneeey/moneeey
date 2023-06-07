@@ -2,6 +2,13 @@
 export type LogLevel = 'log' | 'info' | 'warn' | 'error';
 export type LogListener = (level: LogLevel, text: string, ...args: unknown[]) => void;
 
+const LogWeight: Record<LogLevel, number> = {
+  log: 10,
+  info: 20,
+  warn: 30,
+  error: 40,
+};
+
 class BaseLogger {
   listeners: LogListener[] = [];
 
@@ -9,17 +16,21 @@ class BaseLogger {
 
   parent: Logger | undefined;
 
+  level: LogLevel = 'log';
+
   constructor(name: string, parent?: Logger) {
     this.name = name;
     this.parent = parent;
   }
 
   emit(level: LogLevel, _text: string, ...args: unknown[]) {
-    const text = `${this.name}:${_text}`;
-    if (this.parent) {
-      this.parent.emit(level, text, ...args);
-    } else {
-      this.listeners.forEach((listen) => listen(level, text, ...args));
+    if (LogWeight[level] >= LogWeight[this.level]) {
+      const text = `${this.name}:${_text}`;
+      if (this.parent) {
+        this.parent.emit(level, text, ...args);
+      } else {
+        this.listeners.forEach((listen) => listen(level, text, ...args));
+      }
     }
   }
 

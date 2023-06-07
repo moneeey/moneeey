@@ -3,9 +3,9 @@ import { tokenize } from '../../utils/Utils';
 
 import {
   tokenMatchScoreMap,
-  tokenWeightMap,
   tokenTopScores,
   tokenTransactionAccountScoreMap,
+  tokenWeightMap,
   tokensForTransactions,
 } from './Importer';
 

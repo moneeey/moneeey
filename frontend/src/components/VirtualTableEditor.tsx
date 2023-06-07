@@ -1,12 +1,11 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
-import VirtualizedGrid, { GridCellRenderer, ScrollParams } from 'react-virtualized/dist/commonjs/Grid';
+import VirtualizedGrid from 'react-virtualized/dist/commonjs/Grid';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 
 import Icon from './base/Icon';
 
-const MIN_COLUMN_WIDTH = 80;
-
+const SCROLLBAR_WIDTH = 24;
 const ROW_HEIGHT = 24;
 
 export type Row = {
@@ -16,7 +15,7 @@ export type Row = {
 type SortOrder = 'descend' | 'ascend';
 
 export type ColumnDef = {
-  width?: number;
+  width: number;
   title: string;
   index: number;
   defaultSortOrder?: SortOrder;
@@ -96,7 +95,7 @@ const VirtualGrid = ({
     width={width}
     rowCount={rows.length}
     rowHeight={ROW_HEIGHT}
-    columnWidth={({ index }) => columns[index].width || MIN_COLUMN_WIDTH}
+    columnWidth={({ index }) => columns[index].width}
     columnCount={columns.length}
     onScroll={({ scrollLeft, scrollTop }) => setScroll({ scrollLeft, scrollTop })}
     scrollLeft={scroll.scrollLeft}
@@ -160,11 +159,12 @@ const VirtualTableGrid = ({
 }) => {
   const [scroll, setScroll] = useState({ scrollTop: 0, scrollLeft: 0 } as ScrollData);
   const calculatedColumns = useMemo(() => {
-    const withWidth = columns.filter((col) => col.width);
-    const totalWidth = withWidth.reduce((total, cur) => total + (cur.width || 0), 0);
-    const autoColumnSize = Math.max((width - totalWidth - 32) / (columns.length - withWidth.length), MIN_COLUMN_WIDTH);
+    const totalWidth = columns.reduce((total, cur) => total + cur.width, 0);
 
-    return columns.map((col) => ({ ...col, width: col.width || autoColumnSize }));
+    return columns.map((col) => ({
+      ...col,
+      width: Math.max(col.width, Math.floor(width * (col.width / totalWidth))) - SCROLLBAR_WIDTH / columns.length,
+    }));
   }, [columns, width]);
 
   const common = {
@@ -183,6 +183,9 @@ const VirtualTableGrid = ({
         gridHeight={ROW_HEIGHT}
         {...common}
         scroll={{ scrollTop: 0, scrollLeft: scroll.scrollLeft }}
+        setScroll={() => {
+          // Do nothing
+        }}
         rows={[{ entityId: 'Header' }]}
         RenderCell={HeaderCell}
       />

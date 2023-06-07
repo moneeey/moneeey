@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { NumericFormat } from 'react-number-format';
+
 import { ClassNameType } from '../../utils/Utils';
 
 import { WithDataTestId } from './Common';
@@ -28,7 +29,7 @@ type InputContainerProps = {
 };
 
 export const InputContainer = ({ baseClassname, prefix, suffix, isError, input }: InputContainerProps) => (
-  <div className={`${baseClassname || BaseInputClzz} flex ${isError ? 'text-red-400' : ''}`}>
+  <div className={`${baseClassname || BaseInputClzz} flex ${isError ? 'border border-red-400' : ''}`}>
     {prefix}
     <div className='grow'>{input}</div>
     {suffix}
@@ -77,7 +78,7 @@ const Input = ({
   });
 };
 
-type InputNumberProps = InputProps<number> & {
+export type InputNumberProps = InputProps<number> & {
   thousandSeparator: string;
   decimalSeparator: string;
   decimalScale: number;

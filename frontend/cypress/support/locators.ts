@@ -16,8 +16,8 @@ const locators = {
     CARD_REMAINING_INPUT: '[data-test-id^="editorRemaining"]',
   },
   TRANSACTIONS: {
-    FROM_INPUT: '[class*="editorFrom_"]',
-    TO_INPUT: '[class*="editorTo_"]',
+    FROM_INPUT: '[class*="editorFrom"]',
+    TO_INPUT: '[class*="editorTo"]',
     AMOUNT_INPUT: '[data-test-id^="editorAmount"]',
     ACCOUNT_OPTION_ACCOUNT_TEST: '.mn-select__option:contains("Account test")',
   },

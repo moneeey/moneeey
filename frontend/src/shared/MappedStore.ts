@@ -1,7 +1,6 @@
 import { isEmpty } from 'lodash';
 import { action, computed, makeObservable, observable } from 'mobx';
 
-import { FieldProps } from '../components/editor/EditorProps';
 import { currentDateTime } from '../utils/Date';
 
 import { IBaseEntity } from './Entity';
@@ -9,20 +8,10 @@ import MoneeeyStore from './MoneeeyStore';
 
 type UUIDGetter<T> = (item: T) => string;
 
-type RecordMap<T, V> = {
-  [P in Exclude<keyof T, 'toString'>]?: V;
-};
-
-export type SchemaFactory<T> = () => RecordMap<T, FieldProps<never>>;
-
 export default class MappedStore<T extends IBaseEntity> {
   public readonly itemsByUuid = new Map<string, T>();
 
   public readonly getUuid: UUIDGetter<T>;
-
-  public readonly schema: SchemaFactory<T>;
-
-  public readonly additionalSchema?: SchemaFactory<object>;
 
   public readonly factory: (id?: string) => T;
 
@@ -33,13 +22,9 @@ export default class MappedStore<T extends IBaseEntity> {
     config: {
       getUuid: UUIDGetter<T>;
       factory: (id?: string) => T;
-      schema: SchemaFactory<T>;
-      additionalSchema?: SchemaFactory<object>;
     }
   ) {
     this.getUuid = config.getUuid;
-    this.schema = config.schema;
-    this.additionalSchema = config.additionalSchema;
     this.factory = config.factory;
     this.moneeeyStore = moneeeyStore;
     makeObservable(this, {

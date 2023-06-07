@@ -102,12 +102,16 @@ const Messages = {
     create_entity: (entity: string) => `Create ${entity}`,
   },
   budget: {
+    budget: 'Budget',
     new: 'New budget',
     next: 'Next',
     prev: 'Prev',
     save: 'Save',
     show_months: 'Visible months',
     show_archived: 'Show archived budgets',
+    allocated: 'Allocated',
+    used: 'Used',
+    remaining: 'Remaining',
   },
   account: {
     offbudget: 'Off-Budget',

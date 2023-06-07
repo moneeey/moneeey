@@ -39,15 +39,20 @@ describe('Persistence', () => {
   beforeEach(() => {
     mockLogger = new MockLogger('tests');
     persistence = new PersistenceStore(() => ({} as PouchDB.Database), mockLogger);
+    let merged: ICurrency = {} as ICurrency;
     mockStore = {
-      merge: jest.fn(),
+      merge: jest.fn((obj) => (merged = obj)),
+      byUuid: jest.fn(() => merged as ICurrency),
+      getUuid: jest.fn(() => 'byUUID'),
     } as unknown as MappedStore<ICurrency>;
+    jest.spyOn(persistence, 'persist').mockReturnValue();
   });
 
   const thenExpect = ({ updated, outdated, resolved }: { updated: object; outdated: object; resolved: object }) => {
     const state = {
       merge: (mockStore.merge as jest.Mock<unknown, unknown[]>).mock.calls,
       log: mockLogger.calls,
+      persist: (persistence.persist as jest.Mock<unknown, unknown[]>).mock.calls,
     };
     expect(state).toEqual({
       merge: [
@@ -71,6 +76,7 @@ describe('Persistence', () => {
           ],
         },
       ],
+      persist: [[mockStore, resolved]],
     });
   };
 
@@ -83,7 +89,7 @@ describe('Persistence', () => {
       thenExpect({
         updated: a,
         outdated: b,
-        resolved: { ...b, ...a, ...today },
+        resolved: a,
       });
     });
 
@@ -95,19 +101,19 @@ describe('Persistence', () => {
       thenExpect({
         updated: b,
         outdated: a,
-        resolved: { ...a, ...b },
+        resolved: b,
       });
     });
 
-    it('take document with newer _rev', () => {
+    it('take document latest and copy newer _rev', () => {
       const a = sampleCurrency({ ...today, ...rev1 });
       const b = sampleCurrency({ ...yesterday, ...rev2 });
       persistence.resolveConflict(mockStore, a, b);
 
       thenExpect({
-        updated: b,
-        outdated: a,
-        resolved: { ...a, ...b },
+        updated: a,
+        outdated: b,
+        resolved: { ...a, ...rev2 },
       });
     });
 
@@ -119,7 +125,7 @@ describe('Persistence', () => {
       thenExpect({
         updated: a,
         outdated: b,
-        resolved: { ...b, ...a },
+        resolved: a,
       });
     });
 
@@ -131,7 +137,7 @@ describe('Persistence', () => {
       thenExpect({
         updated: b,
         outdated: a,
-        resolved: { ...a, ...b },
+        resolved: b,
       });
     });
 

@@ -1,17 +1,13 @@
 import { observer } from 'mobx-react';
 
-import { IBaseEntity } from '../../shared/Entity';
+import { FieldAcessor, FieldDefHelper, FieldRenderProps } from './FieldDef';
 
-import { EditorProps } from './EditorProps';
-import { TextSorter } from './TextEditor';
-
-export const LabelEditor = observer(
-  <EntityType extends IBaseEntity>(props: EditorProps<EntityType, string, string>) => {
-    const entity = props.store.byUuid(props.entityId);
-    const value = entity?.[props.field.field] as string;
-
-    return <span>{value}</span>;
-  }
-);
-
-export const LabelSorter = TextSorter;
+export default function <TEntity>({ read }: FieldAcessor<TEntity, string>): FieldDefHelper<TEntity> {
+  return {
+    render: observer(({ entity, field }: FieldRenderProps<TEntity>) => (
+      <span data-test-id={`editor${field.title.replace(' ', '_')}`}>{read(entity)}</span>
+    )),
+    sorter: (a: TEntity, b: TEntity, asc: boolean): number =>
+      asc ? read(a).localeCompare(read(b)) : read(b).localeCompare(read(a)),
+  };
+}

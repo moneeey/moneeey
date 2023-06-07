@@ -43,7 +43,6 @@ export class BudgetStore extends MappedStore<IBudget> {
         updated: currentDateTime(),
         archived: false,
       }),
-      schema: () => ({}),
     });
 
     this._envelopes = new BudgetEnvelopeStore(moneeeyStore);

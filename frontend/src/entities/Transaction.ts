@@ -4,12 +4,9 @@ import { debounce, isEmpty } from 'lodash';
 
 import { TDate, compareDates, currentDate, currentDateTime, parseDate } from '../utils/Date';
 import { uuid } from '../utils/Utils';
-import { EditorType } from '../components/editor/EditorProps';
 import { EntityType, IBaseEntity, TMonetary, isEntityType } from '../shared/Entity';
-import { Row } from '../components/VirtualTableEditor';
 import MappedStore from '../shared/MappedStore';
 import MoneeeyStore from '../shared/MoneeeyStore';
-import Messages from '../utils/Messages';
 import RunningBalance from '../utils/RunningBalance';
 
 import { AccountStore, TAccountUUID } from './Account';
@@ -49,71 +46,6 @@ class TransactionStore extends MappedStore<ITransaction> {
         tags: [],
         updated: currentDateTime(),
         created: currentDateTime(),
-      }),
-      schema: () => ({
-        date: {
-          title: Messages.util.date,
-          field: 'date',
-          index: 0,
-          editor: EditorType.DATE,
-          defaultSortOrder: 'ascend',
-        },
-        from_account: {
-          title: Messages.transactions.from_account,
-          field: 'from_account',
-          index: 1,
-          editor: EditorType.ACCOUNT,
-        },
-        to_account: {
-          title: Messages.transactions.to_account,
-          field: 'to_account',
-          index: 2,
-          editor: EditorType.ACCOUNT,
-        },
-        from_value: {
-          title: Messages.transactions.amount,
-          field: 'from_value',
-          index: 3,
-          editor: EditorType.TRANSACTION_VALUE,
-        },
-        memo: {
-          title: Messages.transactions.memo,
-          field: 'memo',
-          index: 4,
-          editor: EditorType.MEMO,
-        },
-      }),
-      additionalSchema: () => ({
-        running_balance: {
-          title: Messages.transactions.running_balance,
-          field: 'running_balance',
-          index: 5,
-          editor: EditorType.NUMBER,
-          readOnly: true,
-          isVisible: (context: object) => {
-            return 'referenceAccount' in context && !isEmpty(context.referenceAccount);
-          },
-          isLoading: ({ entityId }: Row) => {
-            return this.runningBalance.transactionRunningBalance.get(entityId)?.from_balance === null;
-          },
-          readValue: ({ entityId }: Row, context: object) => {
-            const balances = this.runningBalance.transactionRunningBalance.get(entityId);
-            if ('referenceAccount' in context && !isEmpty(context.referenceAccount)) {
-              const { referenceAccount } = context;
-              if (referenceAccount) {
-                const transaction = this.byUuid(entityId);
-                if (referenceAccount === transaction?.from_account) {
-                  return balances?.from_balance;
-                }
-                if (referenceAccount === transaction?.to_account) {
-                  return balances?.to_balance;
-                }
-              }
-            }
-
-            return balances?.from_balance || 0;
-          },
-        },
       }),
     });
     makeObservable(this, {

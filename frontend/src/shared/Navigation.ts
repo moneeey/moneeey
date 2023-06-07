@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable } from 'mobx';
-import { StatusType } from '../components/Status';
 
+import { StatusType } from '../components/Status';
 import { uuid } from '../utils/Utils';
 
 import Logger from './Logger';

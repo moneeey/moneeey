@@ -1,18 +1,14 @@
-import { compact, values } from 'lodash';
+import { ReactNode } from 'react';
 import { observer } from 'mobx-react';
 
 import { IBaseEntity } from '../shared/Entity';
 import MappedStore from '../shared/MappedStore';
 
-import { FieldProps } from './editor/EditorProps';
-
 import { WithDataTestId } from './base/Common';
-import { EntityEditorForField } from './editor/RenderEditor';
 
 import { TextNormal } from './base/Text';
-import { Row } from './VirtualTableEditor';
 import { VerticalSpace } from './base/Space';
-import { ReactNode } from 'react';
+import { FieldDef } from './editor/FieldDef';
 
 interface BaseFormEditor extends WithDataTestId {
   className?: string;
@@ -35,36 +31,30 @@ export const BaseFormEditor = ({ className, 'data-test-id': dataTestId, items, f
   </VerticalSpace>
 );
 
-interface FormEditorProps<T extends IBaseEntity, Context> extends WithDataTestId {
+interface FormEditorProps<T extends IBaseEntity> extends WithDataTestId {
   className?: string;
   store: MappedStore<T>;
-  context?: Context;
-  entity: Row;
+  schema: FieldDef<T>[];
+  entity: T;
 }
 
 export default observer(
-  <T extends IBaseEntity>({
-    className,
-    store,
-    entity: { entityId },
-    context,
-    'data-test-id': dataTestId,
-  }: FormEditorProps<T, unknown>) => (
+  <T extends IBaseEntity>({ className, store, schema, entity, 'data-test-id': dataTestId }: FormEditorProps<T>) => (
     <BaseFormEditor
       className={className}
       {...{ 'data-test-id': dataTestId }}
-      items={compact(values(store.schema()))
-        .sort((a: FieldProps<never>, b: FieldProps<never>) => a.index - b.index)
-        .map((field: FieldProps<never>) => ({
-          label: field.title,
-          editor: EntityEditorForField({
-            entityId,
-            context,
-            factory: store.factory,
-            field,
-            store,
-          }),
-        }))}
+      items={schema.map((field) => ({
+        label: field.title,
+        editor: (
+          <field.render
+            rev={entity?._rev || ''}
+            entity={entity}
+            field={field}
+            commit={(updated) => field.validate(updated) && store.merge(updated)}
+            isError={!field.validate(entity)}
+          />
+        ),
+      }))}
     />
   )
 );

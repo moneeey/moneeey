@@ -1,12 +1,10 @@
 import { isEmpty } from 'lodash';
 import { action, makeObservable } from 'mobx';
 
-import { EditorType } from '../components/editor/EditorProps';
 import { EntityType, IBaseEntity, TMonetary } from '../shared/Entity';
 import MappedStore from '../shared/MappedStore';
 import MoneeeyStore from '../shared/MoneeeyStore';
 import { currentDateTime } from '../utils/Date';
-import Messages from '../utils/Messages';
 import { uuid } from '../utils/Utils';
 
 export type TCurrencyUUID = string;
@@ -19,6 +17,11 @@ export interface ICurrency extends IBaseEntity {
   prefix: string;
   decimals: number;
 }
+
+export type CurrencyAmount = {
+  amount: number;
+  currency?: ICurrency;
+};
 
 export class CurrencyStore extends MappedStore<ICurrency> {
   constructor(moneeeyStore: MoneeeyStore) {
@@ -37,52 +40,6 @@ export class CurrencyStore extends MappedStore<ICurrency> {
           updated: currentDateTime(),
           created: currentDateTime(),
         } as ICurrency),
-      schema: () => ({
-        name: {
-          title: Messages.util.name,
-          field: 'name',
-          required: true,
-          validate: (value: string) => {
-            if (value.length < 2) {
-              return { valid: false, error: 'Please type a name' };
-            }
-
-            return { valid: true };
-          },
-          index: 0,
-          editor: EditorType.TEXT,
-        },
-        short: {
-          title: Messages.currencies.short,
-          field: 'short',
-          index: 1,
-          editor: EditorType.TEXT,
-        },
-        prefix: {
-          title: Messages.currencies.prefix,
-          field: 'prefix',
-          index: 2,
-          editor: EditorType.TEXT,
-        },
-        suffix: {
-          title: Messages.currencies.suffix,
-          field: 'suffix',
-          index: 3,
-          editor: EditorType.TEXT,
-        },
-        decimals: {
-          title: Messages.currencies.decimals,
-          field: 'decimals',
-          index: 4,
-          editor: EditorType.NUMBER,
-        },
-        tags: {
-          title: Messages.util.tags,
-          field: 'tags',
-          index: 5,
-          editor: EditorType.TAG,
-        },
-      }),
     });
 
     makeObservable(this, { addDefaults: action });

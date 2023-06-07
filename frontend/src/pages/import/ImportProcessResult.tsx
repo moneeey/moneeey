@@ -4,7 +4,8 @@ import { Dispatch, SetStateAction } from 'react';
 import { PrimaryButton, SecondaryButton } from '../../components/base/Button';
 import Space, { VerticalSpace } from '../../components/base/Space';
 import { TextDanger, TextNormal } from '../../components/base/Text';
-import { AccountSelector } from '../../components/editor/AccountEditor';
+import AccountField from '../../components/editor/AccountField';
+import { FieldDef } from '../../components/editor/FieldDef';
 import VirtualTable, { Row } from '../../components/VirtualTableEditor';
 import { TAccountUUID } from '../../entities/Account';
 import { ITransaction } from '../../entities/Transaction';
@@ -22,7 +23,7 @@ const accountRender =
     result,
     setResult,
   }: {
-    field: string;
+    field: keyof ITransaction;
     referenceAccount: TAccountUUID;
     moneeeyStore: MoneeeyStore;
     transactions: ITransaction[];
@@ -31,53 +32,61 @@ const accountRender =
   }) =>
   (row: Row) =>
     changedRender({
+      moneeeyStore,
+      transactions,
       row,
       field,
-      cell: ({ isChanged, isNew }) =>
-        (function AccountRenderer() {
-          const transaction = transactions.find((t) => t.transaction_uuid === row.entityId);
-          if (!transaction) {
-            return <span />;
-          }
-          const account_uuid = transaction[field];
+      cell: ({ isChanged, isNew }) => {
+        const transaction = transactions.find((t) => t.transaction_uuid === row.entityId);
+        if (!transaction) {
+          return <span />;
+        }
+        const account_uuid = transaction[field];
 
-          if (referenceAccount === account_uuid && transaction.from_account !== transaction.to_account) {
-            return <span>{moneeeyStore.accounts.nameForUuid(account_uuid)}</span>;
-          }
+        if (referenceAccount === account_uuid && transaction.from_account !== transaction.to_account) {
+          return <span>{moneeeyStore.accounts.nameForUuid(account_uuid)}</span>;
+        }
 
-          let clz = '';
-          if (isChanged) {
-            clz = 'mn-select-changed';
-          }
-          if (isNew) {
-            clz = 'mn-select-new';
-          }
+        let clz = '';
+        if (isChanged) {
+          clz = 'mn-select-changed';
+        }
+        if (isNew) {
+          clz = 'mn-select-new';
+        }
 
-          return (
-            <AccountSelector
-              className={clz}
-              clearable
-              title='Account'
-              account={account_uuid as string}
-              accounts={compact([
-                ...map(result?.recommended_accounts[transaction.transaction_uuid], (cur_account_uuid) =>
-                  moneeeyStore.accounts.byUuid(cur_account_uuid)
-                ),
-                ...map(moneeeyStore.accounts.all),
-              ])}
-              onSelect={(new_account_uuid: TAccountUUID) =>
+        const accountSelectorField = AccountField<ITransaction>({
+          read: (entity) => entity[field] as TAccountUUID,
+          delta: (selected_account_uuid) => ({ [field]: selected_account_uuid }),
+          clearable: true,
+          readOptions: () =>
+            compact([
+              ...map(result?.recommended_accounts[transaction.transaction_uuid], (cur_account_uuid) =>
+                moneeeyStore.accounts.byUuid(cur_account_uuid)
+              ),
+              ...map(moneeeyStore.accounts.all),
+            ]),
+        });
+
+        return (
+          <div className={clz}>
+            <accountSelectorField.render
+              rev={transaction._rev || ''}
+              entity={transaction}
+              field={{ title: 'Account' } as FieldDef<ITransaction>}
+              isError={false}
+              commit={(updated_transaction) => {
                 setResult({
                   ...result,
                   transactions: map(result?.transactions, (t) =>
-                    t.transaction_uuid === transaction.transaction_uuid ? { ...t, [field]: new_account_uuid } : t
+                    t.transaction_uuid === transaction.transaction_uuid ? updated_transaction : t
                   ),
-                })
-              }
+                });
+              }}
             />
-          );
-        })(),
-      moneeeyStore,
-      transactions,
+          </div>
+        );
+      },
     });
 
 const changedRender = ({
@@ -89,7 +98,7 @@ const changedRender = ({
 }: {
   row: Row;
   cell: (props: { isChanged: boolean; isNew: boolean }) => JSX.Element;
-  field: string;
+  field: keyof ITransaction;
   moneeeyStore: MoneeeyStore;
   transactions: ITransaction[];
 }) => {
@@ -98,7 +107,7 @@ const changedRender = ({
   let color = 'text-green-200';
   let title = Messages.import.new;
   if (field) {
-    const isAccountColumn = field.indexOf('_account') > 0;
+    const isAccountColumn = (field as string).indexOf('_account') > 0;
     const original = moneeeyStore.transactions.byUuid(row.entityId || '');
     if (original) {
       const originalValue = original[field];
@@ -167,13 +176,13 @@ const ContentTransactionTable = ({
       columns={[
         {
           index: 0,
-          width: 120,
+          width: 100,
           title: Messages.util.date,
           render: fieldRender({ field: 'date', transactions, moneeeyStore }),
         },
         {
           index: 1,
-          width: 280,
+          width: 200,
           title: Messages.transactions.from_account,
           render: accountRender({
             moneeeyStore,
@@ -186,7 +195,7 @@ const ContentTransactionTable = ({
         },
         {
           index: 2,
-          width: 280,
+          width: 200,
           title: Messages.transactions.to_account,
           render: accountRender({
             moneeeyStore,
@@ -208,6 +217,7 @@ const ContentTransactionTable = ({
           }),
         },
         {
+          width: 300,
           index: 5,
           title: Messages.transactions.memo,
           render: fieldRender({ field: 'memo', transactions, moneeeyStore }),
@@ -262,7 +272,7 @@ const ImportProcessResult = ({
         <SecondaryButton onClick={onInvertFromTo}>{Messages.import.invert_from_to_accounts}</SecondaryButton>
         <SecondaryButton onClick={close}>{Messages.util.cancel}</SecondaryButton>
       </Space>
-      <div className='grow'>
+      <div className='static flex-1'>
         <ContentTransactionTable
           moneeeyStore={moneeeyStore}
           task={task}

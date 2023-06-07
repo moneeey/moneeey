@@ -1,21 +1,18 @@
 import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
 
 import { NavigationModal } from '../../shared/Navigation';
 import Messages from '../../utils/Messages';
 import { OkCancel } from '../base/Button';
 import Modal from '../base/Modal';
-
 import { TAccountUUID } from '../../entities/Account';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import { AccountSelector } from '../editor/AccountEditor';
 import { VerticalSpace } from '../base/Space';
-import { observer } from 'mobx-react-lite';
+import Select from '../base/Select';
 
-export const MergeAccountsModal = observer(function MergeAccountsModal() {
+export const MergeAccountsModal = observer(() => {
   const { navigation, accounts, transactions } = useMoneeeyStore();
   const [state, setState] = useState({ source_account: '', target_account: '' });
-
-  const allAccounts = accounts.all;
 
   const mergeAccounts = (source_deleted: TAccountUUID, target_merged_into: TAccountUUID) => {
     transactions.replaceAccount(source_deleted, target_merged_into);
@@ -47,17 +44,19 @@ export const MergeAccountsModal = observer(function MergeAccountsModal() {
       }>
       <VerticalSpace>
         <span className='white-space-preline'>{Messages.merge_accounts.description}</span>
-        <AccountSelector
-          account={state.source_account}
-          onSelect={(source_account) => setState({ ...state, source_account })}
-          accounts={allAccounts}
-          title={Messages.merge_accounts.source}
+        <Select
+          data-test-id='source_account'
+          placeholder={Messages.merge_accounts.source}
+          value={state.source_account}
+          onChange={(source_account) => setState({ ...state, source_account })}
+          options={accounts.all.map((account) => ({ label: account.name, value: account.account_uuid }))}
         />
-        <AccountSelector
-          account={state.target_account}
-          onSelect={(target_account) => setState({ ...state, target_account })}
-          accounts={allAccounts}
-          title={Messages.merge_accounts.target}
+        <Select
+          data-test-id='target_account'
+          placeholder={Messages.merge_accounts.target}
+          value={state.target_account}
+          onChange={(target_account) => setState({ ...state, target_account })}
+          options={accounts.all.map((account) => ({ label: account.name, value: account.account_uuid }))}
         />
       </VerticalSpace>
     </Modal>
