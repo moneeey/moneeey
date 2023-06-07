@@ -183,6 +183,9 @@ const VirtualTableGrid = ({
         gridHeight={ROW_HEIGHT}
         {...common}
         scroll={{ scrollTop: 0, scrollLeft: scroll.scrollLeft }}
+        setScroll={() => {
+          // Do nothing
+        }}
         rows={[{ entityId: 'Header' }]}
         RenderCell={HeaderCell}
       />

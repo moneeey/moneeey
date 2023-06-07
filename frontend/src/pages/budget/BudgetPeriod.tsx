@@ -80,7 +80,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
           schema={[
             {
               title: Messages.budget.budget,
-              width: 300,
+              width: 200,
               validate: () => ({ valid: true }),
               ...LinkField<BudgetEnvelope>({
                 read: ({ name }) => name,

@@ -42,7 +42,7 @@ export default function <TEntity>({
       });
 
       return (
-        <div>
+        <div className='flex flex-row'>
           <fromField.render
             entity={from}
             field={field as FieldDef<CurrencyAmount>}

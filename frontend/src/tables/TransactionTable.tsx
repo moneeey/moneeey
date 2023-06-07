@@ -76,7 +76,7 @@ const TransactionTable = observer(
                 from: { currency: currencyForAccount(from_account), amount: from_value },
                 to: { currency: currencyForAccount(to_account), amount: to_value },
               }),
-              delta: () => ({}),
+              delta: ({ from, to }) => ({ from_value: from.amount, to_value: to.amount }),
             }),
           },
           {

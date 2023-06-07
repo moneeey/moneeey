@@ -67,7 +67,7 @@ const ImportProcess = function ({ task, close }: { task: ImportTask; close: () =
         {Messages.import.processing} <strong>{task.input.mode}</strong> {task.input.name}
       </TextTitle>
       <Loading loading={progress !== 100} progress={progress}>
-        {result && <ImportProcessResult {...{ task, result, setResult, close }} />}
+        <div className='h-full'>{result && <ImportProcessResult {...{ task, result, setResult, close }} />}</div>
       </Loading>
     </div>
   );

@@ -8,7 +8,7 @@ interface LoadingProps {
 
 export default function Loading(props: LoadingProps) {
   return (
-    <div className='relative'>
+    <>
       {props.loading && (
         <div className='absolute z-50 flex h-full w-full items-center justify-center'>
           <div className='flex w-2/3 border border-blue-900 bg-blue-100'>
@@ -19,6 +19,6 @@ export default function Loading(props: LoadingProps) {
         </div>
       )}
       {props.children}
-    </div>
+    </>
   );
 }

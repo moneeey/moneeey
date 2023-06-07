@@ -4,6 +4,7 @@ export type FieldAcessor<TEntity, TValue> = {
 };
 
 export type FieldRenderProps<TEntity> = {
+  rev: string;
   entity: TEntity;
   commit(entity: TEntity): void;
   field: FieldDef<TEntity>;

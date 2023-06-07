@@ -75,6 +75,7 @@ export default observer(
 
             return (
               <field.render
+                rev={current?._rev || ''}
                 entity={current || store.factory(entityId)}
                 field={field}
                 isError={Boolean(current && !field.validate(current).valid)}

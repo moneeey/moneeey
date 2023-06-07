@@ -271,7 +271,7 @@ const ImportProcessResult = ({
         <SecondaryButton onClick={onInvertFromTo}>{Messages.import.invert_from_to_accounts}</SecondaryButton>
         <SecondaryButton onClick={close}>{Messages.util.cancel}</SecondaryButton>
       </Space>
-      <div className='grow'>
+      <div className='static flex-1'>
         <ContentTransactionTable
           moneeeyStore={moneeeyStore}
           task={task}

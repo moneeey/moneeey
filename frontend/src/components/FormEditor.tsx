@@ -47,6 +47,7 @@ export default observer(
         label: field.title,
         editor: (
           <field.render
+            rev={entity?._rev || ''}
             entity={entity}
             field={field}
             commit={(updated) => field.validate(updated) && store.merge(updated)}
