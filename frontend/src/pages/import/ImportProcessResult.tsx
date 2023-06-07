@@ -71,6 +71,7 @@ const accountRender =
         return (
           <div className={clz}>
             <accountSelectorField.render
+              rev={transaction._rev || ''}
               entity={transaction}
               field={{ title: 'Account' } as FieldDef<ITransaction>}
               isError={false}

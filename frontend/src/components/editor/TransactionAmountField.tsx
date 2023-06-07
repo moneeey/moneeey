@@ -13,7 +13,7 @@ export default function <TEntity>({
   { to: { amount: number; currency?: ICurrency }; from: { amount: number; currency?: ICurrency } }
 >): FieldDefHelper<TEntity> {
   return {
-    render: observer(({ entity, commit, field, isError }: FieldRenderProps<TEntity>) => {
+    render: observer(({ entity, commit, field, isError, rev }: FieldRenderProps<TEntity>) => {
       const { to, from } = read(entity);
 
       if (to.currency?.currency_uuid === from.currency?.currency_uuid) {
@@ -24,6 +24,7 @@ export default function <TEntity>({
 
         return (
           <fromToField.render
+            rev={rev}
             entity={from}
             field={field as FieldDef<CurrencyAmount>}
             isError={isError}
@@ -44,12 +45,14 @@ export default function <TEntity>({
       return (
         <div className='flex flex-row'>
           <fromField.render
+            rev={rev}
             entity={from}
             field={field as FieldDef<CurrencyAmount>}
             isError={isError}
             commit={(amount: CurrencyAmount) => commit({ ...entity, ...delta({ to, from: amount }) })}
           />
           <toField.render
+            rev={rev}
             entity={to}
             field={field as FieldDef<CurrencyAmount>}
             isError={isError}
