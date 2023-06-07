@@ -1,4 +1,6 @@
 import { ReactElement, useEffect, useState } from 'react';
+import { ValueType } from 'tailwindcss/types/config';
+import { NameType } from 'recharts/types/component/DefaultTooltipContent';
 import {
   Bar,
   BarChart,
@@ -19,6 +21,7 @@ import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
 import { TDate } from '../../utils/Date';
 import Space from '../../components/base/Space';
+import { TextTitle } from '../../components/base/Text';
 
 import DateGroupingSelector from './DateGroupingSelector';
 import {
@@ -29,9 +32,6 @@ import {
   ReportDataMap,
   asyncProcessTransactionsForAccounts,
 } from './ReportUtils';
-import { ValueType } from 'tailwindcss/types/config';
-import { NameType } from 'recharts/types/component/DefaultTooltipContent';
-import { TextTitle } from '../../components/base/Text';
 
 interface BaseReportProps {
   title: string;

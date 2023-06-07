@@ -7,7 +7,6 @@ import MappedStore from '../shared/MappedStore';
 import { WithDataTestId } from './base/Common';
 
 import { TextNormal } from './base/Text';
-import { Row } from './VirtualTableEditor';
 import { VerticalSpace } from './base/Space';
 import { FieldDef } from './editor/FieldDef';
 

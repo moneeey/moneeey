@@ -19,7 +19,7 @@ export default function <TEntity>({ read, delta }: FieldAcessor<TEntity, Account
           label: Messages.account.kind[accountType],
           value: accountType,
         }))}
-        onChange={(value: string) => commit({ ...entity, ...delta(value) })}
+        onChange={(value: string) => commit({ ...entity, ...delta(value as AccountKind) })}
       />
     )),
     sorter: (a: TEntity, b: TEntity, asc: boolean): number =>

@@ -1,4 +1,4 @@
-import _, { map } from 'lodash';
+import { map } from 'lodash';
 import { observer } from 'mobx-react';
 
 import useMoneeeyStore from '../../shared/useMoneeeyStore';

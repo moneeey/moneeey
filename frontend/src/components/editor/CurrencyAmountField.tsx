@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import { CurrencyAmount } from '../../entities/Currency';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 
-import { InputNumber, InputNumberProps } from '../base/Input';
+import { InputNumber } from '../base/Input';
 
 import { FieldAcessor, FieldDefHelper, FieldRenderProps } from './FieldDef';
 

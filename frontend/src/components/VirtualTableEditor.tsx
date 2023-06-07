@@ -1,10 +1,11 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
-import VirtualizedGrid, { GridCellRenderer, ScrollParams } from 'react-virtualized/dist/commonjs/Grid';
+import VirtualizedGrid from 'react-virtualized/dist/commonjs/Grid';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 
 import Icon from './base/Icon';
 
+const SCROLLBAR_WIDTH = 24;
 const ROW_HEIGHT = 24;
 
 export type Row = {
@@ -157,13 +158,12 @@ const VirtualTableGrid = ({
   sort: SortColumn;
 }) => {
   const [scroll, setScroll] = useState({ scrollTop: 0, scrollLeft: 0 } as ScrollData);
-  const scrollbarWidthBuffer = 32;
   const calculatedColumns = useMemo(() => {
     const totalWidth = columns.reduce((total, cur) => total + cur.width, 0);
 
     return columns.map((col) => ({
       ...col,
-      width: Math.max(col.width, Math.floor(width * (col.width / totalWidth))) - scrollbarWidthBuffer / columns.length,
+      width: Math.max(col.width, Math.floor(width * (col.width / totalWidth))) - SCROLLBAR_WIDTH / columns.length,
     }));
   }, [columns, width]);
 

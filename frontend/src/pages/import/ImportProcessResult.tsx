@@ -58,6 +58,7 @@ const accountRender =
         const accountSelectorField = AccountField<ITransaction>({
           read: (entity) => entity[field] as TAccountUUID,
           delta: (selected_account_uuid) => ({ [field]: selected_account_uuid }),
+          clearable: true,
           readOptions: () =>
             compact([
               ...map(result?.recommended_accounts[transaction.transaction_uuid], (cur_account_uuid) =>
@@ -68,19 +69,21 @@ const accountRender =
         });
 
         return (
-          <accountSelectorField.render
-            entity={transaction}
-            field={{ title: 'Account' } as FieldDef<ITransaction>}
-            isError={false}
-            commit={(updated_transaction) => {
-              setResult({
-                ...result,
-                transactions: map(result?.transactions, (t) =>
-                  t.transaction_uuid === transaction.transaction_uuid ? updated_transaction : t
-                ),
-              });
-            }}
-          />
+          <div className={clz}>
+            <accountSelectorField.render
+              entity={transaction}
+              field={{ title: 'Account' } as FieldDef<ITransaction>}
+              isError={false}
+              commit={(updated_transaction) => {
+                setResult({
+                  ...result,
+                  transactions: map(result?.transactions, (t) =>
+                    t.transaction_uuid === transaction.transaction_uuid ? updated_transaction : t
+                  ),
+                });
+              }}
+            />
+          </div>
         );
       },
     });
@@ -103,7 +106,7 @@ const changedRender = ({
   let color = 'text-green-200';
   let title = Messages.import.new;
   if (field) {
-    const isAccountColumn = field.indexOf('_account') > 0;
+    const isAccountColumn = (field as string).indexOf('_account') > 0;
     const original = moneeeyStore.transactions.byUuid(row.entityId || '');
     if (original) {
       const originalValue = original[field];
@@ -172,13 +175,13 @@ const ContentTransactionTable = ({
       columns={[
         {
           index: 0,
-          width: 120,
+          width: 100,
           title: Messages.util.date,
           render: fieldRender({ field: 'date', transactions, moneeeyStore }),
         },
         {
           index: 1,
-          width: 280,
+          width: 200,
           title: Messages.transactions.from_account,
           render: accountRender({
             moneeeyStore,
@@ -191,7 +194,7 @@ const ContentTransactionTable = ({
         },
         {
           index: 2,
-          width: 280,
+          width: 200,
           title: Messages.transactions.to_account,
           render: accountRender({
             moneeeyStore,
@@ -213,6 +216,7 @@ const ContentTransactionTable = ({
           }),
         },
         {
+          width: 300,
           index: 5,
           title: Messages.transactions.memo,
           render: fieldRender({ field: 'memo', transactions, moneeeyStore }),

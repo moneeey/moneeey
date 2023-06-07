@@ -48,7 +48,7 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 const Navbar = (props: NavbarProps & WithDataTestId) => {
   return (
     <nav
-      className={`bottom-0 left-0 top-0 w-60 bg-background-800 ${props.className}`}
+      className={`bottom-0 left-0 top-0 w-60 bg-background-800 ${props.className || ''}`}
       data-test-id={props['data-test-id']}>
       {renderNavbarItems(props['data-test-id'], props.items)}
     </nav>

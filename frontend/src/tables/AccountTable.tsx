@@ -70,7 +70,7 @@ const AccountTable = observer(({ accounts, schemaFilter, kind, navigation }: Acc
             width: 200,
             validate: () => ({ valid: true }),
             ...AccountKindSelector<IAccount>({
-              read: ({ kind }) => kind,
+              read: ({ kind: currentKind }) => currentKind,
               delta: (newKind: AccountKind) => ({ kind: newKind }),
             }),
           },
