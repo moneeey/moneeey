@@ -45,7 +45,7 @@ describe('Persistence', () => {
       byUuid: jest.fn(() => merged as ICurrency),
       getUuid: jest.fn(() => 'byUUID'),
     } as unknown as MappedStore<ICurrency>;
-    jest.spyOn(persistence, 'persist');
+    jest.spyOn(persistence, 'persist').mockReturnValue();
   });
 
   const thenExpect = ({ updated, outdated, resolved }: { updated: object; outdated: object; resolved: object }) => {
