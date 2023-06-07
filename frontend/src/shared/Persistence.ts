@@ -1,4 +1,4 @@
-import { debounce, forEach, map, omit, uniqBy, values } from 'lodash';
+import { debounce, forEach, isEmpty, map, omit, uniqBy, values } from 'lodash';
 import { action, makeObservable, observable, observe, toJS } from 'mobx';
 import PouchDB from 'pouchdb';
 
@@ -49,6 +49,7 @@ export default class PersistenceStore {
 
   constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
     this.logger = new Logger('persistence', parent);
+    this.logger.level = 'info';
     this.db = dbFactory();
     this._commit = debounce(() => this.commit(), 1000);
 
@@ -113,7 +114,7 @@ export default class PersistenceStore {
     }
 
     const { _id, _rev } = first;
-    this.logger.info('fetch latest', { _id, _rev });
+    this.logger.log('fetch latest', { _id, _rev });
     const latest = await this.fetch(_id);
     this.mergeBypassingMonitor(this.stores[latest.entity_type], latest);
 
@@ -137,11 +138,17 @@ export default class PersistenceStore {
   }
 
   resolveConflict<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, a: EntityType, b: EntityType) {
+    const revLevel = (rev: string | undefined) => parseInt((rev || '0-').split('-')[0], 10);
+    const aRevLevel = revLevel(a._rev);
+    const bRevLevel = revLevel(b._rev);
+
     const resolve = (updated: EntityType) => {
       const outdated = updated === a ? b : a;
-      const resolved = { ...outdated, ...updated };
+      const _rev = aRevLevel > bRevLevel ? a._rev : b._rev;
+      const resolved = { ...outdated, ...updated, _rev };
       this.logger.info('resolve conflict', { updated, outdated, resolved });
       store.merge(resolved, { setUpdated: true });
+      this.persist<EntityType>(store, store.byUuid(store.getUuid(resolved)) as EntityType);
     };
     if (a._rev && !b._rev) {
       return resolve(a);
@@ -149,18 +156,21 @@ export default class PersistenceStore {
     if (!a._rev && b._rev) {
       return resolve(b);
     }
+
+    if (!isEmpty(a.updated) && !isEmpty(b.updated)) {
+      if ((a.updated || '') > (b.updated || '')) {
+        return resolve(a);
+      } else if ((a.updated || '') < (b.updated || '')) {
+        return resolve(b);
+      }
+    }
+
     if (a._rev && b._rev) {
-      const revLevel = (rev: string | undefined) => parseInt((rev || '0-').split('-')[0], 10);
-      const aRevLevel = revLevel(a._rev);
-      const bRevLevel = revLevel(b._rev);
       if (aRevLevel > bRevLevel) {
         return resolve(a);
       } else if (bRevLevel > aRevLevel) {
         return resolve(b);
       }
-    }
-    if ((a.updated || '') > (b.updated || '')) {
-      return resolve(a);
     }
 
     return resolve(b);
@@ -250,10 +260,10 @@ export default class PersistenceStore {
         const oldRev = changes.oldValue._rev;
         const newRev = changes.newValue._rev;
         if (oldRev === newRev) {
-          this.logger.info('monitor - dirty', changes);
+          this.logger.log('monitor - dirty', changes);
           this.persist(store, changes.newValue);
         } else {
-          this.logger.info('monitor - synced', changes);
+          this.logger.log('monitor - synced', changes);
         }
       }
     });
