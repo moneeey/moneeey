@@ -59,7 +59,7 @@ export const BaseEditor = function <EntityType extends IBaseEntity, ValueEditorT
   }, [setCurrentValue, value]);
 
   return (
-    <label>
+    <>
       <Composed
         {...{
           'data-test-id': `editor${(title || '').replace(' ', '_')}_${rev}`,
@@ -70,6 +70,6 @@ export const BaseEditor = function <EntityType extends IBaseEntity, ValueEditorT
         }}
       />
       {error && <TextDanger className='baseEditor-error'>{error}</TextDanger>}
-    </label>
+    </>
   );
 };

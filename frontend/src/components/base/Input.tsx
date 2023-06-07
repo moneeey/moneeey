@@ -28,7 +28,7 @@ type InputContainerProps = {
 };
 
 export const InputContainer = ({ baseClassname, prefix, suffix, isError, input }: InputContainerProps) => (
-  <div className={`${baseClassname || BaseInputClzz} flex ${isError ? 'text-red-400' : ''}`}>
+  <div className={`${baseClassname || BaseInputClzz} flex ${isError ? 'border border-red-400' : ''}`}>
     {prefix}
     <div className='grow'>{input}</div>
     {suffix}
