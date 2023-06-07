@@ -10,7 +10,10 @@ export default function <TEntity>({
 }: FieldAcessor<TEntity, string> & { onClick: (entity: TEntity) => void }): FieldDefHelper<TEntity> {
   return {
     render: observer(({ entity, field }: FieldRenderProps<TEntity>) => (
-      <LinkButton data-test-id={`editor${field.title.replace(' ', '_')}`} onClick={() => onClick(entity)}>
+      <LinkButton
+        className='p-0'
+        data-test-id={`editor${field.title.replace(' ', '_')}`}
+        onClick={() => onClick(entity)}>
         {read(entity)}
       </LinkButton>
     )),

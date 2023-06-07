@@ -71,12 +71,13 @@ export default observer(
           width,
           defaultSortOrder,
           render: ({ entityId }) => {
-            const entity = store.byUuid(entityId) || store.factory(entityId);
+            const current = store.byUuid(entityId);
+
             return (
               <field.render
-                entity={entity}
+                entity={current || store.factory(entityId)}
                 field={field}
-                isError={!field.validate(entity).valid}
+                isError={Boolean(current && !field.validate(current).valid)}
                 commit={(updated) => field.validate(updated).valid && store.merge(updated)}
               />
             );
