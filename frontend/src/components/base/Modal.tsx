@@ -28,7 +28,7 @@ const Modal = observer(({ title, modalId, footer, onClose, isOpen, children, cla
 
   return visible ? (
     <article
-      className={`fixed bottom-0 left-0 right-0 z-50 rounded-lg bg-background-600 p-4 shadow-xl md:bottom-auto md:left-20 md:right-auto md:top-48 md:mx-auto ${
+      className={`fixed bottom-0 left-0 right-0 z-50 rounded-lg rounded-b-none bg-background-600 p-4 shadow-xl md:bottom-auto md:left-20 md:right-auto md:top-56 md:mx-auto md:rounded-b-lg ${
         className || ''
       }`}>
       <Card

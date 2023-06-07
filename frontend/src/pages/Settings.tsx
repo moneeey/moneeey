@@ -4,6 +4,7 @@ import { PrimaryButton, SecondaryButton } from '../components/base/Button';
 import Drawer from '../components/base/Drawer';
 import { TextArea } from '../components/base/Input';
 import Space, { VerticalSpace } from '../components/base/Space';
+import Loading from '../components/Loading';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
 import ConfigTable from '../tables/ConfigTable';
 import Messages from '../utils/Messages';
@@ -18,6 +19,7 @@ type Action = {
 
 export default function Settings() {
   const [action, setAction] = useState<Action | undefined>(undefined);
+  const [loading, setLoading] = useState<number | false>(false);
   const moneeeyStore = useMoneeeyStore();
 
   const onExportData = async () => {
@@ -29,7 +31,9 @@ export default function Settings() {
     update(Messages.settings.backup_loading(0));
     const data = await moneeeyStore.persistence.exportAll((percentage) => {
       update(Messages.settings.backup_loading(percentage));
+      setLoading(percentage);
     });
+    setLoading(false);
     update(data);
   };
   const onImportData = () => {
@@ -45,7 +49,9 @@ export default function Settings() {
       update(Messages.settings.restore_loading(0));
       const { errors } = await moneeeyStore.persistence.restoreAll(input, (percentage) => {
         update(Messages.settings.restore_loading(percentage));
+        setLoading(percentage);
       });
+      setLoading(false);
       update([...errors, '', Messages.settings.reload_page].join('\n'));
     };
     setAction({
@@ -91,14 +97,17 @@ export default function Settings() {
                 )}
               </Space>
             }>
-            <TextArea
-              className='bg-background-500'
-              data-test-id='importExportOutput'
-              value={action.content}
-              onChange={(value) => setAction((cont) => cont && { ...cont, content: value })}
-              placeholder={'Data'}
-              rows={28}
-            />
+            <div className='bg-background-900 p-2'>
+              <Loading progress={loading || 0} loading={Boolean(loading)}>
+                <TextArea
+                  data-test-id='importExportOutput'
+                  value={action.content}
+                  onChange={(value) => setAction((cont) => cont && { ...cont, content: value })}
+                  placeholder={'Data'}
+                  rows={16}
+                />
+              </Loading>
+            </div>
           </Drawer>
         )}
       </Space>

@@ -179,7 +179,7 @@ const VirtualTableGrid = ({
   return (
     <>
       <VirtualGrid
-        className='!overflow-hidden bg-background-700 pl-2 pr-2'
+        className='!overflow-hidden bg-background-700 px-2'
         gridHeight={ROW_HEIGHT}
         {...common}
         scroll={{ scrollTop: 0, scrollLeft: scroll.scrollLeft }}
@@ -187,7 +187,7 @@ const VirtualTableGrid = ({
         RenderCell={HeaderCell}
       />
       <VirtualGrid
-        className='bg-background-800 pb-2 pl-2 pr-2'
+        className='bg-background-800 px-1 pb-2'
         gridHeight={height - ROW_HEIGHT}
         {...common}
         rows={rows}
