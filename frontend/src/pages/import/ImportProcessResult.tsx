@@ -4,7 +4,8 @@ import { Dispatch, SetStateAction } from 'react';
 import { PrimaryButton, SecondaryButton } from '../../components/base/Button';
 import Space, { VerticalSpace } from '../../components/base/Space';
 import { TextDanger, TextNormal } from '../../components/base/Text';
-import { AccountSelector } from '../../components/editor/AccountEditor';
+import AccountField from '../../components/editor/AccountField';
+import { FieldDef } from '../../components/editor/FieldDef';
 import VirtualTable, { Row } from '../../components/VirtualTableEditor';
 import { TAccountUUID } from '../../entities/Account';
 import { ITransaction } from '../../entities/Transaction';
@@ -22,7 +23,7 @@ const accountRender =
     result,
     setResult,
   }: {
-    field: string;
+    field: keyof ITransaction;
     referenceAccount: TAccountUUID;
     moneeeyStore: MoneeeyStore;
     transactions: ITransaction[];
@@ -31,53 +32,57 @@ const accountRender =
   }) =>
   (row: Row) =>
     changedRender({
-      row,
-      field,
-      cell: ({ isChanged, isNew }) =>
-        (function AccountRenderer() {
-          const transaction = transactions.find((t) => t.transaction_uuid === row.entityId);
-          if (!transaction) {
-            return <span />;
-          }
-          const account_uuid = transaction[field];
-
-          if (referenceAccount === account_uuid && transaction.from_account !== transaction.to_account) {
-            return <span>{moneeeyStore.accounts.nameForUuid(account_uuid)}</span>;
-          }
-
-          let clz = '';
-          if (isChanged) {
-            clz = 'mn-select-changed';
-          }
-          if (isNew) {
-            clz = 'mn-select-new';
-          }
-
-          return (
-            <AccountSelector
-              className={clz}
-              clearable
-              title='Account'
-              account={account_uuid as string}
-              accounts={compact([
-                ...map(result?.recommended_accounts[transaction.transaction_uuid], (cur_account_uuid) =>
-                  moneeeyStore.accounts.byUuid(cur_account_uuid)
-                ),
-                ...map(moneeeyStore.accounts.all),
-              ])}
-              onSelect={(new_account_uuid: TAccountUUID) =>
-                setResult({
-                  ...result,
-                  transactions: map(result?.transactions, (t) =>
-                    t.transaction_uuid === transaction.transaction_uuid ? { ...t, [field]: new_account_uuid } : t
-                  ),
-                })
-              }
-            />
-          );
-        })(),
       moneeeyStore,
       transactions,
+      row,
+      field,
+      cell: ({ isChanged, isNew }) => {
+        const transaction = transactions.find((t) => t.transaction_uuid === row.entityId);
+        if (!transaction) {
+          return <span />;
+        }
+        const account_uuid = transaction[field];
+
+        if (referenceAccount === account_uuid && transaction.from_account !== transaction.to_account) {
+          return <span>{moneeeyStore.accounts.nameForUuid(account_uuid)}</span>;
+        }
+
+        let clz = '';
+        if (isChanged) {
+          clz = 'mn-select-changed';
+        }
+        if (isNew) {
+          clz = 'mn-select-new';
+        }
+
+        const accountSelectorField = AccountField<ITransaction>({
+          read: (entity) => entity[field] as TAccountUUID,
+          delta: (selected_account_uuid) => ({ [field]: selected_account_uuid }),
+          readOptions: () =>
+            compact([
+              ...map(result?.recommended_accounts[transaction.transaction_uuid], (cur_account_uuid) =>
+                moneeeyStore.accounts.byUuid(cur_account_uuid)
+              ),
+              ...map(moneeeyStore.accounts.all),
+            ]),
+        });
+
+        return (
+          <accountSelectorField.render
+            entity={transaction}
+            field={{ title: 'Account' } as FieldDef<ITransaction>}
+            isError={false}
+            commit={(updated_transaction) => {
+              setResult({
+                ...result,
+                transactions: map(result?.transactions, (t) =>
+                  t.transaction_uuid === transaction.transaction_uuid ? updated_transaction : t
+                ),
+              });
+            }}
+          />
+        );
+      },
     });
 
 const changedRender = ({
@@ -89,7 +94,7 @@ const changedRender = ({
 }: {
   row: Row;
   cell: (props: { isChanged: boolean; isNew: boolean }) => JSX.Element;
-  field: string;
+  field: keyof ITransaction;
   moneeeyStore: MoneeeyStore;
   transactions: ITransaction[];
 }) => {

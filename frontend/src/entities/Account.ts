@@ -1,13 +1,10 @@
 import { computed, makeObservable } from 'mobx';
 
-import { EditorType } from '../components/editor/EditorProps';
-
 import { TDate, currentDateTime } from '../utils/Date';
 import { EntityType, IBaseEntity } from '../shared/Entity';
 import MappedStore from '../shared/MappedStore';
 import { uuid } from '../utils/Utils';
 import MoneeeyStore from '../shared/MoneeeyStore';
-import Messages from '../utils/Messages';
 
 import { TCurrencyUUID } from './Currency';
 
@@ -46,60 +43,6 @@ export class AccountStore extends MappedStore<IAccount> {
         kind: AccountKind.CHECKING,
         created: currentDateTime(),
         updated: currentDateTime(),
-      }),
-      schema: () => ({
-        name: {
-          title: Messages.util.name,
-          field: 'name',
-          required: true,
-          validate: (value: string) => {
-            if (value.length < 2) {
-              return { valid: false, error: 'Please type a name' };
-            }
-
-            return { valid: true };
-          },
-          index: 0,
-          editor: EditorType.TEXT,
-        },
-        currency_uuid: {
-          title: Messages.util.currency,
-          field: 'currency_uuid',
-          required: true,
-          editor: EditorType.CURRENCY,
-          index: 1,
-        },
-        tags: {
-          title: Messages.util.tags,
-          field: 'tags',
-          index: 2,
-          editor: EditorType.TAG,
-        },
-        kind: {
-          title: Messages.account.account_kind,
-          field: 'kind',
-          index: 3,
-          editor: EditorType.ACCOUNT_TYPE,
-        },
-        offbudget: {
-          title: Messages.account.offbudget,
-          field: 'offbudget',
-          index: 4,
-          editor: EditorType.CHECKBOX,
-        },
-        archived: {
-          title: Messages.util.archived,
-          field: 'archived',
-          index: 5,
-          editor: EditorType.CHECKBOX,
-        },
-        created: {
-          title: Messages.util.created,
-          field: 'created',
-          readOnly: true,
-          index: 6,
-          editor: EditorType.DATE,
-        },
       }),
     });
 

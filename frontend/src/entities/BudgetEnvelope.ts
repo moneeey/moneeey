@@ -1,7 +1,6 @@
 import { debounce, values } from 'lodash';
 import { action, makeObservable, observable } from 'mobx';
 
-import { EditorType } from '../components/editor/EditorProps';
 import { EntityType, IBaseEntity, TMonetary } from '../shared/Entity';
 import MappedStore from '../shared/MappedStore';
 import MoneeeyStore from '../shared/MoneeeyStore';
@@ -62,34 +61,6 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
         ({
           entity_type: EntityType.VIRTUAL_BUDGET_ENVELOPE,
         } as BudgetEnvelope),
-      schema: () => ({
-        name: {
-          editor: EditorType.LINK,
-          field: 'name',
-          index: 0,
-          title: 'Budget',
-        },
-        allocated: {
-          editor: EditorType.BUDGET_VALUE,
-          field: 'allocated',
-          index: 1,
-          title: 'Allocated',
-        },
-        used: {
-          editor: EditorType.BUDGET_VALUE,
-          field: 'used',
-          index: 2,
-          title: 'Used',
-          readOnly: true,
-        },
-        remaining: {
-          editor: EditorType.BUDGET_VALUE,
-          field: 'remaining',
-          index: 3,
-          title: 'Remaining',
-          readOnly: true,
-        },
-      }),
     });
 
     makeObservable(this, {

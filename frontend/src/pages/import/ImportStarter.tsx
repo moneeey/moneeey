@@ -4,9 +4,9 @@ import { Dispatch, useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 import { Input } from '../../components/base/Input';
+import Select from '../../components/base/Select';
 import { VerticalSpace } from '../../components/base/Space';
 import { TextSubtitle, TextTitle } from '../../components/base/Text';
-import { AccountSelector } from '../../components/editor/AccountEditor';
 import { TAccountUUID } from '../../entities/Account';
 import ConfigStore from '../../entities/Config';
 import { FileUploaderMode, ImportConfig, ImportInput, ImportTask } from '../../shared/import/ImportContent';
@@ -77,11 +77,15 @@ export const ReferenceAccountSelector = observer(
     const moneeeyStore = useMoneeeyStore();
 
     return (
-      <AccountSelector
-        title={Messages.import.select_reference_account}
-        account={referenceAccount}
-        accounts={moneeeyStore.accounts.allNonPayees}
-        onSelect={(value) => onReferenceAccount(value)}
+      <Select
+        data-test-id='target_account'
+        placeholder={Messages.merge_accounts.target}
+        value={referenceAccount}
+        onChange={(newReferenceAccount) => onReferenceAccount(newReferenceAccount)}
+        options={moneeeyStore.accounts.allNonPayees.map((account) => ({
+          label: account.name,
+          value: account.account_uuid,
+        }))}
       />
     );
   }

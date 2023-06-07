@@ -77,7 +77,7 @@ const Input = ({
   });
 };
 
-type InputNumberProps = InputProps<number> & {
+export type InputNumberProps = InputProps<number> & {
   thousandSeparator: string;
   decimalSeparator: string;
   decimalScale: number;

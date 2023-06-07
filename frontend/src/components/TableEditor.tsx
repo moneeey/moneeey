@@ -1,38 +1,34 @@
-import { compact, flatten, uniq, values } from 'lodash';
+import { uniq } from 'lodash';
 import { observer } from 'mobx-react';
 import { useMemo, useState } from 'react';
 
 import { IBaseEntity } from '../shared/Entity';
 import MappedStore from '../shared/MappedStore';
-import useMoneeeyStore from '../shared/useMoneeeyStore';
 import { currentDateTime, dateDistanceInSecs, parseDateTime } from '../utils/Date';
 
-import VirtualTable from './VirtualTableEditor';
+import VirtualTable, { ColumnDef } from './VirtualTableEditor';
 
 import { WithDataTestId } from './base/Common';
-import { TableColumnDefForField } from './editor/RenderEditor';
-import { FieldProps } from './editor/EditorProps';
+import { FieldDef } from './editor/FieldDef';
 
-interface TableEditorProps<T extends IBaseEntity, Context> extends WithDataTestId {
+interface TableEditorProps<T extends IBaseEntity> extends WithDataTestId {
   store: MappedStore<T>;
+  schema: FieldDef<T>[];
   schemaFilter?: (row: T) => boolean;
   factory: (id?: string) => T;
   creatable?: boolean;
-  context?: Context;
   showRecentEntries?: boolean;
 }
 
 export default observer(
   <T extends IBaseEntity>({
+    schema,
     schemaFilter,
     store,
     factory,
     creatable,
-    context,
     showRecentEntries,
-  }: TableEditorProps<T, unknown>) => {
-    const moneeeyStore = useMoneeeyStore();
-
+  }: TableEditorProps<T>) => {
     const [newEntityId, setNewEntityId] = useState(() => store.getUuid(store.factory()));
 
     const storeIds = store.ids;
@@ -65,24 +61,30 @@ export default observer(
       [storeIds, store, schemaFilter, newEntityId]
     );
 
-    const columns = useMemo(() => {
-      const schemaFields = values(store.schema());
-      const additionalFields = values(store.additionalSchema ? store.additionalSchema() : []);
-      const allFields = compact(flatten([schemaFields, additionalFields])) as FieldProps<never>[];
+    const columns = useMemo((): ColumnDef[] => {
+      return schema.map((field, index) => {
+        const { title, defaultSortOrder, width } = field;
 
-      return allFields
-        .filter((field) => !field.isVisible || field.isVisible(context as object))
-        .sort((a, b) => a.index - b.index)
-        .map((field) => {
-          return TableColumnDefForField({
-            context,
-            factory,
-            field,
-            moneeeyStore,
-            store,
-          });
-        });
-    }, [store, context]);
+        return {
+          title,
+          index,
+          width,
+          defaultSortOrder,
+          render: ({ entityId }) => {
+            const entity = store.byUuid(entityId) || store.factory(entityId);
+            return (
+              <field.render
+                entity={entity}
+                field={field}
+                isError={!field.validate(entity).valid}
+                commit={(updated) => field.validate(updated).valid && store.merge(updated)}
+              />
+            );
+          },
+          sorter: (a, b, asc) => field.sorter(store.byUuid(a.entityId) as T, store.byUuid(b.entityId) as T, asc),
+        };
+      });
+    }, [store, schema]);
 
     return <VirtualTable columns={columns} rows={entities} isNewEntity={(row) => row.entityId === newEntityId} />;
   }
