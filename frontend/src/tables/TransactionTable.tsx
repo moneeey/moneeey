@@ -79,15 +79,6 @@ const TransactionTable = observer(
               delta: ({ from, to }) => ({ from_value: from.amount, to_value: to.amount }),
             }),
           },
-          {
-            title: Messages.transactions.memo,
-            width: 400,
-            validate: () => ({ valid: true }),
-            ...MemoField<ITransaction>({
-              read: ({ memo }) => memo,
-              delta: (memo) => ({ memo }),
-            }),
-          },
           !isEmpty(referenceAccount) && {
             title: Messages.transactions.running_balance,
             width: 100,
@@ -103,6 +94,15 @@ const TransactionTable = observer(
                 };
               },
               delta: () => ({}),
+            }),
+          },
+          {
+            title: Messages.transactions.memo,
+            width: 400,
+            validate: () => ({ valid: true }),
+            ...MemoField<ITransaction>({
+              read: ({ memo }) => memo,
+              delta: (memo) => ({ memo }),
             }),
           },
         ])}
