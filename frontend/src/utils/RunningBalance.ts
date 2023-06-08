@@ -23,6 +23,7 @@ export default class RunningBalance {
   constructor(parent?: Logger) {
     makeObservable(this, {
       transactionRunningBalance: observable,
+      accountBalance: observable,
       updateTransactions: action,
       updateAccounts: action,
     });

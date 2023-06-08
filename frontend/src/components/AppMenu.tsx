@@ -53,6 +53,12 @@ const Menu = observer(() => {
   const unclassified = transactions.viewAllUnclassified().length;
   const activePath = navigation.currentPath;
   const hasTransactions = transactions.all.length > 0;
+  const runningBalances = new Map(
+    Array.from(transactions.runningBalance.accountBalance.entries()).map(([account_uuid, balance]) => [
+      account_uuid,
+      Messages.menu.balance(currencies.formatByUuid(accounts.byUuid(account_uuid)?.currency_uuid || '', balance)),
+    ])
+  );
 
   const routeLink = (url: string) => ({
     onClick: () => navigation.navigate(url),
@@ -91,8 +97,8 @@ const Menu = observer(() => {
                 label: `${getAccountCurrency(acct)} ${acct.name}`,
                 icon: <WalletIcon />,
                 customLabel: (
-                  <TextNormal>
-                    <TextSecondary>{getAccountCurrency(acct)}</TextSecondary> {acct.name}
+                  <TextNormal title={runningBalances.get(acct.account_uuid) || acct.name}>
+                    <TextSecondary>{getAccountCurrency(acct)}</TextSecondary> {acct.name}{' '}
                   </TextNormal>
                 ),
                 ...routeLink(AccountRoute.accountUrl(acct)),

@@ -5,6 +5,7 @@ const Messages = {
     dashboard: 'Dashboard',
     transactions: 'Transactions',
     unassigned: (amount: number) => `Unassigned (${amount})`,
+    balance: (amount: string) => `Balance: ${amount}`,
     all_transactions: 'All transactions',
     import: 'Import',
     budget: 'Budget',
