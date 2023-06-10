@@ -11,7 +11,7 @@ export default function <TEntity>({
   return {
     render: observer(({ entity, field }: FieldRenderProps<TEntity>) => (
       <LinkButton
-        className='p-0'
+        className='!p-0'
         data-test-id={`editor${field.title.replace(' ', '_')}`}
         onClick={() => onClick(entity)}>
         {read(entity)}

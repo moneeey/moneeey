@@ -4,14 +4,15 @@ interface TextProps {
   onClick?: () => void;
   children: string | ReactNode | ReactNode[];
   className?: string;
+  title?: string;
 }
 
 type BaseElementType = Extract<keyof JSX.IntrinsicElements, 'p' | 'span' | 'h1' | 'h2'>;
 
 const BaseText = (clzz: HTMLElement['className'], ElementTyp: BaseElementType) =>
-  function Text({ children, className, onClick }: TextProps) {
+  function Text({ children, className, title, onClick }: TextProps) {
     return (
-      <ElementTyp className={`${clzz} ${className || ''}`} onClick={onClick}>
+      <ElementTyp className={`${clzz} ${className || ''}`} onClick={onClick} title={title}>
         {children}
       </ElementTyp>
     );

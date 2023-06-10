@@ -16,6 +16,8 @@
   body,
   .App {
     @apply overflow-hidden bg-background-900;
+
+    font-size: 16px;
   }
 }
 

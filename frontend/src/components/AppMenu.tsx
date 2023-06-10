@@ -16,7 +16,7 @@ import {
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import { observer } from 'mobx-react';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 import AccountRoute from '../routes/AccountRoute';
 import { AccountSettingsRoute } from '../routes/AccountSettingsRoute';
@@ -39,6 +39,7 @@ import MoneeeyStore from '../shared/MoneeeyStore';
 import Navbar from './base/Navbar';
 import { TextNormal, TextSecondary, TextTitle } from './base/Text';
 import Icon, { FavIcon } from './base/Icon';
+import { getStorage, setStorage, StorageKind } from '../utils/Utils';
 
 const Menu = observer(() => {
   const { navigation, accounts, currencies, persistence, transactions } = useMoneeeyStore();
@@ -53,6 +54,12 @@ const Menu = observer(() => {
   const unclassified = transactions.viewAllUnclassified().length;
   const activePath = navigation.currentPath;
   const hasTransactions = transactions.all.length > 0;
+  const runningBalances = new Map(
+    Array.from(transactions.runningBalance.accountBalance.entries()).map(([account_uuid, balance]) => [
+      account_uuid,
+      Messages.menu.balance(currencies.formatByUuid(accounts.byUuid(account_uuid)?.currency_uuid || '', balance)),
+    ])
+  );
 
   const routeLink = (url: string) => ({
     onClick: () => navigation.navigate(url),
@@ -91,8 +98,8 @@ const Menu = observer(() => {
                 label: `${getAccountCurrency(acct)} ${acct.name}`,
                 icon: <WalletIcon />,
                 customLabel: (
-                  <TextNormal>
-                    <TextSecondary>{getAccountCurrency(acct)}</TextSecondary> {acct.name}
+                  <TextNormal title={runningBalances.get(acct.account_uuid) || acct.name}>
+                    <TextSecondary>{getAccountCurrency(acct)}</TextSecondary> {acct.name}{' '}
                   </TextNormal>
                 ),
                 ...routeLink(AccountRoute.accountUrl(acct)),
@@ -184,7 +191,7 @@ const Menu = observer(() => {
 });
 
 const Header = ({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => (
-  <header className='sticky left-0 right-0 top-0 z-30 bg-background-800 p-2 '>
+  <header className='sticky left-0 right-0 top-0 z-30 h-12 bg-background-800 p-2'>
     <TextTitle className='flex flex-row items-center gap-1 text-2xl' onClick={() => setExpanded((value) => !value)}>
       <Icon>
         <Bars3Icon />
@@ -198,14 +205,18 @@ const Header = ({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>
 const Content = ({ expanded, moneeeyStore }: { expanded: boolean; moneeeyStore: MoneeeyStore }) => (
   <section className='flex grow flex-row'>
     {expanded && <Menu />}
-    <section className='flex grow flex-col overflow-hidden p-4'>
+    <section className='flex max-h-[calc(100vh-3em)] grow flex-col overflow-scroll p-4'>
       <RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
     </section>
   </section>
 );
 
 export default function AppMenu({ moneeeyStore }: { moneeeyStore: MoneeeyStore }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(getStorage('menu_expanded', 'true', StorageKind.PERMANENT) === 'true');
+
+  useEffect(() => {
+    setStorage('menu_expanded', String(expanded), StorageKind.PERMANENT);
+  }, [expanded]);
 
   return (
     <section className='flex h-screen flex-col'>

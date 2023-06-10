@@ -20,7 +20,21 @@ export const TDateTimeFormat = "yyyy-MM-dd'T'HH:mm:ssXXX";
 export const formatDate = (date: Date) => format(date, TDateFormat);
 export const formatDateMonth = (date: Date) => format(date, TDateMonthFormat);
 
-export const parseDateFmt = (date: TDate, formatPattern: string) => parse(date, formatPattern, new Date());
+const parseCache = new Map<string, number>();
+
+export const parseDateFmt = (date: TDate, formatPattern: string) => {
+  const key = `${formatPattern}_${date}`;
+  const cached = parseCache.get(key);
+  if (cached !== undefined) {
+    return new Date(cached);
+  }
+
+  const parsed = parse(date, formatPattern, new Date());
+  parseCache.set(key, parsed.getTime());
+
+  return parsed;
+};
+
 export const parseDate = (date: TDate) => parseDateFmt(date, TDateFormat);
 export const parseDateTime = (date: TDateTime) => parseDateFmt(date, TDateTimeFormat);
 export const parseDateOrTime = (date: string) => {

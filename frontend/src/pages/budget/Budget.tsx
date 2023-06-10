@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction, useState } from 'react';
 
 import { SecondaryButton } from '../../components/base/Button';
 import { Checkbox, InputNumber } from '../../components/base/Input';
-import Space from '../../components/base/Space';
+import Space, { VerticalSpace } from '../../components/base/Space';
 import { IBudget } from '../../entities/Budget';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { formatDateMonth, startOfMonthOffset } from '../../utils/Date';
@@ -29,23 +29,21 @@ const Budget = observer(() => {
   const viewArchived = config.main?.view_archived === true;
 
   return (
-    <section>
+    <VerticalSpace>
+      <MonthDateSelector date={startingDate} setDate={setStartingDate} />
       <Space>
-        <MonthDateSelector date={startingDate} setDate={setStartingDate} />
-        <div>
-          {Messages.budget.show_months}
-          <InputNumber
-            data-test-id='inputViewMonths'
-            placeholder={Messages.budget.show_months}
-            value={viewMonths}
-            thousandSeparator={config.main.thousand_separator}
-            decimalSeparator={config.main.decimal_separator}
-            decimalScale={0}
-            onChange={(value: number | null) =>
-              config.merge({ ...config.main, view_months: Math.min(Math.max(value || 3, 0), 12) })
-            }
-          />
-        </div>
+        {Messages.budget.show_months}
+        <InputNumber
+          data-test-id='inputViewMonths'
+          placeholder={Messages.budget.show_months}
+          value={viewMonths}
+          thousandSeparator={config.main.thousand_separator}
+          decimalSeparator={config.main.decimal_separator}
+          decimalScale={0}
+          onChange={(value: number | null) =>
+            config.merge({ ...config.main, view_months: Math.min(Math.max(value || 3, 0), 12) })
+          }
+        />
         <Checkbox
           data-test-id='checkboxViewArchived'
           value={viewArchived}
@@ -61,7 +59,7 @@ const Budget = observer(() => {
         viewMonths={viewMonths}
       />
       {editing && <BudgetEditor editing={editing} setEditing={setEditing} />}
-    </section>
+    </VerticalSpace>
   );
 });
 

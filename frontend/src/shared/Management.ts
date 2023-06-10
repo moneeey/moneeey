@@ -64,8 +64,9 @@ export default class ManagementStore {
     if (email && confirm_code && auth_code) {
       const res = await this.complete(email, auth_code, confirm_code);
       if (res.success) {
-        // eslint-disable-next-line require-atomic-updates
-        window.location.search = '';
+        setTimeout(() => {
+          window.location.search = '';
+        }, 0);
       }
     }
   }

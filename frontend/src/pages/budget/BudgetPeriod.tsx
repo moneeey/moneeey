@@ -29,9 +29,8 @@ const BudgetPeriods = observer(
     return (
       <>
         {map(range(0, viewMonths), (offset) => (
-          <Loading loading={progress !== 0 && progress !== 100} progress={progress}>
+          <Loading key={offset} loading={progress !== 0 && progress !== 100} progress={progress}>
             <BudgetPeriod
-              key={offset}
               startingDate={startOfMonthOffset(startingDate, offset)}
               setEditing={setEditing}
               viewArchived={viewArchived}
@@ -69,7 +68,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
           </LinkButton>
         </TextTitle>
       }>
-      <div style={{ minHeight: '10em' }}>
+      <div className='h-full min-h-[16em]'>
         <TableEditor
           data-test-id={`budget_period_table_${formatDateMonth(startingDate)}`}
           store={budget.envelopes}
@@ -80,7 +79,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
           schema={[
             {
               title: Messages.budget.budget,
-              width: 200,
+              width: 80,
               validate: () => ({ valid: true }),
               ...LinkField<BudgetEnvelope>({
                 read: ({ name }) => name,
@@ -90,7 +89,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
             },
             {
               title: Messages.budget.allocated,
-              width: 100,
+              width: 90,
               validate: () => ({ valid: true }),
               ...CurrencyAmountField<BudgetEnvelope>({
                 read: ({ allocated, budget: { currency_uuid } }) => ({
@@ -102,7 +101,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
             },
             {
               title: Messages.budget.used,
-              width: 100,
+              width: 90,
               readOnly: true,
               validate: () => ({ valid: true }),
               ...CurrencyAmountField<BudgetEnvelope>({
@@ -115,7 +114,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
             },
             {
               title: Messages.budget.remaining,
-              width: 100,
+              width: 90,
               readOnly: true,
               validate: () => ({ valid: true }),
               ...CurrencyAmountField<BudgetEnvelope>({

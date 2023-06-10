@@ -41,8 +41,8 @@ describe('Persistence', () => {
     persistence = new PersistenceStore(() => ({} as PouchDB.Database), mockLogger);
     let merged: ICurrency = {} as ICurrency;
     mockStore = {
-      merge: jest.fn((obj) => (merged = obj)),
-      byUuid: jest.fn(() => merged as ICurrency),
+      merge: jest.fn((obj: ICurrency) => (merged = obj)),
+      byUuid: jest.fn(() => merged),
       getUuid: jest.fn(() => 'byUUID'),
     } as unknown as MappedStore<ICurrency>;
     jest.spyOn(persistence, 'persist').mockReturnValue();

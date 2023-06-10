@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { LinkButton } from '../components/base/Button';
 import Space, { VerticalSpace } from '../components/base/Space';
-import AccountKindSelector from '../components/editor/AccountKindSelector';
+import AccountKindField from '../components/editor/AccountKindField';
 import CheckboxField from '../components/editor/CheckboxField';
 import CurrencySelectorField from '../components/editor/CurrencySelectorField';
 import DateField from '../components/editor/DateField';
@@ -69,7 +69,7 @@ const AccountTable = observer(({ accounts, schemaFilter, kind, navigation }: Acc
             title: Messages.account.account_kind,
             width: 200,
             validate: () => ({ valid: true }),
-            ...AccountKindSelector<IAccount>({
+            ...AccountKindField<IAccount>({
               read: ({ kind: currentKind }) => currentKind,
               delta: (newKind: AccountKind) => ({ kind: newKind }),
             }),
