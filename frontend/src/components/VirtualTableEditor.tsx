@@ -190,7 +190,7 @@ const VirtualTableGrid = ({
         RenderCell={HeaderCell}
       />
       <VirtualGrid
-        className='bg-background-800 px-1 pb-2'
+        className='bg-background-800 px-2 pb-2'
         gridHeight={height - ROW_HEIGHT}
         {...common}
         rows={rows}

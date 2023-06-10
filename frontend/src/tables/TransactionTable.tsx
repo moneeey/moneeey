@@ -69,7 +69,7 @@ const TransactionTable = observer(
           },
           {
             title: Messages.transactions.amount,
-            width: 200,
+            width: 140,
             validate: () => ({ valid: true }),
             ...TransactionAmountField<ITransaction>({
               read: ({ from_account, from_value, to_account, to_value }) => ({
@@ -81,7 +81,7 @@ const TransactionTable = observer(
           },
           !isEmpty(referenceAccount) && {
             title: Messages.transactions.running_balance,
-            width: 100,
+            width: 140,
             validate: () => ({ valid: true }),
             ...CurrencyAmountField<ITransaction>({
               read: ({ transaction_uuid, from_account }) => {
