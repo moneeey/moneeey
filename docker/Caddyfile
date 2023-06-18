@@ -1,0 +1,17 @@
+{
+        auto_https off
+        http_port 4280
+}
+
+local.moneeey.io:4280 {
+        reverse_proxy frontend:4270
+        reverse_proxy /api/* backend:4269
+}
+
+localdevmail.moneeey.io:4280 {
+        reverse_proxy devmail:1080
+}
+
+localcouchdb.moneeey.io:4280 {
+        reverse_proxy couchdb:5984
+}

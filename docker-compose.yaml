@@ -7,12 +7,7 @@ services:
     networks:
       - moneeey-network
     volumes:
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/frontend:/app
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/frontend_node_modules_data:/app/node_modules
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.moneeey-frontend.rule=Host(`local.moneeey.io`) && !PathPrefix(`/api`)"
-      - "traefik.http.services.moneeey-frontend.loadbalancer.server.port=4270"
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/frontend:/app:z
 
   backend:
     build: ./docker
@@ -22,13 +17,8 @@ services:
     depends_on:
       - couchdb
     volumes:
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/dev.env:ro
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/backend_node_modules_data:/app/node_modules
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.moneeey-backend.rule=Host(`local.moneeey.io`) && PathPrefix(`/api`)"
-      - "traefik.http.services.moneeey-backend.loadbalancer.server.port=4269"
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/dev.env:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app:z
 
   couchdb:
     image: couchdb:3.2
@@ -39,36 +29,26 @@ services:
       - COUCHDB_USER=dev
       - COUCHDB_PASSWORD=dev
     volumes:
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb_data:/opt/couchdb/data
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb.dev.ini:/opt/couchdb/etc/local.d/local.ini
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.moneeey-couchdb.rule=Host(`localcouchdb.moneeey.io`)"
-      - "traefik.http.services.moneeey-couchdb.loadbalancer.server.port=5984"
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb_data:/opt/couchdb/data:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb.dev.ini:/opt/couchdb/etc/local.d/local.ini:z
 
   devmail:
     image: maildev/maildev:2.0.5
     restart: unless-stopped
     networks:
       - moneeey-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.moneeey-devmail.rule=Host(`localdevmail.moneeey.io`)"
-      - "traefik.http.services.moneeey-devmail.loadbalancer.server.port=1080"
 
-  traefik:
-    image: traefik:2.7.3
+  caddy:
+    image: caddy:2.6.4-alpine
     restart: unless-stopped
     networks:
       - moneeey-network
     ports:
-      - 80:80
+      - 4280:4280
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    command:
-      - "--entrypoints.web.address=:80"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedByDefault=false"
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/Caddyfile:/etc/caddy/Caddyfile:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/caddy_data:/data:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/caddy_config:/config:z
 
 networks:
   moneeey-network:
