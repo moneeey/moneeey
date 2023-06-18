@@ -17,7 +17,7 @@ docker-compose up
 
 The frontend will be available at: [local.moneeey.io:4280](<http://local.moneeey.io:4280>)
 
-The backend will be available at: [local.moneeey.io:4280/api](<http://local.moneeey.io:4280/api>)
+The backend will be available at: [local.moneeey.io:4280/api/](<http://local.moneeey.io:4280/api/>)
 
 MailDev to see emails sent from the system: [localdevmail.moneeey.io:4280](<http://localdevmail.moneeey.io:4280>)
 
