@@ -17,7 +17,7 @@ services:
     depends_on:
       - couchdb
     volumes:
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/dev.env:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/dev.env:z,ro
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app:z
 
   couchdb:
@@ -29,7 +29,7 @@ services:
       - COUCHDB_USER=dev
       - COUCHDB_PASSWORD=dev
     volumes:
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb_data:/opt/couchdb/data:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/couchdb_data:/opt/couchdb/data:z
       - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb.dev.ini:/opt/couchdb/etc/local.d/local.ini:z
 
   devmail:
@@ -46,9 +46,9 @@ services:
     ports:
       - 4280:4280
     volumes:
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/Caddyfile:/etc/caddy/Caddyfile:z
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/caddy_data:/data:z
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/caddy_config:/config:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/Caddyfile:/etc/caddy/Caddyfile:z,ro
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/caddy_data:/data:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/caddy_config:/config:z
 
 networks:
   moneeey-network:
