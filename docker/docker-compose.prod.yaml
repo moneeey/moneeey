@@ -1,25 +1,6 @@
 version: '3.3'
 
 services:
-  traefik:
-    image: traefik:2.7.3
-    restart: unless-stopped
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ~/moneeey/acme.json:/acme.json
-    command:
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.le.acme.email=moneeey@baroni.tech"
-      - "--certificatesresolvers.le.acme.storage=/acme.json"
-      - "--certificatesresolvers.le.acme.httpchallenge=true"
-      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedByDefault=false"
-
   frontend:
     image: FRONTEND_IMAGE
     restart: unless-stopped
@@ -38,7 +19,7 @@ services:
     depends_on:
       - couchdb
     volumes:
-      - ~/moneeey/env:/run/secret/prod.env:ro
+      - /root/bt3/moneeey/env:/run/secret/prod.env:ro
 
   couchdb:
     image: couchdb:3.2
@@ -47,5 +28,5 @@ services:
       - COUCHDB_USER=prod
       - COUCHDB_PASSWORD=prod
     volumes:
-      - ~/moneeey/couchdb_data:/opt/couchdb/data
-      - ~/moneeey/couchdb.prod.ini:/opt/couchdb/etc/local.d/local.ini
+      - /root/bt3/moneeey/couchdb_data:/opt/couchdb/data
+      - /root/bt3/moneeey/couchdb.prod.ini:/opt/couchdb/etc/local.d/local.ini
