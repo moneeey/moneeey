@@ -27,7 +27,7 @@ services:
     depends_on:
       - couchdb
     volumes:
-      - /root/bt3/moneeey/env:/run/secret/prod.env:ro
+      - /home/ubuntu/moneeey/env:/run/secret/prod.env:ro
 
   couchdb:
     image: couchdb:3.2
@@ -36,5 +36,5 @@ services:
       - COUCHDB_USER=prod
       - COUCHDB_PASSWORD=prod
     volumes:
-      - /root/bt3/moneeey/couchdb_data:/opt/couchdb/data
-      - /root/bt3/moneeey/couchdb.prod.ini:/opt/couchdb/etc/local.d/local.ini
+      - /home/ubuntu/moneeey/couchdb_data:/opt/couchdb/data
+      - /home/ubuntu/moneeey/couchdb.prod.ini:/opt/couchdb/etc/local.d/local.ini
