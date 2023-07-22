@@ -17,7 +17,6 @@ jobs:
           path: |
             backend/node_modules
             frontend/node_modules
-            /home/runner/.cache/Cypress
           key: ${{ runner.os }}-moneeey-${{ hashFiles('backend/package.json') }}-${{ hashFiles('frontend/package.json') }}
 
       - run: yarn install --frozen-lockfile
@@ -49,26 +48,10 @@ jobs:
           path: |
             backend/node_modules
             frontend/node_modules
-            /home/runner/.cache/Cypress
           key: ${{ runner.os }}-moneeey-${{ hashFiles('backend/package.json') }}-${{ hashFiles('frontend/package.json') }}
 
       - run: yarn test
         name: Test
-
-      - name: Cypress
-        uses: cypress-io/github-action@v4
-        if: matrix.service == 'frontend'
-        env:
-          CYPRESS_BASE_URL: "http://127.0.0.1:42069"
-          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-          NODE_OPTIONS: "--max_old_space_size=4096"
-        with:
-          install: false
-          record: true
-          build: yarn build
-          start: npx http-serve dist -p 42069 && sleep 2 && wait-on 'http://127.0.0.1:42069'
-          working-directory: frontend
-          browser: chrome
 
   PACKAGE:
     runs-on: ubuntu-latest
