@@ -36,9 +36,9 @@ const LandingModal = function () {
           okTitle={Messages.modal.start_tour}
         />
       }>
-      <ul data-test-id='start_tour_messages' className='list-disc pl-8'>
+      <ul data-testid='start_tour_messages' className='list-disc pl-8'>
         {map(Messages.landing.messages, (message, index) => (
-          <li data-test-id={`start_tour_message_${index}`} key={message}>
+          <li data-testid={`start_tour_message_${index}`} key={message}>
             {message}
           </li>
         ))}

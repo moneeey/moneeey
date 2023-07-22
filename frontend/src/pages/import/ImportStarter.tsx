@@ -78,7 +78,7 @@ export const ReferenceAccountSelector = observer(
 
     return (
       <Select
-        data-test-id='target_account'
+        testId='target_account'
         placeholder={Messages.merge_accounts.target}
         value={referenceAccount}
         onChange={(newReferenceAccount) => onReferenceAccount(newReferenceAccount)}
@@ -132,7 +132,7 @@ const ImportStarter = function ({
         {Messages.util.date_format}
         <div className='bg-background-900 p-2'>
           <Input
-            data-test-id='inputDateFormat'
+            testId='inputDateFormat'
             placeholder={TDateFormat}
             value={config.dateFormat}
             onChange={(dateFormat) => setConfig((currentConfig) => ({ ...currentConfig, dateFormat }))}
@@ -143,7 +143,7 @@ const ImportStarter = function ({
         {Messages.settings.decimal_separator}
         <div className='bg-background-900 p-2'>
           <Input
-            data-test-id='inputDecimalSeparator'
+            testId='inputDecimalSeparator'
             placeholder={'. or ,'}
             value={config.decimalSeparator}
             onChange={(decimalSeparator) => setConfig((currentConfig) => ({ ...currentConfig, decimalSeparator }))}

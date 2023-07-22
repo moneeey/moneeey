@@ -74,7 +74,7 @@ const Menu = observer(() => {
   return (
     <Navbar
       className='px-2'
-      data-test-id='appMenu'
+      testId='appMenu'
       items={[
         {
           key: 'dashboard',

@@ -84,7 +84,7 @@ export default function Settings() {
         <SecondaryButton onClick={onClearData}>{Messages.settings.clear_all}</SecondaryButton>
         {action && (
           <Drawer
-            {...{ 'data-test-id': 'accountSettings' }}
+            testId='accountSettings'
             header={action.title}
             footer={
               <Space>
@@ -100,7 +100,7 @@ export default function Settings() {
             <div className='bg-background-900 p-2'>
               <Loading progress={loading || 0} loading={Boolean(loading)}>
                 <TextArea
-                  data-test-id='importExportOutput'
+                  testId='importExportOutput'
                   value={action.content}
                   onChange={(value) => setAction((cont) => cont && { ...cont, content: value })}
                   placeholder={'Data'}

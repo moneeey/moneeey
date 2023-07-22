@@ -10,7 +10,7 @@ export default function <TEntity>({ read, delta }: FieldAcessor<TEntity, Account
   return {
     render: observer(({ entity, commit, field, isError }: FieldRenderProps<TEntity>) => (
       <Select
-        data-test-id={`editor${field.title.replace(' ', '_')}`}
+        testId={`editor${field.title.replace(' ', '_')}`}
         readOnly={field.readOnly}
         placeholder={field.title}
         isError={isError}

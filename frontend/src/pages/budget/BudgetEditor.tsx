@@ -28,13 +28,13 @@ const BudgetEditor = ({
   return (
     <Drawer
       className='editor'
-      data-test-id='budgetEditorDrawer'
+      testId='budgetEditorDrawer'
       header={<TextTitle className='title'>{editing.name || ''}</TextTitle>}>
       <VerticalSpace>
         <label>{Messages.util.name}</label>
         <div className='bg-background-900 p-2'>
           <Input
-            data-test-id='budgetName'
+            testId='budgetName'
             placeholder={Messages.util.name}
             value={editing.name}
             onChange={(name) => setEditing((current) => current && { ...current, name })}
@@ -43,7 +43,7 @@ const BudgetEditor = ({
         <label>{Messages.util.currency}</label>
         <div className='bg-background-900 p-2'>
           <Select
-            data-test-id='budgetCurrency'
+            testId='budgetCurrency'
             placeholder={Messages.util.currency}
             options={currencies.all.map((c) => ({
               label: c.name,
@@ -60,7 +60,7 @@ const BudgetEditor = ({
         <label>{Messages.util.tags}</label>
         <div className='bg-background-900 p-2'>
           <MultiSelect
-            data-test-id='budgetTags'
+            testId='budgetTags'
             placeholder={Messages.util.tags}
             options={tags.all.map((t) => ({ label: t, value: t }))}
             value={editing.tags}
@@ -73,7 +73,7 @@ const BudgetEditor = ({
         </div>
         <div className='bg-background-900 p-2'>
           <Checkbox
-            data-test-id='budgetIsArchived'
+            testId='budgetIsArchived'
             value={editing.archived}
             placeholder={Messages.util.archived}
             onChange={(archived) => setEditing({ ...editing, archived })}>
@@ -82,7 +82,7 @@ const BudgetEditor = ({
         </div>
         <Space>
           <SecondaryButton onClick={onClose}>{Messages.util.close}</SecondaryButton>
-          <PrimaryButton data-test-id='budgetSave' onClick={onSave} disabled={!editing.name}>
+          <PrimaryButton testId='budgetSave' onClick={onSave} disabled={!editing.name}>
             {Messages.budget.save}
           </PrimaryButton>
         </Space>

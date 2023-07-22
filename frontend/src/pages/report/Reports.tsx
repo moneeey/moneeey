@@ -10,7 +10,7 @@ import WealthGrowReport from './WealthGrowReport';
 const Reports = function () {
   return (
     <Tabs
-      data-test-id='reportTabs'
+      testId='reportTabs'
       className='grow'
       items={[
         {

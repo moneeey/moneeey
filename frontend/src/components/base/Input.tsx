@@ -41,7 +41,7 @@ const Input = ({
   value,
   onChange,
   placeholder,
-  'data-test-id': dataTestId,
+  testId,
   disabled,
   readOnly,
   prefix,
@@ -64,7 +64,7 @@ const Input = ({
     isError,
     input: (
       <input
-        {...{ 'data-test-id': dataTestId }}
+        data-testid={testId}
         type='text'
         className={`${BaseInputClzz} ${className || ''}`}
         value={currentValue}
@@ -89,7 +89,7 @@ const InputNumber = ({
   value,
   onChange,
   placeholder,
-  'data-test-id': dataTestId,
+  testId,
   prefix,
   suffix,
   disabled,
@@ -120,7 +120,7 @@ const InputNumber = ({
     isError,
     input: (
       <NumericFormat
-        {...{ 'data-test-id': dataTestId }}
+        data-testid={testId}
         className={`${BaseInputClzz} font-mono ${className || ''}`}
         value={currentValue}
         onValueChange={({ floatValue, formattedValue }) => {
@@ -149,7 +149,7 @@ const TextArea = ({
   value,
   onChange,
   placeholder,
-  'data-test-id': dataTestId,
+  testId,
   prefix,
   suffix,
   disabled,
@@ -163,7 +163,7 @@ const TextArea = ({
     isError,
     input: (
       <textarea
-        {...{ 'data-test-id': dataTestId }}
+        data-testid={testId}
         className={`${BaseInputClzz} ${className || ''}`}
         value={value}
         onChange={({ target: { value: newValue } }) => onChange(newValue)}
@@ -184,7 +184,7 @@ const Checkbox = ({
   value,
   onChange,
   placeholder,
-  'data-test-id': dataTestId,
+  testId,
   children,
   prefix,
   suffix,
@@ -200,7 +200,7 @@ const Checkbox = ({
     input: (
       <label>
         <input
-          {...{ 'data-test-id': dataTestId }}
+          data-testid={testId}
           type='checkbox'
           className={`${className || ''} mr-2`}
           checked={value}

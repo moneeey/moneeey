@@ -32,7 +32,7 @@ const AccountTable = observer(({ accounts, schemaFilter, kind, navigation }: Acc
     </Space>
     <div className='grow'>
       <TableEditor<IAccount>
-        data-test-id={`accountTable${kind}`}
+        testId={`accountTable${kind}`}
         store={accounts}
         schemaFilter={schemaFilter}
         factory={(id?: string) => ({ ...accounts.factory(id), kind })}

@@ -58,7 +58,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
 
   return (
     <Card
-      data-test-id={`budget_period_${formatDateMonth(startingDate)}`}
+      testId={`budget_period_${formatDateMonth(startingDate)}`}
       header={
         <TextTitle className='flex flex-row justify-between'>
           <div>{formatDateMonth(startingDate)}</div>
@@ -70,7 +70,7 @@ const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProg
       }>
       <div className='h-full min-h-[16em]'>
         <TableEditor
-          data-test-id={`budget_period_table_${formatDateMonth(startingDate)}`}
+          testId={`budget_period_table_${formatDateMonth(startingDate)}`}
           store={budget.envelopes}
           factory={budget.envelopes.factory}
           creatable={false}

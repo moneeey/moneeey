@@ -26,7 +26,7 @@ const Select = ({
   options,
   onChange,
   placeholder,
-  'data-test-id': dataTestId,
+  testId,
   disabled,
   readOnly,
   prefix,
@@ -42,7 +42,8 @@ const Select = ({
     isError,
     input: (
       <SelectComponent
-        className={`mn-select ${className || ''} ${dataTestId}`}
+        data-testid={testId}
+        className={`mn-select ${className || ''} ${testId}`}
         classNamePrefix={'mn-select'}
         unstyled={true}
         menuPlacement='auto'
@@ -66,7 +67,7 @@ const MultiSelect = ({
   options,
   onChange,
   placeholder,
-  'data-test-id': dataTestId,
+  testId,
   disabled,
   readOnly,
   prefix,
@@ -82,7 +83,8 @@ const MultiSelect = ({
     isError,
     input: (
       <SelectComponent
-        className={`mn-select ${className || ''} ${dataTestId}`}
+        className={`mn-select ${className || ''} ${testId}`}
+        data-testid={testId}
         classNamePrefix={'mn-select'}
         unstyled={true}
         menuPlacement='auto'

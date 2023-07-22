@@ -1,10 +1,11 @@
 import { ReactNode } from 'react';
 
 import { ClassNameType } from '../../utils/Utils';
+import { WithDataTestId } from './Common';
 
 const BaseSpace = (baseClassname: ClassNameType) =>
-  function Spacer({ children, className }: { children: ReactNode | ReactNode[]; className?: string }) {
-    return <div className={` ${baseClassname || ''} ${className || ''}`}>{children}</div>;
+  function Spacer({ children, className, testId }: { children: ReactNode | ReactNode[]; className?: string } & Partial<WithDataTestId>) {
+    return <div className={` ${baseClassname || ''} ${className || ''}`} data-testid={testId}>{children}</div>;
   };
 
 export const Space = BaseSpace('flex flex-row items-center gap-4');

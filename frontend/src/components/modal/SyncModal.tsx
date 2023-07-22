@@ -33,7 +33,7 @@ const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
       onChange={(newValue) => setState({ ...state, [field]: newValue })}
       value={state[field] as boolean}
       placeholder={placeholder}
-      data-test-id={field}
+      testId={field}
       key={field}>
       {placeholder}
     </Checkbox>
@@ -42,7 +42,7 @@ const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
       onChange={(newValue) => setState({ ...state, [field]: newValue })}
       value={state[field] as string}
       placeholder={placeholder}
-      data-test-id={field}
+      testId={field}
       key={field}
     />
   );
@@ -64,7 +64,7 @@ const MoneeeyLogin = ({ setMessage }: { setMessage: Dispatch<SetStateAction<Reac
 
   return (
     <BaseFormEditor
-      data-test-id='providedSync'
+      testId='providedSync'
       items={[
         {
           label: Messages.login.email,
@@ -169,7 +169,7 @@ const DatabaseConfig = () => {
 
   return (
     <BaseFormEditor
-      data-test-id='selfHostedSync'
+      testId='selfHostedSync'
       items={[
         {
           label: Messages.sync.couchdb.url,
@@ -227,7 +227,7 @@ export default function SyncModal() {
       <>
         <span className='white-space-preline'>{Messages.sync.intro}</span>
         <Tabs
-          data-test-id='syncSettings'
+          testId='syncSettings'
           persist={StorageKind.PERMANENT}
           items={[
             {

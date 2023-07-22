@@ -33,13 +33,13 @@ const Modal = observer(({ title, modalId, footer, onClose, isOpen, children, cla
       <Card
         header={
           <div className='flex justify-between align-middle'>
-            <TextTitle className='m-0'>{title}</TextTitle>
+            <TextTitle testId="nm-modal-title" className='m-0'>{title}</TextTitle>
             <Icon className='m-1 mr-4 cursor-pointer hover:opacity-75'>
               <XCircleIcon onClick={onCloseFn} />
             </Icon>
           </div>
         }
-        data-test-id='nm-modal-card'
+        testId='nm-modal-card'
         footer={footer}>
         {children}
       </Card>

@@ -38,16 +38,16 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind & WithD
     );
   };
 
-const PrimaryButton = Button({ kind: 'primary', 'data-test-id': 'primary-button' });
-const SecondaryButton = Button({ kind: 'secondary', 'data-test-id': 'secondary-button' });
+const PrimaryButton = Button({ kind: 'primary', testId: 'primary-button' });
+const SecondaryButton = Button({ kind: 'secondary', testId: 'secondary-button' });
 const DeleteButton = Button({
   kind: 'danger',
-  'data-test-id': 'delete-button',
+ testId: 'delete-button',
   title: Messages.util.delete,
 });
-const CancelButton = Button({ kind: 'secondary', 'data-test-id': 'cancel-button', title: Messages.util.cancel });
-const OkButton = Button({ kind: 'primary', 'data-test-id': 'ok-button', title: Messages.util.ok });
-const LinkButton = Button({ kind: 'link', 'data-test-id': 'link-button' });
+const CancelButton = Button({ kind: 'secondary', testId: 'cancel-button', title: Messages.util.cancel });
+const OkButton = Button({ kind: 'primary', testId: 'ok-button', title: Messages.util.ok });
+const LinkButton = Button({ kind: 'link', testId: 'link-button' });
 
 interface OkCancelProps {
   onOk: () => void;
