@@ -84,7 +84,8 @@ jobs:
             ~/.cache/ms-playwright
           key: ${{ runner.os }}-moneeey-${{ hashFiles('backend/package.json') }}-${{ hashFiles('frontend/package.json') }}-${{ hashFiles('playwright/package.json') }}
 
-      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: yarn install
 
       - name: Install playwright
         run: npx playwright install --with-deps
