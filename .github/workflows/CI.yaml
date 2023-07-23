@@ -26,7 +26,7 @@ jobs:
         working-directory: frontend
 
       - name: Install playwright
-        run: yarn install --frozen-lockfile && yarn playwright install --with-deps
+        run: yarn install --frozen-lockfile
         working-directory: playwright
 
       - run: yarn install --frozen-lockfile
@@ -85,6 +85,9 @@ jobs:
           key: ${{ runner.os }}-moneeey-${{ hashFiles('backend/package.json') }}-${{ hashFiles('frontend/package.json') }}-${{ hashFiles('playwright/package.json') }}
 
       - uses: actions/checkout@v3
+
+      - name: Install playwright
+        run: yarn playwright install --with-deps
 
       - name: Run Playwright tests
         run: yarn run playwright test
