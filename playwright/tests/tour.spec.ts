@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { Page, expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -7,75 +7,106 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+// TODO: SelectFixture (selectOption, createOption)
+// TODO: TourFixture (next)
+// TODO: BudgetEditorFixture (setName, setCurrency, setTags, create)
+// TODO: NotificationFixture (byText, dismiss)
+// TODO: Avoid assertion page.getByText(...), preferr page.getByRole().toContainText()
+
+async function dismissStatus(page: Page, text: string) {
+  await expect(page.getByText(text)).toContainText(text)
+  const dismissIcon = () => page.getByTestId('mn-dismiss-status')
+  expect(dismissIcon()).toBeVisible()
+  await dismissIcon().click()
+  expect(dismissIcon()).not.toBeVisible()
+}
+
+function tourNext(page: Page) {
+  return page.getByTestId('nm-modal-card').getByTestId('next').click() // Start Tour
+}
+
 test.describe('Tour', () => {
   test('Moneeey Tour', async ({ page }) => {
-    expect(page.getByTestId('nm-modal-title')).toBeDefined()
+    await expect(page.getByTestId('nm-modal-title')).toContainText('Introducing Moneeey')
+    await page.getByTestId('start-tour').click() // Start Tour
 
-    /*
-    cy.contains('Start Tour').click();
+    expect(page.getByText('please edit the currencies')).toBeDefined()
+    await tourNext(page) // Next after Edit Currencies
 
-    // Started tour, see currencies
-    cy.contains('please edit the currencies');
+    // Accounts page
+    expect(page.getByText('Now that we know the currencies')).toBeDefined()
 
-    // Create first account
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
-    cy.contains('Now that we know the currencies we are having, it is time to tell us what are your accounts');
+    // Dismiss error continuing without creating an account
+    await tourNext(page) // Next on Edit accounts
+    expect(page.getByText('Now that we know the currencies')).toBeDefined() // Fails because must create account before proceeding
 
-    // Check account is created before going next step
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
-    cy.contains('please create an account').click();
+    await dismissStatus(page, 'Before continuing, please create an account by typing its information in the table below.')
 
     // Type account in table to create a new account
-    cy.get(loc.ACCOUNTS.NAME_INPUT).type('Account test');
-    cy.get(loc.ACCOUNTS.NAME_INPUT).blur();
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
+    await page.getByTestId('editorName').fill('Account test')
+    await page.getByTestId('editorName').blur()
 
-    // Create a transaction
-    cy.get(loc.TRANSACTIONS.FROM_INPUT).click();
-    cy.get(loc.TRANSACTIONS.ACCOUNT_OPTION_ACCOUNT_TEST).click();
+    // Progress Tour to Transactions
+    await tourNext(page)
+    expect(page.getByText('start inserting transactions')).toBeDefined()
 
-    // Wait persistence/pouchdb to sync that new account
-    cy.get(loc.TRANSACTIONS.TO_INPUT).should('have.length', 2);
+    // Create new transaction with previous account
+    await page.locator('.editorFrom').click()
+    await page.getByText('Account test', { exact: true }).click()
 
     // Create new payee
-    cy.get(loc.TRANSACTIONS.TO_INPUT).first().type('Gas Station{enter}');
-    cy.get(loc.TRANSACTIONS.AMOUNT_INPUT).first().type('123,45{enter}');
-    cy.get(loc.TRANSACTIONS.AMOUNT_INPUT).first().blur();
+    await page.locator('.editorTo').click()
+    await page.locator('.editorTo .mn-select__input').fill('Gas Station')
+    await page.locator('.editorTo .mn-select__input').press('Enter')
 
-    // Go to Budget
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
+    // Fill the amount
+    await expect(page.getByTestId('editorAmount')).toHaveCount(2)
+    await page.getByTestId('editorAmount').first().click()
+    await page.getByTestId('editorAmount').first().fill('123,45')
+    await page.getByTestId('editorAmount').first().blur()
 
-    // Check budget is created before going next step
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
-    cy.contains('and create a budget').click();
+    // Progress Tour to Transactions
+    await tourNext(page)
+    expect(page.getByText('time to budget')).toBeDefined()
 
-    // Create new budget
-    cy.get(loc.TOUR.NEW_BUDGET).click();
-    cy.get(loc.BUDGET.NAME_INPUT).type('Budget test');
-    cy.get(loc.BUDGET.CURRENCY_INPUT).click();
-    cy.get(loc.BUDGET.CURRENCY_OPTION_BRL).should('be.visible').click();
-    cy.get(loc.BUDGET.TAGS_INPUT).click().type('Gas Station{enter}');
-    cy.get(loc.BUDGET.SAVE_BUTTON).click();
+    // Cant progress because must create budget
+    await tourNext(page)
+    await dismissStatus(page, 'Before continuing, please click on \'New Budget\' and create a budget')
 
-    // Confirm it appeared
-    cy.contains('Budget test');
-    cy.contains('R$');
-    cy.get(loc.BUDGET.CARD_ALLOCATED_INPUT).first().type('544,14');
-    cy.get(loc.BUDGET.CARD_ALLOCATED_INPUT).first().blur();
-    cy.get(loc.BUDGET.CARD_REMAINING_INPUT).first().should('contain.value', '420,69');
+    // New budget
+    await page.getByTestId('link-button').first().click()
+
+    // Create budget
+    const budgetEditor = page.getByTestId('budgetEditorDrawer')
+    await budgetEditor.getByTestId('budgetName').fill('Budget test')
+    await budgetEditor.getByTestId('budgetName').blur()
+    await budgetEditor.locator('.budgetCurrency').click()
+    await page.getByText('Real brasileiro', { exact: true }).click()
+    await budgetEditor.locator('.budgetTags').click()
+    await budgetEditor.locator('.budgetTags .mn-select__input').fill('Station')
+    await budgetEditor.locator('.budgetTags .mn-select__input').press('Enter')
+    await budgetEditor.getByTestId('budgetSave').click()
+
+    // Allocate on budget and wait for calculated used/remaining
+    expect(page.getByText('R$').first()).toBeDefined()
+    await page.getByTestId('editorAllocated').first().click()
+    await page.getByTestId('editorAllocated').first().fill('544,14')
+    await page.getByTestId('editorAllocated').first().blur()
+    await expect(page.getByTestId('editorUsed').first()).toHaveValue('123,45')
+    await expect(page.getByTestId('editorRemaining').first()).toHaveValue('420,69')
 
     // Go to Import
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
-    cy.contains('New import');
+    await tourNext(page)
+    expect(page.getByText('New import')).toBeDefined()
 
-    // Go to back to Transactions
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
-    cy.get(loc.TRANSACTIONS.TO_INPUT).should('have.length', 2);
-    cy.contains('Gas Station');
+    // Finish on Transactions
+    await tourNext(page)
+    expect(page.getByText('Gas Station')).toBeDefined()
 
-    // Close tour
-    cy.get(loc.TOUR.NEXT_BUTTON).should('be.visible').click();
-    cy.contains('Welcome to Moneeey').should('not.exist');
-    */
+    // Close Tour
+    await tourNext(page)
+
+    // Tour is closed
+    expect(page.getByTestId('nm-modal-title')).toBeHidden()
   });
 });
