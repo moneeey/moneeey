@@ -1,4 +1,4 @@
-import { Page, expect, test } from '@playwright/test';
+import { Locator, Page, expect, test } from '@playwright/test';
 
 const mostUsedCurrencies = [
   "Real brasileiro",
@@ -26,7 +26,7 @@ const mostUsedCurrencies = [
 ]
 
 function Select(page: Page, testId: string) {
-  const select = page.getByTestId(testId)
+  const select = page.getByTestId(testId).first()
   const input = select.locator('.mn-select__input')
   const menuList = page.locator('.mn-select__menu-list')
 
@@ -57,19 +57,34 @@ function Select(page: Page, testId: string) {
   }
 }
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  await page.evaluate(() => {
-    window.indexedDB.deleteDatabase('_pouch_moneeey');
-  });
-});
+function Input(page: Page, testId: string, container?: Locator) {
+  const input = (container || page).getByTestId(testId).first()
 
-// TODO: TourFixture (next)
-// TODO: BudgetEditorFixture (setName, setCurrency, setTags, create)
-// TODO: NotificationFixture (byText, dismiss)
-// TODO: Avoid assertion page.getByText(...), preferr page.getByRole().toContainText()
+  return {
+    async change(value: string) {
+      await input.click()
+      await input.fill(value)
+      await input.blur()
+    }
+  }
+}
 
-async function dismissStatus(page: Page, text: string) {
+async function BudgetEditorSave(page: Page, name: string, currency: string, tag: string) {
+    const budgetEditor = page.getByTestId('budgetEditorDrawer')
+    await Input(page, 'budgetName', budgetEditor).change(name)
+
+    const budgetCurrency = Select(page, 'budgetCurrency')
+    expect(await budgetCurrency.options()).toEqual(mostUsedCurrencies)
+    await budgetCurrency.choose(currency)
+
+    const budgetTags = Select(page, 'budgetTags')
+    expect(await budgetTags.options()).toEqual(['Account test', 'Gas Station'])
+    await budgetTags.choose(tag, false)
+
+    await budgetEditor.getByTestId('budgetSave').click()
+}
+
+async function dismissNotification(page: Page, text: string) {
   await expect(page.getByText(text)).toContainText(text)
   const dismissIcon = () => page.getByTestId('mn-dismiss-status')
   expect(dismissIcon()).toBeVisible()
@@ -80,6 +95,13 @@ async function dismissStatus(page: Page, text: string) {
 function tourNext(page: Page) {
   return page.getByTestId('nm-modal-card').getByTestId('next').click() // Start Tour
 }
+
+test.beforeEach(async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    window.indexedDB.deleteDatabase('_pouch_moneeey');
+  });
+});
 
 test.describe('Tour', () => {
   test('Moneeey Tour', async ({ page, }) => {
@@ -96,11 +118,10 @@ test.describe('Tour', () => {
     await tourNext(page) // Next on Edit accounts
     expect(page.getByText('Now that we know the currencies')).toBeDefined() // Fails because must create account before proceeding
 
-    await dismissStatus(page, 'Before continuing, please create an account by typing its information in the table below.')
+    await dismissNotification(page, 'Before continuing, please create an account by typing its information in the table below.')
 
     // Type account in table to create a new account
-    await page.getByTestId('editorName').fill('Account test')
-    await page.getByTestId('editorName').blur()
+    await Input(page, 'editorName').change('Account test')
 
     // Progress Tour to Transactions
     await tourNext(page)
@@ -118,9 +139,7 @@ test.describe('Tour', () => {
 
     // Fill the amount
     await expect(page.getByTestId('editorAmount')).toHaveCount(2)
-    await page.getByTestId('editorAmount').first().click()
-    await page.getByTestId('editorAmount').first().fill('123,45')
-    await page.getByTestId('editorAmount').first().blur()
+    await Input(page, 'editorAmount').change('123,45')
 
     // Progress Tour to Transactions
     await tourNext(page)
@@ -128,31 +147,17 @@ test.describe('Tour', () => {
 
     // Cant progress because must create budget
     await tourNext(page)
-    await dismissStatus(page, 'Before continuing, please click on \'New Budget\' and create a budget')
+    await dismissNotification(page, 'Before continuing, please click on \'New Budget\' and create a budget')
 
     // New budget
     await page.getByTestId('link-button').first().click()
 
     // Create budget
-    const budgetEditor = page.getByTestId('budgetEditorDrawer')
-    await budgetEditor.getByTestId('budgetName').fill('Budget test')
-    await budgetEditor.getByTestId('budgetName').blur()
-
-    const budgetCurrency = Select(page, 'budgetCurrency')
-    expect(await budgetCurrency.options()).toEqual(mostUsedCurrencies)
-    await budgetCurrency.choose('Real brasileiro')
-
-    const budgetTags = Select(page, 'budgetTags')
-    expect(await budgetTags.options()).toEqual(['Account test', 'Gas Station'])
-    await budgetTags.choose('station', false)
-
-    await budgetEditor.getByTestId('budgetSave').click()
+    BudgetEditorSave(page, 'Budget test', 'Real brasileiro', 'station')
 
     // Allocate on budget and wait for calculated used/remaining
     expect(page.getByText('R$').first()).toBeDefined()
-    await page.getByTestId('editorAllocated').first().click()
-    await page.getByTestId('editorAllocated').first().fill('544,14')
-    await page.getByTestId('editorAllocated').first().blur()
+    await Input(page, 'editorAllocated').change('544,14')
     await expect(page.getByTestId('editorUsed').first()).toHaveValue('123,45')
     await expect(page.getByTestId('editorRemaining').first()).toHaveValue('420,69')
 
