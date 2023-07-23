@@ -25,7 +25,7 @@ jobs:
         working-directory: frontend
 
       - name: Install playwright
-        run: yarn playwright install --with-deps
+        run: yarn install --frozen-lockfile && yarn playwright install --with-deps
         working-directory: playwright
 
       - run: yarn install --frozen-lockfile
