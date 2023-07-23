@@ -1,5 +1,62 @@
 import { Page, expect, test } from '@playwright/test';
 
+const mostUsedCurrencies = [
+  "Real brasileiro",
+  "United States dollar",
+  "Euro",
+  "Japonese yen",
+  "British sterling",
+  "Australian dollar",
+  "Canadian dollar",
+  "Swiss franc",
+  "Chinese renminbi",
+  "Hong Kong dollar",
+  "New Zealand dollar",
+  "Swedish krona",
+  "South Korean won",
+  "Singapore dollar",
+  "Norwegian krone",
+  "Mexican peso",
+  "Indian rupee",
+  "Russian ruble",
+  "South African rand",
+  "Turkish lira",
+  "Bitcoin",
+  "Etherium",
+]
+
+function Select(page: Page, testId: string) {
+  const select = page.getByTestId(testId)
+  const input = select.locator('.mn-select__input')
+  const menuList = page.locator('.mn-select__menu-list')
+
+  const isClosed = async () => await menuList.isHidden()
+  const open = async () => {
+    if (await isClosed()) {
+      await select.click()
+    }
+  }
+
+  return {
+    async options() {
+      await open()
+      return await menuList.locator('.mn-select__option').allTextContents()
+    },
+    async create(optionName: string) {
+      await open()
+      await input.fill(optionName)
+      await input.press('Enter')
+      await isClosed()
+    },
+    async choose(optionName: string, exact: boolean = true) {
+      await open()
+      const option = menuList.getByText(optionName, { exact })
+      await option.click()
+      await isClosed()
+    },
+  }
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => {
@@ -7,7 +64,6 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-// TODO: SelectFixture (selectOption, createOption)
 // TODO: TourFixture (next)
 // TODO: BudgetEditorFixture (setName, setCurrency, setTags, create)
 // TODO: NotificationFixture (byText, dismiss)
@@ -26,7 +82,7 @@ function tourNext(page: Page) {
 }
 
 test.describe('Tour', () => {
-  test('Moneeey Tour', async ({ page }) => {
+  test('Moneeey Tour', async ({ page, }) => {
     await expect(page.getByTestId('nm-modal-title')).toContainText('Introducing Moneeey')
     await page.getByTestId('start-tour').click() // Start Tour
 
@@ -51,13 +107,14 @@ test.describe('Tour', () => {
     expect(page.getByText('start inserting transactions')).toBeDefined()
 
     // Create new transaction with previous account
-    await page.locator('.editorFrom').click()
-    await page.getByText('Account test', { exact: true }).click()
+    const editorFrom = Select(page, 'editorFrom')
+    expect(await editorFrom.options()).toEqual(['Account test'])
+    await editorFrom.choose('Account test')
 
     // Create new payee
-    await page.locator('.editorTo').click()
-    await page.locator('.editorTo .mn-select__input').fill('Gas Station')
-    await page.locator('.editorTo .mn-select__input').press('Enter')
+    const editorTo = Select(page, 'editorTo')
+    expect(await editorTo.options()).toEqual(['Account test'])
+    await editorTo.create('Gas Station')
 
     // Fill the amount
     await expect(page.getByTestId('editorAmount')).toHaveCount(2)
@@ -80,11 +137,15 @@ test.describe('Tour', () => {
     const budgetEditor = page.getByTestId('budgetEditorDrawer')
     await budgetEditor.getByTestId('budgetName').fill('Budget test')
     await budgetEditor.getByTestId('budgetName').blur()
-    await budgetEditor.locator('.budgetCurrency').click()
-    await page.getByText('Real brasileiro', { exact: true }).click()
-    await budgetEditor.locator('.budgetTags').click()
-    await budgetEditor.locator('.budgetTags .mn-select__input').fill('Station')
-    await budgetEditor.locator('.budgetTags .mn-select__input').press('Enter')
+
+    const budgetCurrency = Select(page, 'budgetCurrency')
+    expect(await budgetCurrency.options()).toEqual(mostUsedCurrencies)
+    await budgetCurrency.choose('Real brasileiro')
+
+    const budgetTags = Select(page, 'budgetTags')
+    expect(await budgetTags.options()).toEqual(['Account test', 'Gas Station'])
+    await budgetTags.choose('station', false)
+
     await budgetEditor.getByTestId('budgetSave').click()
 
     // Allocate on budget and wait for calculated used/remaining

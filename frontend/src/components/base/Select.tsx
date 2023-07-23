@@ -41,21 +41,22 @@ const Select = ({
     suffix,
     isError,
     input: (
-      <SelectComponent
-        data-testid={testId}
-        className={`mn-select ${className || ''} ${testId}`}
-        classNamePrefix={'mn-select'}
-        unstyled={true}
-        menuPlacement='auto'
-        menuPortalTarget={document.body}
-        isMulti={false}
-        options={options}
-        value={options.find((opt) => opt.value === value)}
-        onChange={(newValue) => newValue && onChange(newValue.value)}
-        onCreateOption={(name) => onCreate && onCreate(name)}
-        placeholder={placeholder}
-        isDisabled={disabled || readOnly}
-      />
+      <div data-testid={testId}>
+        <SelectComponent
+          className={`mn-select ${className || ''}`}
+          classNamePrefix={'mn-select'}
+          unstyled={true}
+          menuPlacement='auto'
+          menuPortalTarget={document.body}
+          isMulti={false}
+          options={options}
+          value={options.find((opt) => opt.value === value)}
+          onChange={(newValue) => newValue && onChange(newValue.value)}
+          onCreateOption={(name) => onCreate && onCreate(name)}
+          placeholder={placeholder}
+          isDisabled={disabled || readOnly}
+        />
+      </div>
     ),
   });
 };
@@ -82,21 +83,23 @@ const MultiSelect = ({
     suffix,
     isError,
     input: (
-      <SelectComponent
-        className={`mn-select ${className || ''} ${testId}`}
-        data-testid={testId}
-        classNamePrefix={'mn-select'}
-        unstyled={true}
-        menuPlacement='auto'
-        menuPortalTarget={document.body}
-        isMulti={true}
-        options={options}
-        value={(value || []).map((val) => options.find((opt) => opt.value === val))}
-        onChange={(newValue) => onChange(newValue.map((option) => option?.value || '').filter((val) => val !== ''))}
-        onCreateOption={(name) => onCreate && onCreate(name)}
-        placeholder={placeholder}
-        isDisabled={disabled || readOnly}
-      />
+      <div data-testid={testId}>
+        <SelectComponent
+          className={`mn-select ${className || ''}`}
+          data-testid={testId}
+          classNamePrefix={'mn-select'}
+          unstyled={true}
+          menuPlacement='auto'
+          menuPortalTarget={document.body}
+          isMulti={true}
+          options={options}
+          value={(value || []).map((val) => options.find((opt) => opt.value === val))}
+          onChange={(newValue) => onChange(newValue.map((option) => option?.value || '').filter((val) => val !== ''))}
+          onCreateOption={(name) => onCreate && onCreate(name)}
+          placeholder={placeholder}
+          isDisabled={disabled || readOnly}
+        />
+      </div>
     ),
   });
 };
