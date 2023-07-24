@@ -9,7 +9,8 @@ import MoneeeyStore from '../shared/MoneeeyStore';
 import { ITransaction } from '../entities/Transaction';
 
 import HomeRoute from './HomeRouter';
-import { IAppParameters, IRouteParameters, Route, slugify } from './Route';
+import { IAppParameters, IRouteParameters, Route } from './Route';
+import { slugify } from '../utils/Utils';
 
 interface IAccountRoute extends IRouteParameters {
   account_name: string;

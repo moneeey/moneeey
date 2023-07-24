@@ -18,7 +18,7 @@ const Import = observer(() => {
 
   return (
     <Tabs
-      data-test-id='importTabs'
+      testId='importTabs'
       items={[
         {
           label: Messages.import.start,

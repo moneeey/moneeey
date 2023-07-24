@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 
-interface TextProps {
+import { WithDataTestId } from './Common';
+
+interface TextProps extends Partial<WithDataTestId> {
   onClick?: () => void;
   children: string | ReactNode | ReactNode[];
   className?: string;
@@ -10,9 +12,9 @@ interface TextProps {
 type BaseElementType = Extract<keyof JSX.IntrinsicElements, 'p' | 'span' | 'h1' | 'h2'>;
 
 const BaseText = (clzz: HTMLElement['className'], ElementTyp: BaseElementType) =>
-  function Text({ children, className, title, onClick }: TextProps) {
+  function Text({ children, className, title, onClick, testId }: TextProps) {
     return (
-      <ElementTyp className={`${clzz} ${className || ''}`} onClick={onClick} title={title}>
+      <ElementTyp className={`${clzz} ${className || ''}`} onClick={onClick} title={title} data-testid={testId}>
         {children}
       </ElementTyp>
     );

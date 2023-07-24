@@ -9,8 +9,8 @@ interface CardProps {
   children: ReactNode;
 }
 
-const Card = ({ 'data-test-id': dataTestId, header, children, footer, className }: CardProps & WithDataTestId) => (
-  <article className={`${className || ''}`} data-test-id={dataTestId}>
+const Card = ({ testId, header, children, footer, className }: CardProps & WithDataTestId) => (
+  <article className={`${className || ''}`} data-testid={testId}>
     <header>{header}</header>
     <article>{children}</article>
     <footer className='mt-4'>{footer}</footer>

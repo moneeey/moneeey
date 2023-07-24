@@ -13,7 +13,7 @@ const DateGroupingSelector = function ({
 }) {
   return (
     <Select
-      data-test-id='dateGroupingSelector'
+      testId='dateGroupingSelector'
       placeholder={period.label}
       options={_(_.values(PeriodGroups))
         .sortBy('order')

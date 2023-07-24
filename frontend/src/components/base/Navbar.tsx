@@ -31,7 +31,7 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
     return compact([
       <LinkButton
         className={`flex items-center gap-1 !p-0 no-underline hover:opacity-75 ${item.isActive ? 'opacity-75' : ''}`}
-        data-test-id={`${dataTestId}_${item.key}`}
+        testId={`${dataTestId}_${item.key}`}
         onClick={item.onClick || (() => ({}))}
         key={item.key}
         title={item.label}>
@@ -49,8 +49,8 @@ const Navbar = (props: NavbarProps & WithDataTestId) => {
   return (
     <nav
       className={`bottom-0 left-0 top-0 w-60 bg-background-800 ${props.className || ''}`}
-      data-test-id={props['data-test-id']}>
-      {renderNavbarItems(props['data-test-id'], props.items)}
+      data-testid={props.testId}>
+      {renderNavbarItems(props.testId, props.items)}
     </nav>
   );
 };

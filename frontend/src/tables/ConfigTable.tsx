@@ -9,7 +9,7 @@ import Messages from '../utils/Messages';
 const ConfigTable = observer(({ config }: { config: ConfigStore }) => {
   return (
     <FormEditor
-      data-test-id='configTable'
+      testId='configTable'
       store={config}
       entity={config.main}
       schema={[

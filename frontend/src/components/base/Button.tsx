@@ -1,6 +1,8 @@
+import { omit } from 'lodash';
 import { ReactNode } from 'react';
 
 import Messages from '../../utils/Messages';
+import { slugify } from '../../utils/Utils';
 
 import { WithDataTestId } from './Common';
 import Space from './Space';
@@ -30,24 +32,25 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind & WithD
   function BaseButton(props: ButtonProps & Partial<WithDataTestId>) {
     return (
       <button
-        {...base}
-        {...props}
+        {...omit(base, ['testId'])}
+        {...omit(props, ['testId'])}
+        data-testid={props.testId || base.testId}
         className={`flex whitespace-nowrap rounded p-2 ${styles[kind]} ${props.className || ''}`}>
         {props.children || props.title || base.title}
       </button>
     );
   };
 
-const PrimaryButton = Button({ kind: 'primary', 'data-test-id': 'primary-button' });
-const SecondaryButton = Button({ kind: 'secondary', 'data-test-id': 'secondary-button' });
+const PrimaryButton = Button({ kind: 'primary', testId: 'primary-button' });
+const SecondaryButton = Button({ kind: 'secondary', testId: 'secondary-button' });
 const DeleteButton = Button({
   kind: 'danger',
-  'data-test-id': 'delete-button',
+  testId: 'delete-button',
   title: Messages.util.delete,
 });
-const CancelButton = Button({ kind: 'secondary', 'data-test-id': 'cancel-button', title: Messages.util.cancel });
-const OkButton = Button({ kind: 'primary', 'data-test-id': 'ok-button', title: Messages.util.ok });
-const LinkButton = Button({ kind: 'link', 'data-test-id': 'link-button' });
+const CancelButton = Button({ kind: 'secondary', testId: 'cancel-button', title: Messages.util.cancel });
+const OkButton = Button({ kind: 'primary', testId: 'ok-button', title: Messages.util.ok });
+const LinkButton = Button({ kind: 'link', testId: 'link-button' });
 
 interface OkCancelProps {
   onOk: () => void;
@@ -58,8 +61,8 @@ interface OkCancelProps {
 
 const OkCancel = ({ onOk, okTitle, onCancel, cancelTitle }: OkCancelProps) => (
   <Space>
-    <CancelButton onClick={onCancel} title={cancelTitle || Messages.util.cancel} />
-    <OkButton onClick={onOk} title={okTitle || Messages.util.ok} />
+    <CancelButton onClick={onCancel} title={cancelTitle || Messages.util.cancel} testId={slugify(cancelTitle || Messages.util.cancel)} />
+    <OkButton onClick={onOk} title={okTitle || Messages.util.ok} testId={slugify(okTitle || Messages.util.ok)}  />
   </Space>
 );
 

@@ -29,17 +29,17 @@ const Modal = observer(({ title, modalId, footer, onClose, isOpen, children, cla
   return visible ? (
     <article
       className={`fixed bottom-0 left-0 right-0 z-50 rounded-lg rounded-b-none bg-background-600
-      p-4 shadow-xl md:bottom-auto md:left-20 md:right-auto md:top-56 md:mx-auto md:rounded-b-lg ${className || ''}`}>
+      p-4 shadow-xl md:top-auto md:left-20 md:right-auto md:bottom-0 md:mx-auto md:rounded-b-lg ${className || ''}`}>
       <Card
         header={
           <div className='flex justify-between align-middle'>
-            <TextTitle className='m-0'>{title}</TextTitle>
+            <TextTitle testId="nm-modal-title" className='m-0'>{title}</TextTitle>
             <Icon className='m-1 mr-4 cursor-pointer hover:opacity-75'>
               <XCircleIcon onClick={onCloseFn} />
             </Icon>
           </div>
         }
-        data-test-id='nm-modal-card'
+        testId='nm-modal-card'
         footer={footer}>
         {children}
       </Card>

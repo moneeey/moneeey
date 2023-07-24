@@ -11,7 +11,7 @@ const DatePicker = ({
   className,
   value,
   onChange,
-  'data-test-id': dataTestId,
+  testId,
   disabled,
   readOnly,
   prefix,
@@ -24,7 +24,7 @@ const DatePicker = ({
     isError,
     input: (
       <ReactDatePicker
-        {...{ 'data-test-id': dataTestId }}
+        data-testid={testId}
         popperPlacement='auto'
         fixedHeight
         className={`${BaseInputClzz || ''} z-50 ${className || ''}`}

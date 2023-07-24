@@ -17,7 +17,7 @@ const CurrencyTable = observer(({ currencies }: CurrencySettingsProps) => {
 
   return (
     <TableEditor
-      data-test-id='currencyTable'
+      testId='currencyTable'
       store={currencies}
       factory={currencies.factory}
       schema={[

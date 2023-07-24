@@ -45,14 +45,14 @@ export const MergeAccountsModal = observer(() => {
       <VerticalSpace>
         <span className='white-space-preline'>{Messages.merge_accounts.description}</span>
         <Select
-          data-test-id='source_account'
+          testId='source_account'
           placeholder={Messages.merge_accounts.source}
           value={state.source_account}
           onChange={(source_account) => setState({ ...state, source_account })}
           options={accounts.all.map((account) => ({ label: account.name, value: account.account_uuid }))}
         />
         <Select
-          data-test-id='target_account'
+          testId='target_account'
           placeholder={Messages.merge_accounts.target}
           value={state.target_account}
           onChange={(target_account) => setState({ ...state, target_account })}

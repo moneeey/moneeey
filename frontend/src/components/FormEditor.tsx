@@ -19,8 +19,8 @@ interface BaseFormEditor extends WithDataTestId {
   }[];
 }
 
-export const BaseFormEditor = ({ className, 'data-test-id': dataTestId, items, footer }: BaseFormEditor) => (
-  <VerticalSpace className={`bg-background-800 p-4 ${className || ''}`} {...{ 'data-test-id': dataTestId }}>
+export const BaseFormEditor = ({ className, testId, items, footer }: BaseFormEditor) => (
+  <VerticalSpace className={`bg-background-800 p-4 ${className || ''}`} testId={testId}>
     {items.map((item) => (
       <div key={item.label}>
         <TextNormal>{item.label}</TextNormal>
@@ -39,10 +39,10 @@ interface FormEditorProps<T extends IBaseEntity> extends WithDataTestId {
 }
 
 export default observer(
-  <T extends IBaseEntity>({ className, store, schema, entity, 'data-test-id': dataTestId }: FormEditorProps<T>) => (
+  <T extends IBaseEntity>({ className, store, schema, entity, testId }: FormEditorProps<T>) => (
     <BaseFormEditor
       className={className}
-      {...{ 'data-test-id': dataTestId }}
+      testId={testId}
       items={schema.map((field) => ({
         label: field.title,
         editor: (

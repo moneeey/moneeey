@@ -34,7 +34,7 @@ const Budget = observer(() => {
       <Space>
         {Messages.budget.show_months}
         <InputNumber
-          data-test-id='inputViewMonths'
+          testId='inputViewMonths'
           placeholder={Messages.budget.show_months}
           value={viewMonths}
           thousandSeparator={config.main.thousand_separator}
@@ -45,7 +45,7 @@ const Budget = observer(() => {
           }
         />
         <Checkbox
-          data-test-id='checkboxViewArchived'
+          testId='checkboxViewArchived'
           value={viewArchived}
           onChange={(view_archived) => config.merge({ ...config.main, view_archived })}
           placeholder={Messages.budget.show_archived}>

@@ -32,7 +32,7 @@ export default function <TEntity>({
 
       return (
         <Select
-          data-test-id={`editor${field.title.replace(' ', '_')}`}
+          testId={`editor${field.title.replace(' ', '_')}`}
           readOnly={field.readOnly}
           placeholder={field.title}
           isError={isError}
