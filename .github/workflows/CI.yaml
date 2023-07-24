@@ -64,6 +64,8 @@ jobs:
   PLAYWRIGHT:
     needs: INSTALL
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.36.0-jammy
     timeout-minutes: 10
     defaults:
       run:
@@ -86,9 +88,6 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-
-      - name: Install playwright
-        run: yarn run playwright install --with-deps
 
       - name: Run Playwright tests
         run: yarn run playwright test

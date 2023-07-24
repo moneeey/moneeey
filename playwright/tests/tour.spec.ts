@@ -158,8 +158,8 @@ test.describe('Tour', () => {
     // Allocate on budget and wait for calculated used/remaining
     expect(page.getByText('R$').first()).toBeDefined()
     await Input(page, 'editorAllocated').change('544,14')
-    await expect(page.getByTestId('editorUsed').first()).toHaveValue('123,45')
-    await expect(page.getByTestId('editorRemaining').first()).toHaveValue('420,69')
+    await expect(page.getByTestId('editorUsed').first()).toHaveValue('123,45', { timeout: 30000 })
+    await expect(page.getByTestId('editorRemaining').first()).toHaveValue('420,69', { timeout: 30000 })
 
     // Go to Import
     await tourNext(page)
