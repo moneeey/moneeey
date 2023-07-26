@@ -1,41 +1,23 @@
-import http from "http";
-import express from "express";
+import { setupAuth } from "./auth.ts";
+import { PORT } from "./config.ts";
+import { oak } from "./deps.ts";
 
-import {
-  defaultRoutes,
-  authRoutes,
-  storageRoutes,
-  dbProxyRoutes,
-} from "./routes";
-import { PORT } from "./core/config";
+export async function runServer() {
+  const app = new oak.Application();
+  const router = new oak.Router();
 
-const app = express();
+  router.get("/", ({ response }) => {
+    response.body = "Welcome to Moneeey API";
+  });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+  setupAuth(app, router);
 
-app.use("/api", defaultRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/storage", storageRoutes);
-app.use("/api/db", dbProxyRoutes);
-
-const server = http.createServer(app);
-
-const terminateServer = () =>
-  server.close(() => console.info("Server terminated"));
-
-process.on("SIGINT", terminateServer);
-
-process.on("SIGTERM", terminateServer);
-
-const main = () => {
-  try {
-    server.listen(PORT, () =>
-      console.info(`Listening successfully on port ${PORT}`)
-    );
-  } catch ({ message }) {
-    console.error(`Error occurred: ${message}`);
-  }
-};
-
-main();
+  const port = PORT;
+  app.use(router.routes());
+  app.use(router.allowedMethods());
+  app.addEventListener("error", (err) => {
+    console.error("application error", { err });
+  });
+  console.log(`Moneeey API listening at ${port}`);
+  await app.listen({ port });
+}

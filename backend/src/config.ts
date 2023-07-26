@@ -18,6 +18,7 @@ if (!env) {
   );
 }
 
+export const PORT = parseInt(env["PORT"]);
 export const APP_EMAIL = env["APP_EMAIL"];
 export const APP_URL = env["APP_URL"];
 export const COUCHDB_HOST = env["COUCHDB_HOST"];
