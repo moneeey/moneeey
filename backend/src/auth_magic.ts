@@ -45,7 +45,7 @@ export function setupMagic(
 
   const sendMagic = async (email: string) => {
     const token = await magicJwt.generate(email, {}, "2h");
-    const url = `${APP_URL}/api/auth/magic/validate/${token}`;
+    const url = `${APP_URL}/api/magic/validate/${token}`;
     const body = `Click this link to login into Moneeey: ${url}`;
     await sendEmail({
       to: email,

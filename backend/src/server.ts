@@ -6,9 +6,8 @@ export async function runServer() {
   const app = new oak.Application();
   const router = new oak.Router();
 
-  router.get("/", ({ response }) => {
-    response.body = "Welcome to Moneeey API";
-  });
+  router.get("/", ({ response }) => { response.body = "Welcome to Moneeey Backend"; });
+  router.get("/api", ({ response }) => { response.body = "Welcome to Moneeey API"; });
 
   setupAuth(app, router);
 
