@@ -1,7 +1,7 @@
 import { isEmpty } from "lodash";
 import { action, makeObservable, observable } from "mobx";
 import { getCurrentHost } from "../utils/Utils";
-import PersistenceStore from "./Persistence.ts";
+import PersistenceStore from "./Persistence";
 
 export default class ManagementStore {
   accessToken = "";
