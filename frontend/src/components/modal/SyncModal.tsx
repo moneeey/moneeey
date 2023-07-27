@@ -11,11 +11,8 @@ import { CancelButton, LinkButton, OkButton } from '../base/Button';
 import Tabs from '../base/Tabs';
 import { Checkbox, Input } from '../base/Input';
 import { BaseFormEditor } from '../FormEditor';
-import { StorageKind, getCurrentHost, setStorage } from '../../utils/Utils';
+import { StorageKind } from '../../utils/Utils';
 import { Status } from '../Status';
-import ManagementStore, { IDatabase } from '../../shared/Management';
-import { TextTitle } from '../base/Text';
-import { SyncConfig } from '../../entities/Config';
 
 const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
   placeholder,
@@ -52,11 +49,9 @@ const MoneeeyLogin = ({ setMessage }: { setMessage: Dispatch<SetStateAction<Reac
   const [state, setState] = useState({ email: '' });
 
   const onLogin = async () => {
-    const { success } = await management.start(state.email);
+    const success = await management.start(state.email);
     if (success) {
       setMessage(<Status type='info'>{Messages.sync.login.started}</Status>);
-      await management.waitUntilLoggedIn();
-      setMessage(<Status type='success'>{Messages.sync.login.success}</Status>);
     } else {
       setMessage(<Status type='error'>{Messages.sync.login.error}</Status>);
     }
@@ -76,74 +71,17 @@ const MoneeeyLogin = ({ setMessage }: { setMessage: Dispatch<SetStateAction<Reac
   );
 };
 
-const loadDatabases = async (management: ManagementStore): Promise<IDatabase[]> => {
-  const { databases } = await management.listDatabases();
-  if (isEmpty(databases)) {
-    await management.createDatabase('Default');
-
-    return loadDatabases(management);
-  }
-
-  return databases;
-};
-
-const MoneeeyAccount = () => {
-  const { management, persistence } = useMoneeeyStore();
-  const [state, setState] = useState({ databases: [] as IDatabase[] });
-
-  useEffect(() => {
-    (async () => {
-      const databases = await loadDatabases(management);
-      setState({ ...state, databases });
-    })();
-  }, []);
-
-  const onLogout = () => management.logout();
-  const onSelectDb = (db: IDatabase) => {
-    const syncRemote: SyncConfig = {
-      enabled: true,
-      url: `${getCurrentHost()}/api/db/${db.realm_database_id}`,
-      username: management.email,
-      password: management.auth_code,
-    };
-    setStorage('moneeeySync', JSON.stringify(syncRemote), StorageKind.SESSION);
-    persistence.sync(syncRemote);
-  };
-
-  return (
-    <>
-      <TextTitle>Databases</TextTitle>
-      <ul>
-        {state.databases.map((db) => (
-          <li key={db.realm_database_id}>
-            {db.description}{' '}
-            <LinkButton
-              onClick={() => {
-                onSelectDb(db);
-              }}
-              title={Messages.sync.select_db}
-            />
-          </li>
-        ))}
-      </ul>
-      <OkButton onClick={onLogout} title={Messages.login.logout} />{' '}
-    </>
-  );
-};
-
 const MoneeeyAccountConfig = observer(() => {
   const { management } = useMoneeeyStore();
   const [message, setMessage] = useState(undefined as ReactElement | undefined);
-  const showAccount = management.loggedIn;
+  const loggedIn = management.loggedIn;
 
-  useEffect(() => {
-    management.checkLoggedIn();
-  }, []);
+  const onLogout = () => management.logout()
 
   return (
     <>
       {message}
-      {showAccount ? <MoneeeyAccount /> : <MoneeeyLogin setMessage={setMessage} />}
+      {loggedIn ? <OkButton onClick={onLogout} title={Messages.login.logout} /> : <MoneeeyLogin setMessage={setMessage} />}
     </>
   );
 });
@@ -178,7 +116,7 @@ const DatabaseConfig = () => {
               field='url'
               state={state}
               setState={setState}
-              placeholder='http://localcouchdb.moneeey.io/mydatabase'
+              placeholder='http://localcouchdb.moneeey.io:4280/mydatabase'
             />
           ),
         },

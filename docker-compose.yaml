@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   frontend:
-    build: ./docker
+    build: ./frontend
     restart: unless-stopped
     networks:
       - moneeey-network
@@ -10,14 +10,14 @@ services:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/frontend:/app:z
 
   backend:
-    build: ./docker
+    build: ./backend
     restart: unless-stopped
     networks:
       - moneeey-network
     depends_on:
       - couchdb
     volumes:
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/sample.env:/run/secret/dev.env:z,ro
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/backend/env.example:/run/secret/dev.env:z,ro
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app:z
 
   couchdb:
@@ -31,12 +31,6 @@ services:
     volumes:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/couchdb_data:/opt/couchdb/data:z
       - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb.dev.ini:/opt/couchdb/etc/local.d/local.ini:z
-
-  devmail:
-    image: maildev/maildev:2.0.5
-    restart: unless-stopped
-    networks:
-      - moneeey-network
 
   caddy:
     image: caddy:2.6.4-alpine

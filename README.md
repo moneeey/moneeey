@@ -19,12 +19,6 @@ The frontend will be available at: [local.moneeey.io:4280](<http://local.moneeey
 
 The backend will be available at: [local.moneeey.io:4280/api/](<http://local.moneeey.io:4280/api/>)
 
-MailDev to see emails sent from the system: [localdevmail.moneeey.io:4280](<http://localdevmail.moneeey.io:4280>)
-
-CouchDB admin is available at [localcouchdb.moneeey.io:4280/login](<http://localcouchdb.moneeey.io:4280/_utils/#login>)
+CouchDB admin is available at: [local.moneeey.io:4280/db/_utils/#login](<http://local.moneeey.io:4280/db/_utils/#login>)
 use `dev/dev` to login as admin.
 
-## Example backend requests
-
-There are some backend request examples [here](/backend/requests). They are
-runnable with VSCode Rest Client.

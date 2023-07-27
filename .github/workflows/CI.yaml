@@ -3,45 +3,11 @@ name: CI/CD
 on: push
 
 jobs:
-  INSTALL:
+  FRONTEND:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "16.17"
-
-      - uses: actions/cache@v2
-        with:
-          path: |
-            backend/node_modules
-            frontend/node_modules
-            playwright/node_modules
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-moneeey-${{ hashFiles('backend/package.json') }}-${{ hashFiles('frontend/package.json') }}-${{ hashFiles('playwright/package.json') }}
-
-      - run: yarn install --frozen-lockfile
-        name: Install frontend
-        working-directory: frontend
-
-      - name: Install playwright
-        run: yarn install --frozen-lockfile
-        working-directory: playwright
-
-      - run: yarn install --frozen-lockfile
-        name: Install backend
-        working-directory: backend
-
-  TEST:
-    needs: INSTALL
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [backend, frontend]
     defaults:
       run:
-        working-directory: ${{ matrix.service }}
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v3
 
@@ -49,20 +15,31 @@ jobs:
         with:
           node-version: "16.17"
 
-      - uses: actions/cache@v2
-        with:
-          path: |
-            backend/node_modules
-            frontend/node_modules
-            playwright/node_modules
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-moneeey-${{ hashFiles('backend/package.json') }}-${{ hashFiles('frontend/package.json') }}-${{ hashFiles('playwright/package.json') }}
+      - run: yarn install --frozen-lockfile
+        name: Install
 
       - run: yarn test
         name: Test
 
+  BACKEND:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.35.3
+
+      - run: deno cache main.ts
+        name: Install
+
+      - run: deno test
+        name: Test
+
   PLAYWRIGHT:
-    needs: INSTALL
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -75,14 +52,9 @@ jobs:
         with:
           node-version: "16.17"
 
-      - uses: actions/cache@v2
-        with:
-          path: |
-            backend/node_modules
-            frontend/node_modules
-            playwright/node_modules
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-moneeey-${{ hashFiles('backend/package.json') }}-${{ hashFiles('frontend/package.json') }}-${{ hashFiles('playwright/package.json') }}
+      - run: yarn install --frozen-lockfile
+        name: Install
+        working-directory: frontend
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -103,7 +75,7 @@ jobs:
   PACKAGE:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [TEST, PLAYWRIGHT]
+    needs: [FRONTEND, BACKEND, PLAYWRIGHT]
     strategy:
       matrix:
         service: [backend, frontend]

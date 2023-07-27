@@ -10,4 +10,4 @@ LABEL org.opencontainers.image.title=moneeey-backend
 EXPOSE 4369
 ENV PORT 4369
 
-CMD ["run", "--allow-net", "--allow-read", "--allow-env", "main.ts"]
+CMD ["task", "dev"]

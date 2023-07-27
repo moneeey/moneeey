@@ -1,11 +1,10 @@
 {
         auto_https off
-        http_port 4280
 }
 
-local.moneeey.io:4280 {
+{env.APP_HOST} {
         handle_path /db/* {
-          reverse_proxy couchdb:5984
+          reverse_proxy {env.COUCHDB_HOST}
         }
         reverse_proxy /api/* backend:4269
         reverse_proxy frontend:4270
