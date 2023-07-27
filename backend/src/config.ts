@@ -1,20 +1,24 @@
 import { dotenv, fs } from "./deps.ts";
 
-const PROD_ENV_FILE = "/run/secret/prod.env";
-const DEV_ENV_FILE = "/run/secret/dev.env";
-const loadEnvFile = (envPath: string) => {
-  if (fs.existsSync(envPath)) {
+const ENV_FILES = [
+ "/run/secret/prod.env",
+ "/run/secret/dev.env",
+ "env",
+ "env.example",
+]
+
+const loadEnvFile = (envPath?: string) => {
+  if (envPath) {
     return dotenv.loadSync({ envPath });
   }
   return null;
 };
 
-const env = loadEnvFile(PROD_ENV_FILE) || loadEnvFile(DEV_ENV_FILE) ||
-  loadEnvFile(".env") || loadEnvFile(".env.example");
+const env = loadEnvFile(ENV_FILES.find(fs.existsSync))
 
 if (!env) {
   throw new Error(
-    `Could not load ${PROD_ENV_FILE} || ${DEV_ENV_FILE} || .env || .env.example`,
+    `Could not load env file, tried ${ENV_FILES.join(' || ')}`,
   );
 }
 

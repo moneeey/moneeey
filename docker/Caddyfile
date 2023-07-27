@@ -11,10 +11,3 @@ local.moneeey.io:4280 {
         reverse_proxy frontend:4270
 }
 
-localdevmail.moneeey.io:4280 {
-        reverse_proxy devmail:1080
-}
-
-localcouchdb.moneeey.io:4280 {
-        reverse_proxy couchdb:5984
-}

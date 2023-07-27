@@ -47,6 +47,8 @@ export default class ManagementStore {
       email,
     });
 
+    this.startMonitor()
+
     return !!sent;
   }
 
