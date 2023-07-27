@@ -8,8 +8,19 @@ if (import.meta.main) {
   });
   const exportable = (str: string) => jose.base64url.encode(str);
 
+  const publicKeyStr = await jose.exportSPKI(publicKey)
+  const privateKeyStr = await jose.exportPKCS8(privateKey)
+
   console.log(`
-JWT_PUBLIC_KEY="${exportable(await jose.exportSPKI(publicKey))}"
-JWT_PRIVATE_KEY="${exportable(await jose.exportPKCS8(privateKey))}"
+.env
+  JWT_PUBLIC_KEY="${exportable(publicKeyStr)}"
+  JWT_PRIVATE_KEY="${exportable(privateKeyStr)}"
+
+couchdb.ini
+  [chttpd]
+  authentication_handlers = {chttpd_auth, cookie_authentication_handler}, {chttpd_auth, jwt_authentication_handler}, {chttpd_auth, default_authentication_handler}
+
+  [jwt_keys]
+  rsa:moneeeyKeyId = ${publicKeyStr.replace(/\n|\r/g, '\\n')}
 `);
 }
