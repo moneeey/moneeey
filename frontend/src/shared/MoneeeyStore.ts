@@ -37,7 +37,7 @@ export default class MoneeeyStore {
 
   persistence: PersistenceStore;
 
-  management: ManagementStore
+  management: ManagementStore;
 
   constructor(dbFactory: PouchDBFactoryFn) {
     makeObservable(this, { loaded: observable, load: action, setLoaded: action });
@@ -48,7 +48,7 @@ export default class MoneeeyStore {
     this.persistence.monitor(this.transactions, EntityType.TRANSACTION);
     this.persistence.monitor(this.budget, EntityType.BUDGET);
     this.persistence.monitor(this.config, EntityType.CONFIG);
-    this.management = new ManagementStore(this.persistence)
+    this.management = new ManagementStore(this.persistence);
   }
 
   async load() {

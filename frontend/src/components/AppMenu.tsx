@@ -31,6 +31,7 @@ import ImportRoute from '../routes/ImportRoute';
 import SettingsRoute from '../routes/SettingsRoute';
 import BudgetRoute from '../routes/BudgetRoute';
 import Messages from '../utils/Messages';
+import { StorageKind, getStorage, setStorage } from '../utils/Utils';
 import { NavigationModal } from '../shared/Navigation';
 
 import RouteRenderer from '../routes/RouteRenderer';
@@ -39,7 +40,6 @@ import MoneeeyStore from '../shared/MoneeeyStore';
 import Navbar from './base/Navbar';
 import { TextNormal, TextSecondary, TextTitle } from './base/Text';
 import Icon, { FavIcon } from './base/Icon';
-import { getStorage, setStorage, StorageKind } from '../utils/Utils';
 
 const Menu = observer(() => {
   const { navigation, accounts, currencies, persistence, transactions } = useMoneeeyStore();

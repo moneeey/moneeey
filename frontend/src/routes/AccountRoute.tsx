@@ -3,14 +3,12 @@ import { compact } from 'lodash';
 
 import TransactionTable from '../tables/TransactionTable';
 import { IAccount } from '../entities/Account';
-
+import { slugify } from '../utils/Utils';
 import MoneeeyStore from '../shared/MoneeeyStore';
-
 import { ITransaction } from '../entities/Transaction';
 
 import HomeRoute from './HomeRouter';
 import { IAppParameters, IRouteParameters, Route } from './Route';
-import { slugify } from '../utils/Utils';
 
 interface IAccountRoute extends IRouteParameters {
   account_name: string;

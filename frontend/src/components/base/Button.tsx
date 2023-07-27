@@ -42,14 +42,25 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind & WithD
   };
 
 const PrimaryButton = Button({ kind: 'primary', testId: 'primary-button' });
-const SecondaryButton = Button({ kind: 'secondary', testId: 'secondary-button' });
+const SecondaryButton = Button({
+  kind: 'secondary',
+  testId: 'secondary-button',
+});
 const DeleteButton = Button({
   kind: 'danger',
   testId: 'delete-button',
   title: Messages.util.delete,
 });
-const CancelButton = Button({ kind: 'secondary', testId: 'cancel-button', title: Messages.util.cancel });
-const OkButton = Button({ kind: 'primary', testId: 'ok-button', title: Messages.util.ok });
+const CancelButton = Button({
+  kind: 'secondary',
+  testId: 'cancel-button',
+  title: Messages.util.cancel,
+});
+const OkButton = Button({
+  kind: 'primary',
+  testId: 'ok-button',
+  title: Messages.util.ok,
+});
 const LinkButton = Button({ kind: 'link', testId: 'link-button' });
 
 interface OkCancelProps {
@@ -61,9 +72,13 @@ interface OkCancelProps {
 
 const OkCancel = ({ onOk, okTitle, onCancel, cancelTitle }: OkCancelProps) => (
   <Space>
-    <CancelButton onClick={onCancel} title={cancelTitle || Messages.util.cancel} testId={slugify(cancelTitle || Messages.util.cancel)} />
-    <OkButton onClick={onOk} title={okTitle || Messages.util.ok} testId={slugify(okTitle || Messages.util.ok)}  />
+    <CancelButton
+      onClick={onCancel}
+      title={cancelTitle || Messages.util.cancel}
+      testId={slugify(cancelTitle || Messages.util.cancel)}
+    />
+    <OkButton onClick={onOk} title={okTitle || Messages.util.ok} testId={slugify(okTitle || Messages.util.ok)} />
   </Space>
 );
 
-export { PrimaryButton, SecondaryButton, OkButton, CancelButton, DeleteButton, LinkButton, OkCancel };
+export { CancelButton, DeleteButton, LinkButton, OkButton, OkCancel, PrimaryButton, SecondaryButton };
