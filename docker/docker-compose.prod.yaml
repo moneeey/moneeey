@@ -8,33 +8,33 @@ services:
   frontend:
     image: FRONTEND_IMAGE
     restart: unless-stopped
-    networks:
-      - web
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.moneeey-frontend.rule=Host(`moneeey.io`) && !PathPrefix(`/api`)"
-      - "traefik.http.routers.moneeey-frontend.tls.certresolver=le"
 
   backend:
     image: BACKEND_IMAGE
     restart: unless-stopped
-    networks:
-      - web
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.moneeey-backend.rule=Host(`moneeey.io`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.moneeey-backend.tls.certresolver=le"
-    depends_on:
-      - couchdb
     volumes:
       - /home/ubuntu/moneeey/env:/run/secret/prod.env:ro
 
   couchdb:
     image: couchdb:3.2
     restart: unless-stopped
-    environment:
-      - COUCHDB_USER=prod
-      - COUCHDB_PASSWORD=prod
+    env_file:
+      - /home/ubuntu/moneeey/env
     volumes:
       - /home/ubuntu/moneeey/couchdb_data:/opt/couchdb/data
       - /home/ubuntu/moneeey/couchdb.prod.ini:/opt/couchdb/etc/local.d/local.ini
+
+  caddy:
+    image: caddy:2.6.4-alpine
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moneeey.rule=Host(`moneeey.io`)"
+      - "traefik.http.routers.moneeey.tls.certresolver=le"
+    networks:
+      - web
+    volumes:
+      - /home/ubuntu/moneeey/Caddyfile.prod:/etc/caddy/Caddyfile:z,ro
+      - /home/ubuntu/moneeey/caddy_data:/data:z
+      - /home/ubuntu/moneeey/caddy_config:/config:z
+
