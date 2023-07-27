@@ -38,23 +38,21 @@ interface FormEditorProps<T extends IBaseEntity> extends WithDataTestId {
   entity: T;
 }
 
-export default observer(
-  <T extends IBaseEntity>({ className, store, schema, entity, testId }: FormEditorProps<T>) => (
-    <BaseFormEditor
-      className={className}
-      testId={testId}
-      items={schema.map((field) => ({
-        label: field.title,
-        editor: (
-          <field.render
-            rev={entity?._rev || ''}
-            entity={entity}
-            field={field}
-            commit={(updated) => field.validate(updated) && store.merge(updated)}
-            isError={!field.validate(entity)}
-          />
-        ),
-      }))}
-    />
-  )
-);
+export default observer(<T extends IBaseEntity>({ className, store, schema, entity, testId }: FormEditorProps<T>) => (
+  <BaseFormEditor
+    className={className}
+    testId={testId}
+    items={schema.map((field) => ({
+      label: field.title,
+      editor: (
+        <field.render
+          rev={entity?._rev || ''}
+          entity={entity}
+          field={field}
+          commit={(updated) => field.validate(updated) && store.merge(updated)}
+          isError={!field.validate(entity)}
+        />
+      ),
+    }))}
+  />
+));

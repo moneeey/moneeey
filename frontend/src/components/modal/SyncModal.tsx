@@ -1,13 +1,12 @@
-import { Dispatch, ReactElement, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, ReactElement, SetStateAction, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { isEmpty } from 'lodash';
 
 import { NavigationModal } from '../../shared/Navigation';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import Messages from '../../utils/Messages';
 
 import Modal from '../base/Modal';
-import { CancelButton, LinkButton, OkButton } from '../base/Button';
+import { CancelButton, OkButton } from '../base/Button';
 import Tabs from '../base/Tabs';
 import { Checkbox, Input } from '../base/Input';
 import { BaseFormEditor } from '../FormEditor';
@@ -74,14 +73,18 @@ const MoneeeyLogin = ({ setMessage }: { setMessage: Dispatch<SetStateAction<Reac
 const MoneeeyAccountConfig = observer(() => {
   const { management } = useMoneeeyStore();
   const [message, setMessage] = useState(undefined as ReactElement | undefined);
-  const loggedIn = management.loggedIn;
+  const { loggedIn } = management;
 
-  const onLogout = () => management.logout()
+  const onLogout = () => management.logout();
 
   return (
     <>
       {message}
-      {loggedIn ? <OkButton onClick={onLogout} title={Messages.login.logout} /> : <MoneeeyLogin setMessage={setMessage} />}
+      {loggedIn ? (
+        <OkButton onClick={onLogout} title={Messages.login.logout} />
+      ) : (
+        <MoneeeyLogin setMessage={setMessage} />
+      )}
     </>
   );
 });

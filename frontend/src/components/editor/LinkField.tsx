@@ -7,13 +7,12 @@ import { FieldAcessor, FieldDefHelper, FieldRenderProps } from './FieldDef';
 export default function <TEntity>({
   read,
   onClick,
-}: FieldAcessor<TEntity, string> & { onClick: (entity: TEntity) => void }): FieldDefHelper<TEntity> {
+}: FieldAcessor<TEntity, string> & {
+  onClick: (entity: TEntity) => void;
+}): FieldDefHelper<TEntity> {
   return {
     render: observer(({ entity, field }: FieldRenderProps<TEntity>) => (
-      <LinkButton
-        className='!p-0'
-        testId={`editor${field.title.replace(' ', '_')}`}
-        onClick={() => onClick(entity)}>
+      <LinkButton className='!p-0' testId={`editor${field.title.replace(' ', '_')}`} onClick={() => onClick(entity)}>
         {read(entity)}
       </LinkButton>
     )),

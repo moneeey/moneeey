@@ -1,12 +1,14 @@
-import { isEmpty } from "lodash";
-import { action, makeObservable, observable } from "mobx";
-import { getCurrentHost } from "../utils/Utils";
-import PersistenceStore from "./Persistence.ts";
+import { isEmpty } from 'lodash';
+import { action, makeObservable, observable } from 'mobx';
+
+import { getCurrentHost } from '../utils/Utils';
+
+import PersistenceStore from './Persistence';
 
 export default class ManagementStore {
-  accessToken = "";
+  accessToken = '';
 
-  database = "";
+  database = '';
 
   loggedIn = false;
 
@@ -30,32 +32,34 @@ export default class ManagementStore {
 
   async post<T>(url: string, body: object, headers?: object): Promise<T> {
     const response = await fetch(url, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(body),
       headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
         ...headers,
       },
     });
 
-    return await response.json();
+    return (await response.json()) as T;
   }
 
   async start(email: string) {
-    const { sent } = await this.post<{ sent: string }>("/api/auth/magic/send", {
+    const { sent } = await this.post<{ sent: string }>('/api/auth/magic/send', {
       email,
     });
 
-    this.startMonitor()
+    this.startMonitor();
 
-    return !!sent;
+    return Boolean(sent);
   }
 
   async checkLoggedIn() {
-    const { authenticated, database, accessToken } = await this.post<
-      { authenticated: boolean; database: string; accessToken: string }
-    >("/api/auth/couch", {});
+    const { authenticated, database, accessToken } = await this.post<{
+      authenticated: boolean;
+      database: string;
+      accessToken: string;
+    }>('/api/auth/couch', {});
     if (authenticated && database && accessToken) {
       this.complete(database, accessToken);
     }
@@ -67,22 +71,19 @@ export default class ManagementStore {
 
   startMonitor() {
     this.stopMonitor();
-    this.monitorTmr = setTimeout(
-      () => {
-        this.startMonitor();
-        this.checkLoggedIn();
-      },
-      10000,
-    ) as unknown as number;
+    this.monitorTmr = setTimeout(() => {
+      this.startMonitor();
+      this.checkLoggedIn();
+    }, 10000) as unknown as number;
   }
 
   applySync() {
     this.persistence.sync({
-      url: getCurrentHost() + '/db/' + this.database,
+      url: `${getCurrentHost()}/db/${this.database}`,
       username: 'JWT',
       password: this.accessToken,
-      enabled: !!this.accessToken,
-    })
+      enabled: Boolean(this.accessToken),
+    });
   }
 
   complete(database: string, accessToken: string) {
@@ -91,15 +92,15 @@ export default class ManagementStore {
       this.database = database;
       this.loggedIn = true;
       this.stopMonitor();
-      this.applySync()
+      this.applySync();
     }
   }
 
   async logout() {
-    await this.post<{ authenticated: boolean }>("/api/auth/logout", {});
-    this.accessToken = "";
-    this.database = "";
+    await this.post<{ authenticated: boolean }>('/api/auth/logout', {});
+    this.accessToken = '';
+    this.database = '';
     this.loggedIn = false;
-    this.applySync()
+    this.applySync();
   }
 }
