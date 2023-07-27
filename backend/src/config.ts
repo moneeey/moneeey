@@ -26,6 +26,7 @@ export const COUCHDB_ADMIN_USERNAME = env["COUCHDB_ADMIN_USERNAME"];
 export const COUCHDB_ADMIN_PASSWORD = env["COUCHDB_ADMIN_PASSWORD"];
 export const JWT_COUCH_KEY_ID = env["JWT_COUCH_KEY_ID"];
 export const JWT_MAGIC_KEY_ID = env["JWT_MAGIC_KEY_ID"];
+export const JWT_AUTH_KEY_ID = env["JWT_AUTH_KEY_ID"];
 export const JWT_PRIVATE_KEY = env["JWT_PRIVATE_KEY"];
 export const JWT_PUBLIC_KEY = env["JWT_PUBLIC_KEY"];
 export const SENDGRID_API_KEY = env["SENDGRID_API_KEY"];

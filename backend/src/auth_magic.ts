@@ -1,13 +1,8 @@
+import { authenticateUser } from "./auth_couch.ts";
 import { APP_EMAIL, APP_URL } from "./config.ts";
-import { prepareUserDatabase } from "./couchdb.ts";
-import { jssha, oak } from "./deps.ts";
-import { couchJwt, magicJwt } from "./jwt.ts";
+import { oak } from "./deps.ts";
+import { magicJwt } from "./jwt.ts";
 import { sendEmail } from "./mail.ts";
-
-function hash(value: string) {
-  return new jssha("SHA3-384", "TEXT").update(value).getHash("HEX")
-    .toLowerCase();
-}
 
 function validEmail(email: string) {
   email = email.toLowerCase().trim();
@@ -15,23 +10,6 @@ function validEmail(email: string) {
     throw new Error("invalid email " + email);
   }
   return email;
-}
-
-async function authAndEnsureDbExists(
-  strategy: string,
-  email: string,
-  userId: string,
-) {
-  if (!email || !userId) return { error: "no email or userId" };
-  const db = strategy + "_" + hash(`${strategy}:${userId}:${email}`);
-  await prepareUserDatabase(db, email);
-  return {
-    accessToken: await couchJwt.generate(
-      email,
-      { db },
-      "36h",
-    ),
-  };
 }
 
 export function setupMagic(
@@ -44,8 +22,8 @@ export function setupMagic(
   };
 
   const sendMagic = async (email: string) => {
-    const token = await magicJwt.generate(email, {}, "2h");
-    const url = `${APP_URL}/api/magic/validate/${token}`;
+    const token = await magicJwt.generate(email, {}, "15min");
+    const url = `${APP_URL}/api/auth/magic/validate/${token}`;
     const body = `Click this link to login into Moneeey: ${url}`;
     await sendEmail({
       to: email,
@@ -57,13 +35,13 @@ export function setupMagic(
     return { sent: email };
   };
 
-  const validateMagic = async (jwtCode: string) => {
+  const validateMagic = async (ctx: oak.Context, jwtCode: string) => {
     const validatedJwt = await magicJwt.validate(jwtCode);
     const email = validatedJwt.payload.sub || "";
-    return await authAndEnsureDbExists("magic", email, email);
+    return authenticateUser(ctx, 'magic', email, `magic:${email}`);
   };
 
-  authRouter.post("/magic/send", async (ctx) => {
+  authRouter.post("/magic/send", async (ctx: oak.Context) => {
     try {
       const email = await getBodyEmail(ctx);
       ctx.response.body = JSON.stringify(await sendMagic(email));
@@ -74,10 +52,10 @@ export function setupMagic(
     }
   });
 
-  authRouter.get("/magic/validate/:jwtCode", async (ctx) => {
+  authRouter.get("/magic/validate/:jwtCode", async (ctx: oak.Context) => {
     try {
       const jwtCode = ctx.params["jwtCode"];
-      ctx.response.body = JSON.stringify(await validateMagic(jwtCode));
+      ctx.response.body = JSON.stringify(await validateMagic(ctx, jwtCode));
     } catch (err) {
       console.error("/magic/validate error", { err });
       ctx.response.body = JSON.stringify({ error: "ops" });

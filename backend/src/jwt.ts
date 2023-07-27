@@ -1,5 +1,6 @@
 import { ALG } from "../generate_key.ts";
 import {
+  JWT_AUTH_KEY_ID,
   JWT_COUCH_KEY_ID,
   JWT_MAGIC_KEY_ID,
   JWT_PRIVATE_KEY,
@@ -17,7 +18,14 @@ const publicKey = await jose.importSPKI(
   ALG,
 );
 
-async function generateJwt({ email, claims, keyId, expirationTime = '2h' }: { email: string, claims: Record<string, string>, keyId: string, expirationTime: string }) {
+async function generateJwt(
+  { email, claims, keyId, expirationTime = "2h" }: {
+    email: string;
+    claims: Record<string, string>;
+    keyId: string;
+    expirationTime: string;
+  },
+): Promise<string> {
   return await new jose.SignJWT(claims)
     .setProtectedHeader({ alg: ALG, kid: keyId })
     .setIssuedAt()
@@ -28,7 +36,7 @@ async function generateJwt({ email, claims, keyId, expirationTime = '2h' }: { em
     .sign(privateKey);
 }
 
-async function validateJwt(jwtToken: string, keyId: string) {
+async function validateJwt(jwtToken: string, keyId: string): Promise<jose.JWTVerifyResult> {
   return await jose.jwtVerify(jwtToken, publicKey, {
     issuer: "moneeey.io",
     audience: `moneeey.io:${keyId}`,
@@ -36,9 +44,14 @@ async function validateJwt(jwtToken: string, keyId: string) {
 }
 
 const jwtForKey = (keyId: string) => ({
-  generate: (email: string, claims: Record<string, string>, expirationTime: string) => generateJwt({ email, claims, keyId, expirationTime }),
+  generate: (
+    email: string,
+    claims: Record<string, string>,
+    expirationTime: string,
+  ) => generateJwt({ email, claims, keyId, expirationTime }),
   validate: (jwtToken: string) => validateJwt(jwtToken, keyId),
 });
 
 export const magicJwt = jwtForKey(JWT_MAGIC_KEY_ID);
 export const couchJwt = jwtForKey(JWT_COUCH_KEY_ID);
+export const authJwt = jwtForKey(JWT_AUTH_KEY_ID);

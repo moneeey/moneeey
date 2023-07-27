@@ -1,3 +1,4 @@
+import { setupCouch } from "./auth_couch.ts";
 import { setupMagic } from "./auth_magic.ts";
 import { oak } from "./deps.ts";
 
@@ -9,6 +10,7 @@ export function setupAuth(_app: oak.Application, router: oak.Router) {
   });
 
   setupMagic(authRouter);
+  setupCouch(authRouter);
 
   router.use("/api/auth", authRouter.routes(), authRouter.allowedMethods());
 }

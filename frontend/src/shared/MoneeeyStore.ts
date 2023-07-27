@@ -2,10 +2,9 @@ import { action, makeObservable, observable } from 'mobx';
 
 import AccountStore from '../entities/Account';
 import BudgetStore from '../entities/Budget';
-import ConfigStore, { SyncConfig } from '../entities/Config';
+import ConfigStore from '../entities/Config';
 import CurrencyStore from '../entities/Currency';
 import TransactionStore from '../entities/Transaction';
-import { StorageKind, getStorage } from '../utils/Utils';
 
 import { EntityType } from './Entity';
 import Importer from './import/Importer';
@@ -32,13 +31,13 @@ export default class MoneeeyStore {
 
   budget = new BudgetStore(this);
 
-  management = new ManagementStore();
-
   importer = new Importer(this);
 
   config = new ConfigStore(this);
 
   persistence: PersistenceStore;
+
+  management: ManagementStore
 
   constructor(dbFactory: PouchDBFactoryFn) {
     makeObservable(this, { loaded: observable, load: action, setLoaded: action });
@@ -49,14 +48,7 @@ export default class MoneeeyStore {
     this.persistence.monitor(this.transactions, EntityType.TRANSACTION);
     this.persistence.monitor(this.budget, EntityType.BUDGET);
     this.persistence.monitor(this.config, EntityType.CONFIG);
-  }
-
-  readMoneeySyncFromStorage() {
-    try {
-      return JSON.parse(getStorage('moneeeySync', '', StorageKind.SESSION)) as SyncConfig;
-    } catch (err) {
-      return null;
-    }
+    this.management = new ManagementStore(this.persistence)
   }
 
   async load() {
@@ -65,10 +57,7 @@ export default class MoneeeyStore {
     this.config.init();
     this.currencies.addDefaults();
     const { couchSync } = this.config.main;
-    const moneeeySync = this.readMoneeySyncFromStorage();
-    if (moneeeySync && moneeeySync.enabled) {
-      this.persistence.sync(moneeeySync);
-    } else if (couchSync && couchSync.enabled) {
+    if (couchSync && couchSync.enabled) {
       this.persistence.sync(couchSync);
     }
     this.setLoaded(true);
