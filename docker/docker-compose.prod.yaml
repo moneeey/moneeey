@@ -8,18 +8,22 @@ services:
   frontend:
     image: FRONTEND_IMAGE
     restart: unless-stopped
+    networks:
+      - web
 
   backend:
     image: BACKEND_IMAGE
     restart: unless-stopped
+    networks:
+      - web
     volumes:
       - /home/ubuntu/moneeey/env:/run/secret/prod.env:ro
 
   couchdb:
     image: couchdb:3.2
     restart: unless-stopped
-    env_file:
-      - /home/ubuntu/moneeey/env
+    networks:
+      - web
     volumes:
       - /home/ubuntu/moneeey/couchdb_data:/opt/couchdb/data
       - /home/ubuntu/moneeey/couchdb.prod.ini:/opt/couchdb/etc/local.d/local.ini
@@ -31,10 +35,10 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.moneeey.rule=Host(`moneeey.io`)"
       - "traefik.http.routers.moneeey.tls.certresolver=le"
+      - "traefik.http.services.moneeey.loadbalancer.server.port=80"
     networks:
       - web
     volumes:
       - /home/ubuntu/moneeey/Caddyfile.prod:/etc/caddy/Caddyfile:z,ro
       - /home/ubuntu/moneeey/caddy_data:/data:z
       - /home/ubuntu/moneeey/caddy_config:/config:z
-

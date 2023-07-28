@@ -2,11 +2,10 @@
         auto_https off
 }
 
-{env.APP_HOST} {
+:80 {
         handle_path /db/* {
-          reverse_proxy {env.COUCHDB_HOST}
+          reverse_proxy address-to-couchdb:5984
         }
-        reverse_proxy /api/* backend:4269
-        reverse_proxy frontend:4270
+        reverse_proxy /api/* backend:4369
+        reverse_proxy frontend:4370
 }
-
