@@ -6,7 +6,7 @@ export function setupAuth(_app: oak.Application, router: oak.Router) {
   const authRouter = new oak.Router();
 
   authRouter.get("/", ({ response }) => {
-    response.body = "Welcome to Moneeey AuthAPI";
+    response.body = JSON.stringify({ hello: "Welcome to Moneeey AuthAPI" });
   });
 
   setupMagic(authRouter);

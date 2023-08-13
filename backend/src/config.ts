@@ -14,7 +14,7 @@ const loadEnvFile = (envPath?: string) => {
   return null;
 };
 
-const env = loadEnvFile(ENV_FILES.find(fs.existsSync))
+const env = loadEnvFile(ENV_FILES.find(fileName => fs.existsSync(fileName)))
 
 if (!env) {
   throw new Error(

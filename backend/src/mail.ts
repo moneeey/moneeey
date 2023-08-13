@@ -18,7 +18,7 @@ export const sendEmail = async ({
   if (!SENDGRID_API_KEY || SENDGRID_API_KEY === "off") {
     console.log(
       "sendEmail",
-      JSON.stringify({ from, to, subject, text, html }, false, 4),
+      JSON.stringify({ from, to, subject, text, html }),
     );
     return { success: true };
   }
