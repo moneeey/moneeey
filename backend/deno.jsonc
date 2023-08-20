@@ -1,8 +1,9 @@
 {
   "tasks": {
-    "dev": "deno run --allow-read --allow-env --allow-net --watch main.ts"
-    "test": "deno test --allow-read --allow-env"
-    "test:watch": "deno test --allow-read --allow-env --watch"
+    "dev": "deno run --allow-read --allow-env --allow-net --watch main.ts",
+    "test": "deno test --allow-read --allow-env",
+    "test:update-snapshot": "deno test --allow-all -- --update",
+    "test:watch": "deno test --allow-read --allow-env --watch",
     "test:coverage": "rm -rf /tmp/coverage && deno test --allow-read --allow-env --coverage=/tmp/coverage && deno coverage /tmp/coverage"
   }
 }

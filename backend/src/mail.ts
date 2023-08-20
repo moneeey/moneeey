@@ -1,4 +1,7 @@
 import { SENDGRID_API_KEY } from "./config.ts";
+import { Logger } from "./logger.ts";
+
+const logger = Logger("mail");
 
 type MailOptions = {
   from: string;
@@ -8,6 +11,18 @@ type MailOptions = {
   html?: string;
 };
 
+export const mailInternals = {
+  apiKey: SENDGRID_API_KEY,
+  fetch: (url: string, options: RequestInit) => {
+    if (!mailInternals.apiKey || mailInternals.apiKey === "off") {
+      logger.info("fetch", { url, options });
+      return Promise.resolve(new Response("local sent", { status: 202 }));
+    } else {
+      return fetch(url, options);
+    }
+  },
+};
+
 export const sendEmail = async ({
   from,
   to,
@@ -15,50 +30,46 @@ export const sendEmail = async ({
   text,
   html,
 }: MailOptions) => {
-  if (!SENDGRID_API_KEY || SENDGRID_API_KEY === "off") {
-    console.log(
-      "sendEmail",
-      JSON.stringify({ from, to, subject, text, html }),
-    );
-    return { success: true };
-  }
-  const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${SENDGRID_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      personalizations: [
-        {
-          to: [
-            {
-              email: to,
-            },
-          ],
-        },
-      ],
-      from: {
-        email: from,
+  const res = await mailInternals.fetch(
+    "https://api.sendgrid.com/v3/mail/send",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${mailInternals.apiKey}`,
+        "Content-Type": "application/json",
       },
-      subject: subject,
-      content: [
-        {
-          type: "text/plain",
-          value: text,
+      body: JSON.stringify({
+        personalizations: [
+          {
+            to: [
+              {
+                email: to,
+              },
+            ],
+          },
+        ],
+        from: {
+          email: from,
         },
-        {
-          type: "text/html",
-          value: html,
-        },
-      ],
-    }),
-  });
+        subject: subject,
+        content: [
+          {
+            type: "text/plain",
+            value: text,
+          },
+          {
+            type: "text/html",
+            value: html,
+          },
+        ],
+      }),
+    },
+  );
   if (res.status === 202) {
     return { success: true };
   } else {
     const error = await res.text();
-    console.log("sendEmail error", { error });
+    Logger("mail").error("error", { error });
     return { success: false };
   }
 };

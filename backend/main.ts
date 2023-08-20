@@ -1,5 +1,5 @@
-import { runServer } from "./src/server.ts";
+import { createServer, runServer } from "./src/server.ts";
 
 if (import.meta.main) {
-  runServer();
+  runServer(createServer());
 }

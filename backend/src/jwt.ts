@@ -36,7 +36,10 @@ async function generateJwt(
     .sign(privateKey);
 }
 
-async function validateJwt(jwtToken: string, keyId: string): Promise<jose.JWTVerifyResult> {
+async function validateJwt(
+  jwtToken: string,
+  keyId: string,
+): Promise<jose.JWTVerifyResult> {
   return await jose.jwtVerify(jwtToken, publicKey, {
     issuer: "moneeey.io",
     audience: `moneeey.io:${keyId}`,
@@ -46,7 +49,7 @@ async function validateJwt(jwtToken: string, keyId: string): Promise<jose.JWTVer
 export const jwtInternals = {
   generateJwt,
   validateJwt,
-}
+};
 
 const jwtForKey = (keyId: string) => ({
   generate: (

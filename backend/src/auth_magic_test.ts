@@ -139,7 +139,7 @@ Deno.test(async function magicSendSendMailError() {
 
 Deno.test(async function magicSendAndValidates() {
   const email = "valid@baroni.tech";
-  return await withSpying({
+  await withSpying({
     object: authMagicInternals,
     method: "sendEmail",
     action: async (sendEmailStub) => {
@@ -169,7 +169,7 @@ Deno.test(async function magicSendAndValidates() {
 
 Deno.test(async function magicValidatesBadToken() {
   const url = "/api/auth/magic/validate/bad.jwt.token";
-  return await withSpyingLogger(async (logger) => {
+  await withSpyingLogger(async (logger) => {
     const { resp } = await runServerRequest("GET", url);
 
     assertResponse(resp, 500, {

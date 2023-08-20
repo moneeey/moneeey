@@ -1,12 +1,19 @@
-import { COUCHDB_ADMIN_PASSWORD, COUCHDB_ADMIN_USERNAME, COUCHDB_HOST } from "./config.ts";
+import {
+  COUCHDB_ADMIN_PASSWORD,
+  COUCHDB_ADMIN_USERNAME,
+  COUCHDB_HOST,
+} from "./config.ts";
 
 async function dbApi(method: string, url: string, data?: object) {
   try {
-    const body = data && JSON.stringify(data)
+    const body = data && JSON.stringify(data);
     return await fetch(`${COUCHDB_HOST}/${url}`, {
       body,
       method,
-      headers: { Authorization: "Basic " + btoa(`${COUCHDB_ADMIN_USERNAME}:${COUCHDB_ADMIN_PASSWORD}`) },
+      headers: {
+        Authorization: "Basic " +
+          btoa(`${COUCHDB_ADMIN_USERNAME}:${COUCHDB_ADMIN_PASSWORD}`),
+      },
     });
   } catch (e) {
     console.error(`dbApi error ${method} ${url}`, { e });

@@ -1,11 +1,16 @@
 import sinon from "https://cdn.skypack.dev/sinon@11.1.2?dts";
 import * as assert from "https://deno.land/std@0.198.0/assert/mod.ts";
+import { assertSnapshot } from "https://deno.land/std@0.198.0/testing/snapshot.ts";
 import { createServer } from "./server.ts";
 import { loggerInternals } from "./logger.ts";
 
-export { assert }
+export { assert, assertSnapshot };
 
-export async function runServerRequest(method: string, path: string, body?: object) {
+export async function runServerRequest(
+  method: string,
+  path: string,
+  body?: object,
+) {
   const app = createServer();
   const req = new Request(
     new URL("http://local.moneeey.io:4269" + path),
@@ -32,12 +37,12 @@ export async function assertResponse(
   assert.assertEquals(response, await resp.json());
 }
 
-export async function withSpying<Object>(
+export async function withSpying<Object, T>(
   { object, method, action, expect }: {
     object: Object;
     method: keyof Object;
     expect?: unknown[][];
-    action: (stub: sinon.SinonStub) => Promise<void>;
+    action: (stub: sinon.SinonStub) => Promise<T> | T;
   },
 ) {
   const stub = sinon.stub(object, method);
@@ -47,8 +52,11 @@ export async function withSpying<Object>(
     stub.restore();
     expect && assert.assertEquals(stub.args, expect);
   }
+  return stub;
 }
 
-export function withSpyingLogger(action: (stub: sinon.SinonStub) => Promise<void>) {
-  return withSpying({ object: loggerInternals, method: 'emit', action })
+export function withSpyingLogger(
+  action: (stub: sinon.SinonStub) => Promise<void> | void,
+) {
+  return withSpying({ object: loggerInternals, method: "emit", action });
 }

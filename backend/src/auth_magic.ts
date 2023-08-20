@@ -20,8 +20,8 @@ const getBodyEmail = async (ctx: oak.Context) => {
 };
 
 function respond(ctx: oak.Context, status: oak.Status, body: object) {
-  ctx.response.body = JSON.stringify(body)
-  ctx.response.status = status
+  ctx.response.body = JSON.stringify(body);
+  ctx.response.status = status;
 }
 
 export function setupMagic(
@@ -36,7 +36,7 @@ export function setupMagic(
       subject: "Moneeey Login",
       html:
         `Click this link to login into Moneeey: <a href="${url}">${url}</a>`,
-        text: `Click this link to login into Moneeey: ${url}`,
+      text: `Click this link to login into Moneeey: ${url}`,
     });
     return { success: true, sent: email };
   };
@@ -45,13 +45,15 @@ export function setupMagic(
     try {
       const email = await getBodyEmail(ctx);
       if (email) {
-        respond(ctx, oak.Status.OK, await sendMagic(email))
+        respond(ctx, oak.Status.OK, await sendMagic(email));
       } else {
-        respond(ctx, oak.Status.BadRequest, { error: 'bad email' })
+        respond(ctx, oak.Status.BadRequest, { error: "bad email" });
       }
     } catch (err) {
-      Logger('/magic/send').error("error", { err });
-      respond(ctx, oak.Status.InternalServerError, { error: 'internal server error' })
+      Logger("/magic/send").error("error", { err });
+      respond(ctx, oak.Status.InternalServerError, {
+        error: "internal server error",
+      });
     }
   });
 
@@ -64,12 +66,12 @@ export function setupMagic(
   authRouter.get("/magic/validate/:jwtCode", async (ctx) => {
     try {
       const jwtCode = ctx.params["jwtCode"];
-      if (!await validateMagic(ctx, jwtCode)) {
-        respond(ctx, oak.Status.BadRequest, { error: 'invalid code' });
-      }
+      await validateMagic(ctx, jwtCode)
     } catch (err) {
-      Logger('/magic/validate').error("error", { err });
-      respond(ctx, oak.Status.InternalServerError, { error: 'internal server error' })
+      Logger("/magic/validate").error("error", { err });
+      respond(ctx, oak.Status.InternalServerError, {
+        error: "internal server error",
+      });
     }
   });
 }

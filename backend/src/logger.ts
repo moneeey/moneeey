@@ -1,4 +1,4 @@
-type Level = 'info' | 'warn' | 'error'
+type Level = "info" | "warn" | "error";
 
 interface ILogger {
   info(message: string, data: object): void;
@@ -7,16 +7,17 @@ interface ILogger {
 }
 
 export const loggerInternals = {
-  emit(level: Level, message: string, data: object) {
-    console[level](message, JSON.stringify(data))
+  emit(level: Level, message: string, data: object, emitter = console) {
+    emitter[level](message, JSON.stringify(data));
   },
-}
+};
 
 export function Logger(name: string): ILogger {
-  const log = (level: Level) => (message: string, data: object) => loggerInternals.emit(level, `[${name}] ${message}`, data)
+  const log = (level: Level) => (message: string, data: object) =>
+    loggerInternals.emit(level, `[${name}] ${message}`, data);
   return {
-    info: log('info'),
-    warn: log('warn'),
-    error: log('error'),
-  }
+    info: log("info"),
+    warn: log("warn"),
+    error: log("error"),
+  };
 }
