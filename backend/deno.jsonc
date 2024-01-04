@@ -4,6 +4,6 @@
     "test": "deno test --allow-read --allow-env",
     "test:update-snapshot": "deno test --allow-all -- --update",
     "test:watch": "deno test --allow-read --allow-env --watch",
-    "test:coverage": "rm -rf /tmp/coverage && deno test --allow-read --allow-env --coverage=/tmp/coverage && deno coverage /tmp/coverage"
+    "test:coverage": "rm -rf /tmp/coverage && deno test --allow-read --allow-env --coverage=/tmp/coverage && deno coverage --exclude=generate_key.ts --exclude=config.ts /tmp/coverage"
   }
 }

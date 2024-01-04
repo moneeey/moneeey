@@ -3,6 +3,9 @@ import {
   COUCHDB_ADMIN_USERNAME,
   COUCHDB_HOST,
 } from "./config.ts";
+import { Logger } from "./logger.ts";
+
+const logger = Logger('couchdb')
 
 async function dbApi(method: string, url: string, data?: object) {
   try {
@@ -16,23 +19,20 @@ async function dbApi(method: string, url: string, data?: object) {
       },
     });
   } catch (e) {
-    console.error(`dbApi error ${method} ${url}`, { e });
+    logger.error(`dbApi error ${method} ${url}`, { e });
   }
 }
 
 async function dbExists(dbName: string) {
-  console.log("dbExists", { dbName });
   const req = await dbApi("HEAD", dbName);
   return req?.status === 200;
 }
 
 function dbCreate(dbName: string) {
-  console.log("dbCreate", { dbName });
   return dbApi("PUT", dbName, { id: dbName, name: dbName });
 }
 
 function dbSecurityApply(dbName: string, members: string[]) {
-  console.log("dbSecurityApply", { dbName });
   return dbApi("PUT", `${dbName}/_security`, {
     "members": { "roles": ["_admin"], "names": members },
     "admins": { "roles": ["_admin"] },
@@ -41,6 +41,7 @@ function dbSecurityApply(dbName: string, members: string[]) {
 
 export async function prepareUserDatabase(dbName: string, email: string) {
   if (!await dbExists(dbName)) {
+    logger.info('prepareUserDatabase create', { dbName })
     await dbCreate(dbName);
     await dbSecurityApply(dbName, [email]);
   }

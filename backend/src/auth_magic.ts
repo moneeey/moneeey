@@ -59,14 +59,18 @@ export function setupMagic(
 
   const validateMagic = async (ctx: oak.Context, jwtCode: string) => {
     const validatedJwt = await magicJwt.validate(jwtCode);
-    const email = validatedJwt.payload.sub || "";
+    const email = validatedJwt.payload.sub;
+    if (!email || email === '') {
+      Logger("/magic/validate").error("validateMagic jwt without sub/email", validatedJwt);
+      throw new Error('validateMagic jwt without sub/email')
+    }
     return await authenticateUser(ctx, "magic", email, `magic:${email}`);
   };
 
   authRouter.get("/magic/validate/:jwtCode", async (ctx) => {
     try {
       const jwtCode = ctx.params["jwtCode"];
-      await validateMagic(ctx, jwtCode)
+      await validateMagic(ctx, jwtCode);
     } catch (err) {
       Logger("/magic/validate").error("error", { err });
       respond(ctx, oak.Status.InternalServerError, {

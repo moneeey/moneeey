@@ -1,4 +1,4 @@
-import { jwtInternals } from "./jwt.ts";
+import { jwtInternals, magicJwt } from "./jwt.ts";
 import { authMagicInternals } from "./auth_magic.ts";
 import {
   assert,
@@ -167,7 +167,7 @@ Deno.test(async function magicSendAndValidates() {
   });
 });
 
-Deno.test(async function magicValidatesBadToken() {
+Deno.test(async function magicValidatesBadTokenInvalid() {
   const url = "/api/auth/magic/validate/bad.jwt.token";
   await withSpyingLogger(async (logger) => {
     const { resp } = await runServerRequest("GET", url);
@@ -186,5 +186,41 @@ Deno.test(async function magicValidatesBadToken() {
         ],
       ],
     );
+  });
+});
+
+Deno.test(async function magicValidatesBadTokenWithoutSub() {
+  const url = "/api/auth/magic/validate/bad.jwt.token";
+  await withSpyingLogger(async (logger) => {
+    await withSpying({
+      object: magicJwt,
+      method: "validate",
+      expect: [["bad.jwt.token"]],
+      action: async (stub) => {
+        stub.resolves({ payload: { sub: "" } });
+        const { resp } = await runServerRequest("GET", url);
+
+        assertResponse(resp, 500, {
+          error: "internal server error",
+        });
+        assertAuthTokenCookie(resp, false);
+
+        assert.assertEquals(
+          logger.args,
+          [
+            [
+              "error",
+              "[/magic/validate] validateMagic jwt without sub/email",
+              { payload: { sub: '' }},
+            ],
+            [
+              "error",
+              "[/magic/validate] error",
+              { err: new Error('') }
+            ],
+          ],
+        );
+      },
+    });
   });
 });
