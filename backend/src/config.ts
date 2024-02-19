@@ -1,11 +1,11 @@
 import { dotenv, fs } from "./deps.ts";
 
 const ENV_FILES = [
- "/run/secret/prod.env",
- "/run/secret/dev.env",
- "env",
- "env.example",
-]
+  "/run/secret/prod.env",
+  "/run/secret/dev.env",
+  "env",
+  "env.example",
+];
 
 const loadEnvFile = (envPath?: string) => {
   if (envPath) {
@@ -14,11 +14,11 @@ const loadEnvFile = (envPath?: string) => {
   return null;
 };
 
-const env = loadEnvFile(ENV_FILES.find(fs.existsSync))
+const env = loadEnvFile(ENV_FILES.find((fileName) => fs.existsSync(fileName)));
 
 if (!env) {
   throw new Error(
-    `Could not load env file, tried ${ENV_FILES.join(' || ')}`,
+    `Could not load env file, tried ${ENV_FILES.join(" || ")}`,
   );
 }
 

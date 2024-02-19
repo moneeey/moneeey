@@ -1,22 +1,32 @@
 import { setupAuth } from "./auth.ts";
 import { PORT } from "./config.ts";
 import { oak } from "./deps.ts";
+import { Logger } from "./logger.ts";
 
-export async function runServer() {
+export function createServer() {
   const app = new oak.Application();
   const router = new oak.Router();
 
-  router.get("/", ({ response }) => { response.body = "Welcome to Moneeey Backend"; });
-  router.get("/api", ({ response }) => { response.body = "Welcome to Moneeey API"; });
+  router.get("/", ({ response }) => {
+    response.body = JSON.stringify({ hello: "Welcome to Moneeey Backend" });
+  });
+  router.get("/api", ({ response }) => {
+    response.body = JSON.stringify({ hello: "Welcome to Moneeey API" });
+  });
 
   setupAuth(app, router);
 
-  const port = PORT;
   app.use(router.routes());
   app.use(router.allowedMethods());
   app.addEventListener("error", (err) => {
-    console.error("application error", { err });
+    Logger("createServer").error("application error", { err });
   });
-  console.log(`Moneeey API listening at ${port}`);
+
+  return app;
+}
+
+export async function runServer(app: ReturnType<typeof createServer>) {
+  const port = PORT;
+  Logger("runServer").info(`Moneeey API listening`, { port });
   await app.listen({ port });
 }

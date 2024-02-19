@@ -8,8 +8,8 @@ if (import.meta.main) {
   });
   const exportable = (str: string) => jose.base64url.encode(str);
 
-  const publicKeyStr = await jose.exportSPKI(publicKey)
-  const privateKeyStr = await jose.exportPKCS8(privateKey)
+  const publicKeyStr = await jose.exportSPKI(publicKey);
+  const privateKeyStr = await jose.exportPKCS8(privateKey);
 
   console.log(`
 .env
@@ -21,6 +21,6 @@ couchdb.ini
   authentication_handlers = {chttpd_auth, cookie_authentication_handler}, {chttpd_auth, jwt_authentication_handler}, {chttpd_auth, default_authentication_handler}
 
   [jwt_keys]
-  rsa:moneeeyKeyId = ${publicKeyStr.replace(/\n|\r/g, '\\n')}
+  rsa:moneeeyKeyId = ${publicKeyStr.replace(/\n|\r/g, "\\n")}
 `);
 }

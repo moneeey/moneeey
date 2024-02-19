@@ -1,0 +1,17 @@
+export const snapshot = {};
+
+snapshot[`sendEmailSuccess 1`] = `
+[
+  [
+    "https://api.sendgrid.com/v3/mail/send",
+    {
+      body: '{"personalizations":[{"to":[{"email":"to@email.com"}]}],"from":{"email":"from@email.com"},"subject":"The Subect","content":[{"type":"text/plain","value":"the text"},{"type":"text/html","value":"<p>html</p>"}]}',
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer off",
+      },
+      method: "POST",
+    },
+  ],
+]
+`;

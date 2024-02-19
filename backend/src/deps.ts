@@ -4,4 +4,4 @@ import * as dotenv from "https://deno.land/std@0.195.0/dotenv/mod.ts";
 import * as oak from "https://deno.land/x/oak@v12.6.0/mod.ts";
 import jssha from "npm:jssha@3.3.0";
 
-export { dotenv, fs, jose, oak, jssha };
+export { dotenv, fs, jose, jssha, oak };

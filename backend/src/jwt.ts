@@ -36,20 +36,28 @@ async function generateJwt(
     .sign(privateKey);
 }
 
-async function validateJwt(jwtToken: string, keyId: string): Promise<jose.JWTVerifyResult> {
+async function validateJwt(
+  jwtToken: string,
+  keyId: string,
+): Promise<jose.JWTVerifyResult> {
   return await jose.jwtVerify(jwtToken, publicKey, {
     issuer: "moneeey.io",
     audience: `moneeey.io:${keyId}`,
   });
 }
 
+export const jwtInternals = {
+  generateJwt,
+  validateJwt,
+};
+
 const jwtForKey = (keyId: string) => ({
   generate: (
     email: string,
     claims: Record<string, string>,
     expirationTime: string,
-  ) => generateJwt({ email, claims, keyId, expirationTime }),
-  validate: (jwtToken: string) => validateJwt(jwtToken, keyId),
+  ) => jwtInternals.generateJwt({ email, claims, keyId, expirationTime }),
+  validate: (jwtToken: string) => jwtInternals.validateJwt(jwtToken, keyId),
 });
 
 export const magicJwt = jwtForKey(JWT_MAGIC_KEY_ID);
