@@ -132,23 +132,3 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-  DEPLOY:
-    runs-on: [self-hosted]
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: PACKAGE
-    env:
-      FRONTEND_IMAGE: ghcr.io/${{ github.repository }}-frontend:${{ github.ref_name }}
-      BACKEND_IMAGE: ghcr.io/${{ github.repository }}-backend:${{ github.ref_name }}
-    permissions:
-      contents: read
-      packages: read
-    steps:
-      # Download docker-compose.prod.yaml, updates image and deploy. TODO: Change to docker swarm
-      - name: deploy
-        run: |
-          cd /home/ubuntu/moneeey && \
-          curl https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/docker-compose.prod.yaml > docker-compose.yaml && \
-          sed -i 's@FRONTEND_IMAGE@${{ env.FRONTEND_IMAGE }}@' docker-compose.yaml && \
-          sed -i 's@BACKEND_IMAGE@${{ env.BACKEND_IMAGE }}@' docker-compose.yaml && \
-          docker-compose up --remove-orphans -d
