@@ -1,4 +1,4 @@
-FROM node:16.17.0-alpine
+FROM node:20.11.1-alpine
 WORKDIR /app
 VOLUME /app
 COPY ./entrypoint.sh /entrypoint.sh

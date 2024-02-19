@@ -1,7 +1,7 @@
-FROM node:16.17.0-alpine AS builder
-USER node
+FROM node:20.11.1-alpine AS builder
+USER root
 WORKDIR /app
-RUN yarn global add typescript vite
+RUN yarn add typescript vite
 
 COPY package.json .
 COPY yarn.lock .
@@ -9,9 +9,6 @@ RUN yarn install
 
 COPY . /app
 
-USER root
-RUN rm -rf /app/dist
-USER node
 RUN NODE_OPTIONS=--max_old_space_size=4096 yarn build
 
 FROM busybox:1.35
@@ -21,7 +18,7 @@ WORKDIR /app
 LABEL org.opencontainers.image.description moneeey-frontend
 LABEL org.opencontainers.image.title moneeey-frontend
 
-COPY --from=builder --chown=node:node /app/dist .
+COPY --from=builder --chown=www:www /app/dist .
 
 EXPOSE 4370
 CMD ["busybox", "httpd", "-f", "-v", "-p", "4370"]
