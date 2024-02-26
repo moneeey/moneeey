@@ -14,6 +14,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'generateSW',
       workbox: {
         maximumFileSizeToCacheInBytes: 32 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,ttf}'],
