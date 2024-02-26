@@ -42,6 +42,7 @@ const RouteRenderer = observer(
         {routes.map((route) => (
           <Route key={route.path} path={route.path} element={<RouteElem route={route.route} app={app} />} />
         ))}
+        <Route index key={'index'} element={<RouteElem route={root_route} app={app} />} />
       </Routes>
     );
   }
