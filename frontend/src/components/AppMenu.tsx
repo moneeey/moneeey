@@ -16,7 +16,7 @@ import {
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import { observer } from 'mobx-react';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
 
 import AccountRoute from '../routes/AccountRoute';
 import { AccountSettingsRoute } from '../routes/AccountSettingsRoute';
@@ -36,11 +36,30 @@ import { NavigationModal } from '../shared/Navigation';
 import RouteRenderer from '../routes/RouteRenderer';
 import MoneeeyStore from '../shared/MoneeeyStore';
 
-import useMessages from '../utils/Messages';
+import useMessages, { AvailableLanguages, useLanguageSwitcher } from '../utils/Messages';
 
 import Navbar from './base/Navbar';
 import { TextNormal, TextSecondary, TextTitle } from './base/Text';
-import Icon, { FavIcon } from './base/Icon';
+import Icon, { FavIcon, IconBrazil, IconSpain, IconUSA } from './base/Icon';
+
+const LanguageSelector = () => {
+  const Messages = useMessages();
+  const { currentLanguage, selectLanguage } = useLanguageSwitcher()
+  const LangSelect = ({ icon, language }: { icon: ReactNode, language: AvailableLanguages }) => {
+    const isCurrentLanguage = currentLanguage === language
+    return <i className={"inline-block h-6 w-6 rounded-xl hover:ring-2 ring-secondary-500 " + (isCurrentLanguage ? 'ring-2' : '')} onClick={() => selectLanguage(language)}>{icon}</i>
+  }
+  return (
+    <div>
+      <p>{Messages.settings.select_language}</p>
+      <div className="flex flex-row justify-around pt-1">
+        <LangSelect icon={<IconBrazil />} language="portuguese" />
+        <LangSelect icon={<IconUSA />} language="english" />
+        <LangSelect icon={<IconSpain />} language="spanish" />
+      </div>
+    </div>
+  )
+}
 
 const Menu = observer(() => {
   const Messages = useMessages();
@@ -77,6 +96,7 @@ const Menu = observer(() => {
     <Navbar
       className='px-2'
       testId='appMenu'
+      footer={<LanguageSelector />}
       items={[
         {
           key: 'dashboard',

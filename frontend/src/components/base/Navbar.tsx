@@ -19,6 +19,7 @@ interface NavbarItem {
 
 interface NavbarProps {
   items: Array<NavbarItem>;
+  footer: ReactNode;
   className?: string;
 }
 
@@ -48,7 +49,14 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 const Navbar = (props: NavbarProps & WithDataTestId) => {
   return (
     <nav className={`bottom-0 left-0 top-0 w-60 bg-background-800 ${props.className || ''}`} data-testid={props.testId}>
-      {renderNavbarItems(props.testId, props.items)}
+      <div className="flex flex-col justify-between h-full">
+        <div className="grow">
+          {renderNavbarItems(props.testId, props.items)}
+        </div>
+        <div className="p-4">
+          {props.footer}
+        </div>
+      </div>
     </nav>
   );
 };

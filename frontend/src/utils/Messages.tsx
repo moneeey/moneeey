@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react';
 import LanguageEnglish from './LanguageEnglish';
 import LanguagePortuguese from './LanguagePortuguese';
 import LanguageSpanish from './LanguageSpanish';
-import { identity } from './Utils';
+import { getStorage, identity, setStorage, StorageKind } from './Utils';
 
 export type TMessages = typeof LanguageEnglish;
 
@@ -13,19 +13,27 @@ const Languages = {
   spanish: LanguageSpanish,
 };
 
+export type AvailableLanguages = keyof typeof Languages
+const PrimaryLanguage: AvailableLanguages = 'english'
+
 const MessagesContext = React.createContext({
-  current: Languages.english,
-  update: (messages: TMessages) => identity(messages),
+  currentLanguage: PrimaryLanguage as AvailableLanguages,
+  selectLanguage: (language: AvailableLanguages) => identity(language),
 });
 
 export function MessagesProvider({ children }: { children: ReactNode }) {
-  const [current, update] = React.useState(Languages.english);
+  const storedLanguage = getStorage('language', PrimaryLanguage, StorageKind.PERMANENT) as AvailableLanguages;
+  const [currentLanguage, selectLanguage] = React.useState(storedLanguage ?? PrimaryLanguage);
 
-  return <MessagesContext.Provider value={{ current, update }}>{children}</MessagesContext.Provider>;
+  return (
+    <MessagesContext.Provider value={{ currentLanguage, selectLanguage: lang => selectLanguage(lang) }}>
+    {children}
+    </MessagesContext.Provider>
+  );
 }
 
 export default function useMessages(): TMessages {
-  return React.useContext(MessagesContext).current;
+  return Languages[React.useContext(MessagesContext).currentLanguage];
 }
 
 export function WithMessages({ children }: { children: (Messages: TMessages) => ReactNode }) {
@@ -34,6 +42,13 @@ export function WithMessages({ children }: { children: (Messages: TMessages) => 
   return <>{children(Messages)}</>;
 }
 
-export function changeLanguage(language: keyof typeof Languages) {
-  React.useContext(MessagesContext).update(Languages[language]);
+export function useLanguageSwitcher() {
+  const { selectLanguage, currentLanguage } = React.useContext(MessagesContext)
+  return {
+    currentLanguage,
+    selectLanguage(language: AvailableLanguages) {
+      setStorage('language', language, StorageKind.PERMANENT);
+      selectLanguage(language);
+    }
+  }
 }
