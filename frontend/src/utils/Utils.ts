@@ -71,7 +71,8 @@ enum StorageKind {
 const getStorage = (key: string, defaultt: string, storage: StorageKind) => {
 	if (storage === StorageKind.PERMANENT) {
 		return window.localStorage.getItem(key) || defaultt;
-	} else if (storage === StorageKind.SESSION) {
+	}
+	if (storage === StorageKind.SESSION) {
 		return window.sessionStorage.getItem(key) || defaultt;
 	}
 

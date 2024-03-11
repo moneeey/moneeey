@@ -37,7 +37,7 @@ const TransactionTable = observer(
 		return (
 			<TableEditor
 				creatable={creatable}
-				testId={`transactionTable`}
+				testId={"transactionTable"}
 				store={transactions}
 				schemaFilter={(row: ITransaction) => schemaFilter(row)}
 				factory={transactions.factory}

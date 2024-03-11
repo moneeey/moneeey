@@ -62,9 +62,8 @@ class BaseLogger {
 export default class Logger extends BaseLogger {
 	constructor(name: string, parent?: Logger) {
 		super(name, parent);
-		this.listen(
-			(level: LogLevel, ...args: unknown[]) =>
-				console && console[level](...args),
+		this.listen((level: LogLevel, ...args: unknown[]) =>
+			console?.[level](...args),
 		);
 	}
 }

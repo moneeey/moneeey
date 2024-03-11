@@ -75,7 +75,7 @@ export class CurrencyStore extends MappedStore<ICurrency> {
 	nameForUuid(currency_uuid: TCurrencyUUID) {
 		const currency = this.byUuid(currency_uuid);
 
-		return (currency && currency.name) || "";
+		return currency?.name || "";
 	}
 
 	currencyTags(currency_uuid: TCurrencyUUID) {

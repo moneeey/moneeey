@@ -61,7 +61,7 @@ export default class MoneeeyStore {
 		this.config.init();
 		this.currencies.addDefaults();
 		const { couchSync } = this.config.main;
-		if (couchSync && couchSync.enabled) {
+		if (couchSync?.enabled) {
 			this.persistence.sync(couchSync);
 		}
 		this.setLoaded(true);

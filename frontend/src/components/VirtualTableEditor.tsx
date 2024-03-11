@@ -50,7 +50,8 @@ const SortIcon = ({ order }: { order?: "descend" | "ascend" }) => {
 				<ChevronUpIcon className="icon-small" />
 			</Icon>
 		);
-	} else if (order === "descend") {
+	}
+	if (order === "descend") {
 		return (
 			<Icon className="inline-block">
 				<ChevronDownIcon className="icon-small" />
@@ -229,10 +230,10 @@ const VirtualTable = function VirtualTableRenderer({
 	const sortedRows = useMemo(
 		() =>
 			rows.sort((a: Row, b: Row) => {
-				if (isNewEntity && isNewEntity(a)) {
+				if (isNewEntity?.(a)) {
 					return +1;
 				}
-				if (isNewEntity && isNewEntity(b)) {
+				if (isNewEntity?.(b)) {
 					return -1;
 				}
 				const sortFn = sort.column.sorter || (() => 0);

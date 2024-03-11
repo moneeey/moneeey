@@ -31,7 +31,7 @@ const Modal = observer(
 	}: ModalProps) => {
 		const { navigation } = useMoneeeyStore();
 
-		const onCloseFn = () => (onClose && onClose()) || navigation.closeModal();
+		const onCloseFn = () => onClose?.() || navigation.closeModal();
 
 		const visible =
 			isOpen === true || (modalId && navigation.modal === modalId);

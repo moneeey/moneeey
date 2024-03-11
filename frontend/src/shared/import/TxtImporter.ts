@@ -86,7 +86,7 @@ const txtImportFromLines = ({
 		lines,
 		(chunk, stt, percentage) => {
 			onProgress(percentage);
-			chunk.forEach((line) => {
+			for(const line of chunk) {
 				const { referenceAccount, dateFormat } = data.config;
 				const tokens = line.replace('"', "").split(sep);
 				if (tokens.length < 2) {

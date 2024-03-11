@@ -30,8 +30,7 @@ export abstract class Route<IParameters extends IRouteParameters> {
 	}
 
 	url(parameters: IParameters = {} as IParameters) {
-		const parentUrl: string =
-			(this.parent && this.parent.url(parameters)) || "";
+		const parentUrl: string = this.parent?.url(parameters) || "";
 		const currentUrl = Object.keys(parameters).reduce((url, key) => {
 			return url.replace(`:${key}`, slugify(parameters[key]));
 		}, this.path);

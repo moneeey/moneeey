@@ -46,7 +46,7 @@ export default function Settings() {
 				submitFn: noop,
 			});
 		const submitFn = async (data: Action) => {
-			const input = (data && data.content) || "";
+			const input = data?.content || "";
 			update(Messages.settings.restore_loading(0));
 			const { errors } = await moneeeyStore.persistence.restoreAll(
 				input,
@@ -104,7 +104,7 @@ export default function Settings() {
 								/>
 								{action.submitFn && (
 									<PrimaryButton
-										onClick={() => action.submitFn && action.submitFn(action)}
+										onClick={() => action.submitFn?.(action)}
 										title={action.submitTitle}
 									/>
 								)}

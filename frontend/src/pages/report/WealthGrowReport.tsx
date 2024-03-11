@@ -31,7 +31,7 @@ const wealthGrowProcess =
 			const key = dateToPeriod(period, date);
 			const prev_record = data.points.get(key);
 			const category = Messages.reports.wealth;
-			const prev_balance = (prev_record && prev_record[category]) || 0;
+			const prev_balance = prev_record?.[category] || 0;
 			const balance = prev_balance + value;
 			data.columns.add(category);
 			data.points.set(key, { ...prev_record, [category]: balance });
@@ -67,7 +67,7 @@ const WealthGrowReport = () => {
 					const previousKey =
 						index > 0 && sorted[index - 1] && sorted[index - 1][0];
 					const previousRecord = previousKey && data.points.get(previousKey);
-					const previous = (previousRecord && previousRecord[category]) || 0;
+					const previous = previousRecord?.[category] || 0;
 					const current = points[category];
 					const withPrevious = current + previous;
 					data.points.set(key, { [category]: withPrevious });

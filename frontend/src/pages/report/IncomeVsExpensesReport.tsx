@@ -40,7 +40,7 @@ const incomeVsExpensesProcess =
 			}
 			const key = dateToPeriod(period, date);
 			const prev_record = data.points.get(key);
-			const prev_balance = (prev_record && prev_record[kind]) || 0;
+			const prev_balance = prev_record?.[kind] || 0;
 			const balance = prev_balance + value;
 			data.columns.add(kind);
 			data.points.set(key, { ...prev_record, [kind]: balance });

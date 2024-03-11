@@ -40,7 +40,7 @@ export const baseAccountBalanceReport =
 			const group_date = dateToPeriod(period, date);
 			const key = group_date;
 			const prev_record = data.points.get(key);
-			const prev_balance = (prev_record && prev_record[account.name]) || 0;
+			const prev_balance = prev_record?.[account.name] || 0;
 			const balance = prev_balance + value;
 			data.columns.add(account.name);
 			data.points.set(key, { ...prev_record, [account.name]: balance });

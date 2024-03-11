@@ -28,7 +28,8 @@ const findBankTranlists = (obj: any): any[] => {
 			.flatMap(([k, v]) => {
 				if (typeof v === "object" && k !== "BANKTRANLIST") {
 					return findBankTranlists(v);
-				} else if (typeof v === "object" && k === "BANKTRANLIST") {
+				}
+				if (typeof v === "object" && k === "BANKTRANLIST") {
 					return v.STMTTRN;
 				}
 

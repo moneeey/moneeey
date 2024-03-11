@@ -199,7 +199,8 @@ export default class PersistenceStore {
 		if (!isEmpty(a.updated) && !isEmpty(b.updated)) {
 			if ((a.updated || "") > (b.updated || "")) {
 				return resolve(a);
-			} else if ((a.updated || "") < (b.updated || "")) {
+			}
+			if ((a.updated || "") < (b.updated || "")) {
 				return resolve(b);
 			}
 		}
@@ -207,7 +208,8 @@ export default class PersistenceStore {
 		if (a._rev && b._rev) {
 			if (aRevLevel > bRevLevel) {
 				return resolve(a);
-			} else if (bRevLevel > aRevLevel) {
+			}
+			if (bRevLevel > aRevLevel) {
 				return resolve(b);
 			}
 		}

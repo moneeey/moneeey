@@ -52,7 +52,7 @@ const Select = ({
 					options={options}
 					value={options.find((opt) => opt.value === value)}
 					onChange={(newValue) => newValue && onChange(newValue.value)}
-					onCreateOption={(name) => onCreate && onCreate(name)}
+					onCreateOption={(name) => onCreate?.(name)}
 					placeholder={placeholder}
 					isDisabled={disabled || readOnly}
 				/>
@@ -103,7 +103,7 @@ const MultiSelect = ({
 								.filter((val) => val !== ""),
 						)
 					}
-					onCreateOption={(name) => onCreate && onCreate(name)}
+					onCreateOption={(name) => onCreate?.(name)}
 					placeholder={placeholder}
 					isDisabled={disabled || readOnly}
 				/>

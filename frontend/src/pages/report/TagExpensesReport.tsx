@@ -27,7 +27,7 @@ const tagExpensesProcess =
 			tags.forEach((tag) => {
 				const key = dateToPeriod(period, transaction.date);
 				const prev_record = data.points.get(key);
-				const prev_balance = (prev_record && prev_record[tag]) || 0;
+				const prev_balance = prev_record?.[tag] || 0;
 				const delta = is_payee ? value : -value;
 				const balance = prev_balance + delta;
 				data.columns.add(tag);

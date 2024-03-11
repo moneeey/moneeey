@@ -207,7 +207,8 @@ const Messages: TMessages = {
       Você deve criar orçamentos para coisas como: casa/hipoteca, manutenção do carro, serviços públicos, entretenimento...
       Clique em 'Novo orçamento' em um dos períodos`,
 
-		please_create_account: `Antes de continuar, por favor crie uma conta digitando suas informações na tabela abaixo.`,
+		please_create_account:
+			"Antes de continuar, por favor crie uma conta digitando suas informações na tabela abaixo.",
 
 		please_create_budget: `Antes de continuar, por favor clique em 'Novo Orçamento' e crie um orçamento.`,
 

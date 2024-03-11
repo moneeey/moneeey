@@ -61,10 +61,9 @@ const LanguageSelector = () => {
 		const isCurrentLanguage = currentLanguage === language;
 		return (
 			<i
-				className={
-					"inline-block h-6 w-6 rounded-xl hover:ring-2 ring-secondary-500 " +
-					(isCurrentLanguage ? "ring-2" : "")
-				}
+				className={`inline-block h-6 w-6 rounded-xl hover:ring-2 ring-secondary-500 ${
+					isCurrentLanguage ? "ring-2" : ""
+				}`}
 				onClick={() => selectLanguage(language)}
 			>
 				{icon}
