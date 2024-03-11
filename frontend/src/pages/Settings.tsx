@@ -7,7 +7,7 @@ import Space, { VerticalSpace } from '../components/base/Space';
 import Loading from '../components/Loading';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
 import ConfigTable from '../tables/ConfigTable';
-import Messages from '../utils/Messages';
+import useMessages from '../utils/Messages';
 import { noop } from '../utils/Utils';
 
 type Action = {
@@ -18,6 +18,7 @@ type Action = {
 };
 
 export default function Settings() {
+  const Messages = useMessages();
   const [action, setAction] = useState<Action | undefined>(undefined);
   const [loading, setLoading] = useState<number | false>(false);
   const moneeeyStore = useMoneeeyStore();

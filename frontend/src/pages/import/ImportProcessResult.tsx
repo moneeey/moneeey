@@ -12,10 +12,11 @@ import { ITransaction } from '../../entities/Transaction';
 import { ImportResult, ImportTask } from '../../shared/import/ImportContent';
 import MoneeeyStore from '../../shared/MoneeeyStore';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import Messages from '../../utils/Messages';
+import useMessages, { TMessages } from '../../utils/Messages';
 
 const accountRender =
   ({
+    Messages,
     field,
     referenceAccount,
     moneeeyStore,
@@ -23,6 +24,7 @@ const accountRender =
     result,
     setResult,
   }: {
+    Messages: TMessages;
     field: keyof ITransaction;
     referenceAccount: TAccountUUID;
     moneeeyStore: MoneeeyStore;
@@ -32,6 +34,7 @@ const accountRender =
   }) =>
   (row: Row) =>
     changedRender({
+      Messages,
       moneeeyStore,
       transactions,
       row,
@@ -90,12 +93,14 @@ const accountRender =
     });
 
 const changedRender = ({
+  Messages,
   row,
   cell,
   field,
   moneeeyStore,
   transactions,
 }: {
+  Messages: TMessages;
   row: Row;
   cell: (props: { isChanged: boolean; isNew: boolean }) => JSX.Element;
   field: keyof ITransaction;
@@ -139,16 +144,19 @@ const changedRender = ({
 };
 
 const fieldRender = ({
+  Messages,
   field,
   transactions,
   moneeeyStore,
 }: {
+  Messages: TMessages;
   field: string;
   transactions: ITransaction[];
   moneeeyStore: MoneeeyStore;
 }) =>
   function FieldRender(row: Row) {
     return changedRender({
+      Messages,
       row,
       field,
       cell: () => <>{transactions.find((t) => t.transaction_uuid === row.entityId)?.[field]}</>,
@@ -158,12 +166,14 @@ const fieldRender = ({
   };
 
 const ContentTransactionTable = ({
+  Messages,
   moneeeyStore,
   transactions,
   task,
   result,
   setResult,
 }: {
+  Messages: TMessages;
   moneeeyStore: MoneeeyStore;
   transactions: ITransaction[];
   task: ImportTask;
@@ -178,13 +188,14 @@ const ContentTransactionTable = ({
           index: 0,
           width: 100,
           title: Messages.util.date,
-          render: fieldRender({ field: 'date', transactions, moneeeyStore }),
+          render: fieldRender({ field: 'date', transactions, moneeeyStore, Messages }),
         },
         {
           index: 1,
           width: 200,
           title: Messages.transactions.from_account,
           render: accountRender({
+            Messages,
             moneeeyStore,
             referenceAccount: task.config.referenceAccount,
             field: 'from_account',
@@ -198,6 +209,7 @@ const ContentTransactionTable = ({
           width: 200,
           title: Messages.transactions.to_account,
           render: accountRender({
+            Messages,
             moneeeyStore,
             referenceAccount: task.config.referenceAccount,
             transactions,
@@ -214,13 +226,14 @@ const ContentTransactionTable = ({
             field: 'from_value',
             transactions,
             moneeeyStore,
+            Messages,
           }),
         },
         {
           width: 300,
           index: 5,
           title: Messages.transactions.memo,
-          render: fieldRender({ field: 'memo', transactions, moneeeyStore }),
+          render: fieldRender({ field: 'memo', transactions, moneeeyStore, Messages }),
         },
       ]}
     />
@@ -237,6 +250,7 @@ const ImportProcessResult = ({
   setResult: Dispatch<SetStateAction<ImportResult>>;
   close: () => void;
 }) => {
+  const Messages = useMessages();
   const moneeeyStore = useMoneeeyStore();
 
   const onImport = () => {
@@ -274,6 +288,7 @@ const ImportProcessResult = ({
       </Space>
       <div className='static flex-1'>
         <ContentTransactionTable
+          Messages={Messages}
           moneeeyStore={moneeeyStore}
           task={task}
           transactions={[

@@ -1,17 +1,19 @@
 import { AccountKind, TAccountUUID } from '../../entities/Account';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { ITransaction } from '../../entities/Transaction';
-import Messages from '../../utils/Messages';
 
 import MoneeeyStore from '../../shared/MoneeeyStore';
 import { TMonetary } from '../../shared/Entity';
 import { TDate } from '../../utils/Date';
 
+import useMessages, { TMessages } from '../../utils/Messages';
+
 import { BaseColumnChart, BaseReport } from './BaseReport';
 import { PeriodGroup, ReportDataMap, dateToPeriod } from './ReportUtils';
 
 const incomeVsExpensesProcess =
-  (moneeeyStore: MoneeeyStore) => (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => {
+  (moneeeyStore: MoneeeyStore, Messages: TMessages) =>
+  (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => {
     const addBalanceToData = (acct: TAccountUUID, value: TMonetary, date: TDate) => {
       const account = moneeeyStore.accounts.byUuid(acct);
       if (!account) {
@@ -40,13 +42,14 @@ const incomeVsExpensesProcess =
   };
 
 const IncomeVsExpensesReport = function () {
+  const Messages = useMessages();
   const moneeeyStore = useMoneeeyStore();
   const { accounts } = moneeeyStore;
 
   return (
     <BaseReport
       accounts={accounts.allPayees}
-      processFn={incomeVsExpensesProcess(moneeeyStore)}
+      processFn={incomeVsExpensesProcess(moneeeyStore, Messages)}
       title={Messages.reports.income_vs_expenses}
       chartFn={(data, period) => <BaseColumnChart data={data} xFormatter={period.formatter} />}
     />

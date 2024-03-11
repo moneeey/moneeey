@@ -1,10 +1,11 @@
-import Messages from '../../utils/Messages';
+import useMessages from '../../utils/Messages';
 import { OkCancel } from '../base/Button';
 import Modal from '../base/Modal';
 
 import { useMoneeeyTour } from './Tour';
 
 export default function TourModal() {
+  const Messages = useMessages();
   const tour = useMoneeeyTour();
 
   return (

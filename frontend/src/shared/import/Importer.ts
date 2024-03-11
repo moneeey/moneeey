@@ -114,13 +114,13 @@ class Importer {
 
   findForImportId(import_id: string[]) {
     return this.moneeeyStore.transactions.all.find((t) => {
-      const tids = this.importId(t);
+      const tids = this.importIds(t);
 
       return import_id.find((id) => tids.includes(id));
     });
   }
 
-  importId(transaction: ITransaction) {
+  importIds(transaction: ITransaction) {
     return compact([transaction.from_account, transaction.to_account])
       .sort()
       .map((account) => `date=${transaction.date} account=${account} value=${transaction.from_value}`);

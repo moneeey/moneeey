@@ -8,7 +8,7 @@ import Space, { VerticalSpace } from '../../components/base/Space';
 import { TextTitle } from '../../components/base/Text';
 import { IBudget } from '../../entities/Budget';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import Messages from '../../utils/Messages';
+import useMessages from '../../utils/Messages';
 
 const BudgetEditor = ({
   editing,
@@ -17,6 +17,7 @@ const BudgetEditor = ({
   editing: IBudget;
   setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
 }) => {
+  const Messages = useMessages();
   const { budget, tags, currencies, config } = useMoneeeyStore();
 
   const onClose = () => setEditing(undefined);

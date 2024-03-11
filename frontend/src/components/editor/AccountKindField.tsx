@@ -1,12 +1,14 @@
 import { observer } from 'mobx-react';
 
 import { AccountKind } from '../../entities/Account';
-import Messages from '../../utils/Messages';
+import useMessages from '../../utils/Messages';
 import Select from '../base/Select';
 
 import { FieldAcessor, FieldDefHelper, FieldRenderProps } from './FieldDef';
 
 export default function <TEntity>({ read, delta }: FieldAcessor<TEntity, AccountKind>): FieldDefHelper<TEntity> {
+  const Messages = useMessages();
+
   return {
     render: observer(({ entity, commit, field, isError }: FieldRenderProps<TEntity>) => (
       <Select

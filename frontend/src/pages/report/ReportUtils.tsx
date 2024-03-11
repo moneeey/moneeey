@@ -5,8 +5,8 @@ import { TDate, TDateFormat, formatDate, formatDateAs, parseDate } from '../../u
 import MoneeeyStore from '../../shared/MoneeeyStore';
 import { ITransaction } from '../../entities/Transaction';
 import { asyncProcess } from '../../utils/Utils';
-import Messages from '../../utils/Messages';
 import { TMonetary } from '../../shared/Entity';
+import { TMessages } from '../../utils/Messages';
 
 export interface AsyncProcessTransactions {
   moneeeyStore: MoneeeyStore;
@@ -67,35 +67,43 @@ export const dateToPeriod = function (period: PeriodGroup, date: TDate) {
   return formatDate(period.groupFn(parseDate(date)));
 };
 
-export const PeriodGroups: { [_name: string]: PeriodGroup } = {
-  Day: {
-    label: Messages.util.day,
-    groupFn: startOfDay,
-    formatter: patternFormatter(TDateFormat),
-    order: 0,
-  },
-  Week: {
-    label: Messages.util.week,
-    groupFn: startOfWeek,
-    formatter: patternFormatter('yyyy Lo'),
-    order: 1,
-  },
-  Month: {
-    label: Messages.util.month,
-    groupFn: startOfMonth,
-    formatter: patternFormatter('yyyy-LL'),
-    order: 2,
-  },
-  Quarter: {
-    label: Messages.util.quarter,
-    groupFn: startOfQuarter,
-    formatter: patternFormatter('yyyy QQQ'),
-    order: 3,
-  },
-  Year: {
-    label: Messages.util.year,
-    groupFn: startOfYear,
-    formatter: patternFormatter('yyyy'),
-    order: 4,
-  },
-};
+export function PeriodGroups(Messages: TMessages): {
+  Day: PeriodGroup;
+  Week: PeriodGroup;
+  Month: PeriodGroup;
+  Quarter: PeriodGroup;
+  Year: PeriodGroup;
+} {
+  return {
+    Day: {
+      label: Messages.util.day,
+      groupFn: startOfDay,
+      formatter: patternFormatter(TDateFormat),
+      order: 0,
+    },
+    Week: {
+      label: Messages.util.week,
+      groupFn: startOfWeek,
+      formatter: patternFormatter('yyyy Lo'),
+      order: 1,
+    },
+    Month: {
+      label: Messages.util.month,
+      groupFn: startOfMonth,
+      formatter: patternFormatter('yyyy-LL'),
+      order: 2,
+    },
+    Quarter: {
+      label: Messages.util.quarter,
+      groupFn: startOfQuarter,
+      formatter: patternFormatter('yyyy QQQ'),
+      order: 3,
+    },
+    Year: {
+      label: Messages.util.year,
+      groupFn: startOfYear,
+      formatter: patternFormatter('yyyy'),
+      order: 4,
+    },
+  };
+}

@@ -14,7 +14,7 @@ import { IBudget } from '../../entities/Budget';
 import { BudgetEnvelope } from '../../entities/BudgetEnvelope';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { formatDate, formatDateMonth, startOfMonthOffset } from '../../utils/Date';
-import Messages from '../../utils/Messages';
+import useMessages from '../../utils/Messages';
 
 interface PeriodProps {
   startingDate: Date;
@@ -48,6 +48,7 @@ interface BudgetPeriodProps extends PeriodProps {
 }
 
 const BudgetPeriod = observer(({ startingDate, setEditing, viewArchived, setProgress }: BudgetPeriodProps) => {
+  const Messages = useMessages();
   const { budget, currencies } = useMoneeeyStore();
   const starting = useMemo(() => formatDate(startingDate), [startingDate]);
 

@@ -7,12 +7,13 @@ import Space, { VerticalSpace } from '../../components/base/Space';
 import { IBudget } from '../../entities/Budget';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { formatDateMonth, startOfMonthOffset } from '../../utils/Date';
-import Messages from '../../utils/Messages';
+import useMessages, { TMessages } from '../../utils/Messages';
 
 import BudgetEditor from './BudgetEditor';
 import BudgetPeriods from './BudgetPeriod';
 
-const MonthDateSelector = ({ setDate, date }: { setDate: Dispatch<SetStateAction<Date>>; date: Date }) => (
+type MonthDateSelectorProps = { setDate: Dispatch<SetStateAction<Date>>; date: Date; Messages: TMessages };
+const MonthDateSelector = ({ setDate, date, Messages }: MonthDateSelectorProps) => (
   <Space>
     <SecondaryButton onClick={() => setDate(startOfMonthOffset(date, -1))}>{Messages.budget.prev}</SecondaryButton>
     <span>{formatDateMonth(date)}</span>
@@ -21,6 +22,7 @@ const MonthDateSelector = ({ setDate, date }: { setDate: Dispatch<SetStateAction
 );
 
 const Budget = observer(() => {
+  const Messages = useMessages();
   const { config } = useMoneeeyStore();
   const [startingDate, setStartingDate] = useState(() => startOfMonthOffset(new Date(), 0));
   const [editing, setEditing] = useState<IBudget | undefined>(undefined);
@@ -30,7 +32,7 @@ const Budget = observer(() => {
 
   return (
     <VerticalSpace>
-      <MonthDateSelector date={startingDate} setDate={setStartingDate} />
+      <MonthDateSelector date={startingDate} setDate={setStartingDate} Messages={Messages} />
       <Space>
         {Messages.budget.show_months}
         <InputNumber

@@ -12,7 +12,7 @@ import ConfigStore from '../../entities/Config';
 import { FileUploaderMode, ImportConfig, ImportInput, ImportTask } from '../../shared/import/ImportContent';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { TDateFormat } from '../../utils/Date';
-import Messages from '../../utils/Messages';
+import useMessages from '../../utils/Messages';
 
 export interface FileUploaderProps {
   onFile: (input: ImportInput) => void;
@@ -20,6 +20,7 @@ export interface FileUploaderProps {
 }
 
 const FileUploader = function ({ onFile, error }: FileUploaderProps) {
+  const Messages = useMessages();
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       acceptedFiles.forEach((f) => {
@@ -74,6 +75,7 @@ interface ReferenceAccountSelectorProps {
 
 export const ReferenceAccountSelector = observer(
   ({ referenceAccount, onReferenceAccount }: ReferenceAccountSelectorProps) => {
+    const Messages = useMessages();
     const moneeeyStore = useMoneeeyStore();
 
     return (
@@ -98,6 +100,7 @@ const ImportStarter = function ({
   onTask: Dispatch<ImportTask>;
   configuration: ConfigStore;
 }) {
+  const Messages = useMessages();
   const { accounts } = useMoneeeyStore();
   const [config, setConfig] = useState(
     () =>

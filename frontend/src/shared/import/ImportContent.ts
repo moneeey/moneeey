@@ -108,7 +108,7 @@ export const importTransaction = function ({
     import_data: line,
     updated: currentDateTime(),
   };
-  const import_id = importer.importId(transaction);
+  const import_id = importer.importIds(transaction);
   const existing = importer.findForImportId(import_id);
   if (existing) {
     transaction.transaction_uuid = existing.transaction_uuid;

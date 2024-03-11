@@ -18,10 +18,11 @@ import { Checkbox } from '../../components/base/Input';
 import Loading from '../../components/Loading';
 import { IAccount } from '../../entities/Account';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import Messages from '../../utils/Messages';
 import { TDate } from '../../utils/Date';
 import Space from '../../components/base/Space';
 import { TextTitle } from '../../components/base/Text';
+
+import useMessages from '../../utils/Messages';
 
 import DateGroupingSelector from './DateGroupingSelector';
 import {
@@ -44,9 +45,10 @@ const roundCofficient = 1e5;
 const roundPoint = (value: number) => Math.round(value * roundCofficient) / roundCofficient;
 
 export const BaseReport = function ({ accounts, processFn, title, chartFn }: BaseReportProps) {
+  const Messages = useMessages();
   const [data, setData] = useState(NewReportDataMap());
   const [selectedAccounts, setSelectedAccounts] = useState(accounts);
-  const [period, setPeriod] = useState(PeriodGroups.Month);
+  const [period, setPeriod] = useState(PeriodGroups(Messages).Month);
   const [progress, setProgress] = useState(0);
   const moneeeyStore = useMoneeeyStore();
   useEffect(() => {

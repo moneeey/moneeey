@@ -12,9 +12,10 @@ import txtImport from '../../shared/import/TxtImporter';
 import ofxImport from '../../shared/import/OfxImporter';
 import MoneeeyStore from '../../shared/MoneeeyStore';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import Messages from '../../utils/Messages';
 import Loading from '../../components/Loading';
 import { TextTitle } from '../../components/base/Text';
+
+import useMessages from '../../utils/Messages';
 
 import { ImportProcessResult } from './ImportProcessResult';
 
@@ -47,6 +48,7 @@ const process = async ({
 };
 
 const ImportProcess = function ({ task, close }: { task: ImportTask; close: () => void }) {
+  const Messages = useMessages();
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<ImportResult>({
     errors: [],

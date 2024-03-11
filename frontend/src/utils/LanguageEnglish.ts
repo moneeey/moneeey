@@ -101,6 +101,7 @@ const Messages = {
     clear_data_placeholder:
       'Type "DELETE EVERYTHING" in this text area and hit "Clear data" again to delete everything and start from zero.',
     create_entity: (entity: string) => `Create ${entity}`,
+    select_language: 'Select language',
   },
   budget: {
     budget: 'Budget',

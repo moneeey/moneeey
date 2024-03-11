@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 
 import { NavigationModal } from '../../shared/Navigation';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import Messages from '../../utils/Messages';
 
 import Modal from '../base/Modal';
 import { CancelButton, OkButton } from '../base/Button';
@@ -12,6 +11,7 @@ import { Checkbox, Input } from '../base/Input';
 import { BaseFormEditor } from '../FormEditor';
 import { StorageKind } from '../../utils/Utils';
 import { Status } from '../Status';
+import useMessages from '../../utils/Messages';
 
 const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
   placeholder,
@@ -44,6 +44,7 @@ const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
   );
 
 const MoneeeyLogin = ({ setMessage }: { setMessage: Dispatch<SetStateAction<ReactElement | undefined>> }) => {
+  const Messages = useMessages();
   const { management } = useMoneeeyStore();
   const [state, setState] = useState({ email: '' });
 
@@ -71,6 +72,7 @@ const MoneeeyLogin = ({ setMessage }: { setMessage: Dispatch<SetStateAction<Reac
 };
 
 const MoneeeyAccountConfig = observer(() => {
+  const Messages = useMessages();
   const { management } = useMoneeeyStore();
   const [message, setMessage] = useState(undefined as ReactElement | undefined);
   const { loggedIn } = management;
@@ -90,6 +92,7 @@ const MoneeeyAccountConfig = observer(() => {
 });
 
 const DatabaseConfig = () => {
+  const Messages = useMessages();
   const { persistence, config } = useMoneeeyStore();
   const [state, setState] = useState(
     config.main.couchSync || {
@@ -158,6 +161,7 @@ const DatabaseConfig = () => {
 };
 
 export default function SyncModal() {
+  const Messages = useMessages();
   const { navigation } = useMoneeeyStore();
 
   return (

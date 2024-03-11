@@ -8,11 +8,11 @@ import ImportRoute from '../../routes/ImportRoute';
 import { IBaseEntity } from '../../shared/Entity';
 import MappedStore from '../../shared/MappedStore';
 import MoneeeyStore from '../../shared/MoneeeyStore';
-import Messages from '../../utils/Messages';
+import { TMessages } from '../../utils/Messages';
 
 import { TourStep } from './Tour';
 
-export default function TourSteps({ navigation, accounts, budget }: MoneeeyStore): TourStep[] {
+export default function TourSteps({ navigation, accounts, budget }: MoneeeyStore, Messages: TMessages): TourStep[] {
   const navigateTo = (url: string) => () => navigation.navigate(url);
 
   const checkStoreIsNotEmpty = <T extends IBaseEntity>(store: MappedStore<T>, message: string) => {
