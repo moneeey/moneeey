@@ -50,7 +50,9 @@ const Messages: TMessages = {
   import: {
     start: 'Nueva importación',
     processing: 'Importando...',
-    success: (fileName: string) => `Encontramos estas transacciones en "${fileName}". Por favor, confirme las cuentas de origen/destino de la transacción, actualizando errores, de esa manera Moneeey aprenderá de sus cambios y será más inteligente en la próxima importación.`,
+    success: (fileName: string) => `Encontramos estas transacciones en "${fileName}". Por favor, confirme las cuentas de
+      origen/destino de la transacción, actualizando errores, de esa manera Moneeey aprenderá de sus cambios y será más
+      inteligente en la próxima importación.`,
     drop_here: 'Suelte los archivos aquí ...',
     click_or_drop_here: 'Arrastre y suelte archivos aquí, o haga clic para seleccionar archivos',
     supported_formats: 'Formatos compatibles: TXT, CSV, OFX, PDF',
@@ -166,7 +168,8 @@ const Messages: TMessages = {
     success: 'Cuentas fusionadas con éxito',
   },
   sync: {
-    intro: `Sincronizar sus datos le permite usar Moneeey desde múltiples dispositivos en tiempo real, permitiendo incluso la colaboración en tiempo real con personas relacionadas.`,
+    intro: `Sincronizar sus datos le permite usar Moneeey desde múltiples dispositivos en tiempo real,
+      permitiendo incluso la colaboración en tiempo real con personas relacionadas.`,
     login: {
       success: '¡Inicio de sesión exitoso!',
       started: 'Se envió un correo electrónico de confirmación de inicio de sesión, por favor confirme haciendo clic en su enlace.',
@@ -188,17 +191,33 @@ const Messages: TMessages = {
     next: 'Siguiente',
     prev: 'Anterior',
 
-    edit_currencies: `Moneeey es multi moneda, por favor edite las monedas para adaptarlas a sus necesidades. Hemos añadido las 20 monedas más utilizadas de 2020.`,
-    create_accounts: `Ahora que conocemos las monedas que tenemos, es hora de decirnos cuáles son sus cuentas: tarjetas de crédito, cuentas corrientes, cuentas de inversión...`,
-    create_budgets: `¡Es hora de presupuestar su Moneeey! Los presupuestos son como sobres en los que pone parte de sus ingresos. Debería crear presupuestos para cosas como: vivienda/hipoteca, mantenimiento del coche, servicios públicos, entretenimiento... Haga clic en 'Nuevo presupuesto' en uno de los períodos`,
+    edit_currencies: `Moneeey es multi moneda, por favor edite las monedas para adaptarlas a sus necesidades. Hemos añadido
+      las 20 monedas más utilizadas de 2020.`,
+    create_accounts: `Ahora que conocemos las monedas que tenemos, es hora de decirnos cuáles son sus cuentas:
+      tarjetas de crédito, cuentas corrientes, cuentas de inversión...`,
+    create_budgets: `¡Es hora de presupuestar su Moneeey! Los presupuestos son como sobres en los que pone parte de sus ingresos.
+
+      Debería crear presupuestos para cosas como:
+      vivienda/hipoteca, mantenimiento del coche, servicios públicos, entretenimiento...
+
+      Haga clic en 'Nuevo presupuesto' en uno de los períodos`,
 
     please_create_account: `Antes de continuar, por favor cree una cuenta escribiendo su información en la tabla de abajo.`,
 
     please_create_budget: `Antes de continuar, por favor haga clic en 'Nuevo Presupuesto' y cree un presupuesto.`,
 
-    insert_transactions: `¡Cuando tenemos nuestros presupuestos, es hora de empezar a insertar nuestras transacciones! Cuando Moneeey conozca sus transacciones, será capaz de generar informes, calcular el uso/restante del presupuesto y ayudarle a hacer crecer sus finanzas.`,
-    import: `¡Insertar transacciones manualmente puede ser bastante aburrido... Así que le permitimos importar desde formatos bancarios comunes! Cuando importe una transacción, haremos todo lo posible para adivinar con qué beneficiarios están relacionadas esas transacciones. ¡Cuanto más transacciones tenga Moneeey, más inteligente se vuelve!`,
-    your_turn: `¡Ahora es tu turno! ¡Es hora de insertar algunas transacciones!`,
+    insert_transactions: `¡Cuando tenemos nuestros presupuestos, es hora de empezar a insertar nuestras transacciones!
+      Cuando Moneeey conozca sus transacciones, será capaz de generar informes, calcular el uso/restante del presupuesto
+      y ayudarle a hacer crecer sus finanzas.`,
+    import: `¡Insertar transacciones manualmente puede ser bastante aburrido...
+      Así que le permitimos importar desde formatos bancarios comunes!
+
+      Cuando importe una transacción, haremos todo lo posible para adivinar con qué beneficiarios están relacionadas esas transacciones.
+
+      ¡Cuanto más transacciones tenga Moneeey, más inteligente se vuelve!`,
+    your_turn: `¡Ahora es tu turno!
+
+      ¡Es hora de insertar algunas transacciones!`,
   },
 };
 

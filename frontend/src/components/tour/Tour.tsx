@@ -1,6 +1,7 @@
 import { ReactNode, createContext, useContext, useMemo, useState } from 'react';
 
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
+import useMessages from '../../utils/Messages';
 
 import TourModal from './TourModal';
 import TourSteps from './TourSteps';
@@ -12,10 +13,11 @@ export interface TourStep {
 }
 
 const TourClient = () => {
+  const Messages = useMessages()
   const moneeeyStore = useMoneeeyStore();
   const [step, setStep] = useState(0);
   const [open, setOpen] = useState(false);
-  const steps = useMemo(() => TourSteps(moneeeyStore), []);
+  const steps = useMemo(() => TourSteps(moneeeyStore, Messages), [Messages]);
 
   return {
     setStep(newStepp: number) {
