@@ -1,217 +1,231 @@
-import { ReactNode, useEffect, useState } from 'react';
-import { NumericFormat } from 'react-number-format';
+import { ReactNode, useEffect, useState } from "react";
+import { NumericFormat } from "react-number-format";
 
-import { ClassNameType } from '../../utils/Utils';
+import { ClassNameType } from "../../utils/Utils";
 
-import { WithDataTestId } from './Common';
+import { WithDataTestId } from "./Common";
 
-export const BaseInputClzz: ClassNameType = 'w-full color-white bg-transparent';
+export const BaseInputClzz: ClassNameType = "w-full color-white bg-transparent";
 
 export type InputProps<T> = WithDataTestId & {
-  className?: string;
-  onChange: (value: T) => void;
-  value: T;
-  placeholder: string;
-  prefix?: string | ReactNode;
-  suffix?: string | ReactNode;
-  disabled?: boolean;
-  readOnly?: boolean;
-  isError?: boolean;
+	className?: string;
+	onChange: (value: T) => void;
+	value: T;
+	placeholder: string;
+	prefix?: string | ReactNode;
+	suffix?: string | ReactNode;
+	disabled?: boolean;
+	readOnly?: boolean;
+	isError?: boolean;
 };
 
 type AddonType = string | ReactNode | undefined;
 type InputContainerProps = {
-  prefix: AddonType;
-  suffix: AddonType;
-  isError: boolean | undefined;
-  input: ReactNode;
-  baseClassname?: string;
+	prefix: AddonType;
+	suffix: AddonType;
+	isError: boolean | undefined;
+	input: ReactNode;
+	baseClassname?: string;
 };
 
-export const InputContainer = ({ baseClassname, prefix, suffix, isError, input }: InputContainerProps) => (
-  <div className={`${baseClassname || BaseInputClzz} flex ${isError ? 'border border-red-400' : ''}`}>
-    {prefix}
-    <div className='grow'>{input}</div>
-    {suffix}
-  </div>
+export const InputContainer = ({
+	baseClassname,
+	prefix,
+	suffix,
+	isError,
+	input,
+}: InputContainerProps) => (
+	<div
+		className={`${baseClassname || BaseInputClzz} flex ${
+			isError ? "border border-red-400" : ""
+		}`}
+	>
+		{prefix}
+		<div className="grow">{input}</div>
+		{suffix}
+	</div>
 );
 
 const Input = ({
-  className,
-  value,
-  onChange,
-  placeholder,
-  testId,
-  disabled,
-  readOnly,
-  prefix,
-  suffix,
-  isError,
+	className,
+	value,
+	onChange,
+	placeholder,
+	testId,
+	disabled,
+	readOnly,
+	prefix,
+	suffix,
+	isError,
 }: InputProps<string>) => {
-  const [currentValue, setCurrentValue] = useState<string>(value);
+	const [currentValue, setCurrentValue] = useState<string>(value);
 
-  useEffect(() => {
-    return () => {
-      if (currentValue !== value) {
-        onChange(currentValue);
-      }
-    };
-  }, []);
+	useEffect(() => {
+		return () => {
+			if (currentValue !== value) {
+				onChange(currentValue);
+			}
+		};
+	}, []);
 
-  return InputContainer({
-    prefix,
-    suffix,
-    isError,
-    input: (
-      <input
-        data-testid={testId}
-        type='text'
-        className={`${BaseInputClzz} ${className || ''}`}
-        value={currentValue}
-        onChange={({ target: { value: newValue } }) => setCurrentValue(newValue)}
-        onBlur={() => onChange(currentValue)}
-        placeholder={placeholder}
-        disabled={disabled}
-        readOnly={readOnly}
-      />
-    ),
-  });
+	return InputContainer({
+		prefix,
+		suffix,
+		isError,
+		input: (
+			<input
+				data-testid={testId}
+				type="text"
+				className={`${BaseInputClzz} ${className || ""}`}
+				value={currentValue}
+				onChange={({ target: { value: newValue } }) =>
+					setCurrentValue(newValue)
+				}
+				onBlur={() => onChange(currentValue)}
+				placeholder={placeholder}
+				disabled={disabled}
+				readOnly={readOnly}
+			/>
+		),
+	});
 };
 
 export type InputNumberProps = InputProps<number> & {
-  thousandSeparator: string;
-  decimalSeparator: string;
-  decimalScale: number;
+	thousandSeparator: string;
+	decimalSeparator: string;
+	decimalScale: number;
 };
 
 const InputNumber = ({
-  className,
-  value,
-  onChange,
-  placeholder,
-  testId,
-  prefix,
-  suffix,
-  disabled,
-  readOnly,
-  isError,
-  thousandSeparator,
-  decimalSeparator,
-  decimalScale,
+	className,
+	value,
+	onChange,
+	placeholder,
+	testId,
+	prefix,
+	suffix,
+	disabled,
+	readOnly,
+	isError,
+	thousandSeparator,
+	decimalSeparator,
+	decimalScale,
 }: InputNumberProps) => {
-  const [currentValue, setCurrentValue] = useState<string | number>(value);
-  const [currentFloatValue, setCurrentFloatValue] = useState<number | null>(null);
+	const [currentValue, setCurrentValue] = useState<string | number>(value);
+	const [currentFloatValue, setCurrentFloatValue] = useState<number | null>(
+		null,
+	);
 
-  useEffect(() => {
-    setCurrentValue(value);
-  }, [value]);
+	useEffect(() => {
+		setCurrentValue(value);
+	}, [value]);
 
-  useEffect(() => {
-    return () => {
-      if (currentFloatValue && currentFloatValue !== value) {
-        onChange(currentFloatValue);
-      }
-    };
-  }, []);
+	useEffect(() => {
+		return () => {
+			if (currentFloatValue && currentFloatValue !== value) {
+				onChange(currentFloatValue);
+			}
+		};
+	}, []);
 
-  return InputContainer({
-    prefix,
-    suffix,
-    isError,
-    input: (
-      <NumericFormat
-        data-testid={testId}
-        className={`${BaseInputClzz} font-mono ${className || ''}`}
-        value={currentValue}
-        onValueChange={({ floatValue, formattedValue }) => {
-          if (formattedValue) {
-            setCurrentValue(formattedValue);
-          }
-          if (floatValue && floatValue !== value) {
-            setCurrentFloatValue(floatValue);
-          }
-        }}
-        onBlur={() => currentFloatValue !== null && onChange(currentFloatValue)}
-        placeholder={placeholder}
-        thousandsGroupStyle='thousand'
-        thousandSeparator={thousandSeparator}
-        decimalSeparator={decimalSeparator}
-        decimalScale={decimalScale}
-        disabled={disabled}
-        readOnly={readOnly}
-      />
-    ),
-  });
+	return InputContainer({
+		prefix,
+		suffix,
+		isError,
+		input: (
+			<NumericFormat
+				data-testid={testId}
+				className={`${BaseInputClzz} font-mono ${className || ""}`}
+				value={currentValue}
+				onValueChange={({ floatValue, formattedValue }) => {
+					if (formattedValue) {
+						setCurrentValue(formattedValue);
+					}
+					if (floatValue && floatValue !== value) {
+						setCurrentFloatValue(floatValue);
+					}
+				}}
+				onBlur={() => currentFloatValue !== null && onChange(currentFloatValue)}
+				placeholder={placeholder}
+				thousandsGroupStyle="thousand"
+				thousandSeparator={thousandSeparator}
+				decimalSeparator={decimalSeparator}
+				decimalScale={decimalScale}
+				disabled={disabled}
+				readOnly={readOnly}
+			/>
+		),
+	});
 };
 
 const TextArea = ({
-  className,
-  value,
-  onChange,
-  placeholder,
-  testId,
-  prefix,
-  suffix,
-  disabled,
-  readOnly,
-  isError,
-  rows,
+	className,
+	value,
+	onChange,
+	placeholder,
+	testId,
+	prefix,
+	suffix,
+	disabled,
+	readOnly,
+	isError,
+	rows,
 }: InputProps<string> & { rows?: number }) =>
-  InputContainer({
-    prefix,
-    suffix,
-    isError,
-    input: (
-      <textarea
-        data-testid={testId}
-        className={`${BaseInputClzz} ${className || ''}`}
-        value={value}
-        onChange={({ target: { value: newValue } }) => onChange(newValue)}
-        placeholder={placeholder}
-        disabled={disabled}
-        readOnly={readOnly}
-        rows={rows}
-      />
-    ),
-  });
+	InputContainer({
+		prefix,
+		suffix,
+		isError,
+		input: (
+			<textarea
+				data-testid={testId}
+				className={`${BaseInputClzz} ${className || ""}`}
+				value={value}
+				onChange={({ target: { value: newValue } }) => onChange(newValue)}
+				placeholder={placeholder}
+				disabled={disabled}
+				readOnly={readOnly}
+				rows={rows}
+			/>
+		),
+	});
 
 type CheckboxProps = InputProps<boolean> & {
-  children: string | ReactNode;
+	children: string | ReactNode;
 };
 
 const Checkbox = ({
-  className,
-  value,
-  onChange,
-  placeholder,
-  testId,
-  children,
-  prefix,
-  suffix,
-  disabled,
-  readOnly,
-  isError,
+	className,
+	value,
+	onChange,
+	placeholder,
+	testId,
+	children,
+	prefix,
+	suffix,
+	disabled,
+	readOnly,
+	isError,
 }: CheckboxProps) =>
-  InputContainer({
-    prefix,
-    baseClassname: 'color-white bg-transparent',
-    suffix,
-    isError,
-    input: (
-      <label>
-        <input
-          data-testid={testId}
-          type='checkbox'
-          className={`${className || ''} mr-2`}
-          checked={value}
-          onChange={({ target: { checked: newValue } }) => onChange(newValue)}
-          placeholder={placeholder}
-          disabled={disabled}
-          readOnly={readOnly}
-        />
-        {children}
-      </label>
-    ),
-  });
+	InputContainer({
+		prefix,
+		baseClassname: "color-white bg-transparent",
+		suffix,
+		isError,
+		input: (
+			<label>
+				<input
+					data-testid={testId}
+					type="checkbox"
+					className={`${className || ""} mr-2`}
+					checked={value}
+					onChange={({ target: { checked: newValue } }) => onChange(newValue)}
+					placeholder={placeholder}
+					disabled={disabled}
+					readOnly={readOnly}
+				/>
+				{children}
+			</label>
+		),
+	});
 
 export { Input, InputNumber, TextArea, Checkbox };

@@ -1,71 +1,75 @@
-import { ITransaction, mockTransaction } from '../../entities/Transaction';
-import { tokenize } from '../../utils/Utils';
+import { ITransaction, mockTransaction } from "../../entities/Transaction";
+import { tokenize } from "../../utils/Utils";
 
 import {
-  tokenMatchScoreMap,
-  tokenTopScores,
-  tokenTransactionAccountScoreMap,
-  tokenWeightMap,
-  tokensForTransactions,
-} from './Importer';
+	tokenMatchScoreMap,
+	tokenTopScores,
+	tokenTransactionAccountScoreMap,
+	tokenWeightMap,
+	tokensForTransactions,
+} from "./Importer";
 
 const sampleTransactions: ITransaction[] = [
-  mockTransaction({
-    transaction_uuid: 't1',
-    from_account: 'banco',
-    to_account: 'fernando',
-    memo: 'transfer to fernando',
-    from_value: 123,
-  }),
-  mockTransaction({
-    transaction_uuid: 't2',
-    from_account: 'banco',
-    to_account: 'chocolate',
-    memo: 'transfer to chocolate',
-    from_value: 20,
-  }),
-  mockTransaction({
-    transaction_uuid: 't3',
-    from_account: 'banco',
-    to_account: 'lua',
-    memo: 'transfer to lua',
-    from_value: 20,
-  }),
-  mockTransaction({
-    transaction_uuid: 't4',
-    from_account: 'banco',
-    to_account: 'market_dolly',
-    memo: 'groceries dolly market',
-    tags: ['groceries'],
-    from_value: 20,
-  }),
-  mockTransaction({
-    transaction_uuid: 't5',
-    from_account: 'xyz_company',
-    to_account: 'banco',
-    memo: 'salary xyz company',
-    from_value: 300,
-  }),
-  mockTransaction({
-    transaction_uuid: 't6',
-    from_account: 'banco',
-    to_account: 'market_super',
-    memo: 'super market',
-    tags: ['groceries'],
-    from_value: 300,
-  }),
+	mockTransaction({
+		transaction_uuid: "t1",
+		from_account: "banco",
+		to_account: "fernando",
+		memo: "transfer to fernando",
+		from_value: 123,
+	}),
+	mockTransaction({
+		transaction_uuid: "t2",
+		from_account: "banco",
+		to_account: "chocolate",
+		memo: "transfer to chocolate",
+		from_value: 20,
+	}),
+	mockTransaction({
+		transaction_uuid: "t3",
+		from_account: "banco",
+		to_account: "lua",
+		memo: "transfer to lua",
+		from_value: 20,
+	}),
+	mockTransaction({
+		transaction_uuid: "t4",
+		from_account: "banco",
+		to_account: "market_dolly",
+		memo: "groceries dolly market",
+		tags: ["groceries"],
+		from_value: 20,
+	}),
+	mockTransaction({
+		transaction_uuid: "t5",
+		from_account: "xyz_company",
+		to_account: "banco",
+		memo: "salary xyz company",
+		from_value: 300,
+	}),
+	mockTransaction({
+		transaction_uuid: "t6",
+		from_account: "banco",
+		to_account: "market_super",
+		memo: "super market",
+		tags: ["groceries"],
+		from_value: 300,
+	}),
 ];
 
-describe('Importer', () => {
-  it('tokenize', () => {
-    expect(tokenize('hello 7/21 world 30% coupon')).toEqual(['hello', 'world', 'coupon']);
-    expect(tokenize('some@bad*boys')).toEqual(['some', 'bad', 'boys']);
-  });
+describe("Importer", () => {
+	it("tokenize", () => {
+		expect(tokenize("hello 7/21 world 30% coupon")).toEqual([
+			"hello",
+			"world",
+			"coupon",
+		]);
+		expect(tokenize("some@bad*boys")).toEqual(["some", "bad", "boys"]);
+	});
 
-  it('tokenScoreMap simple', () => {
-    const tokens = '1223334444'.split('');
+	it("tokenScoreMap simple", () => {
+		const tokens = "1223334444".split("");
 
-    expect(tokenWeightMap(tokens)).toMatchInlineSnapshot(`
+		expect(tokenWeightMap(tokens)).toMatchInlineSnapshot(`
       Map {
         "1" => 0.9,
         "2" => 0.8,
@@ -73,13 +77,15 @@ describe('Importer', () => {
         "4" => 0.6,
       }
     `);
-  });
+	});
 
-  it('tokenScoreMap random numbers', () => {
-    const tokens =
-      '2836788741484086466019596043251807718469095087302450890762989257138040064396808737591754583512735764'.split('');
+	it("tokenScoreMap random numbers", () => {
+		const tokens =
+			"2836788741484086466019596043251807718469095087302450890762989257138040064396808737591754583512735764".split(
+				"",
+			);
 
-    expect(tokenWeightMap(tokens)).toMatchInlineSnapshot(`
+		expect(tokenWeightMap(tokens)).toMatchInlineSnapshot(`
       Map {
         "2" => 0.94,
         "8" => 0.86,
@@ -93,43 +99,50 @@ describe('Importer', () => {
         "5" => 0.9,
       }
     `);
-  });
+	});
 
-  it('tokenTopScores', () => {
-    const scores = new Map([
-      ['fernando', 0.9],
-      ['gas', 0.9],
-      ['oil', 0.9],
-      ['pix', 0.8],
-      ['restaurant', 0.9],
-      ['station', 0.9],
-      ['transaction', 0.7],
-    ]);
+	it("tokenTopScores", () => {
+		const scores = new Map([
+			["fernando", 0.9],
+			["gas", 0.9],
+			["oil", 0.9],
+			["pix", 0.8],
+			["restaurant", 0.9],
+			["station", 0.9],
+			["transaction", 0.7],
+		]);
 
-    expect(tokenTopScores(['transaction', 'pix', 'fernando', 'pix'], scores)).toEqual([
-      { score: 0.9, token: 'fernando' },
-      { score: 0.8, token: 'pix' },
-      { score: 0.7, token: 'transaction' },
-    ]);
-  });
+		expect(
+			tokenTopScores(["transaction", "pix", "fernando", "pix"], scores),
+		).toEqual([
+			{ score: 0.9, token: "fernando" },
+			{ score: 0.8, token: "pix" },
+			{ score: 0.7, token: "transaction" },
+		]);
+	});
 
-  it('tokenTransactionScoreMap', () => {
-    const transaction = mockTransaction({
-      transaction_uuid: 't1',
-      from_account: 'a',
-      to_account: 'b',
-      from_value: 12,
-      memo: 'hello de world',
-      tags: ['tagX'],
-    });
+	it("tokenTransactionScoreMap", () => {
+		const transaction = mockTransaction({
+			transaction_uuid: "t1",
+			from_account: "a",
+			to_account: "b",
+			from_value: 12,
+			memo: "hello de world",
+			tags: ["tagX"],
+		});
 
-    expect(tokensForTransactions(transaction)).toEqual(['hello', 'world', 'tagx']);
-  });
+		expect(tokensForTransactions(transaction)).toEqual([
+			"hello",
+			"world",
+			"tagx",
+		]);
+	});
 
-  const sampleScoreMap = () => tokenTransactionAccountScoreMap(sampleTransactions);
+	const sampleScoreMap = () =>
+		tokenTransactionAccountScoreMap(sampleTransactions);
 
-  it('tokenTransactionAccountScoreMap', () => {
-    expect(sampleScoreMap()).toMatchInlineSnapshot(`
+	it("tokenTransactionAccountScoreMap", () => {
+		expect(sampleScoreMap()).toMatchInlineSnapshot(`
       {
         "banco": {
           "chocolate": 0.9375,
@@ -173,16 +186,18 @@ describe('Importer', () => {
         },
       }
     `);
-  });
+	});
 
-  describe('tokenMatchScoreMap', () => {
-    const queryTokenMatchScoreMap = (tokens: string[]) => ({
-      query: tokens,
-      result: tokenMatchScoreMap(tokens, sampleScoreMap()),
-    });
+	describe("tokenMatchScoreMap", () => {
+		const queryTokenMatchScoreMap = (tokens: string[]) => ({
+			query: tokens,
+			result: tokenMatchScoreMap(tokens, sampleScoreMap()),
+		});
 
-    it('transfer to fernando', () => {
-      expect(queryTokenMatchScoreMap(['transfer', 'to', 'fernando'])).toMatchInlineSnapshot(`
+		it("transfer to fernando", () => {
+			expect(
+				queryTokenMatchScoreMap(["transfer", "to", "fernando"]),
+			).toMatchInlineSnapshot(`
         {
           "query": [
             "transfer",
@@ -235,10 +250,12 @@ describe('Importer', () => {
           ],
         }
       `);
-    });
+		});
 
-    it('transfer to chocolate', () => {
-      expect(queryTokenMatchScoreMap(['transfer', 'to', 'chocolate'])).toMatchInlineSnapshot(`
+		it("transfer to chocolate", () => {
+			expect(
+				queryTokenMatchScoreMap(["transfer", "to", "chocolate"]),
+			).toMatchInlineSnapshot(`
         {
           "query": [
             "transfer",
@@ -291,10 +308,10 @@ describe('Importer', () => {
           ],
         }
       `);
-    });
+		});
 
-    it('market', () => {
-      expect(queryTokenMatchScoreMap(['market'])).toMatchInlineSnapshot(`
+		it("market", () => {
+			expect(queryTokenMatchScoreMap(["market"])).toMatchInlineSnapshot(`
         {
           "query": [
             "market",
@@ -333,10 +350,10 @@ describe('Importer', () => {
           ],
         }
       `);
-    });
+		});
 
-    it('salary', () => {
-      expect(queryTokenMatchScoreMap(['salary'])).toMatchInlineSnapshot(`
+		it("salary", () => {
+			expect(queryTokenMatchScoreMap(["salary"])).toMatchInlineSnapshot(`
         {
           "query": [
             "salary",
@@ -365,6 +382,6 @@ describe('Importer', () => {
           ],
         }
       `);
-    });
-  });
+		});
+	});
 });

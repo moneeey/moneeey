@@ -1,1 +1,1 @@
-declare module 'node-ofx-parser';
+declare module "node-ofx-parser";

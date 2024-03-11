@@ -1,13 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-import './polyfills';
-import App from './App';
+import "./polyfills";
+import App from "./App";
 
-import './main.css';
+import "./main.css";
 
-ReactDOM.createRoot(document.querySelector('.App') as HTMLElement).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+ReactDOM.createRoot(document.querySelector(".App") as HTMLElement).render(
+	<React.StrictMode>
+		<App />
+	</React.StrictMode>,
 );
