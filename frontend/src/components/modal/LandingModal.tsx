@@ -3,14 +3,15 @@ import { useEffect } from 'react';
 
 import { NavigationModal } from '../../shared/Navigation';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import Messages from '../../utils/Messages';
 import { StorageKind, getStorage, setStorage } from '../../utils/Utils';
 import { useMoneeeyTour } from '../tour/Tour';
 
 import Modal from '../base/Modal';
 import { OkCancel } from '../base/Button';
+import useMessages from '../../utils/Messages';
 
 const LandingModal = function () {
+  const Messages = useMessages();
   const { navigation } = useMoneeeyStore();
   const tour = useMoneeeyTour();
   useEffect(() => {

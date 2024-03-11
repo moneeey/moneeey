@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-import favicon from '../../../public/favicon.svg';
+import favicon from '../../favicon.svg';
 
 import { WithDataTestId } from './Common';
 

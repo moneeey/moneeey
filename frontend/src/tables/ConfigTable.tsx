@@ -4,9 +4,11 @@ import CurrencySelectorField from '../components/editor/CurrencySelectorField';
 import TextField from '../components/editor/TextField';
 import FormEditor from '../components/FormEditor';
 import ConfigStore, { IConfig } from '../entities/Config';
-import Messages from '../utils/Messages';
+import useMessages from '../utils/Messages';
 
 const ConfigTable = observer(({ config }: { config: ConfigStore }) => {
+  const Messages = useMessages();
+
   return (
     <FormEditor
       testId='configTable'

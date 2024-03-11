@@ -4,12 +4,13 @@ import { useState } from 'react';
 import Tabs from '../../components/base/Tabs';
 import { ImportTask } from '../../shared/import/ImportContent';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import Messages from '../../utils/Messages';
+import useMessages from '../../utils/Messages';
 
 import ImportProcess from './ImportProcessor';
 import ImportStarter from './ImportStarter';
 
 const Import = observer(() => {
+  const Messages = useMessages();
   const [processing, setProcessing] = useState([] as ImportTask[]);
   const { config } = useMoneeeyStore();
 

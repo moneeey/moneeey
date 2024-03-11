@@ -5,9 +5,10 @@ import { TDate } from '../../utils/Date';
 import { TMonetary } from '../../shared/Entity';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { ITransaction } from '../../entities/Transaction';
-import Messages from '../../utils/Messages';
 
 import MoneeeyStore from '../../shared/MoneeeyStore';
+
+import useMessages from '../../utils/Messages';
 
 import { PeriodGroup, ReportDataMap, dateToPeriod } from './ReportUtils';
 import { BaseColumnChart, BaseReport } from './BaseReport';
@@ -44,6 +45,7 @@ export const accountBalanceReport = (moneeeyStore: MoneeeyStore) =>
   baseAccountBalanceReport(moneeeyStore, false, (account) => account.kind !== AccountKind.PAYEE);
 
 const AccountBalanceReport = observer(() => {
+  const Messages = useMessages();
   const moneeeyStore = useMoneeeyStore();
   const { accounts } = moneeeyStore;
 

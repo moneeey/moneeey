@@ -9,7 +9,6 @@ import Navigator from './components/Navigator';
 import Notifications from './components/Notifications';
 import MoneeeyStore from './shared/MoneeeyStore';
 import useMoneeeyStore, { MoneeeyStoreProvider } from './shared/useMoneeeyStore';
-import Messages from './utils/Messages';
 
 import Modals from './components/modal/Modals';
 import { TagsHighlightProvider } from './components/Tags';
@@ -17,8 +16,10 @@ import MoneeeyTourProvider from './components/tour/Tour';
 
 import { PouchDBFactory } from './shared/Persistence';
 import initSw from './sw';
+import useMessages, { MessagesProvider } from './utils/Messages';
 
 const AppContent = observer(() => {
+  const Messages = useMessages();
   const moneeeyStore = useMoneeeyStore();
   const { loaded } = moneeeyStore;
 
@@ -34,16 +35,18 @@ export const App = () => {
 
   return (
     <BrowserRouter>
-      <MoneeeyStoreProvider value={moneeeyStore}>
-        <MoneeeyTourProvider>
-          <TagsHighlightProvider>
-            <AppContent />
-            <Navigator />
-            <Modals />
-            <Notifications />
-          </TagsHighlightProvider>
-        </MoneeeyTourProvider>
-      </MoneeeyStoreProvider>
+      <MessagesProvider>
+        <MoneeeyStoreProvider value={moneeeyStore}>
+          <MoneeeyTourProvider>
+            <TagsHighlightProvider>
+              <AppContent />
+              <Navigator />
+              <Modals />
+              <Notifications />
+            </TagsHighlightProvider>
+          </MoneeeyTourProvider>
+        </MoneeeyStoreProvider>
+      </MessagesProvider>
     </BrowserRouter>
   );
 };

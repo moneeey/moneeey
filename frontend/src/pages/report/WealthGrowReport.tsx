@@ -3,15 +3,17 @@ import { TDate, compareDates } from '../../utils/Date';
 import { TMonetary } from '../../shared/Entity';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
 import { ITransaction } from '../../entities/Transaction';
-import Messages from '../../utils/Messages';
 
 import MoneeeyStore from '../../shared/MoneeeyStore';
+
+import useMessages, { TMessages } from '../../utils/Messages';
 
 import { PeriodGroup, ReportDataMap, dateToPeriod } from './ReportUtils';
 import { BaseLineChart, BaseReport } from './BaseReport';
 
 const wealthGrowProcess =
-  (moneeeyStore: MoneeeyStore) => (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => {
+  (moneeeyStore: MoneeeyStore, Messages: TMessages) =>
+  (transaction: ITransaction, period: PeriodGroup, data: ReportDataMap) => {
     const addBalanceToData = (acct: TAccountUUID, value: TMonetary, date: TDate) => {
       const account = moneeeyStore.accounts.byUuid(acct);
       if (!account || account.kind === AccountKind.PAYEE) {
@@ -31,13 +33,14 @@ const wealthGrowProcess =
   };
 
 const WealthGrowReport = function () {
+  const Messages = useMessages();
   const moneeeyStore = useMoneeeyStore();
   const { accounts } = moneeeyStore;
 
   return (
     <BaseReport
       accounts={accounts.allPayees}
-      processFn={wealthGrowProcess(moneeeyStore)}
+      processFn={wealthGrowProcess(moneeeyStore, Messages)}
       title={Messages.reports.wealth_growth}
       chartFn={(data, period) => {
         const sorted = Array.from(data.points.entries()).sort(([keyA], [keyB]) => compareDates(keyA, keyB));

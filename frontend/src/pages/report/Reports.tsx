@@ -1,5 +1,6 @@
-import Messages from '../../utils/Messages';
 import Tabs from '../../components/base/Tabs';
+
+import useMessages from '../../utils/Messages';
 
 import AccountBalanceReport from './AccountBalanceReport';
 import IncomeVsExpensesReport from './IncomeVsExpensesReport';
@@ -8,6 +9,8 @@ import TagExpensesReport from './TagExpensesReport';
 import WealthGrowReport from './WealthGrowReport';
 
 const Reports = function () {
+  const Messages = useMessages();
+
   return (
     <Tabs
       testId='reportTabs'

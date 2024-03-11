@@ -6,13 +6,14 @@ import TextField from '../components/editor/TextField';
 import TableEditor from '../components/TableEditor';
 import { CurrencyStore, ICurrency } from '../entities/Currency';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
-import Messages from '../utils/Messages';
+import useMessages from '../utils/Messages';
 
 interface CurrencySettingsProps {
   currencies: CurrencyStore;
 }
 
 const CurrencyTable = observer(({ currencies }: CurrencySettingsProps) => {
+  const Messages = useMessages();
   const { config } = useMoneeeyStore();
 
   return (

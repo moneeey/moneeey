@@ -5,7 +5,7 @@ import { AccountKind, IAccount, TAccountUUID } from '../../entities/Account';
 import { isTransaction } from '../../entities/Transaction';
 import { EntityType } from '../../shared/Entity';
 import useMoneeeyStore from '../../shared/useMoneeeyStore';
-import Messages from '../../utils/Messages';
+import useMessages from '../../utils/Messages';
 import Select from '../base/Select';
 import { TagsFrom, TagsTo } from '../Tags';
 
@@ -19,6 +19,7 @@ export default function <TEntity>({
   readOptions(): IAccount[];
   clearable: boolean;
 }): FieldDefHelper<TEntity> {
+  const Messages = useMessages();
   const { accounts } = useMoneeeyStore();
 
   const readName = (entity: TEntity) => accounts.nameForUuid(read(entity));

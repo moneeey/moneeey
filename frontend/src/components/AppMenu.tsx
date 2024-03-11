@@ -30,18 +30,20 @@ import useMoneeeyStore from '../shared/useMoneeeyStore';
 import ImportRoute from '../routes/ImportRoute';
 import SettingsRoute from '../routes/SettingsRoute';
 import BudgetRoute from '../routes/BudgetRoute';
-import Messages from '../utils/Messages';
 import { StorageKind, getStorage, setStorage } from '../utils/Utils';
 import { NavigationModal } from '../shared/Navigation';
 
 import RouteRenderer from '../routes/RouteRenderer';
 import MoneeeyStore from '../shared/MoneeeyStore';
 
+import useMessages from '../utils/Messages';
+
 import Navbar from './base/Navbar';
 import { TextNormal, TextSecondary, TextTitle } from './base/Text';
 import Icon, { FavIcon } from './base/Icon';
 
 const Menu = observer(() => {
+  const Messages = useMessages();
   const { navigation, accounts, currencies, persistence, transactions } = useMoneeeyStore();
 
   const getAccountCurrency = (account: IAccount) => {
@@ -190,17 +192,21 @@ const Menu = observer(() => {
   );
 });
 
-const Header = ({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => (
-  <header className='sticky left-0 right-0 top-0 z-30 h-12 bg-background-800 p-2'>
-    <TextTitle className='flex flex-row items-center gap-1 text-2xl' onClick={() => setExpanded((value) => !value)}>
-      <Icon>
-        <Bars3Icon />
-      </Icon>
-      <FavIcon />
-      {Messages.menu.title}
-    </TextTitle>
-  </header>
-);
+const Header = ({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => {
+  const Messages = useMessages();
+
+  return (
+    <header className='sticky left-0 right-0 top-0 z-30 h-12 bg-background-800 p-2'>
+      <TextTitle className='flex flex-row items-center gap-1 text-2xl' onClick={() => setExpanded((value) => !value)}>
+        <Icon>
+          <Bars3Icon />
+        </Icon>
+        <FavIcon />
+        {Messages.menu.title}
+      </TextTitle>
+    </header>
+  );
+};
 
 const Content = ({ expanded, moneeeyStore }: { expanded: boolean; moneeeyStore: MoneeeyStore }) => (
   <section className='flex grow flex-row'>

@@ -11,7 +11,7 @@ import TableEditor from '../components/TableEditor';
 import { TAccountUUID } from '../entities/Account';
 import TransactionStore, { ITransaction } from '../entities/Transaction';
 import useMoneeeyStore from '../shared/useMoneeeyStore';
-import Messages from '../utils/Messages';
+import useMessages from '../utils/Messages';
 
 interface TransactionSettingsProps {
   creatable?: boolean;
@@ -22,6 +22,7 @@ interface TransactionSettingsProps {
 
 const TransactionTable = observer(
   ({ creatable, transactions, schemaFilter, referenceAccount }: TransactionSettingsProps) => {
+    const Messages = useMessages();
     const { accounts, currencies } = useMoneeeyStore();
 
     const currencyForAccount = (account_uuid: TAccountUUID) =>
