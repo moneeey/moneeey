@@ -88,7 +88,9 @@ export class BudgetStore extends MappedStore<IBudget> {
 	}
 
 	makeEnvelopes(starting: TDate, onProgress: (percentage: number) => void) {
-		this.all.forEach((budget) => this.envelopes.getEnvelope(budget, starting));
+		for (const budget of this.all) {
+			this.envelopes.getEnvelope(budget, starting);
+		}
 		this.envelopes.calculateRemaining(onProgress);
 	}
 

@@ -81,7 +81,7 @@ const BudgetPeriod = observer(
 			budget.makeEnvelopes(starting, (currentProgress) =>
 				setProgress(currentProgress),
 			);
-		}, [starting, budget.ids]);
+		}, [setProgress, starting, budget]);
 		const onNewBudget = () => setEditing(budget.factory());
 
 		return (

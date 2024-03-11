@@ -24,7 +24,7 @@ const tagExpensesProcess =
 			const is_payee = account?.kind === AccountKind.PAYEE;
 			const payee_tags = (is_payee && account?.tags) || [];
 			const tags = new Set([...payee_tags, ...transaction.tags]);
-			tags.forEach((tag) => {
+			for (const tag of tags) {
 				const key = dateToPeriod(period, transaction.date);
 				const prev_record = data.points.get(key);
 				const prev_balance = prev_record?.[tag] || 0;
@@ -32,7 +32,7 @@ const tagExpensesProcess =
 				const balance = prev_balance + delta;
 				data.columns.add(tag);
 				data.points.set(key, { ...prev_record, [tag]: balance });
-			});
+			}
 		};
 		sumTransactionTagExpenses(transaction.from_account, transaction.from_value);
 		sumTransactionTagExpenses(transaction.to_account, transaction.to_value);

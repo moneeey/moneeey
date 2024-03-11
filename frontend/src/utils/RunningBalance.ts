@@ -53,7 +53,7 @@ export default class RunningBalance {
 
 					return balance;
 				};
-				chunk.forEach((item) => {
+				for (const item of chunk) {
 					const from_balance = changeRunningBalance(
 						item,
 						item.from_account,
@@ -68,7 +68,7 @@ export default class RunningBalance {
 						from_balance,
 						to_balance,
 					});
-				});
+				}
 			},
 			{
 				chunkSize: 50,
@@ -85,15 +85,15 @@ export default class RunningBalance {
 	updateTransactions(
 		updates: { transaction_uuid: TTransactionUUID; balances: FromToBalance }[],
 	) {
-		updates.forEach(({ transaction_uuid, balances }) =>
-			this.transactionRunningBalance.set(transaction_uuid, balances),
-		);
+		for (const { transaction_uuid, balances } of updates) {
+			this.transactionRunningBalance.set(transaction_uuid, balances);
+		}
 	}
 
 	updateAccounts(updates: { account_uuid: string; balance: number }[]) {
-		updates.forEach(({ account_uuid, balance }) =>
-			this.accountBalance.set(account_uuid, balance),
-		);
+		for (const { account_uuid, balance } of updates) {
+			this.accountBalance.set(account_uuid, balance);
+		}
 	}
 
 	async processAll(transactions: ITransaction[]) {

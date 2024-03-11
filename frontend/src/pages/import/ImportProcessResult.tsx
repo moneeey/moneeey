@@ -293,7 +293,9 @@ const ImportProcessResult = ({
 	const moneeeyStore = useMoneeeyStore();
 
 	const onImport = () => {
-		result.transactions.forEach((t) => moneeeyStore.transactions.merge(t));
+		for (const t of result.transactions) {
+			moneeeyStore.transactions.merge(t);
+		}
 		close();
 	};
 

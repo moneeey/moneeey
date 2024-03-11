@@ -7,7 +7,9 @@ import type MoneeeyStore from "../MoneeeyStore";
 
 export const tokenWeightMap = (tokens: string[]): Map<string, number> => {
 	const scores = new Map<string, number>();
-	tokens.forEach((token) => scores.set(token, (scores.get(token) || 0) + 1));
+	for (const token of tokens) {
+		scores.set(token, (scores.get(token) || 0) + 1);
+	}
 	scores.forEach((frequency, token) =>
 		scores.set(token, 1 - frequency / tokens.length),
 	);
@@ -44,9 +46,9 @@ export const tokenTransactionAccountScoreMap = (
 	const allAccountTokens = transactions.reduce((rs, t) => {
 		const tokens = tokensForTransactions(t);
 		const accounts = compact([t.from_account, t.to_account]);
-		accounts.forEach((account_uuid) =>
-			rs.set(account_uuid, [...(rs.get(account_uuid) || []), ...tokens]),
-		);
+		for (const account_uuid of accounts) {
+			rs.set(account_uuid, [...(rs.get(account_uuid) || []), ...tokens]);
+		}
 
 		return rs;
 	}, new Map<TAccountUUID, string[]>());
@@ -60,11 +62,15 @@ export const tokenTransactionAccountScoreMap = (
 			const topScores = tokenTopScores(tokens, weightMap);
 
 			const scores = topScores.reduce(
-				(rss, score) => ({ ...rss, [score.token]: score.score }),
-				{},
+				(rss, score) => {
+					rss[score.token] = score.score;
+					return rss;
+				},
+				{} as Record<string, number>,
 			);
 
-			return { ...rs, [account_uuid]: scores };
+			rs[account_uuid] = scores;
+			return rs;
 		},
 		{} as ScoreMap,
 	);
@@ -81,7 +87,13 @@ export const tokenMatchScoreMap = (tokens: string[], scoreMap: ScoreMap) =>
 			const match = tokens
 				.map((token, idx) => ({ token, score: scores[idx] }))
 				.filter((m) => m.score > 0)
-				.reduce((rs, m) => ({ ...rs, [m.token]: m.score }), {});
+				.reduce(
+					(rs, m) => {
+						rs[m.token] = m.score;
+						return rs;
+					},
+					{} as Record<string, number>,
+				);
 
 			return {
 				id,

@@ -59,12 +59,14 @@ const LanguageSelector = () => {
 		language,
 	}: { icon: ReactNode; language: AvailableLanguages }) => {
 		const isCurrentLanguage = currentLanguage === language;
+		const setCurrentLanguage = () => selectLanguage(language);
 		return (
 			<i
 				className={`inline-block h-6 w-6 rounded-xl hover:ring-2 ring-secondary-500 ${
 					isCurrentLanguage ? "ring-2" : ""
 				}`}
-				onClick={() => selectLanguage(language)}
+				onClick={setCurrentLanguage}
+				onKeyDown={setCurrentLanguage}
 			>
 				{icon}
 			</i>

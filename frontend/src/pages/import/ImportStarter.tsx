@@ -28,14 +28,14 @@ const FileUploader = ({ onFile, error }: FileUploaderProps) => {
 	const Messages = useMessages();
 	const onDrop = useCallback(
 		(acceptedFiles: File[]) => {
-			acceptedFiles.forEach((f) => {
+			for (const f of acceptedFiles) {
 				const mode = last(f.name.split(".")) || "txt";
 				onFile({
 					name: f.name,
 					mode: mode as FileUploaderMode,
 					contents: f,
 				});
-			});
+			}
 		},
 		[onFile],
 	);

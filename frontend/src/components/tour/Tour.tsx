@@ -23,7 +23,10 @@ const TourClient = () => {
 	const moneeeyStore = useMoneeeyStore();
 	const [step, setStep] = useState(0);
 	const [open, setOpen] = useState(false);
-	const steps = useMemo(() => TourSteps(moneeeyStore, Messages), [Messages]);
+	const steps = useMemo(
+		() => TourSteps(moneeeyStore, Messages),
+		[Messages, moneeeyStore],
+	);
 
 	return {
 		setStep(newStepp: number) {

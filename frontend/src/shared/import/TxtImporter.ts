@@ -86,7 +86,7 @@ const txtImportFromLines = ({
 		lines,
 		(chunk, stt, percentage) => {
 			onProgress(percentage);
-			for(const line of chunk) {
+			for (const line of chunk) {
 				const { referenceAccount, dateFormat } = data.config;
 				const tokens = line.replace('"', "").split(sep);
 				if (tokens.length < 2) {
@@ -136,7 +136,7 @@ const txtImportFromLines = ({
 				} catch (err) {
 					logger.error("process line error", { err, line });
 				}
-			});
+			}
 		},
 		{
 			state: {

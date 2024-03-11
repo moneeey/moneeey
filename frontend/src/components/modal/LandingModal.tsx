@@ -18,7 +18,7 @@ const LandingModal = () => {
 		if (getStorage("show_landing", "true", StorageKind.PERMANENT) === "true") {
 			navigation.openModal(NavigationModal.LANDING);
 		}
-	}, []);
+	}, [navigation]);
 
 	return (
 		<Modal

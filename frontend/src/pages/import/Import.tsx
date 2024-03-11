@@ -45,7 +45,12 @@ const Import = observer(() => {
 					label: (
 						<span>
 							{task.input.name}{" "}
-							<span onClick={() => closeImportTask(task)}>X</span>
+							<span
+								onClick={() => closeImportTask(task)}
+								onKeyDown={() => closeImportTask(task)}
+							>
+								X
+							</span>
 						</span>
 					),
 					children: (

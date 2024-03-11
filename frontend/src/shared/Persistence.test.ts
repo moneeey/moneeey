@@ -44,7 +44,9 @@ describe("Persistence", () => {
 		);
 		let merged: ICurrency = {} as ICurrency;
 		mockStore = {
-			merge: jest.fn((obj: ICurrency) => (merged = obj)),
+			merge: jest.fn((obj: ICurrency) => {
+				merged = obj;
+			}),
 			byUuid: jest.fn(() => merged),
 			getUuid: jest.fn(() => "byUUID"),
 		} as unknown as MappedStore<ICurrency>;

@@ -66,7 +66,7 @@ const Input = ({
 				onChange(currentValue);
 			}
 		};
-	}, []);
+	}, [currentValue, onChange, value]);
 
 	return InputContainer({
 		prefix,
@@ -126,7 +126,7 @@ const InputNumber = ({
 				onChange(currentFloatValue);
 			}
 		};
-	}, []);
+	}, [currentFloatValue, onChange, value]);
 
 	return InputContainer({
 		prefix,

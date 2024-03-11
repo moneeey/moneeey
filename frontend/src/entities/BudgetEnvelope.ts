@@ -126,9 +126,9 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 	}
 
 	updateVirtualEnvelopeRemainings() {
-		this.all.forEach((envelope) => {
+		for (const envelope of this.all) {
 			envelope.remaining = this.getRemaining(envelope);
-		});
+		}
 	}
 
 	updateRemainings = debounce(() => {
@@ -147,7 +147,7 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 				),
 				(chunk, state, percentage) => {
 					onProgress(percentage);
-					chunk.forEach((transaction) => {
+					for (const transaction of chunk) {
 						const starting = formatDate(
 							startOfMonthOffset(parseDate(transaction.date), 0),
 						);
@@ -157,7 +157,7 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 						);
 						const budgets =
 							this.moneeeyStore.budget.findBudgetsFor(allTransactionTags);
-						budgets.forEach((budget) => {
+						for (const budget of budgets) {
 							const envelope = this.getEnvelope(budget, starting);
 							state[envelope.envelope_uuid] = {
 								envelope,
@@ -165,8 +165,8 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 									(state[envelope.envelope_uuid]?.usage || 0) +
 									transaction.from_value,
 							};
-						});
-					});
+						}
+					}
 				},
 				{
 					state: {} as Record<

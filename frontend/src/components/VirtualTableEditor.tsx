@@ -130,7 +130,12 @@ const HeaderCell = ({ column, style, sort, setSort }: GridRenderCell) => {
 	};
 
 	return (
-		<span className="font-semibold" onClick={onClick} style={style}>
+		<span
+			className="font-semibold"
+			onClick={onClick}
+			onKeyDown={onClick}
+			style={style}
+		>
 			{column.title}{" "}
 			{sort.column.sorter === column.sorter && <SortIcon order={sort.order} />}
 		</span>
@@ -240,7 +245,7 @@ const VirtualTable = function VirtualTableRenderer({
 
 				return sortFn(a, b, sort.order === "ascend");
 			}),
-		[rows, sort],
+		[rows, sort, isNewEntity],
 	);
 
 	return (

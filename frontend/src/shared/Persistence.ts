@@ -55,12 +55,10 @@ export default class PersistenceStore {
 
 	private syncables: {
 		uuid: string;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		store: MappedStore<any>;
 	}[] = [];
 
 	private stores: {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[_type: string]: MappedStore<any>;
 	} = {};
 
@@ -328,7 +326,6 @@ export default class PersistenceStore {
 	async exportAll(onProgress: (perc: number) => void) {
 		return (
 			await asyncProcess(
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 				values(this.stores).flatMap((store) =>
 					Array.from(store.itemsByUuid.values()),
 				),
@@ -362,19 +359,18 @@ export default class PersistenceStore {
 			entries,
 			(chunk, result, percentage) => {
 				onProgress(percentage);
-				chunk.forEach((line) => {
+				for (const line of chunk) {
 					if (line.trim() === "") {
 						return;
 					}
 					try {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 						if (!this.restoreEntity(JSON.parse(line))) {
 							result.errors.push(`Unable to restore: ${line}`);
 						}
 					} catch {
 						result.errors.push(`Failed to parse line JSON: ${line}`);
 					}
-				});
+				}
 			},
 			{ state: { errors: [] as string[] }, chunkSize: 100, chunkThrottle: 50 },
 		);

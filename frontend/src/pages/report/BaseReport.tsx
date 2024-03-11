@@ -67,14 +67,14 @@ export const BaseReport = ({
 				setProgress,
 			});
 			setProgress(0);
-			Array.from(currentData.points.values()).forEach((points) => {
-				keys(points).forEach(
-					(label) => (points[label] = roundPoint(points[label])),
-				);
-			});
+			for (const points of Array.from(currentData.points.values())) {
+				for (const label of keys(points)) {
+					points[label] = roundPoint(points[label]);
+				}
+			}
 			setData(currentData);
 		})();
-	}, [moneeeyStore, period, selectedAccounts]);
+	}, [moneeeyStore, processFn, period, selectedAccounts]);
 
 	return (
 		<section className="grow bg-background-800 p-4">
@@ -179,9 +179,9 @@ const CustomTooltip = ({
 		return (
 			<div className="rounded bg-background-400 p-2">
 				<TextTitle>{label}</TextTitle>
-				{payload.map((pld, index) => (
+				{payload.map((pld) => (
 					<p
-						key={index}
+						key={pld.name}
 						className={(pld as unknown as { className: string }).className}
 					>
 						{pld.name}: {pld.value}

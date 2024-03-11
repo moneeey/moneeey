@@ -68,7 +68,7 @@ const ImportProcess = ({
 	useEffect(() => {
 		const processor = ContentProcessor[task.input.mode];
 		process({ moneeeyStore, task, processor, setProgress, setResult });
-	}, [task]);
+	}, [moneeeyStore, task]);
 
 	return (
 		<div className="mt-2 flex grow flex-col bg-background-800 p-2">

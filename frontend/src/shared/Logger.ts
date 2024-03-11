@@ -33,7 +33,9 @@ class BaseLogger {
 			if (this.parent) {
 				this.parent.emit(level, text, ...args);
 			} else {
-				this.listeners.forEach((listen) => listen(level, text, ...args));
+				for (const listen of this.listeners) {
+					listen(level, text, ...args);
+				}
 			}
 		}
 	}

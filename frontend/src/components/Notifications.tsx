@@ -40,7 +40,7 @@ const Notifications = observer(() => {
 			setVisible((prevVisible) => [...prevVisible, ...notifications]);
 			navigation.clearNotifications();
 		}
-	}, [notifications]);
+	}, [notifications, navigation]);
 
 	return (
 		<section className="fixed right-0 top-0 z-50 m-4">

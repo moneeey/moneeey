@@ -67,7 +67,15 @@ export default observer(
 						})
 						.concat(creatable === false ? [] : [newEntityId]),
 				).map((entityId) => ({ entityId })),
-			[storeIds, store, schemaFilter, newEntityId],
+			[
+				creatable,
+				storeIds,
+				store,
+				schemaFilter,
+				newEntityId,
+				showRecentEntries,
+				factory,
+			],
 		);
 
 		const columns = useMemo((): ColumnDef[] => {

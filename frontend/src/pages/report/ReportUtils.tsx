@@ -57,7 +57,9 @@ export const asyncProcessTransactionsForAccounts = async ({
 		transactions,
 		(chunk, data, percentage) => {
 			setProgress(percentage);
-			chunk.forEach((t) => processFn(t, period, data));
+			for (const t of chunk) {
+				processFn(t, period, data);
+			}
 		},
 		{
 			state: NewReportDataMap(),

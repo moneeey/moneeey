@@ -1,10 +1,4 @@
-// TOOD: Houston, this file is a problem!! Remove all eslint-disable!
-
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+// TOOD: Houston, this file is a problem!! Remove all biome bypasses
 import _, { map } from "lodash";
 import * as ofx from "node-ofx-parser";
 
@@ -20,7 +14,6 @@ import type {
 } from "./ImportContent";
 import { txtImportFromLines } from "./TxtImporter";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const findBankTranlists = (obj: any): any[] => {
 	if (typeof obj === "object") {
 		return _(obj)

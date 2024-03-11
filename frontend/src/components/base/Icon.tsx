@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import favicon from "../../favicon.svg";
+import useMessages from "../../utils/Messages";
 
 import type { WithDataTestId } from "./Common";
 
@@ -19,15 +20,23 @@ export default function Icon({
 	);
 }
 
-export const FavIcon = () => (
-	<Icon className="h-6 w-6">
-		<img src={favicon} />
-	</Icon>
-);
+export const FavIcon = () => {
+	const Messages = useMessages();
+	return (
+		<Icon className="h-6 w-6">
+			<img src={favicon} alt={Messages.menu.title} />
+		</Icon>
+	);
+};
 
 /* Flag SVGs from https://github.com/HatScripts/circle-flags/tree/gh-pages distributed under MIT */
 export const IconBrazil = () => (
-	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 512 512"
+		aria-label="Brazil"
+		role="img"
+	>
 		<mask id="a">
 			<circle cx="256" cy="256" r="256" fill="#fff" />
 		</mask>
@@ -47,7 +56,12 @@ export const IconBrazil = () => (
 );
 
 export const IconUSA = () => (
-	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 512 512"
+		aria-label="USA"
+		role="img"
+	>
 		<mask id="a">
 			<circle cx="256" cy="256" r="256" fill="#fff" />
 		</mask>
@@ -70,7 +84,12 @@ export const IconUSA = () => (
 );
 
 export const IconSpain = () => (
-	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 512 512"
+		aria-label="Spain"
+		role="img"
+	>
 		<mask id="a">
 			<circle cx="256" cy="256" r="256" fill="#fff" />
 		</mask>

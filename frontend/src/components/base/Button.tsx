@@ -32,6 +32,7 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind) =>
 	function BaseButton(props: ButtonProps) {
 		return (
 			<button
+				type="button"
 				{...omit(base, ["testId"])}
 				{...omit(props, ["testId"])}
 				data-testid={props.testId || base.testId}
