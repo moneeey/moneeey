@@ -1,17 +1,22 @@
-import { Dispatch, ReactElement, SetStateAction, useState } from "react";
 import { observer } from "mobx-react-lite";
+import {
+	type Dispatch,
+	type ReactElement,
+	type SetStateAction,
+	useState,
+} from "react";
 
 import { NavigationModal } from "../../shared/Navigation";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
-import Modal from "../base/Modal";
-import { CancelButton, OkButton } from "../base/Button";
-import Tabs from "../base/Tabs";
-import { Checkbox, Input } from "../base/Input";
-import { BaseFormEditor } from "../FormEditor";
-import { StorageKind } from "../../utils/Utils";
-import { Status } from "../Status";
 import useMessages from "../../utils/Messages";
+import { StorageKind } from "../../utils/Utils";
+import { BaseFormEditor } from "../FormEditor";
+import { Status } from "../Status";
+import { CancelButton, OkButton } from "../base/Button";
+import { Checkbox, Input } from "../base/Input";
+import Modal from "../base/Modal";
+import Tabs from "../base/Tabs";
 
 const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
 	placeholder,

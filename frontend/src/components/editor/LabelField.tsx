@@ -1,6 +1,10 @@
 import { observer } from "mobx-react";
 
-import { FieldAcessor, FieldDefHelper, FieldRenderProps } from "./FieldDef";
+import type {
+	FieldAcessor,
+	FieldDefHelper,
+	FieldRenderProps,
+} from "./FieldDef";
 
 export default function <TEntity>({
 	read,

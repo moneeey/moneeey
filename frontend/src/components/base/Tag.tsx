@@ -1,4 +1,4 @@
-import { MouseEventHandler } from "react";
+import type { MouseEventHandler } from "react";
 
 interface TagProps {
 	title: string;
@@ -9,9 +9,9 @@ interface TagProps {
 }
 
 const contrastColor = (hexcolor: string) => {
-	const r = parseInt(hexcolor.substr(0, 2), 16);
-	const g = parseInt(hexcolor.substr(2, 2), 16);
-	const b = parseInt(hexcolor.substr(4, 2), 16);
+	const r = Number.parseInt(hexcolor.substr(0, 2), 16);
+	const g = Number.parseInt(hexcolor.substr(2, 2), 16);
+	const b = Number.parseInt(hexcolor.substr(4, 2), 16);
 	const yiq = (r * 299 + g * 587 + b * 114) / 1000;
 
 	return yiq >= 128 ? "black" : "white";

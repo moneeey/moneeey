@@ -1,9 +1,9 @@
-import { ITransaction } from "../entities/Transaction";
+import type { ITransaction } from "../entities/Transaction";
 
 import TransactionTable from "../tables/TransactionTable";
 
 import HomeRoute from "./HomeRouter";
-import { IAppParameters, IRouteParameters, Route } from "./Route";
+import { type IAppParameters, type IRouteParameters, Route } from "./Route";
 
 interface ITagsRoute extends IRouteParameters {
 	tag: string;

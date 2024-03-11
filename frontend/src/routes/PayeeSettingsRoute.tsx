@@ -1,8 +1,8 @@
-import { AccountTable } from "../tables/AccountTable";
 import { AccountKind } from "../entities/Account";
+import { AccountTable } from "../tables/AccountTable";
 
 import HomeRoute from "./HomeRouter";
-import { IAppParameters, IRouteParameters, Route } from "./Route";
+import { type IAppParameters, type IRouteParameters, Route } from "./Route";
 
 type IPayeeSettingsRoute = IRouteParameters;
 

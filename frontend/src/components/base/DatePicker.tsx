@@ -2,8 +2,8 @@ import ReactDatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
 
-import { WithDataTestId } from "./Common";
-import { BaseInputClzz, InputContainer, InputProps } from "./Input";
+import type { WithDataTestId } from "./Common";
+import { BaseInputClzz, InputContainer, type InputProps } from "./Input";
 
 type DatePickerProps = InputProps<Date> & WithDataTestId;
 

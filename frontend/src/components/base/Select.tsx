@@ -1,9 +1,9 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import ReactSelect from "react-select";
 import CreatableReactSelect from "react-select/creatable";
 
-import { WithDataTestId } from "./Common";
-import { InputContainer, InputProps } from "./Input";
+import type { WithDataTestId } from "./Common";
+import { InputContainer, type InputProps } from "./Input";
 
 import "./Select.css";
 

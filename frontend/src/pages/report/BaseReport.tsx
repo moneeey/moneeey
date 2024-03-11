@@ -1,6 +1,5 @@
-import { ReactElement, useEffect, useState } from "react";
-import { ValueType } from "tailwindcss/types/config";
-import { NameType } from "recharts/types/component/DefaultTooltipContent";
+import { keys } from "lodash";
+import { type ReactElement, useEffect, useState } from "react";
 import {
 	Bar,
 	BarChart,
@@ -9,28 +8,29 @@ import {
 	LineChart,
 	ResponsiveContainer,
 	Tooltip,
-	TooltipProps,
+	type TooltipProps,
 	XAxis,
 } from "recharts";
-import { keys } from "lodash";
+import type { NameType } from "recharts/types/component/DefaultTooltipContent";
+import type { ValueType } from "tailwindcss/types/config";
 
-import { Checkbox } from "../../components/base/Input";
 import Loading from "../../components/Loading";
-import { IAccount } from "../../entities/Account";
-import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { TDate } from "../../utils/Date";
+import { Checkbox } from "../../components/base/Input";
 import Space from "../../components/base/Space";
 import { TextTitle } from "../../components/base/Text";
+import type { IAccount } from "../../entities/Account";
+import useMoneeeyStore from "../../shared/useMoneeeyStore";
+import type { TDate } from "../../utils/Date";
 
 import useMessages from "../../utils/Messages";
 
 import DateGroupingSelector from "./DateGroupingSelector";
 import {
-	AsyncProcessTransactionFn,
+	type AsyncProcessTransactionFn,
 	NewReportDataMap,
-	PeriodGroup,
+	type PeriodGroup,
 	PeriodGroups,
-	ReportDataMap,
+	type ReportDataMap,
 	asyncProcessTransactionsForAccounts,
 } from "./ReportUtils";
 
@@ -45,12 +45,12 @@ const roundCofficient = 1e5;
 const roundPoint = (value: number) =>
 	Math.round(value * roundCofficient) / roundCofficient;
 
-export const BaseReport = function ({
+export const BaseReport = ({
 	accounts,
 	processFn,
 	title,
 	chartFn,
-}: BaseReportProps) {
+}: BaseReportProps) => {
 	const Messages = useMessages();
 	const [data, setData] = useState(NewReportDataMap());
 	const [selectedAccounts, setSelectedAccounts] = useState(accounts);
@@ -150,13 +150,13 @@ interface ChartRenderProps {
 	height: number;
 }
 
-const BaseChart = function ({
+const BaseChart = ({
 	data,
 	Chart,
 }: {
 	data: ReportDataMap;
 	Chart: (props: ChartRenderProps) => ReactElement;
-}) {
+}) => {
 	const columns = Array.from(data.columns.keys());
 	const rows = Array.from(data.points.entries()).map(([date, points]) => ({
 		date,
@@ -203,81 +203,77 @@ const BaseTooltip = (xFormatter: (v: TDate) => string) => (
 	/>
 );
 
-export const BaseColumnChart = function ({
+export const BaseColumnChart = ({
 	data,
 	xFormatter,
 }: {
 	data: ReportDataMap;
 	xFormatter: (v: TDate) => string;
-}) {
-	return (
-		<BaseChart
-			data={data}
-			Chart={(props: ChartRenderProps) => {
-				const nextColor = ChartColorGenerator();
+}) => (
+	<BaseChart
+		data={data}
+		Chart={(props: ChartRenderProps) => {
+			const nextColor = ChartColorGenerator();
 
-				return (
-					<BarChart
-						width={props.width}
-						height={props.height}
-						data={props.rows}
-						margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-					>
-						<XAxis dataKey="date" tickFormatter={xFormatter} />
-						<CartesianGrid stroke="#fafafa" strokeDasharray="3 3" />
-						{BaseTooltip(xFormatter)}
-						{props.columns.map((column) => (
-							<Bar
-								key={column}
-								type="monotone"
-								dataKey={column}
-								className={nextColor()}
-								stackId="onlyonestackintheworldaaaaaaa"
-							/>
-						))}
-					</BarChart>
-				);
-			}}
-		/>
-	);
-};
+			return (
+				<BarChart
+					width={props.width}
+					height={props.height}
+					data={props.rows}
+					margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+				>
+					<XAxis dataKey="date" tickFormatter={xFormatter} />
+					<CartesianGrid stroke="#fafafa" strokeDasharray="3 3" />
+					{BaseTooltip(xFormatter)}
+					{props.columns.map((column) => (
+						<Bar
+							key={column}
+							type="monotone"
+							dataKey={column}
+							className={nextColor()}
+							stackId="onlyonestackintheworldaaaaaaa"
+						/>
+					))}
+				</BarChart>
+			);
+		}}
+	/>
+);
 
-export const BaseLineChart = function ({
+export const BaseLineChart = ({
 	data,
 	xFormatter,
 }: {
 	data: ReportDataMap;
 	xFormatter: (v: TDate) => string;
-}) {
-	return (
-		<BaseChart
-			data={data}
-			Chart={(props: ChartRenderProps) => {
-				const nextColor = ChartColorGenerator();
+}) => (
+	<BaseChart
+		data={data}
+		Chart={(props: ChartRenderProps) => {
+			const nextColor = ChartColorGenerator();
 
-				return (
-					<LineChart
-						width={props.width}
-						height={props.height}
-						data={props.rows}
-						margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-					>
-						<XAxis dataKey="date" tickFormatter={xFormatter} />
-						{BaseTooltip(xFormatter)}
-						<CartesianGrid stroke="#fafafa" strokeDasharray="3 3" />
-						{props.columns.map((column, index) => (
-							<Line
-								key={column}
-								type="monotone"
-								dataKey={column}
-								strokeWidth={2}
-								className={nextColor()}
-								yAxisId={index}
-							/>
-						))}
-					</LineChart>
-				);
-			}}
-		/>
-	);
-};
+			return (
+				<LineChart
+					width={props.width}
+					height={props.height}
+					data={props.rows}
+					margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+				>
+					<XAxis dataKey="date" tickFormatter={xFormatter} />
+					{BaseTooltip(xFormatter)}
+					<CartesianGrid stroke="#fafafa" strokeDasharray="3 3" />
+					{props.columns.map((column, index) => (
+						<Line
+							key={column}
+							type="monotone"
+							dataKey={column}
+							strokeWidth={2}
+							className={nextColor()}
+							yAxisId={index}
+						/>
+					))}
+				</LineChart>
+			);
+		}}
+	/>
+);

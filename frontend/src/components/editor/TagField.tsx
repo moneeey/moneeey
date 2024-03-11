@@ -3,7 +3,11 @@ import { observer } from "mobx-react";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { MultiSelect } from "../base/Select";
 
-import { FieldAcessor, FieldDefHelper, FieldRenderProps } from "./FieldDef";
+import type {
+	FieldAcessor,
+	FieldDefHelper,
+	FieldRenderProps,
+} from "./FieldDef";
 
 export default function <TEntity>({
 	read,

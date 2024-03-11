@@ -1,9 +1,9 @@
-import { ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { NumericFormat } from "react-number-format";
 
-import { ClassNameType } from "../../utils/Utils";
+import type { ClassNameType } from "../../utils/Utils";
 
-import { WithDataTestId } from "./Common";
+import type { WithDataTestId } from "./Common";
 
 export const BaseInputClzz: ClassNameType = "w-full color-white bg-transparent";
 

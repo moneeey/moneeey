@@ -1,18 +1,21 @@
 import { compact, isEmpty, isNumber, map } from "lodash";
-import { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 
+import VirtualTable, { type Row } from "../../components/VirtualTableEditor";
 import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import Space, { VerticalSpace } from "../../components/base/Space";
 import { TextDanger, TextNormal } from "../../components/base/Text";
 import AccountField from "../../components/editor/AccountField";
-import { FieldDef } from "../../components/editor/FieldDef";
-import VirtualTable, { Row } from "../../components/VirtualTableEditor";
-import { TAccountUUID } from "../../entities/Account";
-import { ITransaction } from "../../entities/Transaction";
-import { ImportResult, ImportTask } from "../../shared/import/ImportContent";
-import MoneeeyStore from "../../shared/MoneeeyStore";
+import type { FieldDef } from "../../components/editor/FieldDef";
+import type { TAccountUUID } from "../../entities/Account";
+import type { ITransaction } from "../../entities/Transaction";
+import type MoneeeyStore from "../../shared/MoneeeyStore";
+import type {
+	ImportResult,
+	ImportTask,
+} from "../../shared/import/ImportContent";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import useMessages, { TMessages } from "../../utils/Messages";
+import useMessages, { type TMessages } from "../../utils/Messages";
 
 const accountRender =
 	({

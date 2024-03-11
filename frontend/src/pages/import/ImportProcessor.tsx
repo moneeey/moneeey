@@ -1,19 +1,19 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 
-import {
+import Loading from "../../components/Loading";
+import { TextTitle } from "../../components/base/Text";
+import type MoneeeyStore from "../../shared/MoneeeyStore";
+import type {
 	FileUploaderMode,
 	ImportResult,
 	ImportTask,
 	ProcessContentFn,
 	ProcessProgressFn,
 } from "../../shared/import/ImportContent";
+import ofxImport from "../../shared/import/OfxImporter";
 import pdfImport from "../../shared/import/PdfImporter";
 import txtImport from "../../shared/import/TxtImporter";
-import ofxImport from "../../shared/import/OfxImporter";
-import MoneeeyStore from "../../shared/MoneeeyStore";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import Loading from "../../components/Loading";
-import { TextTitle } from "../../components/base/Text";
 
 import useMessages from "../../utils/Messages";
 
@@ -51,10 +51,10 @@ const process = async ({
 	}
 };
 
-const ImportProcess = function ({
+const ImportProcess = ({
 	task,
 	close,
-}: { task: ImportTask; close: () => void }) {
+}: { task: ImportTask; close: () => void }) => {
 	const Messages = useMessages();
 	const [progress, setProgress] = useState(0);
 	const [result, setResult] = useState<ImportResult>({

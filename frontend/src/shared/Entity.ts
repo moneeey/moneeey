@@ -1,4 +1,4 @@
-import { TDateTime } from "../utils/Date";
+import type { TDateTime } from "../utils/Date";
 
 export type TMonetary = number;
 
@@ -25,14 +25,13 @@ export interface IBaseEntity extends IBaseCouchEntity {
 	created?: TDateTime;
 }
 
-const isEntityType = function <
-	TEntityType extends { entity_type?: EntityType | undefined },
->(entity_type: EntityType) {
-	return function (object: {
+const isEntityType =
+	<TEntityType extends { entity_type?: EntityType | undefined }>(
+		entity_type: EntityType,
+	) =>
+	(object: {
 		entity_type?: EntityType;
-	}): object is TEntityType {
-		return object?.entity_type === entity_type;
-	};
-};
+	}): object is TEntityType =>
+		object?.entity_type === entity_type;
 
 export { isEntityType };

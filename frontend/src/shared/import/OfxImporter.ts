@@ -10,9 +10,9 @@ import * as ofx from "node-ofx-parser";
 
 import { formatDateFmt, parseDateFmt } from "../../utils/Date";
 
-import MoneeeyStore from "../MoneeeyStore";
+import type MoneeeyStore from "../MoneeeyStore";
 
-import {
+import type {
 	ImportResult,
 	ImportTask,
 	ProcessContentFn,
@@ -41,12 +41,13 @@ const findBankTranlists = (obj: any): any[] => {
 	return [];
 };
 
-const ofxImport = function (): ProcessContentFn {
-	return async function (
+const ofxImport =
+	(): ProcessContentFn =>
+	async (
 		moneeeyStore: MoneeeyStore,
 		data: ImportTask,
 		onProgress: ProcessProgressFn,
-	): Promise<ImportResult> {
+	): Promise<ImportResult> => {
 		const preloadSteps = 9;
 		const SEP = "@";
 		let loadStep = 1;
@@ -87,6 +88,5 @@ const ofxImport = function (): ProcessContentFn {
 			separator: SEP,
 		});
 	};
-};
 
 export { ofxImport as default };

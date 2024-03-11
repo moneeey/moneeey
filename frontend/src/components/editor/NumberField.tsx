@@ -1,8 +1,12 @@
 import { observer } from "mobx-react";
 
-import { InputNumber, InputNumberProps } from "../base/Input";
+import { InputNumber, type InputNumberProps } from "../base/Input";
 
-import { FieldAcessor, FieldDefHelper, FieldRenderProps } from "./FieldDef";
+import type {
+	FieldAcessor,
+	FieldDefHelper,
+	FieldRenderProps,
+} from "./FieldDef";
 
 export default function <TEntity>({
 	read,

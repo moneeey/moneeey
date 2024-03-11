@@ -1,8 +1,8 @@
 /* eslint-disable line-comment-position */
 /* eslint-disable no-inline-comments */
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import MoneeeyStore from "../shared/MoneeeyStore";
+import type MoneeeyStore from "../shared/MoneeeyStore";
 import { slugify } from "../utils/Utils";
 
 export interface IAppParameters {

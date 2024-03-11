@@ -1,9 +1,9 @@
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 
-import { StorageKind, getStorage, setStorage } from "../../utils/Utils";
+import { type StorageKind, getStorage, setStorage } from "../../utils/Utils";
 
 import { LinkButton } from "./Button";
-import { WithDataTestId } from "./Common";
+import type { WithDataTestId } from "./Common";
 import Space from "./Space";
 
 interface TabItem {
@@ -22,7 +22,9 @@ interface TabsProps {
 const Tabs = (props: TabsProps & WithDataTestId) => {
 	const key = `Tabs_${props.testId}`;
 	const [selectedIdx, setSelectedIdx] = useState(
-		props.persist ? parseInt(getStorage(key, "0", props.persist), 10) : 0,
+		props.persist
+			? Number.parseInt(getStorage(key, "0", props.persist), 10)
+			: 0,
 	);
 	const onChange = (newIdx: number) => {
 		setSelectedIdx(newIdx);

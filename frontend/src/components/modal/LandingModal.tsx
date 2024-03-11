@@ -6,11 +6,11 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { StorageKind, getStorage, setStorage } from "../../utils/Utils";
 import { useMoneeeyTour } from "../tour/Tour";
 
-import Modal from "../base/Modal";
-import { OkCancel } from "../base/Button";
 import useMessages from "../../utils/Messages";
+import { OkCancel } from "../base/Button";
+import Modal from "../base/Modal";
 
-const LandingModal = function () {
+const LandingModal = () => {
 	const Messages = useMessages();
 	const { navigation } = useMoneeeyStore();
 	const tour = useMoneeeyTour();

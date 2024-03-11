@@ -1,8 +1,8 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import favicon from "../../favicon.svg";
 
-import { WithDataTestId } from "./Common";
+import type { WithDataTestId } from "./Common";
 
 export default function Icon({
 	children,

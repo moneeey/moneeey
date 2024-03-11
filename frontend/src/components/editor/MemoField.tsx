@@ -4,7 +4,11 @@ import { Input } from "../base/Input";
 
 import { TagsMemo } from "../Tags";
 
-import { FieldAcessor, FieldDefHelper, FieldRenderProps } from "./FieldDef";
+import type {
+	FieldAcessor,
+	FieldDefHelper,
+	FieldRenderProps,
+} from "./FieldDef";
 
 const tagsForText = (text: string): string[] =>
 	Array.from(text.matchAll(/[^#]?(#\w+)/g)).map((m: RegExpMatchArray) =>

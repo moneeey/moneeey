@@ -1,15 +1,23 @@
 import { compact, map, uniqBy } from "lodash";
 import { observer } from "mobx-react";
 
-import { AccountKind, IAccount, TAccountUUID } from "../../entities/Account";
+import {
+	AccountKind,
+	type IAccount,
+	type TAccountUUID,
+} from "../../entities/Account";
 import { isTransaction } from "../../entities/Transaction";
-import { EntityType } from "../../shared/Entity";
+import type { EntityType } from "../../shared/Entity";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import useMessages from "../../utils/Messages";
-import Select from "../base/Select";
 import { TagsFrom, TagsTo } from "../Tags";
+import Select from "../base/Select";
 
-import { FieldAcessor, FieldDefHelper, FieldRenderProps } from "./FieldDef";
+import type {
+	FieldAcessor,
+	FieldDefHelper,
+	FieldRenderProps,
+} from "./FieldDef";
 
 export default function <TEntity>({
 	read,

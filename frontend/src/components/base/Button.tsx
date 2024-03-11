@@ -1,10 +1,10 @@
 import { omit } from "lodash";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { TMessages, WithMessages } from "../../utils/Messages";
+import { type TMessages, WithMessages } from "../../utils/Messages";
 import { slugify } from "../../utils/Utils";
 
-import { WithDataTestId } from "./Common";
+import type { WithDataTestId } from "./Common";
 import Space from "./Space";
 
 type ButtonType = "primary" | "secondary" | "link" | "danger";

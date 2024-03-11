@@ -1,15 +1,19 @@
-import { AccountKind, TAccountUUID } from "../../entities/Account";
+import { AccountKind, type TAccountUUID } from "../../entities/Account";
+import type { ITransaction } from "../../entities/Transaction";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { ITransaction } from "../../entities/Transaction";
 
-import MoneeeyStore from "../../shared/MoneeeyStore";
-import { TMonetary } from "../../shared/Entity";
-import { TDate } from "../../utils/Date";
+import type { TMonetary } from "../../shared/Entity";
+import type MoneeeyStore from "../../shared/MoneeeyStore";
+import type { TDate } from "../../utils/Date";
 
-import useMessages, { TMessages } from "../../utils/Messages";
+import useMessages, { type TMessages } from "../../utils/Messages";
 
 import { BaseColumnChart, BaseReport } from "./BaseReport";
-import { PeriodGroup, ReportDataMap, dateToPeriod } from "./ReportUtils";
+import {
+	type PeriodGroup,
+	type ReportDataMap,
+	dateToPeriod,
+} from "./ReportUtils";
 
 const incomeVsExpensesProcess =
 	(moneeeyStore: MoneeeyStore, Messages: TMessages) =>
@@ -53,7 +57,7 @@ const incomeVsExpensesProcess =
 		);
 	};
 
-const IncomeVsExpensesReport = function () {
+const IncomeVsExpensesReport = () => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { accounts } = moneeeyStore;

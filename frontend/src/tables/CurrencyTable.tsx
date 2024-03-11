@@ -1,10 +1,10 @@
 import { observer } from "mobx-react-lite";
 
+import TableEditor from "../components/TableEditor";
 import NumberField from "../components/editor/NumberField";
 import TagField from "../components/editor/TagField";
 import TextField from "../components/editor/TextField";
-import TableEditor from "../components/TableEditor";
-import { CurrencyStore, ICurrency } from "../entities/Currency";
+import type { CurrencyStore, ICurrency } from "../entities/Currency";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
 

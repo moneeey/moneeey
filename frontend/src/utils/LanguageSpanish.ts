@@ -1,4 +1,4 @@
-import { TMessages } from "./Messages";
+import type { TMessages } from "./Messages";
 
 const Messages: TMessages = {
 	menu: {

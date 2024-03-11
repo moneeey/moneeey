@@ -1,11 +1,11 @@
 import { compact, filter, flatten, isEmpty, keys } from "lodash";
 
-import { AccountKind, TAccountUUID } from "../../entities/Account";
-import { ITransaction } from "../../entities/Transaction";
+import { AccountKind, type TAccountUUID } from "../../entities/Account";
+import type { ITransaction } from "../../entities/Transaction";
 import { tokenize } from "../../utils/Utils";
-import MoneeeyStore from "../MoneeeyStore";
+import type MoneeeyStore from "../MoneeeyStore";
 
-export const tokenWeightMap = function (tokens: string[]): Map<string, number> {
+export const tokenWeightMap = (tokens: string[]): Map<string, number> => {
 	const scores = new Map<string, number>();
 	tokens.forEach((token) => scores.set(token, (scores.get(token) || 0) + 1));
 	scores.forEach((frequency, token) =>
@@ -15,34 +15,32 @@ export const tokenWeightMap = function (tokens: string[]): Map<string, number> {
 	return scores;
 };
 
-export const tokenTopScores = function (
+export const tokenTopScores = (
 	tokens: string[],
 	scores: Map<string, number>,
-): { token: string; score: number }[] {
-	return Array.from(new Set(tokens).values())
+): { token: string; score: number }[] =>
+	Array.from(new Set(tokens).values())
 		.map((token) => ({
 			token,
 			score: scores.get(token) || 0,
 		}))
 		.filter((entry) => entry.score > 0)
 		.sort((a, b) => b.score - a.score);
-};
 
-export const tokensForTransactions = function (transaction: ITransaction) {
-	return compact(
+export const tokensForTransactions = (transaction: ITransaction) =>
+	compact(
 		flatten([
 			...tokenize(transaction.memo),
 			...tokenize(transaction.import_data),
 			...transaction.tags.map(tokenize),
 		]),
 	).filter((token) => token.length > 2);
-};
 
 type ScoreMap = { [id: string]: { [token: string]: number } };
 
-export const tokenTransactionAccountScoreMap = function (
+export const tokenTransactionAccountScoreMap = (
 	transactions: ITransaction[],
-): ScoreMap {
+): ScoreMap => {
 	const allAccountTokens = transactions.reduce((rs, t) => {
 		const tokens = tokensForTransactions(t);
 		const accounts = compact([t.from_account, t.to_account]);
@@ -72,11 +70,8 @@ export const tokenTransactionAccountScoreMap = function (
 	);
 };
 
-export const tokenMatchScoreMap = function (
-	tokens: string[],
-	scoreMap: ScoreMap,
-) {
-	return keys(scoreMap)
+export const tokenMatchScoreMap = (tokens: string[], scoreMap: ScoreMap) =>
+	keys(scoreMap)
 		.map((id) => {
 			const accountTokenScores = scoreMap[id] || {};
 			const domain = keys(accountTokenScores).length;
@@ -99,7 +94,6 @@ export const tokenMatchScoreMap = function (
 		})
 		.filter((si) => si.score > 0)
 		.sort((a, b) => b.score - a.score);
-};
 
 class Importer {
 	private moneeeyStore: MoneeeyStore;

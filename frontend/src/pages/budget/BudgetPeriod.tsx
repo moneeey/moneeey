@@ -1,17 +1,23 @@
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { map, range } from "lodash";
 import { observer } from "mobx-react-lite";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import {
+	type Dispatch,
+	type SetStateAction,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 
+import Loading from "../../components/Loading";
+import TableEditor from "../../components/TableEditor";
 import { LinkButton } from "../../components/base/Button";
 import Card from "../../components/base/Card";
 import { TextTitle } from "../../components/base/Text";
 import CurrencyAmountField from "../../components/editor/CurrencyAmountField";
 import LinkField from "../../components/editor/LinkField";
-import Loading from "../../components/Loading";
-import TableEditor from "../../components/TableEditor";
-import { IBudget } from "../../entities/Budget";
-import { BudgetEnvelope } from "../../entities/BudgetEnvelope";
+import type { IBudget } from "../../entities/Budget";
+import type { BudgetEnvelope } from "../../entities/BudgetEnvelope";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import {
 	formatDate,

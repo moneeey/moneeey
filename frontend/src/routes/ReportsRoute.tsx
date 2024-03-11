@@ -1,7 +1,7 @@
 import Reports from "../pages/report/Reports";
 
 import HomeRoute from "./HomeRouter";
-import { IRouteParameters, Route } from "./Route";
+import { type IRouteParameters, Route } from "./Route";
 
 type IReportsRoute = IRouteParameters;
 

@@ -1,13 +1,17 @@
-import { AccountKind, TAccountUUID } from "../../entities/Account";
+import { AccountKind, type TAccountUUID } from "../../entities/Account";
+import type { ITransaction } from "../../entities/Transaction";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { ITransaction } from "../../entities/Transaction";
 
-import MoneeeyStore from "../../shared/MoneeeyStore";
+import type MoneeeyStore from "../../shared/MoneeeyStore";
 
 import useMessages from "../../utils/Messages";
 
-import { PeriodGroup, ReportDataMap, dateToPeriod } from "./ReportUtils";
 import { BaseColumnChart, BaseReport } from "./BaseReport";
+import {
+	type PeriodGroup,
+	type ReportDataMap,
+	dateToPeriod,
+} from "./ReportUtils";
 
 const tagExpensesProcess =
 	(moneeeyStore: MoneeeyStore) =>
@@ -34,7 +38,7 @@ const tagExpensesProcess =
 		sumTransactionTagExpenses(transaction.to_account, transaction.to_value);
 	};
 
-const TagExpensesReport = function () {
+const TagExpensesReport = () => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { accounts } = moneeeyStore;

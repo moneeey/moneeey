@@ -2,18 +2,18 @@ import { uniq } from "lodash";
 import { observer } from "mobx-react";
 import { useMemo, useState } from "react";
 
-import { IBaseEntity } from "../shared/Entity";
-import MappedStore from "../shared/MappedStore";
+import type { IBaseEntity } from "../shared/Entity";
+import type MappedStore from "../shared/MappedStore";
 import {
 	currentDateTime,
 	dateDistanceInSecs,
 	parseDateTime,
 } from "../utils/Date";
 
-import VirtualTable, { ColumnDef } from "./VirtualTableEditor";
+import VirtualTable, { type ColumnDef } from "./VirtualTableEditor";
 
-import { WithDataTestId } from "./base/Common";
-import { FieldDef } from "./editor/FieldDef";
+import type { WithDataTestId } from "./base/Common";
+import type { FieldDef } from "./editor/FieldDef";
 
 interface TableEditorProps<T extends IBaseEntity> extends WithDataTestId {
 	store: MappedStore<T>;

@@ -1,9 +1,10 @@
 import { observer } from "mobx-react-lite";
 
+import FormEditor from "../components/FormEditor";
 import CurrencySelectorField from "../components/editor/CurrencySelectorField";
 import TextField from "../components/editor/TextField";
-import FormEditor from "../components/FormEditor";
-import ConfigStore, { IConfig } from "../entities/Config";
+import type ConfigStore from "../entities/Config";
+import type { IConfig } from "../entities/Config";
 import useMessages from "../utils/Messages";
 
 const ConfigTable = observer(({ config }: { config: ConfigStore }) => {

@@ -8,8 +8,9 @@ import MemoField from "../components/editor/MemoField";
 import TransactionAmountField from "../components/editor/TransactionAmountField";
 
 import TableEditor from "../components/TableEditor";
-import { TAccountUUID } from "../entities/Account";
-import TransactionStore, { ITransaction } from "../entities/Transaction";
+import type { TAccountUUID } from "../entities/Account";
+import type TransactionStore from "../entities/Transaction";
+import type { ITransaction } from "../entities/Transaction";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
 

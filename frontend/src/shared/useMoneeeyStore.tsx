@@ -1,6 +1,6 @@
-import React, { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 
-import MoneeeyStore from "./MoneeeyStore";
+import type MoneeeyStore from "./MoneeeyStore";
 
 const MoneeeyContext = React.createContext({} as MoneeeyStore);
 

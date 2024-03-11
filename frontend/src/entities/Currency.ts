@@ -1,9 +1,9 @@
 import { isEmpty } from "lodash";
 import { action, makeObservable } from "mobx";
 
-import { EntityType, IBaseEntity, TMonetary } from "../shared/Entity";
+import { EntityType, type IBaseEntity, type TMonetary } from "../shared/Entity";
 import MappedStore from "../shared/MappedStore";
-import MoneeeyStore from "../shared/MoneeeyStore";
+import type MoneeeyStore from "../shared/MoneeeyStore";
 import { currentDateTime } from "../utils/Date";
 import { uuid } from "../utils/Utils";
 

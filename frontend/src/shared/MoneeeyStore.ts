@@ -7,12 +7,12 @@ import CurrencyStore from "../entities/Currency";
 import TransactionStore from "../entities/Transaction";
 
 import { EntityType } from "./Entity";
-import Importer from "./import/Importer";
 import Logger from "./Logger";
 import ManagementStore from "./Management";
 import NavigationStore from "./Navigation";
-import PersistenceStore, { PouchDBFactoryFn } from "./Persistence";
+import PersistenceStore, { type PouchDBFactoryFn } from "./Persistence";
 import TagsStore from "./Tags";
+import Importer from "./import/Importer";
 
 export default class MoneeeyStore {
 	loaded = false;

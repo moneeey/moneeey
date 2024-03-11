@@ -1,7 +1,7 @@
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
-import VirtualizedGrid from "react-virtualized/dist/commonjs/Grid";
+import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
 import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
+import VirtualizedGrid from "react-virtualized/dist/commonjs/Grid";
 
 import Icon from "./base/Icon";
 

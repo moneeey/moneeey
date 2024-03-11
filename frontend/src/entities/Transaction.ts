@@ -3,24 +3,24 @@ import { computed, makeObservable, observable } from "mobx";
 import { debounce, isEmpty } from "lodash";
 
 import {
-	TDate,
+	EntityType,
+	type IBaseEntity,
+	type TMonetary,
+	isEntityType,
+} from "../shared/Entity";
+import MappedStore from "../shared/MappedStore";
+import type MoneeeyStore from "../shared/MoneeeyStore";
+import {
+	type TDate,
 	compareDates,
 	currentDate,
 	currentDateTime,
 	parseDate,
 } from "../utils/Date";
-import { uuid } from "../utils/Utils";
-import {
-	EntityType,
-	IBaseEntity,
-	TMonetary,
-	isEntityType,
-} from "../shared/Entity";
-import MappedStore from "../shared/MappedStore";
-import MoneeeyStore from "../shared/MoneeeyStore";
 import RunningBalance from "../utils/RunningBalance";
+import { uuid } from "../utils/Utils";
 
-import { AccountStore, TAccountUUID } from "./Account";
+import type { AccountStore, TAccountUUID } from "./Account";
 
 export type TTransactionUUID = string;
 

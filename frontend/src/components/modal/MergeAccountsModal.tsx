@@ -1,14 +1,14 @@
-import { useState } from "react";
 import { observer } from "mobx-react-lite";
+import { useState } from "react";
 
+import type { TAccountUUID } from "../../entities/Account";
 import { NavigationModal } from "../../shared/Navigation";
+import useMoneeeyStore from "../../shared/useMoneeeyStore";
+import useMessages from "../../utils/Messages";
 import { OkCancel } from "../base/Button";
 import Modal from "../base/Modal";
-import { TAccountUUID } from "../../entities/Account";
-import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { VerticalSpace } from "../base/Space";
 import Select from "../base/Select";
-import useMessages from "../../utils/Messages";
+import { VerticalSpace } from "../base/Space";
 
 export const MergeAccountsModal = observer(() => {
 	const Messages = useMessages();

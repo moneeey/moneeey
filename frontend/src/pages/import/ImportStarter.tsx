@@ -1,15 +1,15 @@
 import { head, isEmpty, last } from "lodash";
 import { observer } from "mobx-react";
-import { Dispatch, useCallback, useState } from "react";
+import { type Dispatch, useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 import { Input } from "../../components/base/Input";
 import Select from "../../components/base/Select";
 import { VerticalSpace } from "../../components/base/Space";
 import { TextSubtitle, TextTitle } from "../../components/base/Text";
-import { TAccountUUID } from "../../entities/Account";
-import ConfigStore from "../../entities/Config";
-import {
+import type { TAccountUUID } from "../../entities/Account";
+import type ConfigStore from "../../entities/Config";
+import type {
 	FileUploaderMode,
 	ImportConfig,
 	ImportInput,
@@ -24,7 +24,7 @@ export interface FileUploaderProps {
 	error: string | false;
 }
 
-const FileUploader = function ({ onFile, error }: FileUploaderProps) {
+const FileUploader = ({ onFile, error }: FileUploaderProps) => {
 	const Messages = useMessages();
 	const onDrop = useCallback(
 		(acceptedFiles: File[]) => {
@@ -105,13 +105,13 @@ export const ReferenceAccountSelector = observer(
 	},
 );
 
-const ImportStarter = function ({
+const ImportStarter = ({
 	onTask,
 	configuration,
 }: {
 	onTask: Dispatch<ImportTask>;
 	configuration: ConfigStore;
-}) {
+}) => {
 	const Messages = useMessages();
 	const { accounts } = useMoneeeyStore();
 	const [config, setConfig] = useState(

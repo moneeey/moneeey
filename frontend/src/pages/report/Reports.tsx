@@ -8,7 +8,7 @@ import PayeeBalanceReport from "./PayeeBalanceReport";
 import TagExpensesReport from "./TagExpensesReport";
 import WealthGrowReport from "./WealthGrowReport";
 
-const Reports = function () {
+const Reports = () => {
 	const Messages = useMessages();
 
 	return (

@@ -1,13 +1,13 @@
-import { observer } from "mobx-react";
-import { ReactElement, ReactNode } from "react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
+import { observer } from "mobx-react";
+import type { ReactElement, ReactNode } from "react";
 
-import { NavigationModal } from "../../shared/Navigation";
+import type { NavigationModal } from "../../shared/Navigation";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
 import Card from "./Card";
-import { TextTitle } from "./Text";
 import Icon from "./Icon";
+import { TextTitle } from "./Text";
 
 interface ModalProps {
 	title: string;

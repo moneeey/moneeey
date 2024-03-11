@@ -1,7 +1,7 @@
 import { action, makeObservable, observable } from "mobx";
 
-import { TAccountUUID } from "../entities/Account";
-import { ITransaction, TTransactionUUID } from "../entities/Transaction";
+import type { TAccountUUID } from "../entities/Account";
+import type { ITransaction, TTransactionUUID } from "../entities/Transaction";
 import Logger from "../shared/Logger";
 
 import { asyncProcess } from "./Utils";

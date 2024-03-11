@@ -1,10 +1,10 @@
 import { useState } from "react";
 
+import Loading from "../components/Loading";
 import { PrimaryButton, SecondaryButton } from "../components/base/Button";
 import Drawer from "../components/base/Drawer";
 import { TextArea } from "../components/base/Input";
 import Space, { VerticalSpace } from "../components/base/Space";
-import Loading from "../components/Loading";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import ConfigTable from "../tables/ConfigTable";
 import useMessages from "../utils/Messages";

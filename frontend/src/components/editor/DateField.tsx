@@ -1,14 +1,18 @@
 import { observer } from "mobx-react";
 
 import {
-	TDate,
+	type TDate,
 	compareDates,
 	formatDate,
 	parseDateOrTime,
 } from "../../utils/Date";
 import DatePicker from "../base/DatePicker";
 
-import { FieldAcessor, FieldDefHelper, FieldRenderProps } from "./FieldDef";
+import type {
+	FieldAcessor,
+	FieldDefHelper,
+	FieldRenderProps,
+} from "./FieldDef";
 
 export default function <TEntity>({
 	read,

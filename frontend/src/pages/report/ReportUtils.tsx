@@ -6,19 +6,19 @@ import {
 	startOfYear,
 } from "date-fns";
 
-import { TAccountUUID } from "../../entities/Account";
+import type { TAccountUUID } from "../../entities/Account";
+import type { ITransaction } from "../../entities/Transaction";
+import type { TMonetary } from "../../shared/Entity";
+import type MoneeeyStore from "../../shared/MoneeeyStore";
 import {
-	TDate,
+	type TDate,
 	TDateFormat,
 	formatDate,
 	formatDateAs,
 	parseDate,
 } from "../../utils/Date";
-import MoneeeyStore from "../../shared/MoneeeyStore";
-import { ITransaction } from "../../entities/Transaction";
+import type { TMessages } from "../../utils/Messages";
 import { asyncProcess } from "../../utils/Utils";
-import { TMonetary } from "../../shared/Entity";
-import { TMessages } from "../../utils/Messages";
 
 export interface AsyncProcessTransactions {
 	moneeeyStore: MoneeeyStore;
@@ -44,13 +44,13 @@ export const NewReportDataMap = (): ReportDataMap => ({
 	points: new Map(),
 });
 
-export const asyncProcessTransactionsForAccounts = async function ({
+export const asyncProcessTransactionsForAccounts = async ({
 	moneeeyStore,
 	accounts,
 	processFn,
 	period,
 	setProgress,
-}: AsyncProcessTransactions) {
+}: AsyncProcessTransactions) => {
 	const transactions = moneeeyStore.transactions.viewAllWithAccounts(accounts);
 
 	const result = await asyncProcess(
@@ -79,9 +79,8 @@ export interface PeriodGroup {
 export const patternFormatter = (pattern: string) => (date: TDate) =>
 	date.length === TDateFormat.length ? formatDateAs(date, pattern) : date;
 
-export const dateToPeriod = function (period: PeriodGroup, date: TDate) {
-	return formatDate(period.groupFn(parseDate(date)));
-};
+export const dateToPeriod = (period: PeriodGroup, date: TDate) =>
+	formatDate(period.groupFn(parseDate(date)));
 
 export function PeriodGroups(Messages: TMessages): {
 	Day: PeriodGroup;

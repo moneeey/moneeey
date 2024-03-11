@@ -1,11 +1,15 @@
 import { observer } from "mobx-react";
 
-import { CurrencyAmount } from "../../entities/Currency";
+import type { CurrencyAmount } from "../../entities/Currency";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
 import { InputNumber } from "../base/Input";
 
-import { FieldAcessor, FieldDefHelper, FieldRenderProps } from "./FieldDef";
+import type {
+	FieldAcessor,
+	FieldDefHelper,
+	FieldRenderProps,
+} from "./FieldDef";
 
 export default function <TEntity>({
 	read,

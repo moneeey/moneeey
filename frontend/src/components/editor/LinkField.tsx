@@ -2,7 +2,11 @@ import { observer } from "mobx-react";
 
 import { LinkButton } from "../base/Button";
 
-import { FieldAcessor, FieldDefHelper, FieldRenderProps } from "./FieldDef";
+import type {
+	FieldAcessor,
+	FieldDefHelper,
+	FieldRenderProps,
+} from "./FieldDef";
 
 export default function <TEntity>({
 	read,

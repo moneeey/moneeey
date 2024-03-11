@@ -1,9 +1,9 @@
 import { compact } from "lodash";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { LinkButton } from "./Button";
 
-import { WithDataTestId } from "./Common";
+import type { WithDataTestId } from "./Common";
 import Icon from "./Icon";
 
 interface NavbarItem {

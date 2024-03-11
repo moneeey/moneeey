@@ -17,39 +17,39 @@ import {
 } from "@heroicons/react/24/outline";
 import { observer } from "mobx-react";
 import {
-	Dispatch,
-	ReactNode,
-	SetStateAction,
+	type Dispatch,
+	type ReactNode,
+	type SetStateAction,
 	useEffect,
 	useState,
 } from "react";
 
+import type { IAccount } from "../entities/Account";
 import AccountRoute from "../routes/AccountRoute";
 import { AccountSettingsRoute } from "../routes/AccountSettingsRoute";
+import BudgetRoute from "../routes/BudgetRoute";
 import { CurrencySettingsRoute } from "../routes/CurrencySettingsRoute";
 import HomeRoute from "../routes/HomeRouter";
+import ImportRoute from "../routes/ImportRoute";
 import { PayeeSettingsRoute } from "../routes/PayeeSettingsRoute";
 import ReportsRoute from "../routes/ReportsRoute";
-import { IAccount } from "../entities/Account";
+import SettingsRoute from "../routes/SettingsRoute";
+import { NavigationModal } from "../shared/Navigation";
 import { Status } from "../shared/Persistence";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
-import ImportRoute from "../routes/ImportRoute";
-import SettingsRoute from "../routes/SettingsRoute";
-import BudgetRoute from "../routes/BudgetRoute";
 import { StorageKind, getStorage, setStorage } from "../utils/Utils";
-import { NavigationModal } from "../shared/Navigation";
 
 import RouteRenderer from "../routes/RouteRenderer";
-import MoneeeyStore from "../shared/MoneeeyStore";
+import type MoneeeyStore from "../shared/MoneeeyStore";
 
 import useMessages, {
-	AvailableLanguages,
+	type AvailableLanguages,
 	useLanguageSwitcher,
 } from "../utils/Messages";
 
+import Icon, { FavIcon, IconBrazil, IconSpain, IconUSA } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
-import Icon, { FavIcon, IconBrazil, IconSpain, IconUSA } from "./base/Icon";
 
 const LanguageSelector = () => {
 	const Messages = useMessages();

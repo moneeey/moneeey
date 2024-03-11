@@ -1,4 +1,4 @@
-import { ITransaction, mockTransaction } from "../entities/Transaction";
+import { type ITransaction, mockTransaction } from "../entities/Transaction";
 
 import { addDay, currentDate, formatDate, parseDate } from "./Date";
 import RunningBalance from "./RunningBalance";
@@ -7,10 +7,10 @@ describe("RunningBalance", () => {
 	const dateOffset = (offset: number) =>
 		formatDate(addDay(parseDate(currentDate()), offset));
 
-	const testRunningBalances = async function (
+	const testRunningBalances = async (
 		transactions: ITransaction[],
 		expected: Map<string, { from_balance: number; to_balance: number }>,
-	) {
+	) => {
 		const r = new RunningBalance();
 		await r.processAll(transactions);
 		expect(new Map(r.transactionRunningBalance)).toEqual(expected);

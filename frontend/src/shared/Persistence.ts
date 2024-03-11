@@ -12,12 +12,12 @@ import {
 import { action, makeObservable, observable, observe, toJS } from "mobx";
 import PouchDB from "pouchdb";
 
-import { SyncConfig } from "../entities/Config";
+import type { SyncConfig } from "../entities/Config";
 import { asyncProcess } from "../utils/Utils";
 
-import { EntityType, IBaseEntity } from "./Entity";
+import type { EntityType, IBaseEntity } from "./Entity";
 import Logger from "./Logger";
-import MappedStore from "./MappedStore";
+import type MappedStore from "./MappedStore";
 
 export enum Status {
 	ONLINE = "ONLINE",
@@ -174,7 +174,7 @@ export default class PersistenceStore {
 		b: EntityType,
 	) {
 		const revLevel = (rev: string | undefined) =>
-			parseInt((rev || "0-").split("-")[0], 10);
+			Number.parseInt((rev || "0-").split("-")[0], 10);
 		const aRevLevel = revLevel(a._rev);
 		const bRevLevel = revLevel(b._rev);
 

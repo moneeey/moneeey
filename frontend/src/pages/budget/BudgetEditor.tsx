@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 
 import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import Drawer from "../../components/base/Drawer";
@@ -6,7 +6,7 @@ import { Checkbox, Input } from "../../components/base/Input";
 import Select, { MultiSelect } from "../../components/base/Select";
 import Space, { VerticalSpace } from "../../components/base/Space";
 import { TextTitle } from "../../components/base/Text";
-import { IBudget } from "../../entities/Budget";
+import type { IBudget } from "../../entities/Budget";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import useMessages from "../../utils/Messages";
 

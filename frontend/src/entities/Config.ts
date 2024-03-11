@@ -1,12 +1,12 @@
 import { isEmpty } from "lodash";
 import { action, computed, makeObservable } from "mobx";
 
-import { EntityType, IBaseEntity } from "../shared/Entity";
+import { EntityType, type IBaseEntity } from "../shared/Entity";
 import MappedStore from "../shared/MappedStore";
-import MoneeeyStore from "../shared/MoneeeyStore";
+import type MoneeeyStore from "../shared/MoneeeyStore";
 import { TDateFormat, currentDateTime } from "../utils/Date";
 
-import { TCurrencyUUID } from "./Currency";
+import type { TCurrencyUUID } from "./Currency";
 
 export type SyncConfig = {
 	url: string;

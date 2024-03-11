@@ -3,15 +3,15 @@ import _ from "lodash";
 import Select from "../../components/base/Select";
 import useMessages from "../../utils/Messages";
 
-import { PeriodGroup, PeriodGroups } from "./ReportUtils";
+import { type PeriodGroup, PeriodGroups } from "./ReportUtils";
 
-const DateGroupingSelector = function ({
+const DateGroupingSelector = ({
 	setPeriod,
 	period,
 }: {
 	setPeriod: (newPeriod: PeriodGroup) => void;
 	period: PeriodGroup;
-}) {
+}) => {
 	const Messages = useMessages();
 
 	return (

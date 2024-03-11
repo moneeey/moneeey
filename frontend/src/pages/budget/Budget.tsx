@@ -1,13 +1,13 @@
 import { observer } from "mobx-react";
-import { Dispatch, SetStateAction, useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
 import { SecondaryButton } from "../../components/base/Button";
 import { Checkbox, InputNumber } from "../../components/base/Input";
 import Space, { VerticalSpace } from "../../components/base/Space";
-import { IBudget } from "../../entities/Budget";
+import type { IBudget } from "../../entities/Budget";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { formatDateMonth, startOfMonthOffset } from "../../utils/Date";
-import useMessages, { TMessages } from "../../utils/Messages";
+import useMessages, { type TMessages } from "../../utils/Messages";
 
 import BudgetEditor from "./BudgetEditor";
 import BudgetPeriods from "./BudgetPeriod";

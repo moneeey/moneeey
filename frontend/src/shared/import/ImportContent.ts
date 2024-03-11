@@ -1,7 +1,10 @@
 import { isEmpty } from "lodash";
 
-import { TAccountUUID } from "../../entities/Account";
-import { ITransaction, TTransactionUUID } from "../../entities/Transaction";
+import type { TAccountUUID } from "../../entities/Account";
+import type {
+	ITransaction,
+	TTransactionUUID,
+} from "../../entities/Transaction";
 import {
 	currentDateTime,
 	formatDate,
@@ -11,9 +14,9 @@ import {
 import { uuid } from "../../utils/Utils";
 import { EntityType } from "../Entity";
 
-import MoneeeyStore from "../MoneeeyStore";
+import type MoneeeyStore from "../MoneeeyStore";
 
-import Importer from "./Importer";
+import type Importer from "./Importer";
 
 export type FileUploaderMode = "txt" | "csv" | "ofx" | "pdf";
 
@@ -87,7 +90,9 @@ export const retrieveColumns = (
 	dateFormat: string,
 ) => {
 	return {
-		value: parseFloat((tokens[columns.valueIndex] || "").replace(/,/, ".")),
+		value: Number.parseFloat(
+			(tokens[columns.valueIndex] || "").replace(/,/, "."),
+		),
 		date: formatDate(parseDateFmt(tokens[columns.dateIndex] || "", dateFormat)),
 		other: tokens.filter(
 			(_v, index) =>
@@ -96,7 +101,7 @@ export const retrieveColumns = (
 	};
 };
 
-export const importTransaction = function ({
+export const importTransaction = ({
 	date,
 	line,
 	value,
@@ -110,7 +115,7 @@ export const importTransaction = function ({
 	referenceAccount: TAccountUUID;
 	other_account: TAccountUUID;
 	importer: Importer;
-}) {
+}) => {
 	const transaction: ITransaction = {
 		entity_type: EntityType.TRANSACTION,
 		transaction_uuid: uuid(),

@@ -1,9 +1,9 @@
 import { observer } from "mobx-react";
 
+import type { ITransaction } from "../entities/Transaction";
+import type MoneeeyStore from "../shared/MoneeeyStore";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import TransactionTable from "../tables/TransactionTable";
-import MoneeeyStore from "../shared/MoneeeyStore";
-import { ITransaction } from "../entities/Transaction";
 
 import useMessages from "../utils/Messages";
 

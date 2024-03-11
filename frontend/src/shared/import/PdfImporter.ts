@@ -1,10 +1,10 @@
 import * as PDFJS from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.entry.js";
-import { TextItem } from "pdfjs-dist/types/src/display/api";
+import type { TextItem } from "pdfjs-dist/types/src/display/api";
 
-import MoneeeyStore from "../MoneeeyStore";
+import type MoneeeyStore from "../MoneeeyStore";
 
-import {
+import type {
 	ImportResult,
 	ImportTask,
 	ProcessContentFn,
@@ -14,12 +14,13 @@ import { txtImportFromLines } from "./TxtImporter";
 
 PDFJS.GlobalWorkerOptions.workerSrc = "pdfjs-dist/build/pdf.worker.js";
 
-const pdfImport = function (): ProcessContentFn {
-	return async function (
+const pdfImport =
+	(): ProcessContentFn =>
+	async (
 		moneeeyStore: MoneeeyStore,
 		data: ImportTask,
 		onProgress: ProcessProgressFn,
-	): Promise<ImportResult> {
+	): Promise<ImportResult> => {
 		const preloadSteps = 8;
 		let loadStep = 1;
 		const step = (totalTasks = preloadSteps) => {
@@ -57,6 +58,5 @@ const pdfImport = function (): ProcessContentFn {
 
 		return txtImportFromLines({ moneeeyStore, data, onProgress, lines });
 	};
-};
 
 export { pdfImport as default };

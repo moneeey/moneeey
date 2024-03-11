@@ -1,14 +1,14 @@
-import { ReactNode } from "react";
 import { observer } from "mobx-react";
+import type { ReactNode } from "react";
 
-import { IBaseEntity } from "../shared/Entity";
-import MappedStore from "../shared/MappedStore";
+import type { IBaseEntity } from "../shared/Entity";
+import type MappedStore from "../shared/MappedStore";
 
-import { WithDataTestId } from "./base/Common";
+import type { WithDataTestId } from "./base/Common";
 
-import { TextNormal } from "./base/Text";
 import { VerticalSpace } from "./base/Space";
-import { FieldDef } from "./editor/FieldDef";
+import { TextNormal } from "./base/Text";
+import type { FieldDef } from "./editor/FieldDef";
 
 interface BaseFormEditor extends WithDataTestId {
 	className?: string;

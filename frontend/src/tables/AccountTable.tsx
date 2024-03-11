@@ -1,5 +1,6 @@
 import { observer } from "mobx-react-lite";
 
+import TableEditor from "../components/TableEditor";
 import { LinkButton } from "../components/base/Button";
 import Space, { VerticalSpace } from "../components/base/Space";
 import AccountKindField from "../components/editor/AccountKindField";
@@ -8,10 +9,10 @@ import CurrencySelectorField from "../components/editor/CurrencySelectorField";
 import DateField from "../components/editor/DateField";
 import TagField from "../components/editor/TagField";
 import TextField from "../components/editor/TextField";
-import TableEditor from "../components/TableEditor";
-import { AccountKind, AccountStore, IAccount } from "../entities/Account";
-import { CurrencyStore } from "../entities/Currency";
-import NavigationStore, { NavigationModal } from "../shared/Navigation";
+import type { AccountKind, AccountStore, IAccount } from "../entities/Account";
+import type { CurrencyStore } from "../entities/Currency";
+import type NavigationStore from "../shared/Navigation";
+import { NavigationModal } from "../shared/Navigation";
 import useMessages from "../utils/Messages";
 
 interface AccountSettingsProps {

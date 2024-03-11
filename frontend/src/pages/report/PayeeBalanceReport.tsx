@@ -1,13 +1,13 @@
 import { observer } from "mobx-react";
 
-import MoneeeyStore from "../../shared/MoneeeyStore";
 import { AccountKind } from "../../entities/Account";
+import type MoneeeyStore from "../../shared/MoneeeyStore";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
 import useMessages from "../../utils/Messages";
 
-import { BaseColumnChart, BaseReport } from "./BaseReport";
 import { baseAccountBalanceReport } from "./AccountBalanceReport";
+import { BaseColumnChart, BaseReport } from "./BaseReport";
 
 const payeeBalanceReport = (moneeeyStore: MoneeeyStore) =>
 	baseAccountBalanceReport(

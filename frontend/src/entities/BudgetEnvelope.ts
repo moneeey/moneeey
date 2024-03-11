@@ -1,18 +1,18 @@
 import { debounce, values } from "lodash";
 import { action, makeObservable, observable } from "mobx";
 
-import { EntityType, IBaseEntity, TMonetary } from "../shared/Entity";
+import { EntityType, type IBaseEntity, type TMonetary } from "../shared/Entity";
 import MappedStore from "../shared/MappedStore";
-import MoneeeyStore from "../shared/MoneeeyStore";
+import type MoneeeyStore from "../shared/MoneeeyStore";
 import {
-	TDate,
+	type TDate,
 	formatDate,
 	parseDate,
 	startOfMonthOffset,
 } from "../utils/Date";
 import { asyncProcess } from "../utils/Utils";
 
-import { IBudget } from "./Budget";
+import type { IBudget } from "./Budget";
 
 const BudgetEnvelopeKey = (budget: IBudget, starting: TDate) =>
 	`${starting}_${budget.budget_uuid}_${budget.currency_uuid}`;

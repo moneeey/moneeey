@@ -1,9 +1,9 @@
-import React, { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 
 import LanguageEnglish from "./LanguageEnglish";
 import LanguagePortuguese from "./LanguagePortuguese";
 import LanguageSpanish from "./LanguageSpanish";
-import { getStorage, identity, setStorage, StorageKind } from "./Utils";
+import { StorageKind, getStorage, identity, setStorage } from "./Utils";
 
 export type TMessages = typeof LanguageEnglish;
 

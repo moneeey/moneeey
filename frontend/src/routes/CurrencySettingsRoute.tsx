@@ -1,7 +1,7 @@
 import { CurrencyTable } from "../tables/CurrencyTable";
 
 import HomeRoute from "./HomeRouter";
-import { IAppParameters, IRouteParameters, Route } from "./Route";
+import { type IAppParameters, type IRouteParameters, Route } from "./Route";
 
 type ICurrencySettingsRoute = IRouteParameters;
 

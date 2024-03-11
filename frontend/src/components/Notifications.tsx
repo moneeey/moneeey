@@ -2,7 +2,7 @@ import { isEmpty } from "lodash";
 import { observer } from "mobx-react";
 import { useEffect, useState } from "react";
 
-import { NotificationData } from "../shared/Navigation";
+import type { NotificationData } from "../shared/Navigation";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 
 import { Status } from "./Status";

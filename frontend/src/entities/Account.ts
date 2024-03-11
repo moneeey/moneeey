@@ -1,12 +1,12 @@
 import { computed, makeObservable } from "mobx";
 
-import { TDate, currentDateTime } from "../utils/Date";
-import { EntityType, IBaseEntity } from "../shared/Entity";
+import { EntityType, type IBaseEntity } from "../shared/Entity";
 import MappedStore from "../shared/MappedStore";
+import type MoneeeyStore from "../shared/MoneeeyStore";
+import { type TDate, currentDateTime } from "../utils/Date";
 import { uuid } from "../utils/Utils";
-import MoneeeyStore from "../shared/MoneeeyStore";
 
-import { TCurrencyUUID } from "./Currency";
+import type { TCurrencyUUID } from "./Currency";
 
 export type TAccountUUID = string;
 

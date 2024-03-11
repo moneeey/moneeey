@@ -1,9 +1,9 @@
 import { observer } from "mobx-react";
 
-import { CurrencyAmount, ICurrency } from "../../entities/Currency";
+import type { CurrencyAmount, ICurrency } from "../../entities/Currency";
 
 import CurrencyAmountField from "./CurrencyAmountField";
-import {
+import type {
 	FieldAcessor,
 	FieldDef,
 	FieldDefHelper,

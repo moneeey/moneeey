@@ -1,14 +1,14 @@
-import { observer } from "mobx-react";
 import { compact } from "lodash";
+import { observer } from "mobx-react";
 
+import type { IAccount } from "../entities/Account";
+import type { ITransaction } from "../entities/Transaction";
+import type MoneeeyStore from "../shared/MoneeeyStore";
 import TransactionTable from "../tables/TransactionTable";
-import { IAccount } from "../entities/Account";
 import { slugify } from "../utils/Utils";
-import MoneeeyStore from "../shared/MoneeeyStore";
-import { ITransaction } from "../entities/Transaction";
 
 import HomeRoute from "./HomeRouter";
-import { IAppParameters, IRouteParameters, Route } from "./Route";
+import { type IAppParameters, type IRouteParameters, Route } from "./Route";
 
 interface IAccountRoute extends IRouteParameters {
 	account_name: string;

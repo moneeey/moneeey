@@ -12,22 +12,17 @@ const identity = (o: unknown) => o;
 const tokenize = (text: string | undefined) =>
 	compact((text || "").toLowerCase().split(/[\W\d]/));
 
-const asyncTimeout = function <R>(
-	fn: () => R | Promise<R>,
-	delay: number,
-): Promise<R> {
-	return new Promise((resolve) => {
+const asyncTimeout = <R>(fn: () => R | Promise<R>, delay: number): Promise<R> =>
+	new Promise((resolve) => {
 		setTimeout(() => {
 			resolve(fn());
 		}, delay);
 	});
-};
 
-const asyncSleep = function (delay: number): Promise<void> {
-	return asyncTimeout(() => {
+const asyncSleep = (delay: number): Promise<void> =>
+	asyncTimeout(() => {
 		// Sleeping... Zzzzz
 	}, delay);
-};
 
 const capitalize = (text: string): string => {
 	if (text) {
@@ -37,7 +32,7 @@ const capitalize = (text: string): string => {
 	return text;
 };
 
-const asyncProcess = async function <T, R>(
+const asyncProcess = async <T, R>(
 	values: T[],
 	fn: (chnk: T[], state: R, percentage: number) => void,
 	options: {
@@ -45,7 +40,7 @@ const asyncProcess = async function <T, R>(
 		chunkSize?: number;
 		chunkThrottle?: number;
 	} = {},
-): Promise<R> {
+): Promise<R> => {
 	const chunks = chunk(values, options.chunkSize || 50);
 	const tasksTotal = chunks.length;
 	const state = options.state || ({} as R);
@@ -73,11 +68,7 @@ enum StorageKind {
 	SESSION = "SESSION",
 }
 
-const getStorage = function (
-	key: string,
-	defaultt: string,
-	storage: StorageKind,
-) {
+const getStorage = (key: string, defaultt: string, storage: StorageKind) => {
 	if (storage === StorageKind.PERMANENT) {
 		return window.localStorage.getItem(key) || defaultt;
 	} else if (storage === StorageKind.SESSION) {
@@ -87,7 +78,7 @@ const getStorage = function (
 	return defaultt;
 };
 
-const setStorage = function (key: string, value: string, storage: StorageKind) {
+const setStorage = (key: string, value: string, storage: StorageKind) => {
 	if (storage === StorageKind.PERMANENT) {
 		window.localStorage.setItem(key, value);
 	} else if (storage === StorageKind.SESSION) {
@@ -95,13 +86,12 @@ const setStorage = function (key: string, value: string, storage: StorageKind) {
 	}
 };
 
-const getCurrentHost = function () {
-	return `${window.location.protocol}//${window.location.host}`;
-};
+const getCurrentHost = () =>
+	`${window.location.protocol}//${window.location.host}`;
 
 export type ClassNameType = React.HTMLProps<HTMLElement>["className"];
 
-export const slugify = function (string: string) {
+export const slugify = (string: string) => {
 	const a =
 		"àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;";
 	const b =

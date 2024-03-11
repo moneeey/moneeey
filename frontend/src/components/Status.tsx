@@ -1,5 +1,5 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import Icon from "./base/Icon";
 

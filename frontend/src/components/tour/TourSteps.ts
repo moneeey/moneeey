@@ -5,12 +5,12 @@ import { AccountSettingsRoute } from "../../routes/AccountSettingsRoute";
 import BudgetRoute from "../../routes/BudgetRoute";
 import { CurrencySettingsRoute } from "../../routes/CurrencySettingsRoute";
 import ImportRoute from "../../routes/ImportRoute";
-import { IBaseEntity } from "../../shared/Entity";
-import MappedStore from "../../shared/MappedStore";
-import MoneeeyStore from "../../shared/MoneeeyStore";
-import { TMessages } from "../../utils/Messages";
+import type { IBaseEntity } from "../../shared/Entity";
+import type MappedStore from "../../shared/MappedStore";
+import type MoneeeyStore from "../../shared/MoneeeyStore";
+import type { TMessages } from "../../utils/Messages";
 
-import { TourStep } from "./Tour";
+import type { TourStep } from "./Tour";
 
 export default function TourSteps(
 	{ navigation, accounts, budget }: MoneeeyStore,

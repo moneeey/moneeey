@@ -3,8 +3,8 @@ import { action, computed, makeObservable, observable } from "mobx";
 
 import { currentDateTime } from "../utils/Date";
 
-import { IBaseEntity } from "./Entity";
-import MoneeeyStore from "./MoneeeyStore";
+import type { IBaseEntity } from "./Entity";
+import type MoneeeyStore from "./MoneeeyStore";
 
 type UUIDGetter<T> = (item: T) => string;
 

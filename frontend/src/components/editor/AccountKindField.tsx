@@ -4,7 +4,11 @@ import { AccountKind } from "../../entities/Account";
 import useMessages from "../../utils/Messages";
 import Select from "../base/Select";
 
-import { FieldAcessor, FieldDefHelper, FieldRenderProps } from "./FieldDef";
+import type {
+	FieldAcessor,
+	FieldDefHelper,
+	FieldRenderProps,
+} from "./FieldDef";
 
 export default function <TEntity>({
 	read,

@@ -3,7 +3,7 @@ import { action, makeObservable, observable } from "mobx";
 
 import { getCurrentHost } from "../utils/Utils";
 
-import PersistenceStore from "./Persistence";
+import type PersistenceStore from "./Persistence";
 
 export default class ManagementStore {
 	accessToken = "";

@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { WithDataTestId } from "./Common";
+import type { WithDataTestId } from "./Common";
 import { VerticalSpace } from "./Space";
 
 interface DrawerProps {

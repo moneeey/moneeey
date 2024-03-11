@@ -1,7 +1,7 @@
 import Settings from "../pages/Settings";
 
 import HomeRoute from "./HomeRouter";
-import { IRouteParameters, Route } from "./Route";
+import { type IRouteParameters, Route } from "./Route";
 
 type ISettingsRoute = IRouteParameters;
 

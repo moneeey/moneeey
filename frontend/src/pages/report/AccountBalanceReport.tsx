@@ -1,17 +1,25 @@
 import { observer } from "mobx-react";
 
-import { AccountKind, IAccount, TAccountUUID } from "../../entities/Account";
-import { TDate } from "../../utils/Date";
-import { TMonetary } from "../../shared/Entity";
+import {
+	AccountKind,
+	type IAccount,
+	type TAccountUUID,
+} from "../../entities/Account";
+import type { ITransaction } from "../../entities/Transaction";
+import type { TMonetary } from "../../shared/Entity";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { ITransaction } from "../../entities/Transaction";
+import type { TDate } from "../../utils/Date";
 
-import MoneeeyStore from "../../shared/MoneeeyStore";
+import type MoneeeyStore from "../../shared/MoneeeyStore";
 
 import useMessages from "../../utils/Messages";
 
-import { PeriodGroup, ReportDataMap, dateToPeriod } from "./ReportUtils";
 import { BaseColumnChart, BaseReport } from "./BaseReport";
+import {
+	type PeriodGroup,
+	type ReportDataMap,
+	dateToPeriod,
+} from "./ReportUtils";
 
 export const baseAccountBalanceReport =
 	(

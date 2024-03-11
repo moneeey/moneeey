@@ -3,13 +3,13 @@ import { compact, head, isEmpty, shuffle } from "lodash";
 import { TDateFormat } from "../../utils/Date";
 import { asyncProcess, tokenize } from "../../utils/Utils";
 import Logger from "../Logger";
-import MoneeeyStore from "../MoneeeyStore";
+import type MoneeeyStore from "../MoneeeyStore";
 
 import {
-	ImportResult,
-	ImportTask,
-	ProcessContentFn,
-	ProcessProgressFn,
+	type ImportResult,
+	type ImportTask,
+	type ProcessContentFn,
+	type ProcessProgressFn,
 	findColumns,
 	findSeparator,
 	importTransaction,
@@ -149,12 +149,13 @@ const txtImportFromLines = ({
 	);
 };
 
-const txtImport = (): ProcessContentFn =>
-	async function (
+const txtImport =
+	(): ProcessContentFn =>
+	async (
 		moneeeyStore: MoneeeyStore,
 		data: ImportTask,
 		onProgress: ProcessProgressFn,
-	): Promise<ImportResult> {
+	): Promise<ImportResult> => {
 		onProgress(30);
 		const text = (await data.input.contents.text()).replace("\r", "");
 		onProgress(60);

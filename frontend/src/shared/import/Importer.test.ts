@@ -1,4 +1,4 @@
-import { ITransaction, mockTransaction } from "../../entities/Transaction";
+import { type ITransaction, mockTransaction } from "../../entities/Transaction";
 import { tokenize } from "../../utils/Utils";
 
 import {

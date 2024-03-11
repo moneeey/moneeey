@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 
 import TagsRoute from "../routes/TagsRoute";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
@@ -26,7 +26,7 @@ interface IStyledTagsProp extends ITagsProp {
 	color: string;
 }
 
-const TagsRenderer = function ({ color, tags }: IStyledTagsProp) {
+const TagsRenderer = ({ color, tags }: IStyledTagsProp) => {
 	const { tag, setTag } = React.useContext(HighlightTagContext);
 	if (!setTag) {
 		throw new Error("Missing HighlightTagContext");
@@ -54,17 +54,17 @@ const TagsRenderer = function ({ color, tags }: IStyledTagsProp) {
 	);
 };
 
-const TagsMemo = function ({ tags }: ITagsProp) {
-	return <TagsRenderer color={"memo"} tags={tags} />;
-};
-const TagsFrom = function ({ tags }: ITagsProp) {
-	return <TagsRenderer color={"from"} tags={tags} />;
-};
-const TagsTo = function ({ tags }: ITagsProp) {
-	return <TagsRenderer color={"to"} tags={tags} />;
-};
+const TagsMemo = ({ tags }: ITagsProp) => (
+	<TagsRenderer color={"memo"} tags={tags} />
+);
+const TagsFrom = ({ tags }: ITagsProp) => (
+	<TagsRenderer color={"from"} tags={tags} />
+);
+const TagsTo = ({ tags }: ITagsProp) => (
+	<TagsRenderer color={"to"} tags={tags} />
+);
 
-const TagsHighlightProvider = function ({ children }: { children: ReactNode }) {
+const TagsHighlightProvider = ({ children }: { children: ReactNode }) => {
 	const [tag, setTag] = React.useState("");
 
 	return (

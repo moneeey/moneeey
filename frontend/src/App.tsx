@@ -12,8 +12,8 @@ import useMoneeeyStore, {
 	MoneeeyStoreProvider,
 } from "./shared/useMoneeeyStore";
 
-import Modals from "./components/modal/Modals";
 import { TagsHighlightProvider } from "./components/Tags";
+import Modals from "./components/modal/Modals";
 import MoneeeyTourProvider from "./components/tour/Tour";
 
 import { PouchDBFactory } from "./shared/Persistence";
