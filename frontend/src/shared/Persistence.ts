@@ -47,19 +47,19 @@ export class PersistenceMonitor<TEntity extends IBaseEntity> {
 		parent: Logger,
 		private store: MappedStore<TEntity>,
 	) {
-		this.logger = new Logger(store.entityType(), parent);
+		this.logger = new Logger(store.entityType().toLowerCase(), parent);
 		this.monitorLocalChanges();
 		this.monitorRemoteChanges();
 	}
 
-	persist(item: TEntity) {
-		const uuid = this.store.getUuid(item);
-		if (item._id && this.bypassMonitor.has(item._id)) {
-			this.logger.log("persist bypass", { uuid, item });
+	persist(item: TEntity, reason: string) {
+    const id = item._id
+		if (id && this.bypassMonitor.has(id)) {
+			this.logger.log("persist bypass", { id, item, reason });
 
 			return;
 		}
-		this.logger.log("persist scheduled", { uuid, item });
+		this.logger.log("persist pending", { id, item, reason });
 		this.persistenceStore.commit(toJS(item) as unknown as PouchDocument);
 	}
 
@@ -80,14 +80,12 @@ export class PersistenceMonitor<TEntity extends IBaseEntity> {
 		observe(this.store.itemsByUuid, (changes) => {
 			if (changes.type === "add") {
 				const newValue = changes.newValue as TEntity;
-				this.persist(newValue);
-				this.logger.log("monitorLocalChanges added", changes);
+				this.persist(newValue, 'added');
 			} else if (changes.type === "update") {
 				const newValue = changes.newValue as TEntity;
 				const oldValue = changes.oldValue as TEntity;
 				if (newValue._rev === oldValue._rev) {
-					this.logger.log("monitorLocalChanges dirty", changes);
-					this.persist(newValue);
+					this.persist(newValue, 'updated');
 				} else {
 					this.logger.log("monitorLocalChanges synced", changes);
 				}
@@ -97,8 +95,8 @@ export class PersistenceMonitor<TEntity extends IBaseEntity> {
 
 	private monitorRemoteChanges() {
 		this.persistenceStore.watch(this.store.entityType(), (doc) => {
+			this.logger.log("monitorRemoteChanges received", doc);
 			this.mergeBypassingMonitor(doc as unknown as TEntity);
-			this.logger.log("monitorRemoteChanges", doc);
 		});
 	}
 }
@@ -195,7 +193,9 @@ export default class PersistenceStore {
     this.notifyDocument(doc)
 	}
 
-	private scheduleCommit = debounce(async () => {
+	private scheduleCommit = debounce(async () => this.doCommit(), 200);
+
+	doCommit = async () => {
     const objects = Array.from(this.commitables.values())
     this.commitables.clear()
     this.logger.info('commit', objects)
@@ -211,16 +211,14 @@ export default class PersistenceStore {
                 this.logger.error('sync commit error matching response id', { ok, id, rev, status, error })
                 return;
               }
-              if (error && id && status === 409) {
+              if (ok || status === 409) {
                 await this.refetch(id);
               } else if (error) {
                 this.logger.error("sync commit error on doc", {
+                  status,
                   error,
                   current,
                 });
-              } else if (ok) {
-                const entity = { ...current, _rev: rev };
-                this.notifyDocument(entity)
               }
           }
         },
@@ -230,7 +228,7 @@ export default class PersistenceStore {
       const error = err as PouchDB.Core.Error;
       this.logger.error("sync commit error", error);
     }
-	}, 200);
+	}
 
 	truncateAll() {
 		this.db.destroy();

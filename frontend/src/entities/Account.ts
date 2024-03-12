@@ -39,7 +39,7 @@ export class AccountStore extends MappedStore<IAccount> {
 				tags: [],
 				offbudget: false,
 				archived: false,
-				currency_uuid: moneeeyStore.currencies.all[0]?.currency_uuid,
+				currency_uuid: moneeeyStore.config.main.default_currency,
 				kind: AccountKind.CHECKING,
 				created: currentDateTime(),
 				updated: currentDateTime(),

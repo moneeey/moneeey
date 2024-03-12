@@ -52,7 +52,7 @@ export default observer(
 								dateDistanceInSecs(
 									parseDateTime(row.updated),
 									parseDateTime(currentDateTime()),
-								) < 20;
+								) < 60;
 							const isNewEntityId = store.getUuid(row) === newEntityId;
 
 							return isSchemaFiltered || isRecent || isNewEntityId;
@@ -87,7 +87,7 @@ export default observer(
 					index,
 					width,
 					defaultSortOrder,
-					render: ({ entityId }) => {
+					render: observer(({ entityId }) => {
 						const current = store.byUuid(entityId);
 
 						return (
@@ -101,7 +101,7 @@ export default observer(
 								}
 							/>
 						);
-					},
+					}),
 					sorter: (a, b, asc) =>
 						field.sorter(
 							store.byUuid(a.entityId) as T,

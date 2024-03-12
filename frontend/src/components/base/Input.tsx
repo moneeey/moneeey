@@ -81,7 +81,7 @@ const Input = ({
 				onChange={({ target: { value: newValue } }) =>
 					setCurrentValue(newValue)
 				}
-				onBlur={() => onChange(currentValue)}
+				onBlur={() => currentValue !== value && onChange(currentValue)}
 				placeholder={placeholder}
 				disabled={disabled}
 				readOnly={readOnly}
@@ -145,7 +145,7 @@ const InputNumber = ({
 						setCurrentFloatValue(floatValue);
 					}
 				}}
-				onBlur={() => currentFloatValue !== null && onChange(currentFloatValue)}
+				onBlur={() => currentFloatValue && currentFloatValue !== value && onChange(currentFloatValue)}
 				placeholder={placeholder}
 				thousandsGroupStyle="thousand"
 				thousandSeparator={thousandSeparator}
@@ -180,7 +180,7 @@ const TextArea = ({
 				data-testid={testId}
 				className={`${BaseInputClzz} ${className || ""}`}
 				value={value}
-				onChange={({ target: { value: newValue } }) => onChange(newValue)}
+				onBlur={({ target: { value: newValue } }) => newValue !== value && onChange(newValue)}
 				placeholder={placeholder}
 				disabled={disabled}
 				readOnly={readOnly}
