@@ -13,7 +13,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: "16.17"
+          node-version: "20.11"
 
       - run: yarn install --frozen-lockfile
         name: Install
@@ -50,7 +50,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: "16.17"
+          node-version: "20.11"
 
       - run: yarn install --frozen-lockfile
         name: Install
