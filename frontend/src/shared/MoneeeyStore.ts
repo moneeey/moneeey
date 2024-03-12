@@ -47,11 +47,11 @@ export default class MoneeeyStore {
 		});
 
 		this.persistence = new PersistenceStore(dbFactory, this.logger);
-		this.persistence.monitor(this.accounts, EntityType.ACCOUNT);
-		this.persistence.monitor(this.currencies, EntityType.CURRENCY);
-		this.persistence.monitor(this.transactions, EntityType.TRANSACTION);
-		this.persistence.monitor(this.budget, EntityType.BUDGET);
-		this.persistence.monitor(this.config, EntityType.CONFIG);
+		this.persistence.monitor(this.accounts);
+		this.persistence.monitor(this.currencies);
+		this.persistence.monitor(this.transactions);
+		this.persistence.monitor(this.budget);
+		this.persistence.monitor(this.config);
 		this.management = new ManagementStore(this.persistence);
 	}
 

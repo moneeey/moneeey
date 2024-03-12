@@ -23,7 +23,7 @@ describe("Persistence", () => {
 	const rev1 = { _rev: "1-13cc7a98be34fcf6a409b9808b592025" };
 	const rev2 = { _rev: "2-13cc7a98be34fcf6a409b9808b592030" };
 
-	const sampleCurrency = (obj: object) => ({
+	const sampleCurrency = (obj: object): ICurrency => ({
 		entity_type: EntityType.CURRENCY,
 		currency_uuid: "Bitcoin_BTC",
 		name: "Bitcoin",
@@ -50,7 +50,7 @@ describe("Persistence", () => {
 			byUuid: jest.fn(() => merged),
 			getUuid: jest.fn(() => "byUUID"),
 		} as unknown as MappedStore<ICurrency>;
-		jest.spyOn(persistence, "persist").mockReturnValue();
+		jest.spyOn(persistence, "commit").mockReturnValue();
 	});
 
 	const thenExpect = ({
@@ -61,8 +61,7 @@ describe("Persistence", () => {
 		const state = {
 			merge: (mockStore.merge as jest.Mock<unknown, unknown[]>).mock.calls,
 			log: mockLogger.calls,
-			persist: (persistence.persist as jest.Mock<unknown, unknown[]>).mock
-				.calls,
+			commit: (persistence.commit as jest.Mock<unknown, unknown[]>).mock.calls,
 		};
 		expect(state).toEqual({
 			merge: [
@@ -86,7 +85,7 @@ describe("Persistence", () => {
 					],
 				},
 			],
-			persist: [[mockStore, resolved]],
+			commit: [[mockStore, resolved]],
 		});
 	};
 
@@ -94,7 +93,7 @@ describe("Persistence", () => {
 		it("take document with _rev over documents without _rev", () => {
 			const a = sampleCurrency({ ...today, ...rev1 });
 			const b = sampleCurrency({ ...yesterday });
-			persistence.resolveConflict(mockStore, a, b);
+			persistence.resolveConflict(a, b);
 
 			thenExpect({
 				updated: a,
@@ -106,7 +105,7 @@ describe("Persistence", () => {
 		it("take document with _rev over documents without _rev reversed", () => {
 			const a = sampleCurrency({ ...today });
 			const b = sampleCurrency({ ...yesterday, ...rev1 });
-			persistence.resolveConflict(mockStore, a, b);
+			persistence.resolveConflict(a, b);
 
 			thenExpect({
 				updated: b,
@@ -118,7 +117,7 @@ describe("Persistence", () => {
 		it("take document latest and copy newer _rev", () => {
 			const a = sampleCurrency({ ...today, ...rev1 });
 			const b = sampleCurrency({ ...yesterday, ...rev2 });
-			persistence.resolveConflict(mockStore, a, b);
+			persistence.resolveConflict(a, b);
 
 			thenExpect({
 				updated: a,
@@ -130,7 +129,7 @@ describe("Persistence", () => {
 		it("take document with newer _rev a b reversed", () => {
 			const a = sampleCurrency({ ...today, ...rev2 });
 			const b = sampleCurrency({ ...yesterday, ...rev1 });
-			persistence.resolveConflict(mockStore, a, b);
+			persistence.resolveConflict(a, b);
 
 			thenExpect({
 				updated: a,
@@ -142,7 +141,7 @@ describe("Persistence", () => {
 		it("take document with _rev over documents without _rev with older date", () => {
 			const a = sampleCurrency({ ...today });
 			const b = sampleCurrency({ ...yesterday, ...rev1 });
-			persistence.resolveConflict(mockStore, a, b);
+			persistence.resolveConflict(a, b);
 
 			thenExpect({
 				updated: b,
@@ -154,7 +153,7 @@ describe("Persistence", () => {
 		it("chooses latest document between two with same _rev", () => {
 			const a = sampleCurrency({ ...yesterday, ...rev1 });
 			const b = sampleCurrency({ ...today, ...rev1 });
-			persistence.resolveConflict(mockStore, a, b);
+			persistence.resolveConflict(a, b);
 
 			thenExpect({
 				updated: b,

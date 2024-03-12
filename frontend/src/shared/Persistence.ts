@@ -1,19 +1,8 @@
-import {
-	debounce,
-	forEach,
-	isArray,
-	isEmpty,
-	isObject,
-	map,
-	omit,
-	uniqBy,
-	values,
-} from "lodash";
+import { debounce, isArray, isEmpty, isObject } from "lodash";
 import { action, makeObservable, observable, observe, toJS } from "mobx";
 import PouchDB from "pouchdb";
 
 import type { SyncConfig } from "../entities/Config";
-import { asyncProcess } from "../utils/Utils";
 
 import type { EntityType, IBaseEntity } from "./Entity";
 import Logger from "./Logger";
@@ -48,38 +37,170 @@ export const PouchDBRemoteFactory = ({ url, username, password }: SyncConfig) =>
 		},
 	});
 
+export class PersistenceMonitor<TEntity extends IBaseEntity> {
+	private bypassMonitor = new Set<string>();
+	private logger: Logger;
+
+	constructor(
+		private persistenceStore: PersistenceStore,
+		parent: Logger,
+		private store: MappedStore<TEntity>,
+	) {
+		this.logger = new Logger(store.entityType(), parent);
+		this.monitorLocalChanges();
+		this.monitorRemoteChanges();
+	}
+
+	persist(item: TEntity) {
+		const uuid = this.store.getUuid(item);
+		if (item._id && this.bypassMonitor.has(item._id)) {
+			this.logger.log("persist bypass", { uuid, item });
+
+			return;
+		}
+		this.logger.log("persist scheduled", { uuid, item });
+		this.persistenceStore.commit(toJS(item) as unknown as PouchDocument);
+	}
+
+	mergeBypassingMonitor(entity: TEntity) {
+		try {
+			if (entity._id) {
+				this.bypassMonitor.add(entity._id);
+			}
+			this.store.merge(entity, { setUpdated: false });
+		} finally {
+			if (entity._id) {
+				this.bypassMonitor.delete(entity._id);
+			}
+		}
+	}
+
+	private monitorLocalChanges() {
+		observe(this.store.itemsByUuid, (changes) => {
+			if (changes.type === "add") {
+				const newValue = changes.newValue as TEntity;
+				this.persist(newValue);
+				this.logger.log("monitorLocalChanges added", changes);
+			} else if (changes.type === "update") {
+				const newValue = changes.newValue as TEntity;
+				const oldValue = changes.oldValue as TEntity;
+				if (newValue._rev === oldValue._rev) {
+					this.logger.log("monitorLocalChanges dirty", changes);
+					this.persist(newValue);
+				} else {
+					this.logger.log("monitorLocalChanges synced", changes);
+				}
+			}
+		});
+	}
+
+	private monitorRemoteChanges() {
+		this.persistenceStore.watch(this.store.entityType(), (doc) => {
+			this.mergeBypassingMonitor(doc as unknown as TEntity);
+			this.logger.log("monitorRemoteChanges", doc);
+		});
+	}
+}
+
+type PouchDocument = {
+	_id: string;
+	_rev: string;
+	_conflicts?: string[];
+	entity_type: EntityType;
+	created: string;
+	updated: string;
+};
+
+type DocumentWatchListener = (doc: PouchDocument) => void;
+
 export default class PersistenceStore {
 	public status: Status = Status.OFFLINE;
 
-	private db: PouchDB.Database;
-
-	private syncables: {
-		uuid: string;
-		store: MappedStore<any>;
-	}[] = [];
-
-	private stores: {
-		[_type: string]: MappedStore<any>;
-	} = {};
-
-	private _commit;
-
 	private logger: Logger;
+
+	private db: PouchDB.Database;
 
 	private syncing?: PouchDB.Replication.Sync<IBaseEntity>;
 
-	private bypassMonitor = new Set<string>();
+	private watchers = new Map<EntityType, Array<DocumentWatchListener>>();
+
+	private commitables = new Map<string, PouchDocument>();
 
 	constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
 		this.logger = new Logger("persistence", parent);
 		this.logger.level = "info";
 		this.db = dbFactory();
-		this._commit = debounce(() => this.commit(), 1000);
 
 		makeObservable(this, {
 			status: observable,
-			sync: action,
+			notifyDocument: action,
 		});
+	}
+
+	monitor<T extends IBaseEntity>(store: MappedStore<T>) {
+		new PersistenceMonitor(this, this.logger, store);
+	}
+
+	async load() {
+		try {
+			const pouchDocs = await this.db.allDocs({
+				include_docs: true,
+			});
+			const allDocs = pouchDocs.rows.map(({ doc }) => doc);
+			this.logger.info("load", { total: pouchDocs.total_rows, allDocs });
+			for (const doc of allDocs) {
+				if (doc) {
+					this.handleReceivedDocument(doc as PouchDocument);
+				}
+			}
+		} catch (err) {
+			this.logger.error("load error", { err });
+		}
+	}
+
+	async refetch(documentId: string) {
+		const actual = await this.db.get(documentId, { conflicts: true });
+		this.logger.log("refetch", { documentId, actual });
+		this.handleReceivedDocument(actual as PouchDocument);
+	}
+
+	watch(entityType: EntityType, listener: DocumentWatchListener) {
+		if (!this.watchers.has(entityType)) {
+			this.watchers.set(entityType, []);
+		}
+		this.watchers.get(entityType)?.push(listener);
+	}
+
+	commit(doc: PouchDocument) {
+		this.commitables.set(doc._id, doc);
+		this.scheduleCommit();
+	}
+
+	notifyDocument(doc: PouchDocument) {
+		const listeners = this.watchers.get(doc.entity_type) ?? [];
+		for (const watcher of listeners) {
+			watcher(doc);
+		}
+	}
+
+	handleReceivedDocument(doc: PouchDocument) {
+		for (const conflict of doc._conflicts || []) {
+			this.db.remove(doc._id, doc._rev);
+		}
+	}
+
+	private scheduleCommit = debounce(() => {
+		// send to pouchdb
+		// check changes
+		// call notify
+	}, 200);
+
+	async exportAll(onProgress: (perc: number) => void) {}
+
+	async restoreAll(content: string, onProgress: (perc: number) => void) {}
+
+	truncateAll() {
+		this.db.destroy();
 	}
 
 	sync(remote: SyncConfig) {
@@ -112,7 +233,9 @@ export default class PersistenceStore {
 							_rev: doc._rev,
 						}));
 						this.logger.info("sync change", { change: changedDocIds });
-						this.fetchLatest(changedDocIds);
+						for (const changedDocId of changedDocIds) {
+							this.refetch(changedDocId._id);
+						}
 						resolve(setStatus(Status.ONLINE));
 					})
 					.on("paused", (info) => {
@@ -133,59 +256,19 @@ export default class PersistenceStore {
 		});
 	}
 
-	async fetchLatest(docs: { _id: string; _rev: string }[]) {
-		const first = docs.pop();
-		if (!first) {
-			return;
-		}
-
-		const { _id, _rev } = first;
-		this.logger.log("fetch latest", { _id, _rev });
-		const latest = await this.fetch(_id);
-		this.mergeBypassingMonitor(this.stores[latest.entity_type], latest);
-
-		await this.fetchLatest(docs);
-	}
-
-	async load() {
-		try {
-			const docs = await this.db.allDocs({
-				include_docs: true,
-			});
-			this.logger.info("loaded docs", { total: docs.total_rows });
-			map(
-				[...(docs.rows.map((d) => d.doc) as unknown[] as IBaseEntity[])],
-				(entity) => {
-					if (entity.entity_type && this.stores[entity.entity_type]) {
-						this.mergeBypassingMonitor(this.stores[entity.entity_type], entity);
-					}
-				},
-			);
-		} catch (err) {
-			this.logger.error("load docs error", { err });
-		}
-	}
-
-	resolveConflict<EntityType extends IBaseEntity>(
-		store: MappedStore<EntityType>,
-		a: EntityType,
-		b: EntityType,
-	) {
+	resolveConflict(a: Partial<PouchDocument>, b: Partial<PouchDocument>) {
 		const revLevel = (rev: string | undefined) =>
 			Number.parseInt((rev || "0-").split("-")[0], 10);
 		const aRevLevel = revLevel(a._rev);
 		const bRevLevel = revLevel(b._rev);
 
-		const resolve = (updated: EntityType) => {
+		const resolve = (updated: Partial<PouchDocument>) => {
 			const outdated = updated === a ? b : a;
 			const _rev = aRevLevel > bRevLevel ? a._rev : b._rev;
-			const resolved = { ...outdated, ...updated, _rev };
+			const resolved = { ...outdated, ...updated, _rev } as PouchDocument;
 			this.logger.info("resolve conflict", { updated, outdated, resolved });
-			store.merge(resolved, { setUpdated: true });
-			this.persist<EntityType>(
-				store,
-				store.byUuid(store.getUuid(resolved)) as EntityType,
-			);
+			this.commit(resolved);
+			this.notifyDocument(resolved);
 		};
 		if (a._rev && !b._rev) {
 			return resolve(a);
@@ -214,169 +297,115 @@ export default class PersistenceStore {
 
 		return resolve(b);
 	}
-
-	async commit() {
-		const objects = uniqBy(
-			this.syncables.map(({ store, uuid }) => {
-				const entity = toJS(store.byUuid(uuid)) as unknown as { _id: string };
-
-				return { store, _id: entity._id, entity, uuid };
-			}),
-			"_id",
-		);
-		this.syncables = [];
-		try {
-			return await asyncProcess(
-				objects.map((sync) => sync.entity),
-				async (chunk) => {
-					const responses = await this.db.bulkDocs(chunk);
-					map(
-						responses,
-						async (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
-							const { error, status, ok, id, rev } = resp;
-							const current = objects.find((obj) => obj._id === id);
-							if (!current) {
-								return;
-							}
-							if (error && status === 409) {
-								const actual = await this.fetch(id);
-								this.resolveConflict(current.store, current.entity, actual);
-							} else if (error) {
-								this.logger.error("sync commit error on doc", {
-									error,
-									current,
-								});
-							} else if (ok) {
-								const entity = { ...current.entity, _rev: rev };
-								this.mergeBypassingMonitor(current.store, entity);
-							}
-						},
-					);
-				},
-				{ state: {}, chunkSize: 50, chunkThrottle: 25 },
-			);
-		} catch (err) {
-			const error = err as PouchDB.Core.Error;
-			this.logger.error("sync commit error", error);
-		}
-	}
-
-	persist<EntityType extends IBaseEntity>(
-		store: MappedStore<EntityType>,
-		item: EntityType,
-	) {
-		if (item._id && this.bypassMonitor.has(item._id)) {
-			this.logger.log("persist bypass", { uuid: store.getUuid(item), item });
-
-			return;
-		}
-		this.logger.log("persist", { uuid: store.getUuid(item), item });
-		this.syncables.push({ store: store as never, uuid: store.getUuid(item) });
-		this._commit();
-	}
-
-	async fetch(id: string) {
-		const actual = await this.db.get(id, { conflicts: true });
-		if (actual._conflicts) {
-			forEach(actual._conflicts, (rev) => this.db.remove(id, rev));
-		}
-		const entity = actual as IBaseEntity;
-		this.logger.info("fetch latest", { entity });
-
-		return entity;
-	}
-
-	mergeBypassingMonitor<TEntityType extends IBaseEntity>(
-		store: MappedStore<TEntityType>,
-		entity: TEntityType,
-	) {
-		try {
-			if (entity._id) {
-				this.bypassMonitor.add(entity._id);
-			}
-			store.merge(entity, { setUpdated: false });
-		} finally {
-			if (entity._id) {
-				this.bypassMonitor.delete(entity._id);
-			}
-		}
-	}
-
-	monitor<TEntityType extends IBaseEntity>(
-		store: MappedStore<TEntityType>,
-		type: EntityType,
-	) {
-		this.stores[type] = store;
-		observe(store.itemsByUuid, (changes) => {
-			if (changes.type === "add") {
-				this.persist(store, changes.newValue);
-			} else if (changes.type === "update") {
-				const oldRev = changes.oldValue._rev;
-				const newRev = changes.newValue._rev;
-				if (oldRev === newRev) {
-					this.logger.log("monitor - dirty", changes);
-					this.persist(store, changes.newValue);
-				} else {
-					this.logger.log("monitor - synced", changes);
-				}
-			}
-		});
-	}
-
-	async exportAll(onProgress: (perc: number) => void) {
-		return (
-			await asyncProcess(
-				values(this.stores).flatMap((store) =>
-					Array.from(store.itemsByUuid.values()),
-				),
-				(chunk, state, percentage) => {
-					onProgress(percentage);
-					state.result = `${
-						state.result +
-						chunk.map((entity) => JSON.stringify(toJS(entity))).join("\n")
-					}\n`;
-				},
-				{ state: { result: "" }, chunkSize: 100, chunkThrottle: 50 },
-			)
-		).result;
-	}
-
-	restoreEntity(entity: { entity_type?: string }) {
-		const store = entity.entity_type && this.stores[entity.entity_type];
-		if (store) {
-			store.merge(omit(entity, ["_rev"]));
-
-			return true;
-		}
-
-		return false;
-	}
-
-	restoreAll(content: string, onProgress: (perc: number) => void) {
-		const entries = content.split("\n");
-
-		return asyncProcess(
-			entries,
-			(chunk, result, percentage) => {
-				onProgress(percentage);
-				for (const line of chunk) {
-					if (line.trim() === "") {
-						return;
-					}
-					try {
-						if (!this.restoreEntity(JSON.parse(line))) {
-							result.errors.push(`Unable to restore: ${line}`);
-						}
-					} catch {
-						result.errors.push(`Failed to parse line JSON: ${line}`);
-					}
-				}
-			},
-			{ state: { errors: [] as string[] }, chunkSize: 100, chunkThrottle: 50 },
-		);
-	}
-
-	truncateAll() {
-		this.db.destroy();
-	}
 }
+
+/*
+  async load() {
+    try {
+      const docs = await this.db.allDocs({
+        include_docs: true,
+      });
+      this.logger.info("loaded docs", { total: docs.total_rows });
+      map(
+        [...(docs.rows.map((d) => d.doc) as unknown[] as IBaseEntity[])],
+        (entity) => {
+          if (entity.entity_type && this.stores[entity.entity_type]) {
+            this.mergeBypassingMonitor(this.stores[entity.entity_type], entity);
+          }
+        },
+      );
+    } catch (err) {
+      this.logger.error("load docs error", { err });
+    }
+  }
+
+  async exportAll(onProgress: (perc: number) => void) {
+    return (
+      await asyncProcess(
+        values(this.stores).flatMap((store) =>
+          Array.from(store.itemsByUuid.values()),
+        ),
+        (chunk, state, percentage) => {
+          onProgress(percentage);
+          state.result = `${state.result +
+            chunk.map((entity) => JSON.stringify(toJS(entity))).join("\n")
+            }\n`;
+        },
+        { state: { result: "" }, chunkSize: 100, chunkThrottle: 50 },
+      )
+    ).result;
+  }
+
+  async commit() {
+    try {
+      return await asyncProcess(
+        objects.map((sync) => sync.entity),
+        async (chunk) => {
+          const responses = await this.db.bulkDocs(chunk);
+          map(
+            responses,
+            async (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
+              const { error, status, ok, id, rev } = resp;
+              const current = objects.find((obj) => obj._id === id);
+              if (!current) {
+                return;
+              }
+              if (error && status === 409) {
+                const actual = await this.fetch(id);
+                this.resolveConflict(current.store, current.entity, actual);
+              } else if (error) {
+                this.logger.error("sync commit error on doc", {
+                  error,
+                  current,
+                });
+              } else if (ok) {
+                const entity = { ...current.entity, _rev: rev };
+                this.mergeBypassingMonitor(current.store, entity);
+              }
+            },
+          );
+        },
+        { state: {}, chunkSize: 50, chunkThrottle: 25 },
+      );
+    } catch (err) {
+      const error = err as PouchDB.Core.Error;
+      this.logger.error("sync commit error", error);
+    }
+  }
+
+
+  restoreEntity(entity: { entity_type?: string }) {
+    const store = entity.entity_type && this.stores[entity.entity_type];
+    if (store) {
+      store.merge(omit(entity, ["_rev"]));
+
+      return true;
+    }
+
+    return false;
+  }
+
+  restoreAll(content: string, onProgress: (perc: number) => void) {
+    const entries = content.split("\n");
+
+    return asyncProcess(
+      entries,
+      (chunk, result, percentage) => {
+        onProgress(percentage);
+        for (const line of chunk) {
+          if (line.trim() === "") {
+            return;
+          }
+          try {
+            if (!this.restoreEntity(JSON.parse(line))) {
+              result.errors.push(`Unable to restore: ${line}`);
+            }
+          } catch {
+            result.errors.push(`Failed to parse line JSON: ${line}`);
+          }
+        }
+      },
+      { state: { errors: [] as string[] }, chunkSize: 100, chunkThrottle: 50 },
+    );
+  }
+  */

@@ -66,8 +66,13 @@ const WealthGrowReport = () => {
 					const category = Messages.reports.wealth;
 					const previousKey =
 						index > 0 && sorted[index - 1] && sorted[index - 1][0];
-					const previousRecord = previousKey && data.points.get(previousKey);
-					const previous = previousRecord?.[category] || 0;
+					let previous = 0;
+					if (previousKey) {
+						const previousRecord = data.points.get(previousKey);
+						if (previousRecord) {
+							previous = previousRecord[category] || 0;
+						}
+					}
 					const current = points[category];
 					const withPrevious = current + previous;
 					data.points.set(key, { [category]: withPrevious });

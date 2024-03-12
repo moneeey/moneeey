@@ -14,6 +14,7 @@ import type {
 } from "./ImportContent";
 import { txtImportFromLines } from "./TxtImporter";
 
+// biome-ignore lint: lint/suspicious/noExplicitAny
 const findBankTranlists = (obj: any): any[] => {
 	if (typeof obj === "object") {
 		return _(obj)

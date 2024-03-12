@@ -36,6 +36,10 @@ export default class MappedStore<T extends IBaseEntity> {
 		});
 	}
 
+	entityType() {
+		return this.factory().entity_type;
+	}
+
 	merge(item: T, options: { setUpdated: boolean } = { setUpdated: true }) {
 		const uuid = this.getUuid(item);
 		this.moneeeyStore.tags.registerAll(item.tags);
