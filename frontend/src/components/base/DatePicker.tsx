@@ -25,7 +25,6 @@ const DatePicker = ({
 		input: (
 			<ReactDatePicker
 				data-testid={testId}
-				popperPlacement="auto"
 				fixedHeight
 				className={`${BaseInputClzz || ""} z-50 ${className || ""}`}
 				selected={value}

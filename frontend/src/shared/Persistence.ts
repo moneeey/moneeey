@@ -1,9 +1,10 @@
-import { debounce, isArray, isEmpty, isObject } from "lodash";
+import { debounce, isArray, isEmpty, isObject, omit } from "lodash";
 import { action, makeObservable, observable, observe, toJS } from "mobx";
 import PouchDB from "pouchdb";
 
 import type { SyncConfig } from "../entities/Config";
 
+import { asyncProcess } from "../utils/Utils";
 import type { EntityType, IBaseEntity } from "./Entity";
 import Logger from "./Logger";
 import type MappedStore from "./MappedStore";
@@ -141,14 +142,18 @@ export default class PersistenceStore {
 		new PersistenceMonitor(this, this.logger, store);
 	}
 
+	async fetchAllDocs() {
+		const pouchDocs = await this.db.allDocs({
+			include_docs: true,
+		});
+		return pouchDocs.rows.map(({ doc }) => doc);
+	}
+
 	async load() {
 		try {
-			const pouchDocs = await this.db.allDocs({
-				include_docs: true,
-			});
-			const allDocs = pouchDocs.rows.map(({ doc }) => doc);
-			this.logger.info("load", { total: pouchDocs.total_rows, allDocs });
-			for (const doc of allDocs) {
+			const docs = await this.fetchAllDocs();
+			this.logger.info("load", { total: docs.length, docs });
+			for (const doc of docs) {
 				if (doc) {
 					this.handleReceivedDocument(doc as PouchDocument);
 				}
@@ -195,12 +200,40 @@ export default class PersistenceStore {
 		// call notify
 	}, 200);
 
-	async exportAll(onProgress: (perc: number) => void) {}
-
-	async restoreAll(content: string, onProgress: (perc: number) => void) {}
-
 	truncateAll() {
 		this.db.destroy();
+	}
+
+	async exportAll(onProgress: (perc: number) => void) {
+		const docs = (await this.fetchAllDocs()).map(
+			(entity) => toJS(entity) as object,
+		);
+
+		const { result } = await asyncProcess(
+			docs,
+			(chunk, state, percentage) => {
+				onProgress(percentage);
+				state.result = [...state.result, ...chunk];
+			},
+			{ state: { result: [] as object[] }, chunkSize: 100, chunkThrottle: 50 },
+		);
+		return JSON.stringify(result);
+	}
+
+	async restoreAll(content: string, onProgress: (perc: number) => void) {
+		const entries = JSON.parse(content) as object[];
+
+		return asyncProcess(
+			entries,
+			(chunk, _result, percentage) => {
+				onProgress(percentage);
+				for (const line of chunk) {
+					const withoutRev = omit(line, ["_rev"]);
+					this.commit(withoutRev as PouchDocument);
+				}
+			},
+			{ state: {}, chunkSize: 100, chunkThrottle: 50 },
+		);
 	}
 
 	sync(remote: SyncConfig) {
@@ -300,42 +333,6 @@ export default class PersistenceStore {
 }
 
 /*
-  async load() {
-    try {
-      const docs = await this.db.allDocs({
-        include_docs: true,
-      });
-      this.logger.info("loaded docs", { total: docs.total_rows });
-      map(
-        [...(docs.rows.map((d) => d.doc) as unknown[] as IBaseEntity[])],
-        (entity) => {
-          if (entity.entity_type && this.stores[entity.entity_type]) {
-            this.mergeBypassingMonitor(this.stores[entity.entity_type], entity);
-          }
-        },
-      );
-    } catch (err) {
-      this.logger.error("load docs error", { err });
-    }
-  }
-
-  async exportAll(onProgress: (perc: number) => void) {
-    return (
-      await asyncProcess(
-        values(this.stores).flatMap((store) =>
-          Array.from(store.itemsByUuid.values()),
-        ),
-        (chunk, state, percentage) => {
-          onProgress(percentage);
-          state.result = `${state.result +
-            chunk.map((entity) => JSON.stringify(toJS(entity))).join("\n")
-            }\n`;
-        },
-        { state: { result: "" }, chunkSize: 100, chunkThrottle: 50 },
-      )
-    ).result;
-  }
-
   async commit() {
     try {
       return await asyncProcess(
@@ -372,7 +369,6 @@ export default class PersistenceStore {
       this.logger.error("sync commit error", error);
     }
   }
-
 
   restoreEntity(entity: { entity_type?: string }) {
     const store = entity.entity_type && this.stores[entity.entity_type];

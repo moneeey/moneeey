@@ -48,15 +48,12 @@ export default function Settings() {
 		const submitFn = async (data: Action) => {
 			const input = data?.content || "";
 			update(Messages.settings.restore_loading(0));
-			const { errors } = await moneeeyStore.persistence.restoreAll(
-				input,
-				(percentage) => {
-					update(Messages.settings.restore_loading(percentage));
-					setLoading(percentage);
-				},
-			);
+			await moneeeyStore.persistence.restoreAll(input, (percentage) => {
+				update(Messages.settings.restore_loading(percentage));
+				setLoading(percentage);
+			});
 			setLoading(false);
-			update([...errors, "", Messages.settings.reload_page].join("\n"));
+			update(Messages.settings.reload_page);
 		};
 		setAction({
 			content: Messages.settings.restore_data_placeholder,
