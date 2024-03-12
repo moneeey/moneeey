@@ -129,7 +129,7 @@ export default class PersistenceStore {
 
 	constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
 		this.logger = new Logger("persistence", parent);
-		this.logger.level = "info";
+		// this.logger.level = "info";
 		this.db = dbFactory();
 
 		makeObservable(this, {
@@ -190,14 +190,46 @@ export default class PersistenceStore {
 
 	handleReceivedDocument(doc: PouchDocument) {
 		for (const conflict of doc._conflicts || []) {
-			this.db.remove(doc._id, doc._rev);
+			this.db.remove(doc._id, conflict);
 		}
+    this.notifyDocument(doc)
 	}
 
-	private scheduleCommit = debounce(() => {
-		// send to pouchdb
-		// check changes
-		// call notify
+	private scheduleCommit = debounce(async () => {
+    const objects = Array.from(this.commitables.values())
+    this.commitables.clear()
+    this.logger.info('commit', objects)
+    try {
+      return await asyncProcess(
+        objects,
+        async (chunk) => {
+          const responses = await this.db.bulkDocs(chunk) as (PouchDB.Core.Response & PouchDB.Core.Error)[];
+          for (const resp of responses) {
+              const { error, status, ok, id, rev } = resp;
+              const current = objects.find((obj) => obj._id === id);
+              if (!current) {
+                this.logger.error('sync commit error matching response id', { ok, id, rev, status, error })
+                return;
+              }
+              if (error && id && status === 409) {
+                await this.refetch(id);
+              } else if (error) {
+                this.logger.error("sync commit error on doc", {
+                  error,
+                  current,
+                });
+              } else if (ok) {
+                const entity = { ...current, _rev: rev };
+                this.notifyDocument(entity)
+              }
+          }
+        },
+        { state: {}, chunkSize: 50, chunkThrottle: 25 },
+      );
+    } catch (err) {
+      const error = err as PouchDB.Core.Error;
+      this.logger.error("sync commit error", error);
+    }
 	}, 200);
 
 	truncateAll() {
@@ -331,77 +363,3 @@ export default class PersistenceStore {
 		return resolve(b);
 	}
 }
-
-/*
-  async commit() {
-    try {
-      return await asyncProcess(
-        objects.map((sync) => sync.entity),
-        async (chunk) => {
-          const responses = await this.db.bulkDocs(chunk);
-          map(
-            responses,
-            async (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
-              const { error, status, ok, id, rev } = resp;
-              const current = objects.find((obj) => obj._id === id);
-              if (!current) {
-                return;
-              }
-              if (error && status === 409) {
-                const actual = await this.fetch(id);
-                this.resolveConflict(current.store, current.entity, actual);
-              } else if (error) {
-                this.logger.error("sync commit error on doc", {
-                  error,
-                  current,
-                });
-              } else if (ok) {
-                const entity = { ...current.entity, _rev: rev };
-                this.mergeBypassingMonitor(current.store, entity);
-              }
-            },
-          );
-        },
-        { state: {}, chunkSize: 50, chunkThrottle: 25 },
-      );
-    } catch (err) {
-      const error = err as PouchDB.Core.Error;
-      this.logger.error("sync commit error", error);
-    }
-  }
-
-  restoreEntity(entity: { entity_type?: string }) {
-    const store = entity.entity_type && this.stores[entity.entity_type];
-    if (store) {
-      store.merge(omit(entity, ["_rev"]));
-
-      return true;
-    }
-
-    return false;
-  }
-
-  restoreAll(content: string, onProgress: (perc: number) => void) {
-    const entries = content.split("\n");
-
-    return asyncProcess(
-      entries,
-      (chunk, result, percentage) => {
-        onProgress(percentage);
-        for (const line of chunk) {
-          if (line.trim() === "") {
-            return;
-          }
-          try {
-            if (!this.restoreEntity(JSON.parse(line))) {
-              result.errors.push(`Unable to restore: ${line}`);
-            }
-          } catch {
-            result.errors.push(`Failed to parse line JSON: ${line}`);
-          }
-        }
-      },
-      { state: { errors: [] as string[] }, chunkSize: 100, chunkThrottle: 50 },
-    );
-  }
-  */
