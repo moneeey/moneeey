@@ -7,7 +7,6 @@ import PersistenceStore from "./Persistence";
 
 describe("Persistence", () => {
 	let persistence: PersistenceStore;
-	let mockStore: MappedStore<ICurrency>;
 	let mockLogger: MockLogger;
 
 	const yesterday = {
@@ -42,14 +41,6 @@ describe("Persistence", () => {
 			() => ({}) as PouchDB.Database,
 			mockLogger,
 		);
-		let merged: ICurrency = {} as ICurrency;
-		mockStore = {
-			merge: jest.fn((obj: ICurrency) => {
-				merged = obj;
-			}),
-			byUuid: jest.fn(() => merged),
-			getUuid: jest.fn(() => "byUUID"),
-		} as unknown as MappedStore<ICurrency>;
 		jest.spyOn(persistence, "commit").mockReturnValue();
 	});
 
@@ -59,19 +50,10 @@ describe("Persistence", () => {
 		resolved,
 	}: { updated: object; outdated: object; resolved: object }) => {
 		const state = {
-			merge: (mockStore.merge as jest.Mock<unknown, unknown[]>).mock.calls,
 			log: mockLogger.calls,
 			commit: (persistence.commit as jest.Mock<unknown, unknown[]>).mock.calls,
 		};
 		expect(state).toEqual({
-			merge: [
-				[
-					resolved,
-					{
-						setUpdated: true,
-					},
-				],
-			],
 			log: [
 				{
 					level: "info",
@@ -85,7 +67,7 @@ describe("Persistence", () => {
 					],
 				},
 			],
-			commit: [[mockStore, resolved]],
+			commit: [[resolved]],
 		});
 	};
 
