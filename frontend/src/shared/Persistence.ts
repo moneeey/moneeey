@@ -53,7 +53,7 @@ export class PersistenceMonitor<TEntity extends IBaseEntity> {
 	}
 
 	persist(item: TEntity, reason: string) {
-    const id = item._id
+		const id = item._id;
 		if (id && this.bypassMonitor.has(id)) {
 			this.logger.log("persist bypass", { id, item, reason });
 
@@ -80,12 +80,12 @@ export class PersistenceMonitor<TEntity extends IBaseEntity> {
 		observe(this.store.itemsByUuid, (changes) => {
 			if (changes.type === "add") {
 				const newValue = changes.newValue as TEntity;
-				this.persist(newValue, 'added');
+				this.persist(newValue, "added");
 			} else if (changes.type === "update") {
 				const newValue = changes.newValue as TEntity;
 				const oldValue = changes.oldValue as TEntity;
 				if (newValue._rev === oldValue._rev) {
-					this.persist(newValue, 'updated');
+					this.persist(newValue, "updated");
 				} else {
 					this.logger.log("monitorLocalChanges synced", changes);
 				}
@@ -190,45 +190,53 @@ export default class PersistenceStore {
 		for (const conflict of doc._conflicts || []) {
 			this.db.remove(doc._id, conflict);
 		}
-    this.notifyDocument(doc)
+		this.notifyDocument(doc);
 	}
 
 	private scheduleCommit = debounce(async () => this.doCommit(), 200);
 
 	doCommit = async () => {
-    const objects = Array.from(this.commitables.values())
-    this.commitables.clear()
-    this.logger.info('commit', objects)
-    try {
-      return await asyncProcess(
-        objects,
-        async (chunk) => {
-          const responses = await this.db.bulkDocs(chunk) as (PouchDB.Core.Response & PouchDB.Core.Error)[];
-          for (const resp of responses) {
-              const { error, status, ok, id, rev } = resp;
-              const current = objects.find((obj) => obj._id === id);
-              if (!current) {
-                this.logger.error('sync commit error matching response id', { ok, id, rev, status, error })
-                return;
-              }
-              if (ok || status === 409) {
-                await this.refetch(id);
-              } else if (error) {
-                this.logger.error("sync commit error on doc", {
-                  status,
-                  error,
-                  current,
-                });
-              }
-          }
-        },
-        { state: {}, chunkSize: 50, chunkThrottle: 25 },
-      );
-    } catch (err) {
-      const error = err as PouchDB.Core.Error;
-      this.logger.error("sync commit error", error);
-    }
-	}
+		const objects = Array.from(this.commitables.values());
+		this.commitables.clear();
+		this.logger.info("commit", objects);
+		try {
+			return await asyncProcess(
+				objects,
+				async (chunk) => {
+					const responses = (await this.db.bulkDocs(
+						chunk,
+					)) as (PouchDB.Core.Response & PouchDB.Core.Error)[];
+					for (const resp of responses) {
+						const { error, status, ok, id, rev } = resp;
+						const current = objects.find((obj) => obj._id === id);
+						if (!current) {
+							this.logger.error("sync commit error matching response id", {
+								ok,
+								id,
+								rev,
+								status,
+								error,
+							});
+							return;
+						}
+						if (ok || status === 409) {
+							await this.refetch(id);
+						} else if (error) {
+							this.logger.error("sync commit error on doc", {
+								status,
+								error,
+								current,
+							});
+						}
+					}
+				},
+				{ state: {}, chunkSize: 50, chunkThrottle: 25 },
+			);
+		} catch (err) {
+			const error = err as PouchDB.Core.Error;
+			this.logger.error("sync commit error", error);
+		}
+	};
 
 	truncateAll() {
 		this.db.destroy();

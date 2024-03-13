@@ -122,6 +122,9 @@ test.describe('Tour', () => {
 
     // Type account in table to create a new account
     await Input(page, 'editorName').change('Account test')
+    const editorCurrency = Select(page, 'editorCurrency')
+    expect(await editorCurrency.options()).toContain('BRL Real brasileiro')
+    await editorCurrency.choose('BRL Real brasileiro')
 
     // Progress Tour to Transactions
     await tourNext(page)

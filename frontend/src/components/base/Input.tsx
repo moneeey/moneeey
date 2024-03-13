@@ -145,7 +145,11 @@ const InputNumber = ({
 						setCurrentFloatValue(floatValue);
 					}
 				}}
-				onBlur={() => currentFloatValue && currentFloatValue !== value && onChange(currentFloatValue)}
+				onBlur={() =>
+					currentFloatValue &&
+					currentFloatValue !== value &&
+					onChange(currentFloatValue)
+				}
 				placeholder={placeholder}
 				thousandsGroupStyle="thousand"
 				thousandSeparator={thousandSeparator}
@@ -180,7 +184,9 @@ const TextArea = ({
 				data-testid={testId}
 				className={`${BaseInputClzz} ${className || ""}`}
 				value={value}
-				onBlur={({ target: { value: newValue } }) => newValue !== value && onChange(newValue)}
+				onBlur={({ target: { value: newValue } }) =>
+					newValue !== value && onChange(newValue)
+				}
 				placeholder={placeholder}
 				disabled={disabled}
 				readOnly={readOnly}

@@ -121,13 +121,22 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 		return envelope.allocated - envelope.used + previousValue;
 	}
 
+	currentEnvelopeRev = 0;
+	nextEnvelopeRev() {
+		return `${++this.currentEnvelopeRev}`;
+	}
+
 	updateVirtualEnvelopeUsage(envelope: BudgetEnvelope, usage: number) {
 		envelope.used = usage;
+		envelope._rev = this.nextEnvelopeRev();
+		super.merge(envelope);
 	}
 
 	updateVirtualEnvelopeRemainings() {
 		for (const envelope of this.all) {
 			envelope.remaining = this.getRemaining(envelope);
+			envelope._rev = this.nextEnvelopeRev();
+			super.merge(envelope);
 		}
 	}
 
