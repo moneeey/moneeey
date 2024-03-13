@@ -1,15 +1,9 @@
 FROM node:20.11.1-alpine AS builder
 USER root
 WORKDIR /app
-RUN yarn add typescript vite
-
-COPY package.json .
-COPY yarn.lock .
-RUN yarn install
-
 COPY . /app
-
-RUN NODE_OPTIONS=--max_old_space_size=4096 yarn build
+RUN yarn install --immutable && \
+    NODE_OPTIONS=--max_old_space_size=4096 yarn build
 
 FROM busybox:1.35
 RUN adduser -D www
