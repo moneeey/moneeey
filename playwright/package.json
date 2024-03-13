@@ -8,8 +8,12 @@
   },
   "scripts": {
     "setup": "playwright install",
-    "test": "playwright test",
+    "ui": "playwright test --ui",
     "headed": "playwright test --headed",
-    "ui": "playwright test --ui"
+    "test": "playwright test",
+    "test-ff": "playwright test --project firefox",
+    "test-cr": "playwright test --project chromium",
+    "debug-ff": "playwright test --headed --timeout 0 --project firefox",
+    "debug-cr": "playwright test --headed --timeout 0 --project chromium"
   }
 }

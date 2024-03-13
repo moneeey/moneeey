@@ -55,11 +55,11 @@ export class PersistenceMonitor<TEntity extends IBaseEntity> {
 	persist(item: TEntity, reason: string) {
 		const id = item._id;
 		if (id && this.bypassMonitor.has(id)) {
-			this.logger.log("persist bypass", { id, item, reason });
+			this.logger.log("persist bypass", { id, reason, item });
 
 			return;
 		}
-		this.logger.log("persist pending", { id, item, reason });
+		this.logger.log("persist pending", { id, reason, item });
 		this.persistenceStore.commit(toJS(item) as unknown as PouchDocument);
 	}
 
@@ -124,6 +124,8 @@ export default class PersistenceStore {
 	private watchers = new Map<EntityType, Array<DocumentWatchListener>>();
 
 	private commitables = new Map<string, PouchDocument>();
+
+	private refetchables = new Set<string>();
 
 	constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
 		this.logger = new Logger("persistence", parent);
@@ -200,7 +202,7 @@ export default class PersistenceStore {
 		this.commitables.clear();
 		this.logger.info("commit", objects);
 		try {
-			return await asyncProcess(
+			await asyncProcess(
 				objects,
 				async (chunk) => {
 					const responses = (await this.db.bulkDocs(
@@ -220,7 +222,8 @@ export default class PersistenceStore {
 							return;
 						}
 						if (ok || status === 409) {
-							await this.refetch(id);
+							this.refetchables.add(id);
+							this.scheduleRefetch();
 						} else if (error) {
 							this.logger.error("sync commit error on doc", {
 								status,
@@ -230,11 +233,25 @@ export default class PersistenceStore {
 						}
 					}
 				},
-				{ state: {}, chunkSize: 50, chunkThrottle: 25 },
+				{
+					state: { refetch: [] as string[] },
+					chunkSize: 20,
+					chunkThrottle: 50,
+				},
 			);
 		} catch (err) {
 			const error = err as PouchDB.Core.Error;
 			this.logger.error("sync commit error", error);
+		}
+	};
+
+	private scheduleRefetch = debounce(async () => this.doRefetch(), 200);
+
+	doRefetch = async () => {
+		const ids = Array.from(this.refetchables.keys());
+		this.refetchables.clear();
+		for (const id of ids) {
+			this.refetch(id);
 		}
 	};
 
