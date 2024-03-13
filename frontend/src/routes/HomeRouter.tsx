@@ -1,15 +1,15 @@
-import Dashboard from '../pages/Dashboard';
+import Dashboard from "../pages/Dashboard";
 
-import { IRouteParameters, Route } from './Route';
+import { type IRouteParameters, Route } from "./Route";
 
 class HomeRouter extends Route<IRouteParameters> {
-  constructor() {
-    super('/', undefined);
-  }
+	constructor() {
+		super("/", undefined);
+	}
 
-  render() {
-    return <Dashboard />;
-  }
+	render() {
+		return <Dashboard />;
+	}
 }
 
 const HomeRoute = new HomeRouter();

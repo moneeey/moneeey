@@ -6,5 +6,14 @@
   "devDependencies": {
     "@playwright/test": "^1.36.1"
   },
-  "scripts": {}
+  "scripts": {
+    "setup": "playwright install",
+    "ui": "playwright test --ui",
+    "headed": "playwright test --headed",
+    "test": "playwright test",
+    "test-ff": "playwright test --project firefox",
+    "test-cr": "playwright test --project chromium",
+    "debug-ff": "playwright test --headed --timeout 0 --project firefox",
+    "debug-cr": "playwright test --headed --timeout 0 --project chromium"
+  }
 }

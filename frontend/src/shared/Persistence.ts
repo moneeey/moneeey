@@ -1,346 +1,388 @@
-import { debounce, forEach, isArray, isEmpty, isObject, map, omit, uniqBy, values } from 'lodash';
-import { action, makeObservable, observable, observe, toJS } from 'mobx';
-import PouchDB from 'pouchdb';
+import { debounce, isArray, isEmpty, isObject, omit } from "lodash";
+import { action, makeObservable, observable, observe, toJS } from "mobx";
+import PouchDB from "pouchdb";
 
-import { SyncConfig } from '../entities/Config';
-import { asyncProcess } from '../utils/Utils';
+import type { SyncConfig } from "../entities/Config";
 
-import { EntityType, IBaseEntity } from './Entity';
-import Logger from './Logger';
-import MappedStore from './MappedStore';
+import { asyncProcess } from "../utils/Utils";
+import type { EntityType, IBaseEntity } from "./Entity";
+import Logger from "./Logger";
+import type MappedStore from "./MappedStore";
 
 export enum Status {
-  ONLINE = 'ONLINE',
-  OFFLINE = 'OFFLINE',
-  DENIED = 'DENIED',
-  ERROR = 'ERROR',
+	ONLINE = "ONLINE",
+	OFFLINE = "OFFLINE",
+	DENIED = "DENIED",
+	ERROR = "ERROR",
 }
 
 export type PouchDBFactoryFn = () => PouchDB.Database;
 
-export const PouchDBFactory = () => new PouchDB('moneeey');
+export const PouchDBFactory = () => new PouchDB("moneeey");
 
 export const PouchDBRemoteFactory = ({ url, username, password }: SyncConfig) =>
-  new PouchDB(url, {
-    auth: username === 'JWT' ? undefined : { username, password },
-    fetch: (fetchUrl: string | Request, options?: RequestInit) => {
-      if (username === 'JWT' && options) {
-        if (options.headers instanceof Headers) {
-          options.headers.set('Authorization', `Bearer ${password}`);
-        } else if (!isArray(options.headers) && isObject(options.headers)) {
-          options.headers.Authorization = `Bearer ${password}`;
-        } else {
-          options.headers = { Authorization: `Bearer ${password}` };
-        }
-      }
+	new PouchDB(url, {
+		auth: username === "JWT" ? undefined : { username, password },
+		fetch: (fetchUrl: string | Request, options?: RequestInit) => {
+			if (username === "JWT" && options) {
+				if (options.headers instanceof Headers) {
+					options.headers.set("Authorization", `Bearer ${password}`);
+				} else if (!isArray(options.headers) && isObject(options.headers)) {
+					options.headers.Authorization = `Bearer ${password}`;
+				} else {
+					options.headers = { Authorization: `Bearer ${password}` };
+				}
+			}
 
-      return PouchDB.fetch(fetchUrl, options);
-    },
-  });
+			return PouchDB.fetch(fetchUrl, options);
+		},
+	});
+
+export class PersistenceMonitor<TEntity extends IBaseEntity> {
+	private bypassMonitor = new Set<string>();
+	private logger: Logger;
+
+	constructor(
+		private persistenceStore: PersistenceStore,
+		parent: Logger,
+		private store: MappedStore<TEntity>,
+	) {
+		this.logger = new Logger(store.entityType().toLowerCase(), parent);
+		this.monitorLocalChanges();
+		this.monitorRemoteChanges();
+	}
+
+	persist(item: TEntity, reason: string) {
+		const id = item._id;
+		if (id && this.bypassMonitor.has(id)) {
+			this.logger.log("persist bypass", { id, reason, item });
+
+			return;
+		}
+		this.logger.log("persist pending", { id, reason, item });
+		this.persistenceStore.commit(toJS(item) as unknown as PouchDocument);
+	}
+
+	mergeBypassingMonitor(entity: TEntity) {
+		try {
+			if (entity._id) {
+				this.bypassMonitor.add(entity._id);
+			}
+			this.store.merge(entity, { setUpdated: false });
+		} finally {
+			if (entity._id) {
+				this.bypassMonitor.delete(entity._id);
+			}
+		}
+	}
+
+	private monitorLocalChanges() {
+		observe(this.store.itemsByUuid, (changes) => {
+			if (changes.type === "add") {
+				const newValue = changes.newValue as TEntity;
+				this.persist(newValue, "added");
+			} else if (changes.type === "update") {
+				const newValue = changes.newValue as TEntity;
+				const oldValue = changes.oldValue as TEntity;
+				if (newValue._rev === oldValue._rev) {
+					this.persist(newValue, "updated");
+				} else {
+					this.logger.log("monitorLocalChanges synced", changes);
+				}
+			}
+		});
+	}
+
+	private monitorRemoteChanges() {
+		this.persistenceStore.watch(this.store.entityType(), (doc) => {
+			this.logger.log("monitorRemoteChanges received", doc);
+			this.mergeBypassingMonitor(doc as unknown as TEntity);
+		});
+	}
+}
+
+type PouchDocument = {
+	_id: string;
+	_rev: string;
+	_conflicts?: string[];
+	entity_type: EntityType;
+	created: string;
+	updated: string;
+};
+
+type DocumentWatchListener = (doc: PouchDocument) => void;
 
 export default class PersistenceStore {
-  public status: Status = Status.OFFLINE;
+	public status: Status = Status.OFFLINE;
 
-  private db: PouchDB.Database;
+	private logger: Logger;
 
-  private syncables: {
-    uuid: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    store: MappedStore<any>;
-  }[] = [];
+	private db: PouchDB.Database;
 
-  private stores: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [_type: string]: MappedStore<any>;
-  } = {};
+	private syncing?: PouchDB.Replication.Sync<IBaseEntity>;
 
-  private _commit;
+	private watchers = new Map<EntityType, Array<DocumentWatchListener>>();
 
-  private logger: Logger;
+	private commitables = new Map<string, PouchDocument>();
 
-  private syncing?: PouchDB.Replication.Sync<IBaseEntity>;
+	private refetchables = new Set<string>();
 
-  private bypassMonitor = new Set<string>();
+	constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
+		this.logger = new Logger("persistence", parent);
+		// this.logger.level = "info";
+		this.db = dbFactory();
 
-  constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
-    this.logger = new Logger('persistence', parent);
-    this.logger.level = 'info';
-    this.db = dbFactory();
-    this._commit = debounce(() => this.commit(), 1000);
+		makeObservable(this, {
+			status: observable,
+			notifyDocument: action,
+		});
+	}
 
-    makeObservable(this, {
-      status: observable,
-      sync: action,
-    });
-  }
+	monitor<T extends IBaseEntity>(store: MappedStore<T>) {
+		new PersistenceMonitor(this, this.logger, store);
+	}
 
-  sync(remote: SyncConfig) {
-    const setStatus = action((status: Status) => {
-      if (this.status !== status) {
-        this.status = status;
-      }
-    });
+	async fetchAllDocs() {
+		const pouchDocs = await this.db.allDocs({
+			include_docs: true,
+		});
+		return pouchDocs.rows.map(({ doc }) => doc);
+	}
 
-    if (this.syncing) {
-      this.syncing.cancel();
-    }
+	async load() {
+		try {
+			const docs = await this.fetchAllDocs();
+			this.logger.info("load", { total: docs.length, docs });
+			for (const doc of docs) {
+				if (doc) {
+					this.handleReceivedDocument(doc as PouchDocument);
+				}
+			}
+		} catch (err) {
+			this.logger.error("load error", { err });
+		}
+	}
 
-    return new Promise((resolve, reject) => {
-      if (remote.url && remote.enabled) {
-        const remoteDb = PouchDBRemoteFactory(remote);
-        this.syncing = this.db
-          .sync(remoteDb, { live: true, retry: true, batch_size: 25 })
-          .on('active', () => {
-            this.logger.info('sync active');
-            resolve(setStatus(Status.ONLINE));
-          })
-          .on('complete', (info) => {
-            this.logger.info('sync complete', { info });
-            resolve(setStatus(Status.OFFLINE));
-          })
-          .on('change', (change) => {
-            const changedDocIds = change.change.docs.map((doc) => ({
-              _id: doc._id,
-              _rev: doc._rev,
-            }));
-            this.logger.info('sync change', { change: changedDocIds });
-            this.fetchLatest(changedDocIds);
-            resolve(setStatus(Status.ONLINE));
-          })
-          .on('paused', (info) => {
-            this.logger.info('sync paused', { info });
-            resolve(setStatus(Status.ONLINE));
-          })
-          .on('denied', (info) => {
-            this.logger.warn('sync denied', { info });
-            resolve(setStatus(Status.DENIED));
-          })
-          .on('error', (error) => {
-            this.logger.error('sync error', { error });
-            reject(setStatus(Status.ERROR));
-          }) as typeof this.syncing;
-      } else {
-        resolve(setStatus(Status.OFFLINE));
-      }
-    });
-  }
+	async refetch(documentId: string) {
+		const actual = await this.db.get(documentId, { conflicts: true });
+		this.logger.log("refetch", { documentId, actual });
+		this.handleReceivedDocument(actual as PouchDocument);
+	}
 
-  async fetchLatest(docs: { _id: string; _rev: string }[]) {
-    const first = docs.pop();
-    if (!first) {
-      return;
-    }
+	watch(entityType: EntityType, listener: DocumentWatchListener) {
+		if (!this.watchers.has(entityType)) {
+			this.watchers.set(entityType, []);
+		}
+		this.watchers.get(entityType)?.push(listener);
+	}
 
-    const { _id, _rev } = first;
-    this.logger.log('fetch latest', { _id, _rev });
-    const latest = await this.fetch(_id);
-    this.mergeBypassingMonitor(this.stores[latest.entity_type], latest);
+	commit(doc: PouchDocument) {
+		this.commitables.set(doc._id, doc);
+		this.scheduleCommit();
+	}
 
-    await this.fetchLatest(docs);
-  }
+	notifyDocument(doc: PouchDocument) {
+		const listeners = this.watchers.get(doc.entity_type) ?? [];
+		for (const watcher of listeners) {
+			watcher(doc);
+		}
+	}
 
-  async load() {
-    try {
-      const docs = await this.db.allDocs({
-        include_docs: true,
-      });
-      this.logger.info('loaded docs', { total: docs.total_rows });
-      map([...(docs.rows.map((d) => d.doc) as unknown[] as IBaseEntity[])], (entity) => {
-        if (entity.entity_type && this.stores[entity.entity_type]) {
-          this.mergeBypassingMonitor(this.stores[entity.entity_type], entity);
-        }
-      });
-    } catch (err) {
-      this.logger.error('load docs error', { err });
-    }
-  }
+	handleReceivedDocument(doc: PouchDocument) {
+		for (const conflict of doc._conflicts || []) {
+			this.db.remove(doc._id, conflict);
+		}
+		this.notifyDocument(doc);
+	}
 
-  resolveConflict<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, a: EntityType, b: EntityType) {
-    const revLevel = (rev: string | undefined) => parseInt((rev || '0-').split('-')[0], 10);
-    const aRevLevel = revLevel(a._rev);
-    const bRevLevel = revLevel(b._rev);
+	private scheduleCommit = debounce(async () => this.doCommit(), 200);
 
-    const resolve = (updated: EntityType) => {
-      const outdated = updated === a ? b : a;
-      const _rev = aRevLevel > bRevLevel ? a._rev : b._rev;
-      const resolved = { ...outdated, ...updated, _rev };
-      this.logger.info('resolve conflict', { updated, outdated, resolved });
-      store.merge(resolved, { setUpdated: true });
-      this.persist<EntityType>(store, store.byUuid(store.getUuid(resolved)) as EntityType);
-    };
-    if (a._rev && !b._rev) {
-      return resolve(a);
-    }
-    if (!a._rev && b._rev) {
-      return resolve(b);
-    }
+	doCommit = async () => {
+		const objects = Array.from(this.commitables.values());
+		this.commitables.clear();
+		this.logger.info("commit", objects);
+		try {
+			await asyncProcess(
+				objects,
+				async (chunk) => {
+					const responses = (await this.db.bulkDocs(
+						chunk,
+					)) as (PouchDB.Core.Response & PouchDB.Core.Error)[];
+					for (const resp of responses) {
+						const { error, status, ok, id, rev } = resp;
+						const current = objects.find((obj) => obj._id === id);
+						if (!current) {
+							this.logger.error("sync commit error matching response id", {
+								ok,
+								id,
+								rev,
+								status,
+								error,
+							});
+							return;
+						}
+						if (ok || status === 409) {
+							this.refetchables.add(id);
+							this.scheduleRefetch();
+						} else if (error) {
+							this.logger.error("sync commit error on doc", {
+								status,
+								error,
+								current,
+							});
+						}
+					}
+				},
+				{
+					state: { refetch: [] as string[] },
+					chunkSize: 20,
+					chunkThrottle: 50,
+				},
+			);
+		} catch (err) {
+			const error = err as PouchDB.Core.Error;
+			this.logger.error("sync commit error", error);
+		}
+	};
 
-    if (!isEmpty(a.updated) && !isEmpty(b.updated)) {
-      if ((a.updated || '') > (b.updated || '')) {
-        return resolve(a);
-      } else if ((a.updated || '') < (b.updated || '')) {
-        return resolve(b);
-      }
-    }
+	private scheduleRefetch = debounce(async () => this.doRefetch(), 200);
 
-    if (a._rev && b._rev) {
-      if (aRevLevel > bRevLevel) {
-        return resolve(a);
-      } else if (bRevLevel > aRevLevel) {
-        return resolve(b);
-      }
-    }
+	doRefetch = async () => {
+		const ids = Array.from(this.refetchables.keys());
+		this.refetchables.clear();
+		for (const id of ids) {
+			this.refetch(id);
+		}
+	};
 
-    return resolve(b);
-  }
+	truncateAll() {
+		this.db.destroy();
+	}
 
-  async commit() {
-    const objects = uniqBy(
-      this.syncables.map(({ store, uuid }) => {
-        const entity = toJS(store.byUuid(uuid)) as unknown as { _id: string };
+	async exportAll(onProgress: (perc: number) => void) {
+		const docs = (await this.fetchAllDocs()).map(
+			(entity) => toJS(entity) as object,
+		);
 
-        return { store, _id: entity._id, entity, uuid };
-      }),
-      '_id'
-    );
-    this.syncables = [];
-    try {
-      return await asyncProcess(
-        objects.map((sync) => sync.entity),
-        async (chunk) => {
-          const responses = await this.db.bulkDocs(chunk);
-          map(responses, async (resp: PouchDB.Core.Response & PouchDB.Core.Error) => {
-            const { error, status, ok, id, rev } = resp;
-            const current = objects.find((obj) => obj._id === id);
-            if (!current) {
-              return;
-            }
-            if (error && status === 409) {
-              const actual = await this.fetch(id);
-              this.resolveConflict(current.store, current.entity, actual);
-            } else if (error) {
-              this.logger.error('sync commit error on doc', {
-                error,
-                current,
-              });
-            } else if (ok) {
-              const entity = { ...current.entity, _rev: rev };
-              this.mergeBypassingMonitor(current.store, entity);
-            }
-          });
-        },
-        { state: {}, chunkSize: 50, chunkThrottle: 25 }
-      );
-    } catch (err) {
-      const error = err as PouchDB.Core.Error;
-      this.logger.error('sync commit error', error);
-    }
-  }
+		const { result } = await asyncProcess(
+			docs,
+			(chunk, state, percentage) => {
+				onProgress(percentage);
+				state.result = [...state.result, ...chunk];
+			},
+			{ state: { result: [] as object[] }, chunkSize: 100, chunkThrottle: 50 },
+		);
+		return JSON.stringify(result);
+	}
 
-  persist<EntityType extends IBaseEntity>(store: MappedStore<EntityType>, item: EntityType) {
-    if (item._id && this.bypassMonitor.has(item._id)) {
-      this.logger.log('persist bypass', { uuid: store.getUuid(item), item });
+	async restoreAll(content: string, onProgress: (perc: number) => void) {
+		const entries = JSON.parse(content) as object[];
 
-      return;
-    }
-    this.logger.log('persist', { uuid: store.getUuid(item), item });
-    this.syncables.push({ store: store as never, uuid: store.getUuid(item) });
-    this._commit();
-  }
+		return asyncProcess(
+			entries,
+			(chunk, _result, percentage) => {
+				onProgress(percentage);
+				for (const line of chunk) {
+					const withoutRev = omit(line, ["_rev"]);
+					this.commit(withoutRev as PouchDocument);
+				}
+			},
+			{ state: {}, chunkSize: 100, chunkThrottle: 50 },
+		);
+	}
 
-  async fetch(id: string) {
-    const actual = await this.db.get(id, { conflicts: true });
-    if (actual._conflicts) {
-      forEach(actual._conflicts, (rev) => this.db.remove(id, rev));
-    }
-    const entity = actual as IBaseEntity;
-    this.logger.info('fetch latest', { entity });
+	sync(remote: SyncConfig) {
+		const setStatus = action((status: Status) => {
+			if (this.status !== status) {
+				this.status = status;
+			}
+		});
 
-    return entity;
-  }
+		if (this.syncing) {
+			this.syncing.cancel();
+		}
 
-  mergeBypassingMonitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType>, entity: TEntityType) {
-    try {
-      if (entity._id) {
-        this.bypassMonitor.add(entity._id);
-      }
-      store.merge(entity, { setUpdated: false });
-    } finally {
-      if (entity._id) {
-        this.bypassMonitor.delete(entity._id);
-      }
-    }
-  }
+		return new Promise((resolve, reject) => {
+			if (remote.url && remote.enabled) {
+				const remoteDb = PouchDBRemoteFactory(remote);
+				this.syncing = this.db
+					.sync(remoteDb, { live: true, retry: true, batch_size: 25 })
+					.on("active", () => {
+						this.logger.info("sync active");
+						resolve(setStatus(Status.ONLINE));
+					})
+					.on("complete", (info) => {
+						this.logger.info("sync complete", { info });
+						resolve(setStatus(Status.OFFLINE));
+					})
+					.on("change", (change) => {
+						const changedDocIds = change.change.docs.map((doc) => ({
+							_id: doc._id,
+							_rev: doc._rev,
+						}));
+						this.logger.info("sync change", { change: changedDocIds });
+						for (const changedDocId of changedDocIds) {
+							this.refetch(changedDocId._id);
+						}
+						resolve(setStatus(Status.ONLINE));
+					})
+					.on("paused", (info) => {
+						this.logger.info("sync paused", { info });
+						resolve(setStatus(Status.ONLINE));
+					})
+					.on("denied", (info) => {
+						this.logger.warn("sync denied", { info });
+						resolve(setStatus(Status.DENIED));
+					})
+					.on("error", (error) => {
+						this.logger.error("sync error", { error });
+						reject(setStatus(Status.ERROR));
+					}) as typeof this.syncing;
+			} else {
+				resolve(setStatus(Status.OFFLINE));
+			}
+		});
+	}
 
-  monitor<TEntityType extends IBaseEntity>(store: MappedStore<TEntityType>, type: EntityType) {
-    this.stores[type] = store;
-    observe(store.itemsByUuid, (changes) => {
-      if (changes.type === 'add') {
-        this.persist(store, changes.newValue);
-      } else if (changes.type === 'update') {
-        const oldRev = changes.oldValue._rev;
-        const newRev = changes.newValue._rev;
-        if (oldRev === newRev) {
-          this.logger.log('monitor - dirty', changes);
-          this.persist(store, changes.newValue);
-        } else {
-          this.logger.log('monitor - synced', changes);
-        }
-      }
-    });
-  }
+	resolveConflict(a: Partial<PouchDocument>, b: Partial<PouchDocument>) {
+		const revLevel = (rev: string | undefined) =>
+			Number.parseInt((rev || "0-").split("-")[0], 10);
+		const aRevLevel = revLevel(a._rev);
+		const bRevLevel = revLevel(b._rev);
 
-  async exportAll(onProgress: (perc: number) => void) {
-    return (
-      await asyncProcess(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        values(this.stores).flatMap((store) => Array.from(store.itemsByUuid.values())),
-        (chunk, state, percentage) => {
-          onProgress(percentage);
-          state.result = `${state.result + chunk.map((entity) => JSON.stringify(toJS(entity))).join('\n')}\n`;
-        },
-        { state: { result: '' }, chunkSize: 100, chunkThrottle: 50 }
-      )
-    ).result;
-  }
+		const resolve = (updated: Partial<PouchDocument>) => {
+			const outdated = updated === a ? b : a;
+			const _rev = aRevLevel > bRevLevel ? a._rev : b._rev;
+			const resolved = { ...outdated, ...updated, _rev } as PouchDocument;
+			this.logger.info("resolve conflict", { updated, outdated, resolved });
+			this.commit(resolved);
+			this.notifyDocument(resolved);
+		};
+		if (a._rev && !b._rev) {
+			return resolve(a);
+		}
+		if (!a._rev && b._rev) {
+			return resolve(b);
+		}
 
-  restoreEntity(entity: { entity_type?: string }) {
-    const store = entity.entity_type && this.stores[entity.entity_type];
-    if (store) {
-      store.merge(omit(entity, ['_rev']));
+		if (!isEmpty(a.updated) && !isEmpty(b.updated)) {
+			if ((a.updated || "") > (b.updated || "")) {
+				return resolve(a);
+			}
+			if ((a.updated || "") < (b.updated || "")) {
+				return resolve(b);
+			}
+		}
 
-      return true;
-    }
+		if (a._rev && b._rev) {
+			if (aRevLevel > bRevLevel) {
+				return resolve(a);
+			}
+			if (bRevLevel > aRevLevel) {
+				return resolve(b);
+			}
+		}
 
-    return false;
-  }
-
-  restoreAll(content: string, onProgress: (perc: number) => void) {
-    const entries = content.split('\n');
-
-    return asyncProcess(
-      entries,
-      (chunk, result, percentage) => {
-        onProgress(percentage);
-        chunk.forEach((line) => {
-          if (line.trim() === '') {
-            return;
-          }
-          try {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            if (!this.restoreEntity(JSON.parse(line))) {
-              result.errors.push(`Unable to restore: ${line}`);
-            }
-          } catch {
-            result.errors.push(`Failed to parse line JSON: ${line}`);
-          }
-        });
-      },
-      { state: { errors: [] as string[] }, chunkSize: 100, chunkThrottle: 50 }
-    );
-  }
-
-  truncateAll() {
-    this.db.destroy();
-  }
+		return resolve(b);
+	}
 }

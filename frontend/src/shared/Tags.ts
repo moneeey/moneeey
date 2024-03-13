@@ -1,38 +1,38 @@
-import { forEach } from 'lodash';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { forEach } from "lodash";
+import { action, computed, makeObservable, observable } from "mobx";
 
-import Logger from './Logger';
+import Logger from "./Logger";
 
 export default class TagsStore {
-  public readonly available = new Set<string>();
+	public readonly available = new Set<string>();
 
-  logger: Logger;
+	logger: Logger;
 
-  constructor(parent: Logger) {
-    this.logger = new Logger('tagsStore', parent);
+	constructor(parent: Logger) {
+		this.logger = new Logger("tagsStore", parent);
 
-    makeObservable(this, {
-      available: observable,
-      all: computed,
-      register: action,
-    });
-  }
+		makeObservable(this, {
+			available: observable,
+			all: computed,
+			register: action,
+		});
+	}
 
-  get all() {
-    return Array.from(this.available).sort();
-  }
+	get all() {
+		return Array.from(this.available).sort();
+	}
 
-  unregister = (tag: string) => {
-    this.available.delete(tag);
-  };
+	unregister = (tag: string) => {
+		this.available.delete(tag);
+	};
 
-  register = (tag: string) => {
-    if (!this.available.has(tag)) {
-      this.available.add(tag);
-    }
-  };
+	register = (tag: string) => {
+		if (!this.available.has(tag)) {
+			this.available.add(tag);
+		}
+	};
 
-  registerAll(tags: string[]) {
-    forEach(tags, this.register);
-  }
+	registerAll(tags: string[]) {
+		forEach(tags, this.register);
+	}
 }
