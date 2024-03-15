@@ -34,17 +34,19 @@ export const InputContainer = ({
 	suffix,
 	isError,
 	input,
-}: InputContainerProps) => (
-	<div
-		className={`${baseClassname || BaseInputClzz} flex ${
-			isError ? "border border-red-400" : ""
-		}`}
-	>
-		{prefix}
-		<div className="grow">{input}</div>
-		{suffix}
-	</div>
-);
+}: InputContainerProps) => {
+	return (
+		<div
+			className={`${baseClassname || BaseInputClzz} flex ${
+				isError ? "border border-red-400" : ""
+			}`}
+		>
+			{prefix}
+			<div className="grow">{input}</div>
+			{suffix}
+		</div>
+	);
+};
 
 const Input = ({
 	className,
@@ -111,22 +113,11 @@ const InputNumber = ({
 	decimalSeparator,
 	decimalScale,
 }: InputNumberProps) => {
-	const [currentValue, setCurrentValue] = useState<string | number>(value);
-	const [currentFloatValue, setCurrentFloatValue] = useState<number | null>(
-		null,
-	);
+	const [currentFloatValue, setCurrentFloatValue] = useState<number>(value);
 
 	useEffect(() => {
-		setCurrentValue(value);
+		setCurrentFloatValue(value);
 	}, [value]);
-
-	useEffect(() => {
-		return () => {
-			if (currentFloatValue && currentFloatValue !== value) {
-				onChange(currentFloatValue);
-			}
-		};
-	}, [currentFloatValue, onChange, value]);
 
 	return InputContainer({
 		prefix,
@@ -136,11 +127,8 @@ const InputNumber = ({
 			<NumericFormat
 				data-testid={testId}
 				className={`${BaseInputClzz} font-mono ${className || ""}`}
-				value={currentValue}
+				value={currentFloatValue}
 				onValueChange={({ floatValue, formattedValue }) => {
-					if (formattedValue) {
-						setCurrentValue(formattedValue);
-					}
 					if (floatValue && floatValue !== value) {
 						setCurrentFloatValue(floatValue);
 					}

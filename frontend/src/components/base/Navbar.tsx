@@ -31,7 +31,7 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 
 		return compact([
 			<LinkButton
-				className={`flex items-center gap-1 !p-0 no-underline hover:opacity-75 ${
+				className={`flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 ${
 					item.isActive ? "opacity-75" : ""
 				}`}
 				testId={`${dataTestId}_${item.key}`}
@@ -55,17 +55,13 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 const Navbar = (props: NavbarProps & WithDataTestId) => {
 	return (
 		<nav
-			className={`bottom-0 left-0 top-0 w-60 bg-background-800 ${
+			className={`flex flex-col bottom-0 left-0 top-0 w-80 bg-background-800 ${
 				props.className || ""
 			}`}
 			data-testid={props.testId}
 		>
-			<div className="flex flex-col justify-between h-full">
-				<div className="grow">
-					{renderNavbarItems(props.testId, props.items)}
-				</div>
-				<div className="p-4">{props.footer}</div>
-			</div>
+			{renderNavbarItems(props.testId, props.items)}
+			<div className="p-4 self-end">{props.footer}</div>
 		</nav>
 	);
 };

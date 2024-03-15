@@ -73,14 +73,14 @@ const LanguageSelector = () => {
 		);
 	};
 	return (
-		<div>
+		<>
 			<p>{Messages.settings.select_language}</p>
-			<div className="flex flex-row justify-around pt-1">
+			<div className="flex flex-row self-end pt-1 gap-2">
 				<LangSelect icon={<IconBrazil />} language="portuguese" />
 				<LangSelect icon={<IconUSA />} language="english" />
 				<LangSelect icon={<IconSpain />} language="spanish" />
 			</div>
-		</div>
+		</>
 	);
 };
 
@@ -260,16 +260,18 @@ const Header = ({
 	const Messages = useMessages();
 
 	return (
-		<header className="sticky left-0 right-0 top-0 z-30 h-12 bg-background-800 p-2">
-			<TextTitle
-				className="flex flex-row items-center gap-1 text-2xl"
-				onClick={() => setExpanded((value) => !value)}
-			>
-				<Icon>
+		<header className="sticky left-0 right-0 top-0 z-30 h-10 bg-background-800">
+			<TextTitle className="flex flex-row items-center gap-1 text-2xl pr-2">
+				<div className="p-2 flex flex-row grow gap-2">
+					<FavIcon />
+					{Messages.menu.title}
+				</div>
+				<Icon
+					className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200"
+					onClick={() => setExpanded((value) => !value)}
+				>
 					<Bars3Icon />
 				</Icon>
-				<FavIcon />
-				{Messages.menu.title}
 			</TextTitle>
 		</header>
 	);
