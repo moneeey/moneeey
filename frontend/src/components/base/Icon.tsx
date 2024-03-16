@@ -9,12 +9,19 @@ export default function Icon({
 	children,
 	className,
 	testId,
+	onClick,
 }: {
 	children: ReactNode | ReactNode[];
 	className?: string;
+	onClick?: () => void;
 } & Partial<WithDataTestId>) {
 	return (
-		<div className={`h-4 w-4 ${className || ""}`} data-testid={testId}>
+		<div
+			className={`h-4 w-4 ${className || ""}`}
+			data-testid={testId}
+			onClick={onClick}
+			onKeyDown={onClick}
+		>
 			{children}
 		</div>
 	);

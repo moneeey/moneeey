@@ -3,7 +3,7 @@
         http_port 4280
 }
 
-local.moneeey.io:4280 {
+:4280 {
         handle_path /db/* {
           reverse_proxy couchdb:5984
         }
