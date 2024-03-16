@@ -172,6 +172,7 @@ const TextArea = ({
 				data-testid={testId}
 				className={`${BaseInputClzz} ${className || ""}`}
 				value={value}
+				onChange={({ target: { value: newValue } }) => onChange(newValue)}
 				onBlur={({ target: { value: newValue } }) =>
 					newValue !== value && onChange(newValue)
 				}
