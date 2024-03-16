@@ -54,7 +54,7 @@ const TransactionTable = observer(
 					},
 					{
 						title: Messages.transactions.from_account,
-						width: 200,
+						width: 140,
 						validate: () => ({ valid: true }),
 						...AccountField<ITransaction>({
 							read: ({ from_account }) => from_account,
@@ -65,7 +65,7 @@ const TransactionTable = observer(
 					},
 					{
 						title: Messages.transactions.to_account,
-						width: 200,
+						width: 140,
 						validate: () => ({ valid: true }),
 						...AccountField<ITransaction>({
 							read: ({ to_account }) => to_account,

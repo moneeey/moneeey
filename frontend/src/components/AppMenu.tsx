@@ -73,14 +73,14 @@ const LanguageSelector = () => {
 		);
 	};
 	return (
-		<>
+		<div>
 			<p>{Messages.settings.select_language}</p>
-			<div className="flex flex-row self-end pt-1 gap-2">
+			<div className="flex flex-row justify-end pt-1 gap-2">
 				<LangSelect icon={<IconBrazil />} language="portuguese" />
 				<LangSelect icon={<IconUSA />} language="english" />
 				<LangSelect icon={<IconSpain />} language="spanish" />
 			</div>
-		</>
+		</div>
 	);
 };
 
