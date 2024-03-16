@@ -142,7 +142,7 @@ test.describe('Tour', () => {
 
     // Fill the amount
     await expect(page.getByTestId('editorAmount')).toHaveCount(2)
-    await Input(page, 'editorAmount').change('123,45')
+    await Input(page, 'editorAmount').change('1234,56')
 
     // Progress Tour to Transactions
     await tourNext(page)
@@ -160,9 +160,9 @@ test.describe('Tour', () => {
 
     // Allocate on budget and wait for calculated used/remaining
     expect(page.getByText('R$').first()).toBeDefined()
-    await Input(page, 'editorAllocated').change('544,14')
-    await expect(page.getByTestId('editorUsed').first()).toHaveValue('123,45')
-    await expect(page.getByTestId('editorRemaining').first()).toHaveValue('420,69')
+    await Input(page, 'editorAllocated').change('5435,25')
+    await expect(page.getByTestId('editorUsed').first()).toHaveValue('1.234,56')
+    await expect(page.getByTestId('editorRemaining').first()).toHaveValue('4.200,69')
 
     // Go to Import
     await tourNext(page)
