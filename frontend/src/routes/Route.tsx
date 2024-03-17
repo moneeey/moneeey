@@ -1,5 +1,3 @@
-/* eslint-disable line-comment-position */
-/* eslint-disable no-inline-comments */
 import type { ReactNode } from "react";
 
 import type MoneeeyStore from "../shared/MoneeeyStore";
