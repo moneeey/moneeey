@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 
 import { observer } from "mobx-react";
 
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 
 import AppMenu from "./components/AppMenu";
 import Navigator from "./components/Navigator";
@@ -17,7 +17,6 @@ import Modals from "./components/modal/Modals";
 import MoneeeyTourProvider from "./components/tour/Tour";
 
 import { PouchDBFactory } from "./shared/Persistence";
-import initSw from "./sw";
 import useMessages, { MessagesProvider } from "./utils/Messages";
 
 const AppContent = observer(() => {
@@ -43,7 +42,7 @@ export const App = () => {
 	}, [moneeeyStore]);
 
 	return (
-		<BrowserRouter>
+		<HashRouter>
 			<MessagesProvider>
 				<MoneeeyStoreProvider value={moneeeyStore}>
 					<MoneeeyTourProvider>
@@ -56,10 +55,8 @@ export const App = () => {
 					</MoneeeyTourProvider>
 				</MoneeeyStoreProvider>
 			</MessagesProvider>
-		</BrowserRouter>
+		</HashRouter>
 	);
 };
-
-initSw();
 
 export default App;

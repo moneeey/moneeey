@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 export type LogLevel = "log" | "info" | "warn" | "error";
 export type LogListener = (
 	level: LogLevel,
