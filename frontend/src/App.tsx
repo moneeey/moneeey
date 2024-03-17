@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 
 import { observer } from "mobx-react";
 
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, HashRouter } from "react-router-dom";
 
 import AppMenu from "./components/AppMenu";
 import Navigator from "./components/Navigator";
@@ -43,7 +43,7 @@ export const App = () => {
 	}, [moneeeyStore]);
 
 	return (
-		<BrowserRouter>
+		<HashRouter>
 			<MessagesProvider>
 				<MoneeeyStoreProvider value={moneeeyStore}>
 					<MoneeeyTourProvider>
@@ -56,7 +56,7 @@ export const App = () => {
 					</MoneeeyTourProvider>
 				</MoneeeyStoreProvider>
 			</MessagesProvider>
-		</BrowserRouter>
+		</HashRouter>
 	);
 };
 
