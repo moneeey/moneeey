@@ -16,13 +16,7 @@ import {
 	WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { observer } from "mobx-react";
-import {
-	type Dispatch,
-	type ReactNode,
-	type SetStateAction,
-	useEffect,
-	useState,
-} from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 
 import type { IAccount } from "../entities/Account";
 import AccountRoute from "../routes/AccountRoute";
@@ -42,47 +36,12 @@ import { StorageKind, getStorage, setStorage } from "../utils/Utils";
 import RouteRenderer from "../routes/RouteRenderer";
 import type MoneeeyStore from "../shared/MoneeeyStore";
 
-import useMessages, {
-	type AvailableLanguages,
-	useLanguageSwitcher,
-} from "../utils/Messages";
+import useMessages from "../utils/Messages";
 
-import Icon, { FavIcon, IconBrazil, IconSpain, IconUSA } from "./base/Icon";
+import LanguageSelector from "./LanguageSelector";
+import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
-
-const LanguageSelector = () => {
-	const Messages = useMessages();
-	const { currentLanguage, selectLanguage } = useLanguageSwitcher();
-	const LangSelect = ({
-		icon,
-		language,
-	}: { icon: ReactNode; language: AvailableLanguages }) => {
-		const isCurrentLanguage = currentLanguage === language;
-		const setCurrentLanguage = () => selectLanguage(language);
-		return (
-			<i
-				className={`inline-block h-6 w-6 rounded-xl hover:ring-2 ring-secondary-500 ${
-					isCurrentLanguage ? "ring-2" : ""
-				}`}
-				onClick={setCurrentLanguage}
-				onKeyDown={setCurrentLanguage}
-			>
-				{icon}
-			</i>
-		);
-	};
-	return (
-		<div>
-			<p>{Messages.settings.select_language}</p>
-			<div className="flex flex-row justify-end pt-1 gap-2">
-				<LangSelect icon={<IconBrazil />} language="portuguese" />
-				<LangSelect icon={<IconUSA />} language="english" />
-				<LangSelect icon={<IconSpain />} language="spanish" />
-			</div>
-		</div>
-	);
-};
 
 const Menu = observer(() => {
 	const Messages = useMessages();
