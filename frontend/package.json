@@ -55,7 +55,7 @@
 		"tailwindcss": "3.4.1",
 		"ts-jest": "29.1.2",
 		"typescript": "5.4.2",
-		"vite": "5.1.6",
+		"vite": "5.2.7",
 		"vite-plugin-pwa": "0.19.2"
 	},
 	"packageManager": "yarn@4.1.1"
