@@ -203,6 +203,8 @@ const Messages: TMessages = {
 		next: "Siguiente",
 		prev: "Anterior",
 
+		continue_language: "Continúa hacia Moneeey",
+
 		edit_currencies: `Moneeey es multi moneda, por favor edite las monedas para adaptarlas a sus necesidades. Hemos añadido
       las 20 monedas más utilizadas de 2020.`,
 		create_accounts: `Ahora que conocemos las monedas que tenemos, es hora de decirnos cuáles son sus cuentas:

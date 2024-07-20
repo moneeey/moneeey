@@ -198,6 +198,8 @@ const Messages = {
 		next: "Next",
 		prev: "Previous",
 
+		continue_language: "Continue to Moneeey",
+
 		edit_currencies: `Moneeey is multi currency, please edit the currencies
       to fit your needs.
 

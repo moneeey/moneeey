@@ -61,8 +61,8 @@ export class CurrencyStore extends MappedStore<ICurrency> {
 
 	formatAmount(currency: ICurrency, value: TMonetary) {
 		return value.toLocaleString(undefined, {
-			maximumFractionDigits: currency.decimals,
-			minimumFractionDigits: currency.decimals,
+			maximumFractionDigits: Math.max(1, Math.min(currency.decimals, 100)),
+			minimumFractionDigits: Math.max(1, Math.min(currency.decimals, 100)),
 		});
 	}
 

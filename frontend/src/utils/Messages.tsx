@@ -8,27 +8,28 @@ import { StorageKind, getStorage, identity, setStorage } from "./Utils";
 export type TMessages = typeof LanguageEnglish;
 
 const Languages = {
+	unset: LanguageEnglish,
 	english: LanguageEnglish,
 	portuguese: LanguagePortuguese,
 	spanish: LanguageSpanish,
 };
 
 export type AvailableLanguages = keyof typeof Languages;
-const PrimaryLanguage: AvailableLanguages = "english";
+export const LanguageUnset: AvailableLanguages = "unset";
 
 const MessagesContext = React.createContext({
-	currentLanguage: PrimaryLanguage as AvailableLanguages,
+	currentLanguage: LanguageUnset as AvailableLanguages,
 	selectLanguage: (language: AvailableLanguages) => identity(language),
 });
 
 export function MessagesProvider({ children }: { children: ReactNode }) {
 	const storedLanguage = getStorage(
 		"language",
-		PrimaryLanguage,
+		LanguageUnset,
 		StorageKind.PERMANENT,
 	) as AvailableLanguages;
 	const [currentLanguage, selectLanguage] = React.useState(
-		storedLanguage ?? PrimaryLanguage,
+		storedLanguage ?? LanguageUnset,
 	);
 
 	return (
@@ -62,6 +63,9 @@ export function useLanguageSwitcher() {
 		selectLanguage(language: AvailableLanguages) {
 			setStorage("language", language, StorageKind.PERMANENT);
 			selectLanguage(language);
+		},
+		messagesForLanguage(language: AvailableLanguages) {
+			return Languages[language];
 		},
 	};
 }
