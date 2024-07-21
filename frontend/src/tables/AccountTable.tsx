@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 
 import TableEditor from "../components/TableEditor";
-import { SecondaryButton } from "../components/base/Button";
+import { PrimaryButton, SecondaryButton } from "../components/base/Button";
 import Space, { VerticalSpace } from "../components/base/Space";
 import AccountKindField from "../components/editor/AccountKindField";
 import CheckboxField from "../components/editor/CheckboxField";
@@ -39,6 +39,11 @@ const AccountTable = observer(
 						>
 							{Messages.modal.merge_accounts}
 						</SecondaryButton>
+						<PrimaryButton
+							onClick={() => navigation.openModal(NavigationModal.ADD_ACCOUNT)}
+						>
+							{Messages.account.add_account}
+						</PrimaryButton>
 					</Space>
 				</HeaderContent>
 

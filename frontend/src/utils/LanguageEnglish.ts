@@ -121,6 +121,7 @@ const Messages = {
 		remaining: "Remaining",
 	},
 	account: {
+		add_account: "Create account",
 		offbudget: "Off-Budget",
 		account_kind: "Type",
 		kind: {

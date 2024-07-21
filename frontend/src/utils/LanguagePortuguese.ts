@@ -124,6 +124,7 @@ const Messages: TMessages = {
 		remaining: "Restante",
 	},
 	account: {
+		add_account: "Adicionar conta",
 		offbudget: "Fora do orçamento",
 		account_kind: "Tipo",
 		kind: {
