@@ -37,6 +37,7 @@ const AccountTransactions = observer(
 
 		return (
 			<TransactionTable
+				tableId={`accountTransactions${account_uuid}`}
 				{...{
 					transactions,
 					accounts,

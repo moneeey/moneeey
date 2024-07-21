@@ -23,6 +23,7 @@ class TagsRouter extends Route<ITagsRoute> {
 
 		return (
 			<TransactionTable
+				tableId={`tagsTransactions${parameters.tag}`}
 				{...{
 					transactions,
 					accounts,

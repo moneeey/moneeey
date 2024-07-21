@@ -25,6 +25,7 @@ const RecentTransactions = observer(
 			<div className="h-44">
 				<b>{Messages.dashboard.recent_transactions}</b>
 				<TransactionTable
+					tableId="recentTransactions"
 					{...{
 						transactions,
 						accounts,

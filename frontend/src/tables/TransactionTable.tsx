@@ -19,6 +19,7 @@ interface TransactionSettingsProps {
 	transactions: TransactionStore;
 	schemaFilter: (row: ITransaction) => boolean;
 	referenceAccount: TAccountUUID;
+	tableId: string;
 }
 
 const TransactionTable = observer(
@@ -27,6 +28,7 @@ const TransactionTable = observer(
 		transactions,
 		schemaFilter,
 		referenceAccount,
+		tableId,
 	}: TransactionSettingsProps) => {
 		const Messages = useMessages();
 		const { accounts, currencies } = useMoneeeyStore();
@@ -36,6 +38,7 @@ const TransactionTable = observer(
 
 		return (
 			<TableEditor
+				key={tableId}
 				creatable={creatable}
 				testId={"transactionTable"}
 				store={transactions}
