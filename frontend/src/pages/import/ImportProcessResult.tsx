@@ -79,7 +79,7 @@ const accountRender =
 								(cur_account_uuid) =>
 									moneeeyStore.accounts.byUuid(cur_account_uuid),
 							),
-							...map(moneeeyStore.accounts.all),
+							...moneeeyStore.accounts.allActive,
 						]),
 				});
 

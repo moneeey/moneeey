@@ -8,7 +8,7 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import MoneeeyStore from "../../shared/MoneeeyStore";
 
 export function showInitialCurrencySelector({ config }: MoneeeyStore) {
-  return config.main.default_currency === ""
+	return config.main.default_currency === "";
 }
 
 export default function InitialCurrencySelector() {
@@ -42,4 +42,4 @@ export default function InitialCurrencySelector() {
 			)}
 		</MinimalBasicScreen>
 	);
-};
+}

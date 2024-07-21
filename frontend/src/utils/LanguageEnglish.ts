@@ -131,6 +131,14 @@ const Messages = {
 			SAVINGS: "Savings Account",
 		} as Record<string, string>,
 	},
+	new_account: {
+		name: "New account name",
+		type: "Kind",
+		currency: "Currency",
+		initial_balance: "Initial balance",
+		submit_close: "Save and close",
+		submit_another: "Save and add another",
+	},
 	currencies: {
 		short: "Short name",
 		prefix: "Prefix",

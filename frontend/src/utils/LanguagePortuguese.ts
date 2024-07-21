@@ -134,6 +134,14 @@ const Messages: TMessages = {
 			SAVINGS: "Conta Poupança",
 		} as Record<string, string>,
 	},
+	new_account: {
+		name: "Novo nome da conta",
+		type: "Tipo",
+		currency: "Moeda",
+		initial_balance: "Saldo inicial",
+		submit_close: "Salvar e fechar",
+		submit_another: "Salvar e adicionar outro",
+	},
 	currencies: {
 		short: "Nome curto",
 		prefix: "Prefixo",

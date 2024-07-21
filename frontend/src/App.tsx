@@ -21,34 +21,48 @@ import useMessages, {
 	MessagesProvider,
 	useLanguageSwitcher,
 } from "./utils/Messages";
-import InitialLanguageSelector, { showInitialLanguageSelector } from "./components/tour/InitialLanguageSelector";
-import InitialCurrencySelector, { showInitialCurrencySelector } from "./components/tour/InitialCurrencySelector";
+import InitialLanguageSelector, {
+	showInitialLanguageSelector,
+} from "./components/tour/InitialLanguageSelector";
+import InitialCurrencySelector, {
+	showInitialCurrencySelector,
+} from "./components/tour/InitialCurrencySelector";
 import MinimalBasicScreen from "./components/base/MinimalBaseScreen";
+import { NavigationModal } from "./shared/Navigation";
+import { isEmpty } from "lodash";
 
 const AppLoading = () => {
 	const Messages = useMessages();
-	return <MinimalBasicScreen><p>{Messages.util.loading}</p></MinimalBasicScreen>
-}
+	return (
+		<MinimalBasicScreen>
+			<p>{Messages.util.loading}</p>
+		</MinimalBasicScreen>
+	);
+};
 
 const AppContent = observer(() => {
 	const moneeeyStore = useMoneeeyStore();
 	const languageSwitcher = useLanguageSwitcher();
 
 	if (!moneeeyStore.loaded) {
-    return <AppLoading />
-  }
+		return <AppLoading />;
+	}
 
 	if (showInitialLanguageSelector(languageSwitcher)) {
 		return <InitialLanguageSelector />;
 	}
 
+	// NewDB/MoneeySync/DBSync
+	//// Setup encryption
+
 	if (showInitialCurrencySelector(moneeeyStore)) {
 		return <InitialCurrencySelector />;
 	}
-	// check if initialized is set, otherwise:
-	// 1. request user language
-	// 2. check if user wants to login/couchdb database
-	// 3. if user selects new account/empty database, request for encryption password
+
+	if (isEmpty(moneeeyStore.accounts.all)) {
+		moneeeyStore.navigation.openModal(NavigationModal.ADD_ACCOUNT);
+	}
+
 	// 4. move some Ui into the menu bar, like the "New import" or the "Merge accounts"
 	return <AppMenu moneeeyStore={moneeeyStore} />;
 });

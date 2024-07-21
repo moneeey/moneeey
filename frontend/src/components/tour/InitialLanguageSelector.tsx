@@ -1,13 +1,17 @@
 import { useState } from "react";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
-import { LanguageSwitcher, LanguageUnset, useLanguageSwitcher } from "../../utils/Messages";
+import {
+	LanguageSwitcher,
+	LanguageUnset,
+	useLanguageSwitcher,
+} from "../../utils/Messages";
 import { OkButton } from "../base/Button";
 import LanguageSelector from "../LanguageSelector";
 
 export function showInitialLanguageSelector({
-                                          currentLanguage }: LanguageSwitcher) {
-
-	return (currentLanguage === LanguageUnset)
+	currentLanguage,
+}: LanguageSwitcher) {
+	return currentLanguage === LanguageUnset;
 }
 
 export default function InitialLanguageSelector() {
@@ -25,5 +29,4 @@ export default function InitialLanguageSelector() {
 			)}
 		</MinimalBasicScreen>
 	);
-};
-
+}
