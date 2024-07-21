@@ -25,6 +25,7 @@ export default function LanguageSelector({ onSelect }: LanguageSelectorProps) {
 		};
 		return (
 			<i
+				data-testid={`languageSelector_${language}`}
 				className={`inline-block h-6 w-6 rounded-xl hover:ring-2 ring-secondary-500 ${
 					isCurrentLanguage ? "ring-2" : ""
 				}`}

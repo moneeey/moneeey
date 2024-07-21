@@ -13,7 +13,7 @@ import type { TMessages } from "../../utils/Messages";
 import type { TourStep } from "./Tour";
 
 export default function TourSteps(
-	{ navigation, accounts, budget }: MoneeeyStore,
+	{ navigation, budget, accounts }: MoneeeyStore,
 	Messages: TMessages,
 ): TourStep[] {
 	const navigateTo = (url: string) => () => navigation.navigate(url);
@@ -31,23 +31,26 @@ export default function TourSteps(
 		return true;
 	};
 
+	const firstNonPayee = accounts.allNonPayees[0];
+	const accountTransactionsUrl = firstNonPayee
+		? AccountRoute.accountUrlForName(firstNonPayee.name)
+		: AccountRoute.accountUrlForAll();
+
 	return [
 		{
-			content: Messages.tour.edit_currencies,
+			content: Messages.tour.currencies,
 			action: navigateTo(CurrencySettingsRoute.url()),
 		},
 		{
-			content: Messages.tour.create_accounts,
+			content: Messages.tour.accounts,
 			action: navigateTo(AccountSettingsRoute.url()),
-			canGoNextStep: () =>
-				checkStoreIsNotEmpty(accounts, Messages.tour.please_create_account),
 		},
 		{
-			content: Messages.tour.insert_transactions,
-			action: navigateTo(AccountRoute.accountUrlForAll()),
+			content: Messages.tour.transactions,
+			action: navigateTo(accountTransactionsUrl),
 		},
 		{
-			content: Messages.tour.create_budgets,
+			content: Messages.tour.budgets,
 			action: navigateTo(BudgetRoute.url()),
 			canGoNextStep: () =>
 				checkStoreIsNotEmpty(budget, Messages.tour.please_create_budget),

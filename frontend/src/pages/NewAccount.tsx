@@ -6,7 +6,7 @@ import CurrencyAmountField from "../components/editor/CurrencyAmountField";
 import AccountKindField from "../components/editor/AccountKindField";
 import { AccountKind } from "../entities/Account";
 import CurrencySelectorField from "../components/editor/CurrencySelectorField";
-import { OkCancel } from "../components/base/Button";
+import { CancelButton, OkCancel } from "../components/base/Button";
 import { uuid } from "../utils/Utils";
 
 export default function NewAccount() {
@@ -70,9 +70,10 @@ export default function NewAccount() {
 		});
 	};
 
+	const onClose = () => navigation.closeModal();
 	const onSubmitClose = () => {
 		onSubmit();
-		navigation.closeModal();
+		onClose();
 	};
 
 	const onSubmitAnother = () => {
@@ -81,6 +82,7 @@ export default function NewAccount() {
 	};
 
 	const isValid = state.name.length > 1;
+	const canClose = accounts.all.length > 0;
 
 	return (
 		<div key={state.uuid} className="flex flex-col gap-4">
@@ -150,7 +152,10 @@ export default function NewAccount() {
 					}}
 				/>
 			</div>
-			<div>
+			<div className="flex flex-row items-center gap-4">
+				{canClose && (
+					<CancelButton title={Messages.util.close} onClick={onClose} />
+				)}
 				{isValid && (
 					<OkCancel
 						okTitle={Messages.new_account.submit_close}

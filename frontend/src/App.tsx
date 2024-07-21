@@ -30,6 +30,7 @@ import InitialCurrencySelector, {
 import MinimalBasicScreen from "./components/base/MinimalBaseScreen";
 import { NavigationModal } from "./shared/Navigation";
 import { isEmpty } from "lodash";
+import { StorageKind, getStorage, setStorage } from "./utils/Utils";
 
 const AppLoading = () => {
 	const Messages = useMessages();
@@ -40,31 +41,48 @@ const AppLoading = () => {
 	);
 };
 
-const AppContent = observer(() => {
+const AppLoaded = observer(() => {
 	const moneeeyStore = useMoneeeyStore();
-	const languageSwitcher = useLanguageSwitcher();
+	const {
+		config: {
+			main: { default_currency },
+		},
+		accounts: { all: allAccounts },
+		navigation,
+	} = moneeeyStore;
+	const { currentLanguage } = useLanguageSwitcher();
 
-	if (!moneeeyStore.loaded) {
-		return <AppLoading />;
-	}
-
-	if (showInitialLanguageSelector(languageSwitcher)) {
+	if (showInitialLanguageSelector({ currentLanguage })) {
 		return <InitialLanguageSelector />;
 	}
 
 	// NewDB/MoneeySync/DBSync
 	//// Setup encryption
 
-	if (showInitialCurrencySelector(moneeeyStore)) {
+	if (showInitialCurrencySelector({ default_currency })) {
 		return <InitialCurrencySelector />;
 	}
 
-	if (isEmpty(moneeeyStore.accounts.all)) {
-		moneeeyStore.navigation.openModal(NavigationModal.ADD_ACCOUNT);
+	if (isEmpty(allAccounts)) {
+		navigation.openModal(NavigationModal.ADD_ACCOUNT);
+	} else if (navigation.modal === NavigationModal.NONE) {
+		if (getStorage("landing", "false", StorageKind.PERMANENT) !== "true") {
+			setStorage("landing", "true", StorageKind.PERMANENT);
+			navigation.openModal(NavigationModal.LANDING);
+		}
 	}
 
 	// 4. move some Ui into the menu bar, like the "New import" or the "Merge accounts"
 	return <AppMenu moneeeyStore={moneeeyStore} />;
+});
+
+const AppContent = observer(() => {
+	const { loaded } = useMoneeeyStore();
+	if (loaded) {
+		return <AppLoaded />;
+	} else {
+		return <AppLoading />;
+	}
 });
 
 export const App = () => {

@@ -5,10 +5,12 @@ import { OkButton } from "../base/Button";
 import useMessages from "../../utils/Messages";
 import { TCurrencyUUID } from "../../entities/Currency";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import MoneeeyStore from "../../shared/MoneeeyStore";
+import { IConfig } from "../../entities/Config";
 
-export function showInitialCurrencySelector({ config }: MoneeeyStore) {
-	return config.main.default_currency === "";
+export function showInitialCurrencySelector({
+	default_currency,
+}: Pick<IConfig, "default_currency">) {
+	return default_currency === "";
 }
 
 export default function InitialCurrencySelector() {

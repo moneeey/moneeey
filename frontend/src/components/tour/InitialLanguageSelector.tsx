@@ -10,7 +10,7 @@ import LanguageSelector from "../LanguageSelector";
 
 export function showInitialLanguageSelector({
 	currentLanguage,
-}: LanguageSwitcher) {
+}: Pick<LanguageSwitcher, "currentLanguage">) {
 	return currentLanguage === LanguageUnset;
 }
 
