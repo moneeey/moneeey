@@ -9,6 +9,7 @@ import useMoneeeyStore from "../shared/useMoneeeyStore";
 import ConfigTable from "../tables/ConfigTable";
 import useMessages from "../utils/Messages";
 import { noop } from "../utils/Utils";
+import { HeaderContent } from "../components/AppMenu";
 
 type Action = {
 	title: string;
@@ -78,17 +79,21 @@ export default function Settings() {
 	};
 
 	return (
-		<VerticalSpace>
-			<Space>
-				<PrimaryButton onClick={onExportData}>
-					{Messages.settings.export_data}
-				</PrimaryButton>
-				<SecondaryButton onClick={onImportData}>
-					{Messages.settings.import_data}
-				</SecondaryButton>
-				<SecondaryButton onClick={onClearData}>
-					{Messages.settings.clear_all}
-				</SecondaryButton>
+		<div>
+			<HeaderContent>
+				<Space className="p-2 scale-75">
+					<PrimaryButton onClick={onExportData}>
+						{Messages.settings.export_data}
+					</PrimaryButton>
+					<SecondaryButton onClick={onImportData}>
+						{Messages.settings.import_data}
+					</SecondaryButton>
+					<SecondaryButton onClick={onClearData}>
+						{Messages.settings.clear_all}
+					</SecondaryButton>
+				</Space>
+			</HeaderContent>
+			<VerticalSpace>
 				{action && (
 					<Drawer
 						testId="accountSettings"
@@ -123,8 +128,8 @@ export default function Settings() {
 						</div>
 					</Drawer>
 				)}
-			</Space>
-			<ConfigTable config={moneeeyStore.config} />
-		</VerticalSpace>
+				<ConfigTable config={moneeeyStore.config} />
+			</VerticalSpace>
+		</div>
 	);
 }

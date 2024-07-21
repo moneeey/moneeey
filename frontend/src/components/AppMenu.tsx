@@ -16,7 +16,15 @@ import {
 	WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { observer } from "mobx-react";
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import {
+	type Dispatch,
+	type SetStateAction,
+	useEffect,
+	useState,
+	useContext,
+	createContext,
+	ReactNode,
+} from "react";
 
 import type { IAccount } from "../entities/Account";
 import AccountRoute from "../routes/AccountRoute";
@@ -213,33 +221,37 @@ const Menu = observer(() => {
 	);
 });
 
-const Header = ({
-	setExpanded,
-}: { setExpanded: Dispatch<SetStateAction<boolean>> }) => {
-	const Messages = useMessages();
-	const toggleMenu = () => setExpanded((value) => !value);
+const Header = observer(
+	({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => {
+		const Messages = useMessages();
+		const {
+			navigation: { headerContent },
+		} = useMoneeeyStore();
+		const toggleMenu = () => setExpanded((value) => !value);
 
-	return (
-		<header className="sticky left-0 right-0 top-0 z-30 h-10 bg-background-800">
-			<TextTitle className="flex flex-row items-center gap-1 text-2xl pl-2">
-				<Icon
-					className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200"
-					onClick={toggleMenu}
-				>
-					<Bars3Icon />
-				</Icon>
-				<div
-					className="p-2 flex flex-row gap-2"
-					onClick={toggleMenu}
-					onKeyDown={toggleMenu}
-				>
-					<FavIcon />
-					{Messages.menu.title}
-				</div>
-			</TextTitle>
-		</header>
-	);
-};
+		return (
+			<header className="sticky left-0 right-0 top-0 z-30 h-10 bg-background-800 flex flex-row">
+				<TextTitle className="flex flex-row items-center gap-1 text-2xl pl-2 grow">
+					<Icon
+						className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200"
+						onClick={toggleMenu}
+					>
+						<Bars3Icon />
+					</Icon>
+					<div
+						className="p-2 flex flex-row gap-2"
+						onClick={toggleMenu}
+						onKeyDown={toggleMenu}
+					>
+						<FavIcon />
+						{Messages.menu.title}
+					</div>
+				</TextTitle>
+				{headerContent}
+			</header>
+		);
+	},
+);
 
 const Content = ({
 	expanded,
@@ -270,4 +282,12 @@ export default function AppMenu({
 			<Content expanded={expanded} moneeeyStore={moneeeyStore} />
 		</section>
 	);
+}
+
+export function HeaderContent({
+	children,
+}: { children: ReactNode | ReactNode[] }) {
+	const { navigation } = useMoneeeyStore();
+	useEffect(() => navigation.updateHeaderContent(children), [children]);
+	return <div />;
 }

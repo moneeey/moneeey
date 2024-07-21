@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 
 import TableEditor from "../components/TableEditor";
-import { LinkButton } from "../components/base/Button";
+import { SecondaryButton } from "../components/base/Button";
 import Space, { VerticalSpace } from "../components/base/Space";
 import AccountKindField from "../components/editor/AccountKindField";
 import CheckboxField from "../components/editor/CheckboxField";
@@ -14,6 +14,7 @@ import type { CurrencyStore } from "../entities/Currency";
 import type NavigationStore from "../shared/Navigation";
 import { NavigationModal } from "../shared/Navigation";
 import useMessages from "../utils/Messages";
+import { HeaderContent } from "../components/AppMenu";
 
 interface AccountSettingsProps {
 	accounts: AccountStore;
@@ -29,12 +30,18 @@ const AccountTable = observer(
 
 		return (
 			<VerticalSpace className="h-full grow" key={`accountTable${kind}`}>
-				<Space>
-					<LinkButton
-						onClick={() => navigation.openModal(NavigationModal.MERGE_ACCOUNTS)}
-						title={Messages.modal.merge_accounts}
-					/>
-				</Space>
+				<HeaderContent>
+					<Space className="p-2 scale-75">
+						<SecondaryButton
+							onClick={() =>
+								navigation.openModal(NavigationModal.MERGE_ACCOUNTS)
+							}
+						>
+							{Messages.modal.merge_accounts}
+						</SecondaryButton>
+					</Space>
+				</HeaderContent>
+
 				<div className="grow">
 					<TableEditor<IAccount>
 						testId={`accountTable${kind}`}

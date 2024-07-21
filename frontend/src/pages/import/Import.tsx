@@ -21,6 +21,7 @@ const Import = observer(() => {
 
 	return (
 		<Tabs
+			displayOnHeader
 			testId="importTabs"
 			items={[
 				{

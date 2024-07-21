@@ -5,6 +5,7 @@ import { type StorageKind, getStorage, setStorage } from "../../utils/Utils";
 import { LinkButton } from "./Button";
 import type { WithDataTestId } from "./Common";
 import Space from "./Space";
+import { HeaderContent } from "../AppMenu";
 
 interface TabItem {
 	key: string;
@@ -14,6 +15,7 @@ interface TabItem {
 
 interface TabsProps {
 	className?: string;
+	displayOnHeader?: boolean;
 	items: Array<TabItem>;
 	persist?: StorageKind;
 	onChange?: (selectedIdx: number) => void;
@@ -37,23 +39,26 @@ const Tabs = (props: TabsProps & WithDataTestId) => {
 	};
 
 	const activeTab = Math.min(props.items.length - 1, selectedIdx);
+	const links = (
+		<nav data-testid={props.testId}>
+			<Space className="no-scrollbar mb-2 max-w-max border-b border-b-background-300">
+				{props.items.map((item, idx) => (
+					<LinkButton
+						key={item.key}
+						onClick={() => onChange(idx)}
+						testId={`${props.testId}_${item.key}`}
+						className={idx === activeTab ? "underline" : ""}
+					>
+						{item.label}
+					</LinkButton>
+				))}
+			</Space>
+		</nav>
+	);
 
 	return (
 		<section className={`flex grow flex-col p-2 ${props.className || ""}`}>
-			<nav data-testid={props.testId}>
-				<Space className="no-scrollbar mb-2 max-w-max border-b border-b-background-300">
-					{props.items.map((item, idx) => (
-						<LinkButton
-							key={item.key}
-							onClick={() => onChange(idx)}
-							testId={`${props.testId}_${item.key}`}
-							className={idx === activeTab ? "underline" : ""}
-						>
-							{item.label}
-						</LinkButton>
-					))}
-				</Space>
-			</nav>
+			{props.displayOnHeader ? <HeaderContent>{links}</HeaderContent> : links}
 			{props.items[activeTab]?.children}
 		</section>
 	);
