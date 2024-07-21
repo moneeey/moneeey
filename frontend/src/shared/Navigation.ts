@@ -15,8 +15,6 @@ export enum NavigationModal {
 
 type NotificationType = StatusType;
 
-type HeaderContentType = ReactNode | ReactNode[] | null;
-
 export type NotificationData = {
 	id: string;
 	created: Date;
@@ -37,8 +35,6 @@ export default class NavigationStore {
 
 	currentPath = "/";
 
-	headerContent: HeaderContentType = null;
-
 	constructor(parent: Logger) {
 		this.logger = new Logger("navigationStore", parent);
 
@@ -54,13 +50,7 @@ export default class NavigationStore {
 			openModal: action,
 			currentPath: observable,
 			updateCurrentPath: action,
-			headerContent: observable,
-			updateHeaderContent: action,
 		});
-	}
-
-	updateHeaderContent(newContent: HeaderContentType) {
-		this.headerContent = newContent;
 	}
 
 	updateCurrentPath(path: string) {

@@ -226,7 +226,7 @@ test.describe('Tour', () => {
     await dismissNotification(page, 'Before continuing, please click on \'New Budget\' and create a budget')
 
     // New budget
-    await page.getByTestId('link-button').first().click()
+    await page.getByTestId('addNewBudget').first().click()
 
     // Create budget
     BudgetEditorSave(page, 'Budget test', mostUsedCurrencies[0], 'Gas Station')

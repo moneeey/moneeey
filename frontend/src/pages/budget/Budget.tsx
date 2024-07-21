@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
-import { SecondaryButton } from "../../components/base/Button";
+import { LinkButton, SecondaryButton } from "../../components/base/Button";
 import { Checkbox, InputNumber } from "../../components/base/Input";
 import Space, { VerticalSpace } from "../../components/base/Space";
 import type { IBudget } from "../../entities/Budget";
@@ -11,6 +11,9 @@ import useMessages, { type TMessages } from "../../utils/Messages";
 
 import BudgetEditor from "./BudgetEditor";
 import BudgetPeriods from "./BudgetPeriod";
+import { CalendarDaysIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import { HeaderContent } from "../../components/AppMenu";
+import _ from "lodash";
 
 type MonthDateSelectorProps = {
 	setDate: Dispatch<SetStateAction<Date>>;
@@ -35,7 +38,7 @@ const MonthDateSelector = ({
 
 const Budget = observer(() => {
 	const Messages = useMessages();
-	const { config } = useMoneeeyStore();
+	const { config, budget } = useMoneeeyStore();
 	const [startingDate, setStartingDate] = useState(() =>
 		startOfMonthOffset(new Date(), 0),
 	);
@@ -43,49 +46,76 @@ const Budget = observer(() => {
 
 	const viewMonths = config.main?.view_months || 3;
 	const viewArchived = config.main?.view_archived === true;
+	const onNewBudget = () => setEditing(budget.factory());
 
 	return (
-		<VerticalSpace>
-			<MonthDateSelector
-				date={startingDate}
-				setDate={setStartingDate}
-				Messages={Messages}
-			/>
-			<Space>
-				{Messages.budget.show_months}
-				<InputNumber
-					testId="inputViewMonths"
-					placeholder={Messages.budget.show_months}
-					value={viewMonths}
-					thousandSeparator={config.main.thousand_separator}
-					decimalSeparator={config.main.decimal_separator}
-					decimalScale={0}
-					onChange={(value: number | null) =>
-						config.merge({
-							...config.main,
-							view_months: Math.min(Math.max(value || 3, 0), 12),
-						})
-					}
+		<>
+			<HeaderContent>
+				<Space>
+					<div className="flex flex-row">
+						{_.range(6).map((index) => (
+							<CalendarDaysIcon
+								onClick={() => {
+									config.merge({
+										...config.main,
+										view_months: index + 1,
+									});
+								}}
+								style={{
+									color:
+										index + 1 <= config.main.view_months
+											? "lightgreen"
+											: "gray",
+									width: "1.2em",
+									height: "1.2em",
+									marginRight: "0.5em",
+								}}
+							/>
+						))}
+					</div>
+					<Checkbox
+						testId="checkboxViewArchived"
+						value={viewArchived}
+						onChange={(view_archived) =>
+							config.merge({ ...config.main, view_archived })
+						}
+						placeholder={Messages.budget.show_archived}
+					>
+						{Messages.budget.show_archived}
+					</Checkbox>
+					<LinkButton
+						testId="addNewBudget"
+						onClick={onNewBudget}
+						className="text-sm"
+					>
+						<PlusCircleIcon
+							style={{
+								color: "lightgreen",
+								width: "1.2em",
+								height: "1.2em",
+								marginRight: "0.5em",
+							}}
+						/>
+						{Messages.budget.new}
+					</LinkButton>
+				</Space>
+			</HeaderContent>
+			<VerticalSpace>
+				<MonthDateSelector
+					date={startingDate}
+					setDate={setStartingDate}
+					Messages={Messages}
 				/>
-				<Checkbox
-					testId="checkboxViewArchived"
-					value={viewArchived}
-					onChange={(view_archived) =>
-						config.merge({ ...config.main, view_archived })
-					}
-					placeholder={Messages.budget.show_archived}
-				>
-					{Messages.budget.show_archived}
-				</Checkbox>
-			</Space>
-			<BudgetPeriods
-				startingDate={startingDate}
-				setEditing={setEditing}
-				viewArchived={viewArchived}
-				viewMonths={viewMonths}
-			/>
-			{editing && <BudgetEditor editing={editing} setEditing={setEditing} />}
-		</VerticalSpace>
+
+				<BudgetPeriods
+					startingDate={startingDate}
+					setEditing={setEditing}
+					viewArchived={viewArchived}
+					viewMonths={viewMonths}
+				/>
+				{editing && <BudgetEditor editing={editing} setEditing={setEditing} />}
+			</VerticalSpace>
+		</>
 	);
 });
 

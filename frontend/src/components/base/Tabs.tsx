@@ -42,7 +42,7 @@ const Tabs = (props: TabsProps & WithDataTestId) => {
 	const links = (
 		<nav data-testid={props.testId}>
 			<Space
-				className={`no-scrollbar mb-2 max-w-max ${
+				className={`no-scrollbar flex-wrap mb-2 max-w-max ${
 					props.displayOnHeader ? "" : "border-b border-b-background-300"
 				}`}
 			>

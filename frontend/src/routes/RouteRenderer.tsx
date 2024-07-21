@@ -27,7 +27,6 @@ const RouteElem = observer(
 
 		useEffect(() => {
 			app.moneeeyStore.navigation.updateCurrentPath(route.url(parameters));
-			app.moneeeyStore.navigation.updateHeaderContent(null);
 		}, [route, app, parameters]);
 
 		return <>{route.render({ parameters, app })}</>;

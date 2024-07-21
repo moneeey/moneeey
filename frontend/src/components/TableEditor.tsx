@@ -116,6 +116,7 @@ export default observer(
 		return (
 			<VirtualTable
 				testId={testId}
+				key={testId}
 				columns={columns}
 				rows={entities}
 				isNewEntity={(row) => row.entityId === newEntityId}

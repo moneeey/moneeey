@@ -79,7 +79,7 @@ export default function Settings() {
 	};
 
 	return (
-		<div>
+		<>
 			<HeaderContent>
 				<Space className="p-2 scale-75">
 					<PrimaryButton onClick={onExportData}>
@@ -130,6 +130,6 @@ export default function Settings() {
 				)}
 				<ConfigTable config={moneeeyStore.config} />
 			</VerticalSpace>
-		</div>
+		</>
 	);
 }

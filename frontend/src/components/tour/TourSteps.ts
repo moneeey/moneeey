@@ -45,7 +45,11 @@ export default function TourSteps(
 		{
 			content: Messages.tour.accounts,
 			action: navigateTo(AccountSettingsRoute.url()),
-			blinkers: [".accountTableCHECKING-body", ".mn-active-navbar"],
+			blinkers: [
+				".accountTableCHECKING-body",
+				".mn-active-navbar",
+				"[data-testid=addAccount]",
+			],
 		},
 		{
 			content: Messages.tour.transactions,
