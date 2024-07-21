@@ -136,4 +136,4 @@ const TransactionTable = observer(
 	},
 );
 
-export { TransactionTable, TransactionTable as default };
+export default TransactionTable;

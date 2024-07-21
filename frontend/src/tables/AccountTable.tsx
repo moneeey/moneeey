@@ -118,4 +118,4 @@ const AccountTable = observer(
 	},
 );
 
-export { AccountTable, AccountTable as default };
+export default AccountTable;

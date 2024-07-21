@@ -87,4 +87,4 @@ const CurrencyTable = observer(({ currencies }: CurrencySettingsProps) => {
 	);
 });
 
-export { CurrencyTable, CurrencyTable as default };
+export default CurrencyTable;

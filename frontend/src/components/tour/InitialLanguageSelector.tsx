@@ -1,12 +1,12 @@
 import { useState } from "react";
-import MinimalBasicScreen from "../base/MinimalBaseScreen";
 import {
-	LanguageSwitcher,
+	type LanguageSwitcher,
 	LanguageUnset,
 	useLanguageSwitcher,
 } from "../../utils/Messages";
-import { OkButton } from "../base/Button";
 import LanguageSelector from "../LanguageSelector";
+import { OkButton } from "../base/Button";
+import MinimalBasicScreen from "../base/MinimalBaseScreen";
 
 export function showInitialLanguageSelector({
 	currentLanguage,

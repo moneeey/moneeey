@@ -12,4 +12,4 @@ const Modals = () => (
 	</>
 );
 
-export { Modals, Modals as default };
+export default Modals;

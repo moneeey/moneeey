@@ -16,20 +16,20 @@ import { TagsHighlightProvider } from "./components/Tags";
 import Modals from "./components/modal/Modals";
 import MoneeeyTourProvider from "./components/tour/Tour";
 
+import { isEmpty } from "lodash";
+import MinimalBasicScreen from "./components/base/MinimalBaseScreen";
+import InitialCurrencySelector, {
+	showInitialCurrencySelector,
+} from "./components/tour/InitialCurrencySelector";
+import InitialLanguageSelector, {
+	showInitialLanguageSelector,
+} from "./components/tour/InitialLanguageSelector";
+import { NavigationModal } from "./shared/Navigation";
 import { PouchDBFactory } from "./shared/Persistence";
 import useMessages, {
 	MessagesProvider,
 	useLanguageSwitcher,
 } from "./utils/Messages";
-import InitialLanguageSelector, {
-	showInitialLanguageSelector,
-} from "./components/tour/InitialLanguageSelector";
-import InitialCurrencySelector, {
-	showInitialCurrencySelector,
-} from "./components/tour/InitialCurrencySelector";
-import MinimalBasicScreen from "./components/base/MinimalBaseScreen";
-import { NavigationModal } from "./shared/Navigation";
-import { isEmpty } from "lodash";
 import { StorageKind, getStorage, setStorage } from "./utils/Utils";
 
 const AppLoading = () => {
@@ -56,7 +56,7 @@ const AppLoaded = observer(() => {
 		return <InitialLanguageSelector />;
 	}
 
-	// NewDB/MoneeySync/DBSync
+	// TODO: NewDB/MoneeySync/DBSync
 	//// Setup encryption
 
 	if (showInitialCurrencySelector({ default_currency })) {
@@ -72,17 +72,15 @@ const AppLoaded = observer(() => {
 		}
 	}
 
-	// 4. move some Ui into the menu bar, like the "New import" or the "Merge accounts"
 	return <AppMenu moneeeyStore={moneeeyStore} />;
 });
 
 const AppContent = observer(() => {
 	const { loaded } = useMoneeeyStore();
-	if (loaded) {
-		return <AppLoaded />;
-	} else {
+	if (!loaded) {
 		return <AppLoading />;
 	}
+	return <AppLoaded />;
 });
 
 export const App = () => {

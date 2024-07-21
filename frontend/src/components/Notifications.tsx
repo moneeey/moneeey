@@ -61,4 +61,4 @@ const Notifications = observer(() => {
 	);
 });
 
-export { Notifications, Notifications as default };
+export default Notifications;

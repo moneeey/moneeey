@@ -7,8 +7,8 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
 import Card from "./Card";
 import Icon from "./Icon";
-import { TextTitle } from "./Text";
 import MinimalBasicScreen from "./MinimalBaseScreen";
+import { TextTitle } from "./Text";
 
 interface ModalProps {
 	fullScreen?: boolean;
@@ -77,20 +77,19 @@ const Modal = observer(
 					<Content />
 				</article>
 			);
-		} else {
-			return (
-				<article
-					className={`fixed top-0 bottom-0 left-0 right-0 z-50 bg-background-600 ${
-						className || ""
-					}`}
-				>
-					<MinimalBasicScreen>
-						<Content />
-					</MinimalBasicScreen>
-				</article>
-			);
 		}
+		return (
+			<article
+				className={`fixed top-0 bottom-0 left-0 right-0 z-50 bg-background-600 ${
+					className || ""
+				}`}
+			>
+				<MinimalBasicScreen>
+					<Content />
+				</MinimalBasicScreen>
+			</article>
+		);
 	},
 );
 
-export { Modal, Modal as default };
+export default Modal;

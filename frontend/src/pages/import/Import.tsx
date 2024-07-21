@@ -62,4 +62,4 @@ const Import = observer(() => {
 	);
 });
 
-export { Import, Import as default };
+export default Import;

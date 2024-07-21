@@ -17,4 +17,4 @@ class ReportsRouter extends Route<IReportsRoute> {
 }
 
 const ReportsRoute = new ReportsRouter();
-export { ReportsRoute as default };
+export default ReportsRoute;

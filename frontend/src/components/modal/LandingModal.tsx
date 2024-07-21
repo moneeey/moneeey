@@ -44,4 +44,4 @@ const LandingModal = () => {
 	);
 };
 
-export { LandingModal, LandingModal as default };
+export default LandingModal;

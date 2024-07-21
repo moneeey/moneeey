@@ -264,4 +264,4 @@ const VirtualTable = function VirtualTableRenderer({
 	);
 };
 
-export { VirtualTable, VirtualTable as default };
+export default VirtualTable;

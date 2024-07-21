@@ -89,4 +89,4 @@ const Budget = observer(() => {
 	);
 });
 
-export { Budget, Budget as default };
+export default Budget;

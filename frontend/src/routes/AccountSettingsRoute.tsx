@@ -1,5 +1,5 @@
 import { AccountKind } from "../entities/Account";
-import { AccountTable } from "../tables/AccountTable";
+import AccountTable from "../tables/AccountTable";
 
 import HomeRoute from "./HomeRouter";
 import { type IAppParameters, type IRouteParameters, Route } from "./Route";

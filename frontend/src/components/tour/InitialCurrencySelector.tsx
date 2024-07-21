@@ -1,11 +1,11 @@
 import { useState } from "react";
+import type { IConfig } from "../../entities/Config";
+import type { TCurrencyUUID } from "../../entities/Currency";
+import useMoneeeyStore from "../../shared/useMoneeeyStore";
+import useMessages from "../../utils/Messages";
+import { OkButton } from "../base/Button";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
 import Select from "../base/Select";
-import { OkButton } from "../base/Button";
-import useMessages from "../../utils/Messages";
-import { TCurrencyUUID } from "../../entities/Currency";
-import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { IConfig } from "../../entities/Config";
 
 export function showInitialCurrencySelector({
 	default_currency,

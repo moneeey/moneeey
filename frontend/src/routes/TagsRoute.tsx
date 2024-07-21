@@ -42,4 +42,4 @@ class TagsRouter extends Route<ITagsRoute> {
 }
 
 const TagsRoute = new TagsRouter();
-export { TagsRoute as default };
+export default TagsRoute;

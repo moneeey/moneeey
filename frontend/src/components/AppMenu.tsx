@@ -228,7 +228,11 @@ const Header = ({
 				>
 					<Bars3Icon />
 				</Icon>
-				<div className="p-2 flex flex-row gap-2" onClick={toggleMenu}>
+				<div
+					className="p-2 flex flex-row gap-2"
+					onClick={toggleMenu}
+					onKeyDown={toggleMenu}
+				>
 					<FavIcon />
 					{Messages.menu.title}
 				</div>

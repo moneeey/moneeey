@@ -184,4 +184,4 @@ const ImportStarter = ({
 	);
 };
 
-export { ImportStarter, ImportStarter as default };
+export default ImportStarter;

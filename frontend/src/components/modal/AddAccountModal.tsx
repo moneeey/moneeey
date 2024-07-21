@@ -1,10 +1,10 @@
+import { isEmpty } from "lodash";
 import React from "react";
 import NewAccount from "../../pages/NewAccount";
 import { NavigationModal } from "../../shared/Navigation";
-import Modal from "../base/Modal";
-import useMessages from "../../utils/Messages";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { isEmpty } from "lodash";
+import useMessages from "../../utils/Messages";
+import Modal from "../base/Modal";
 
 export default function AddAccountModal() {
 	const { accounts, navigation } = useMoneeeyStore();

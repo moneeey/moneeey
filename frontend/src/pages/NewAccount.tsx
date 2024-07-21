@@ -1,12 +1,12 @@
 import { useState } from "react";
+import { CancelButton, OkCancel } from "../components/base/Button";
 import { Input } from "../components/base/Input";
+import AccountKindField from "../components/editor/AccountKindField";
+import CurrencyAmountField from "../components/editor/CurrencyAmountField";
+import CurrencySelectorField from "../components/editor/CurrencySelectorField";
+import { AccountKind } from "../entities/Account";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
-import CurrencyAmountField from "../components/editor/CurrencyAmountField";
-import AccountKindField from "../components/editor/AccountKindField";
-import { AccountKind } from "../entities/Account";
-import CurrencySelectorField from "../components/editor/CurrencySelectorField";
-import { CancelButton, OkCancel } from "../components/base/Button";
 import { uuid } from "../utils/Utils";
 
 export default function NewAccount() {
@@ -42,14 +42,13 @@ export default function NewAccount() {
 	}).render;
 
 	const onSubmit = () => {
-		const initialAccountForCurrencyId = "INITIAL_ACCOUNT_" + state.currency;
+		const initialAccountForCurrencyId = `INITIAL_ACCOUNT_${state.currency}`;
 		if (!accounts.byUuid(initialAccountForCurrencyId)) {
 			accounts.merge({
 				...accounts.factory(initialAccountForCurrencyId),
-				name:
-					Messages.new_account.initial_balance +
-					" " +
-					currencies.byUuid(state.currency)?.short,
+				name: `${Messages.new_account.initial_balance} ${
+					currencies.byUuid(state.currency)?.short
+				}`,
 				kind: AccountKind.PAYEE,
 				currency_uuid: state.currency,
 			});

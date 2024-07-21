@@ -87,4 +87,4 @@ class AccountRouter extends Route<IAccountRoute> {
 }
 
 const AccountRoute = new AccountRouter();
-export { AccountRoute as default };
+export default AccountRoute;

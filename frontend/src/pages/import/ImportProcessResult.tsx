@@ -354,4 +354,4 @@ const ImportProcessResult = ({
 	);
 };
 
-export { ImportProcessResult, ImportProcessResult as default };
+export default ImportProcessResult;

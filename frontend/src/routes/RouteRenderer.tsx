@@ -74,4 +74,4 @@ const RouteRenderer = observer(
 	},
 );
 
-export { RouteRenderer, RouteRenderer as default };
+export default RouteRenderer;

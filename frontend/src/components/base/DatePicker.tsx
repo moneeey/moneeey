@@ -37,4 +37,4 @@ const DatePicker = ({
 	});
 };
 
-export { DatePicker as default };
+export default DatePicker;
