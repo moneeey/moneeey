@@ -1,6 +1,6 @@
 import { APP_URL } from "./config.ts";
 import { prepareUserDatabase } from "./couchdb.ts";
-import { jssha, oak } from "./deps.ts";
+import { oak } from "./deps.ts";
 import { authJwt, couchJwt } from "./jwt.ts";
 
 const authenticationDuration = "48h";
@@ -11,20 +11,23 @@ type UserId = {
   email: string;
 };
 
-function sha384(value: string) {
-  return new jssha.default("SHA3-384", "TEXT").update(value).getHash("HEX")
-    .toLowerCase();
+async function sha384(value: string) {
+  const encoder = new TextEncoder();
+  const dataBuffer = encoder.encode(value);
+  const hashBuffer = await crypto.subtle.digest("SHA-384", dataBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export function couchDbId({ strategy, userId, email }: UserId) {
-  return strategy + "_" + sha384(`${strategy}:${userId}:${email}`);
+export async function couchDbId({ strategy, userId, email }: UserId) {
+  return strategy + "_" + (await sha384(`${strategy}:${userId}:${email}`));
 }
 
 export async function authAndEnsureDbExists(
   { strategy, email, userId }: UserId,
 ) {
   if (!email || !userId) return { error: "no email or userId" };
-  const db = strategy + "_" + sha384(`${strategy}:${userId}:${email}`);
+  const db = await couchDbId({ strategy, userId, email })
   await prepareUserDatabase(db, email);
   return {
     authenticated: true,
