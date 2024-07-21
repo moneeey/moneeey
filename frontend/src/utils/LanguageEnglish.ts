@@ -105,6 +105,7 @@ const Messages = {
 		clear_data_placeholder:
 			'Type "DELETE EVERYTHING" in this text area and hit "Clear data" again to delete everything and start from zero.',
 		create_entity: (entity: string) => `Create ${entity}`,
+		select_default_currency: "Select default currency",
 		select_language: "Select language",
 	},
 	budget: {
@@ -198,7 +199,8 @@ const Messages = {
 		next: "Next",
 		prev: "Previous",
 
-		continue_language: "Continue to Moneeey",
+		continue_language: "Continue to default currency selection",
+		continue_currency: "Continue to Moneeey",
 
 		edit_currencies: `Moneeey is multi currency, please edit the currencies
       to fit your needs.

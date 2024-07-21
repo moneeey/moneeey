@@ -111,6 +111,7 @@ const Messages: TMessages = {
 		clear_data_placeholder:
 			'Escriba "ELIMINAR TODO" en esta área de texto y presione "Borrar datos" nuevamente para eliminar todo y comenzar desde cero.',
 		create_entity: (entity: string) => `Crear ${entity}`,
+		select_default_currency: "Seleccionar moneda predeterminada",
 		select_language: "Seleccionar idioma",
 	},
 	budget: {
@@ -203,7 +204,8 @@ const Messages: TMessages = {
 		next: "Siguiente",
 		prev: "Anterior",
 
-		continue_language: "Continúa hacia Moneeey",
+		continue_language: "Continúa hacia selecion de la moneda predeterminada",
+		continue_currency: "Continúa hacia Moneeey",
 
 		edit_currencies: `Moneeey es multi moneda, por favor edite las monedas para adaptarlas a sus necesidades. Hemos añadido
       las 20 monedas más utilizadas de 2020.`,
