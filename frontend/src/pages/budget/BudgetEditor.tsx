@@ -50,7 +50,11 @@ const BudgetEditor = ({
 						testId="budgetCurrency"
 						placeholder={Messages.util.currency}
 						options={currencies.all.map((c) => ({
-							label: c.name,
+							label: (
+								<span>
+									<b>{c.short}</b> {c.name}
+								</span>
+							),
 							value: c.currency_uuid,
 						}))}
 						value={editing.currency_uuid}

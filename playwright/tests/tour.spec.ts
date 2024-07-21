@@ -110,7 +110,14 @@ async function BudgetEditorSave(page: Page, name: string, currency: string, tag:
   await budgetCurrency.choose(currency)
 
   const budgetTags = Select(page, 'budgetTags')
-  expect(await budgetTags.options()).toEqual(['Account test', 'Gas Station'])
+  expect(await budgetTags.options()).toEqual([
+
+    "Banco Moneeey",
+    "Bitcoinss",
+    "Gas Station",
+    "Initial balance BRL",
+    "Initial balance BTC",
+  ])
   await budgetTags.choose(tag, false)
 
   await budgetEditor.getByTestId('budgetSave').click()
@@ -136,7 +143,7 @@ async function completeLandingWizard(page: Page) {
   expect(page.getByTestId('languageSelector_spanish')).toBeDefined()
   expect(page.getByTestId('languageSelector_english')).toBeDefined()
   await (page.getByTestId('languageSelector_spanish')).click()
-  await expect(page.getByTestId('ok-button')).toContainText('Continúa')
+  await expect(page.getByTestId('ok-button')).toContainText('Continuar')
   await (page.getByTestId('languageSelector_english')).click()
   await expect(page.getByTestId('ok-button')).toContainText('Continue')
 
@@ -190,28 +197,24 @@ test.describe('Tour', () => {
     expect(page.getByText('Now that we know the currencies')).toBeDefined()
     await tourNext(page) // Next on Edit accounts
 
-    // Type account in table to create a new account
-    await Input(page, 'editorName').change('Account test')
-    const editorCurrency = Select(page, 'editorCurrency')
-    expect(await editorCurrency.options()).toContain('BRL Real brasileiro')
-    await editorCurrency.choose('BRL Real brasileiro')
-
     // Progress Tour to Transactions
-    await tourNext(page)
     expect(page.getByText('start inserting transactions')).toBeDefined()
-
-    // Create new transaction with previous account
     const editorFrom = Select(page, 'editorFrom')
-    expect(await editorFrom.options()).toEqual(['Account test'])
-    await editorFrom.choose('Account test')
+    expect((await editorFrom.options()).sort()).toEqual([
+      "Banco Moneeey",
+      "Bitcoinss",
+      "Initial balance BRL",
+      "Initial balance BTC",
+    ])
+    await editorFrom.choose('Banco Moneeey')
+
 
     // Create new payee
     const editorTo = Select(page, 'editorTo')
-    expect(await editorTo.options()).toEqual(['Account test'])
     await editorTo.create('Gas Station')
 
     // Fill the amount
-    await expect(page.getByTestId('editorAmount')).toHaveCount(2)
+    await expect(page.getByTestId('editorAmount')).toHaveCount(3)
     await Input(page, 'editorAmount').change('1234,56')
 
     // Progress Tour to Transactions
@@ -226,7 +229,7 @@ test.describe('Tour', () => {
     await page.getByTestId('link-button').first().click()
 
     // Create budget
-    BudgetEditorSave(page, 'Budget test', 'Real brasileiro', 'station')
+    BudgetEditorSave(page, 'Budget test', mostUsedCurrencies[0], 'Gas Station')
 
     // Allocate on budget and wait for calculated used/remaining
     expect(page.getByText('R$').first()).toBeDefined()
