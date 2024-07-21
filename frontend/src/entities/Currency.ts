@@ -11,6 +11,13 @@ export type TCurrencyUUID = string;
 
 export const DefaultCurrencies = [
 	{
+		name: "Brazilian Real",
+		code: "BRL",
+		prefix: "R$",
+		suffix: "",
+		decimals: 2,
+	},
+	{
 		name: "United States Dollar",
 		code: "USD",
 		prefix: "$",
@@ -18,6 +25,8 @@ export const DefaultCurrencies = [
 		decimals: 2,
 	},
 	{ name: "Euro", code: "EUR", prefix: "€", suffix: "", decimals: 2 },
+	{ name: "Bitcoin", code: "BTC", prefix: "₿", suffix: "", decimals: 8 },
+	{ name: "Ethereum", code: "ETH", prefix: "Ξ", suffix: "", decimals: 18 },
 	{
 		name: "Japanese Yen",
 		code: "JPY",
@@ -127,13 +136,6 @@ export const DefaultCurrencies = [
 		name: "Indian Rupee",
 		code: "INR",
 		prefix: "₹",
-		suffix: "",
-		decimals: 2,
-	},
-	{
-		name: "Brazilian Real",
-		code: "BRL",
-		prefix: "R$",
 		suffix: "",
 		decimals: 2,
 	},
@@ -341,8 +343,6 @@ export const DefaultCurrencies = [
 		suffix: "",
 		decimals: 2,
 	},
-	{ name: "Bitcoin", code: "BTC", prefix: "₿", suffix: "", decimals: 8 },
-	{ name: "Ethereum", code: "ETH", prefix: "Ξ", suffix: "", decimals: 18 },
 ];
 
 export interface ICurrency extends IBaseEntity {

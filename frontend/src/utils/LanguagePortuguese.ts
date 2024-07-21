@@ -4,7 +4,7 @@ const Messages: TMessages = {
 	menu: {
 		title: "Moneeey",
 		search: "Pesquisar",
-		dashboard: "Painel de Controle",
+		dashboard: "Sumário",
 		transactions: "Transações",
 		unassigned: (amount: number) => `Não atribuído (${amount})`,
 		balance: (amount: string) => `Saldo: ${amount}`,

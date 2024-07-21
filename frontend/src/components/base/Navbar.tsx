@@ -32,7 +32,7 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 		return compact([
 			<LinkButton
 				className={`flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 ${
-					item.isActive ? "opacity-75" : ""
+					item.isActive ? "opacity-75 !bg-background-900" : ""
 				}`}
 				testId={`${dataTestId}_${item.key}`}
 				onClick={item.onClick || (() => ({}))}
@@ -55,7 +55,7 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 const Navbar = (props: NavbarProps & WithDataTestId) => {
 	return (
 		<nav
-			className={`flex flex-col bottom-0 left-0 top-0 w-80 bg-background-800 ${
+			className={`flex flex-col bottom-0 left-0 top-0 pt-2 w-80 bg-background-800 ${
 				props.className || ""
 			}`}
 			data-testid={props.testId}
