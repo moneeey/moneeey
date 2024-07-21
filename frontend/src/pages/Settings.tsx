@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { HeaderContent } from "../components/AppMenu";
 import Loading from "../components/Loading";
 import { PrimaryButton, SecondaryButton } from "../components/base/Button";
 import Drawer from "../components/base/Drawer";
@@ -9,7 +10,6 @@ import useMoneeeyStore from "../shared/useMoneeeyStore";
 import ConfigTable from "../tables/ConfigTable";
 import useMessages from "../utils/Messages";
 import { noop } from "../utils/Utils";
-import { HeaderContent } from "../components/AppMenu";
 
 type Action = {
 	title: string;

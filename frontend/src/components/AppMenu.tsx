@@ -18,12 +18,12 @@ import {
 import { observer } from "mobx-react";
 import {
 	type Dispatch,
+	type ReactNode,
 	type SetStateAction,
+	createContext,
+	useContext,
 	useEffect,
 	useState,
-	useContext,
-	createContext,
-	ReactNode,
 } from "react";
 
 import type { IAccount } from "../entities/Account";
@@ -46,11 +46,11 @@ import type MoneeeyStore from "../shared/MoneeeyStore";
 
 import useMessages from "../utils/Messages";
 
+import { toJS } from "mobx";
 import LanguageSelector from "./LanguageSelector";
 import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
-import { toJS } from "mobx";
 
 const Menu = observer(() => {
 	const Messages = useMessages();

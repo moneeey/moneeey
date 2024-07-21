@@ -1,5 +1,6 @@
 import { observer } from "mobx-react-lite";
 
+import { HeaderContent } from "../components/AppMenu";
 import TableEditor from "../components/TableEditor";
 import { PrimaryButton, SecondaryButton } from "../components/base/Button";
 import Space, { VerticalSpace } from "../components/base/Space";
@@ -14,7 +15,6 @@ import type { CurrencyStore } from "../entities/Currency";
 import type NavigationStore from "../shared/Navigation";
 import { NavigationModal } from "../shared/Navigation";
 import useMessages from "../utils/Messages";
-import { HeaderContent } from "../components/AppMenu";
 
 interface AccountSettingsProps {
 	accounts: AccountStore;

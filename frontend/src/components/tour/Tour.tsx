@@ -2,9 +2,9 @@ import {
 	type ReactNode,
 	createContext,
 	useContext,
+	useEffect,
 	useMemo,
 	useState,
-	useEffect,
 } from "react";
 
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
@@ -35,15 +35,15 @@ const TourClient = () => {
 			return;
 		}
 		const tmr = setInterval(() => {
-			document
-				.querySelectorAll(".blink")
-				.forEach((node) => node.classList.remove("blink"));
-			steps[step].blinkers.forEach((blinker) =>
-				document.querySelector(blinker)?.classList.add("blink"),
-			);
+			for (const node of document.querySelectorAll(".blink")) {
+				node.classList.remove("blink");
+			}
+			for (const blinker of steps[step].blinkers) {
+				document.querySelector(blinker)?.classList.add("blink");
+			}
 		}, 500);
 		return () => clearTimeout(tmr);
-	}, [step, open]);
+	}, [step, steps, open]);
 
 	return {
 		setStep(newStepp: number) {

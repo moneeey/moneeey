@@ -9,11 +9,11 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { formatDateMonth, startOfMonthOffset } from "../../utils/Date";
 import useMessages, { type TMessages } from "../../utils/Messages";
 
+import { CalendarDaysIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import _ from "lodash";
+import { HeaderContent } from "../../components/AppMenu";
 import BudgetEditor from "./BudgetEditor";
 import BudgetPeriods from "./BudgetPeriod";
-import { CalendarDaysIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
-import { HeaderContent } from "../../components/AppMenu";
-import _ from "lodash";
 
 type MonthDateSelectorProps = {
 	setDate: Dispatch<SetStateAction<Date>>;

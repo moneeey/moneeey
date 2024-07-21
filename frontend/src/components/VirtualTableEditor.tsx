@@ -3,8 +3,8 @@ import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
 import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
 import VirtualizedGrid from "react-virtualized/dist/commonjs/Grid";
 
+import type { WithDataTestId } from "./base/Common";
 import Icon from "./base/Icon";
-import { WithDataTestId } from "./base/Common";
 
 const SCROLLBAR_WIDTH = 24;
 const ROW_HEIGHT = 24;
