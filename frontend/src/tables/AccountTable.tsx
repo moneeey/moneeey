@@ -28,7 +28,7 @@ const AccountTable = observer(
 		const Messages = useMessages();
 
 		return (
-			<VerticalSpace className="h-full grow">
+			<VerticalSpace className="h-full grow" key={`accountTable${kind}`}>
 				<Space>
 					<LinkButton
 						onClick={() => navigation.openModal(NavigationModal.MERGE_ACCOUNTS)}

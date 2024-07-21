@@ -68,9 +68,7 @@ export class AccountStore extends MappedStore<IAccount> {
 	}
 
 	get allActive() {
-		return this.all.filter(
-			(acct) => !acct.archived,
-		);
+		return this.all.filter((acct) => !acct.archived);
 	}
 
 	get allPayees() {
@@ -78,10 +76,7 @@ export class AccountStore extends MappedStore<IAccount> {
 	}
 
 	get allNonPayees() {
-		return this.all.filter(
-			(acct) =>
-				acct.kind !== AccountKind.PAYEE
-		);
+		return this.all.filter((acct) => acct.kind !== AccountKind.PAYEE);
 	}
 
 	byName(name: string) {
