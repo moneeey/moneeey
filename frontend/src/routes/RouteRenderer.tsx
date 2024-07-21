@@ -8,6 +8,7 @@ import type {
 	IRouteParameters,
 	Route as MyRoute,
 } from "./Route";
+import { HeaderContent } from "../components/AppMenu";
 
 interface IMappedRoute {
 	path: string;
@@ -29,7 +30,14 @@ const RouteElem = observer(
 			app.moneeeyStore.navigation.updateCurrentPath(route.url(parameters));
 		}, [route, app, parameters]);
 
-		return <>{route.render({ parameters, app })}</>;
+		return (
+			<>
+				<HeaderContent key={`${route.path}_${JSON.stringify(parameters)}`}>
+					{null}
+				</HeaderContent>
+				{route.render({ parameters, app })}
+			</>
+		);
 	},
 );
 
