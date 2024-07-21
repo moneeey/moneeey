@@ -4,6 +4,7 @@ import {
 	useContext,
 	useMemo,
 	useState,
+	useEffect,
 } from "react";
 
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
@@ -14,6 +15,7 @@ import TourSteps from "./TourSteps";
 
 export interface TourStep {
 	content: string;
+	blinkers: string[];
 	action: (tour: TourClientType) => void;
 	canGoNextStep?: () => boolean;
 }
@@ -27,6 +29,21 @@ const TourClient = () => {
 		() => TourSteps(moneeeyStore, Messages),
 		[Messages, moneeeyStore],
 	);
+
+	useEffect(() => {
+		if (!open) {
+			return;
+		}
+		const tmr = setInterval(() => {
+			document
+				.querySelectorAll(".blink")
+				.forEach((node) => node.classList.remove("blink"));
+			steps[step].blinkers.forEach((blinker) =>
+				document.querySelector(blinker)?.classList.add("blink"),
+			);
+		}, 500);
+		return () => clearTimeout(tmr);
+	}, [step, open]);
 
 	return {
 		setStep(newStepp: number) {

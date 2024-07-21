@@ -94,7 +94,11 @@ const BudgetPeriod = observer(
 				header={
 					<TextTitle className="flex flex-row justify-between">
 						<div>{formatDateMonth(startingDate)}</div>
-						<LinkButton onClick={onNewBudget} className="text-sm">
+						<LinkButton
+							testId="addNewBudget"
+							onClick={onNewBudget}
+							className="text-sm"
+						>
 							<PlusCircleIcon
 								style={{
 									color: "lightgreen",

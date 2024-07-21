@@ -40,26 +40,36 @@ export default function TourSteps(
 		{
 			content: Messages.tour.currencies,
 			action: navigateTo(CurrencySettingsRoute.url()),
+			blinkers: [".currencyTable-body", ".mn-active-navbar"],
 		},
 		{
 			content: Messages.tour.accounts,
 			action: navigateTo(AccountSettingsRoute.url()),
+			blinkers: [".accountTableCHECKING-body", ".mn-active-navbar"],
 		},
 		{
 			content: Messages.tour.transactions,
 			action: navigateTo(accountTransactionsUrl),
+			blinkers: [".transactionTable-body", ".mn-active-navbar"],
 		},
 		{
 			content: Messages.tour.budgets,
 			action: navigateTo(BudgetRoute.url()),
 			canGoNextStep: () =>
 				checkStoreIsNotEmpty(budget, Messages.tour.please_create_budget),
+			blinkers: [".mn-active-navbar", "[data-testid=addNewBudget]"],
 		},
-		{ content: Messages.tour.import, action: navigateTo(ImportRoute.url()) },
+		{
+			content: Messages.tour.import,
+			action: navigateTo(ImportRoute.url()),
+
+			blinkers: [".mn-active-navbar"],
+		},
 		{
 			content: Messages.tour.your_turn,
 			action: navigateTo(AccountRoute.accountUrlForAll()),
+			blinkers: [],
 		},
-		{ content: "", action: (tour) => tour.close() },
+		{ content: "", action: (tour) => tour.close(), blinkers: [] },
 	];
 }

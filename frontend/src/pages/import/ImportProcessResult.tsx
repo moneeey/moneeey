@@ -211,6 +211,7 @@ const ContentTransactionTable = ({
 }) =>
 	isEmpty(transactions) ? null : (
 		<VirtualTable
+			testId="contentTransactionTable"
 			rows={transactions.map((t) => ({ entityId: t.transaction_uuid }))}
 			columns={[
 				{

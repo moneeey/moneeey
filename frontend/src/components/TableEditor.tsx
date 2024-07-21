@@ -32,6 +32,7 @@ export default observer(
 		factory,
 		creatable,
 		showRecentEntries,
+		testId,
 	}: TableEditorProps<T>) => {
 		const [newEntityId, setNewEntityId] = useState(() =>
 			store.getUuid(store.factory()),
@@ -114,6 +115,7 @@ export default observer(
 
 		return (
 			<VirtualTable
+				testId={testId}
 				columns={columns}
 				rows={entities}
 				isNewEntity={(row) => row.entityId === newEntityId}
