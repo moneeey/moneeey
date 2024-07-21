@@ -1,7 +1,8 @@
 import { observer } from "mobx-react-lite";
 
+import { HeaderContent } from "../components/AppMenu";
 import TableEditor from "../components/TableEditor";
-import { LinkButton } from "../components/base/Button";
+import { PrimaryButton, SecondaryButton } from "../components/base/Button";
 import Space, { VerticalSpace } from "../components/base/Space";
 import AccountKindField from "../components/editor/AccountKindField";
 import CheckboxField from "../components/editor/CheckboxField";
@@ -28,15 +29,27 @@ const AccountTable = observer(
 		const Messages = useMessages();
 
 		return (
-			<VerticalSpace className="h-full grow">
-				<Space>
-					<LinkButton
-						onClick={() => navigation.openModal(NavigationModal.MERGE_ACCOUNTS)}
-						title={Messages.modal.merge_accounts}
-					/>
-				</Space>
-				<div className="grow">
+			<>
+				<HeaderContent>
+					<Space className="p-2 scale-75">
+						<SecondaryButton
+							onClick={() =>
+								navigation.openModal(NavigationModal.MERGE_ACCOUNTS)
+							}
+						>
+							{Messages.modal.merge_accounts}
+						</SecondaryButton>
+						<PrimaryButton
+							testId="addAccount"
+							onClick={() => navigation.openModal(NavigationModal.ADD_ACCOUNT)}
+						>
+							{Messages.account.add_account}
+						</PrimaryButton>
+					</Space>
+				</HeaderContent>
+				<div className="h-full grow" key={`accountTable${kind}`}>
 					<TableEditor<IAccount>
+						key={`accountTable${kind}`}
 						testId={`accountTable${kind}`}
 						store={accounts}
 						schemaFilter={schemaFilter}
@@ -113,9 +126,9 @@ const AccountTable = observer(
 						]}
 					/>
 				</div>
-			</VerticalSpace>
+			</>
 		);
 	},
 );
 
-export { AccountTable, AccountTable as default };
+export default AccountTable;

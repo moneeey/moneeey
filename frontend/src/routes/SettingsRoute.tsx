@@ -17,5 +17,4 @@ class SettingsRouter extends Route<ISettingsRoute> {
 }
 
 const SettingsRoute = new SettingsRouter();
-
-export { SettingsRoute as default };
+export default SettingsRoute;

@@ -13,4 +13,4 @@ class HomeRouter extends Route<IRouteParameters> {
 }
 
 const HomeRoute = new HomeRouter();
-export { HomeRoute as default };
+export default HomeRoute;

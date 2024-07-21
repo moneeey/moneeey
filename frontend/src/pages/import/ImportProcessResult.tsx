@@ -79,7 +79,7 @@ const accountRender =
 								(cur_account_uuid) =>
 									moneeeyStore.accounts.byUuid(cur_account_uuid),
 							),
-							...map(moneeeyStore.accounts.all),
+							...moneeeyStore.accounts.allActive,
 						]),
 				});
 
@@ -211,6 +211,7 @@ const ContentTransactionTable = ({
 }) =>
 	isEmpty(transactions) ? null : (
 		<VirtualTable
+			testId="contentTransactionTable"
 			rows={transactions.map((t) => ({ entityId: t.transaction_uuid }))}
 			columns={[
 				{
@@ -354,4 +355,4 @@ const ImportProcessResult = ({
 	);
 };
 
-export { ImportProcessResult, ImportProcessResult as default };
+export default ImportProcessResult;

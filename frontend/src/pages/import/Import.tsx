@@ -21,6 +21,7 @@ const Import = observer(() => {
 
 	return (
 		<Tabs
+			displayOnHeader
 			testId="importTabs"
 			items={[
 				{
@@ -62,4 +63,4 @@ const Import = observer(() => {
 	);
 });
 
-export { Import, Import as default };
+export default Import;

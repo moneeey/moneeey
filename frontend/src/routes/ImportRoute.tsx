@@ -17,4 +17,4 @@ class ImportRouter extends Route<IImportRoute> {
 }
 
 const ImportRoute = new ImportRouter();
-export { ImportRoute as default };
+export default ImportRoute;

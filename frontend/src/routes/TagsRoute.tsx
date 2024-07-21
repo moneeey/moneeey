@@ -23,6 +23,7 @@ class TagsRouter extends Route<ITagsRoute> {
 
 		return (
 			<TransactionTable
+				tableId={`tagsTransactions${parameters.tag}`}
 				{...{
 					transactions,
 					accounts,
@@ -41,4 +42,4 @@ class TagsRouter extends Route<ITagsRoute> {
 }
 
 const TagsRoute = new TagsRouter();
-export { TagsRoute as default };
+export default TagsRoute;

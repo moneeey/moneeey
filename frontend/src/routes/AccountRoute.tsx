@@ -37,6 +37,7 @@ const AccountTransactions = observer(
 
 		return (
 			<TransactionTable
+				tableId={`accountTransactions${account_uuid}`}
 				{...{
 					transactions,
 					accounts,
@@ -86,4 +87,4 @@ class AccountRouter extends Route<IAccountRoute> {
 }
 
 const AccountRoute = new AccountRouter();
-export { AccountRoute as default };
+export default AccountRoute;

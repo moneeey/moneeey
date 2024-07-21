@@ -10,6 +10,7 @@ export enum NavigationModal {
 	LANDING = "LANDING",
 	SYNC = "SYNC",
 	MERGE_ACCOUNTS = "MERGE_ACCOUNTS",
+	ADD_ACCOUNT = "ADD_ACCOUNT",
 }
 
 type NotificationType = StatusType;

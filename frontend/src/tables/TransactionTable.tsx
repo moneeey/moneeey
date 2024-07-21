@@ -19,6 +19,7 @@ interface TransactionSettingsProps {
 	transactions: TransactionStore;
 	schemaFilter: (row: ITransaction) => boolean;
 	referenceAccount: TAccountUUID;
+	tableId: string;
 }
 
 const TransactionTable = observer(
@@ -27,6 +28,7 @@ const TransactionTable = observer(
 		transactions,
 		schemaFilter,
 		referenceAccount,
+		tableId,
 	}: TransactionSettingsProps) => {
 		const Messages = useMessages();
 		const { accounts, currencies } = useMoneeeyStore();
@@ -36,6 +38,7 @@ const TransactionTable = observer(
 
 		return (
 			<TableEditor
+				key={tableId}
 				creatable={creatable}
 				testId={"transactionTable"}
 				store={transactions}
@@ -60,7 +63,7 @@ const TransactionTable = observer(
 							read: ({ from_account }) => from_account,
 							delta: (from_account) => ({ from_account }),
 							clearable: true,
-							readOptions: () => accounts.all,
+							readOptions: () => accounts.allActive,
 						}),
 					},
 					{
@@ -71,7 +74,7 @@ const TransactionTable = observer(
 							read: ({ to_account }) => to_account,
 							delta: (to_account) => ({ to_account }),
 							clearable: true,
-							readOptions: () => accounts.all,
+							readOptions: () => accounts.allActive,
 						}),
 					},
 					{
@@ -133,4 +136,4 @@ const TransactionTable = observer(
 	},
 );
 
-export { TransactionTable, TransactionTable as default };
+export default TransactionTable;

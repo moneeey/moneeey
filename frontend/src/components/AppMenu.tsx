@@ -20,6 +20,8 @@ import {
 	type Dispatch,
 	type ReactNode,
 	type SetStateAction,
+	createContext,
+	useContext,
 	useEffect,
 	useState,
 } from "react";
@@ -42,47 +44,13 @@ import { StorageKind, getStorage, setStorage } from "../utils/Utils";
 import RouteRenderer from "../routes/RouteRenderer";
 import type MoneeeyStore from "../shared/MoneeeyStore";
 
-import useMessages, {
-	type AvailableLanguages,
-	useLanguageSwitcher,
-} from "../utils/Messages";
+import useMessages from "../utils/Messages";
 
-import Icon, { FavIcon, IconBrazil, IconSpain, IconUSA } from "./base/Icon";
+import { toJS } from "mobx";
+import LanguageSelector from "./LanguageSelector";
+import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
-
-const LanguageSelector = () => {
-	const Messages = useMessages();
-	const { currentLanguage, selectLanguage } = useLanguageSwitcher();
-	const LangSelect = ({
-		icon,
-		language,
-	}: { icon: ReactNode; language: AvailableLanguages }) => {
-		const isCurrentLanguage = currentLanguage === language;
-		const setCurrentLanguage = () => selectLanguage(language);
-		return (
-			<i
-				className={`inline-block h-6 w-6 rounded-xl hover:ring-2 ring-secondary-500 ${
-					isCurrentLanguage ? "ring-2" : ""
-				}`}
-				onClick={setCurrentLanguage}
-				onKeyDown={setCurrentLanguage}
-			>
-				{icon}
-			</i>
-		);
-	};
-	return (
-		<div>
-			<p>{Messages.settings.select_language}</p>
-			<div className="flex flex-row justify-end pt-1 gap-2">
-				<LangSelect icon={<IconBrazil />} language="portuguese" />
-				<LangSelect icon={<IconUSA />} language="english" />
-				<LangSelect icon={<IconSpain />} language="spanish" />
-			</div>
-		</div>
-	);
-};
 
 const Menu = observer(() => {
 	const Messages = useMessages();
@@ -254,28 +222,53 @@ const Menu = observer(() => {
 	);
 });
 
-const Header = ({
-	setExpanded,
-}: { setExpanded: Dispatch<SetStateAction<boolean>> }) => {
-	const Messages = useMessages();
+const HeaderContentContext = createContext({
+	content: (<span />) as ReactNode,
+	setContent: (newContent: ReactNode) => {},
+});
 
-	return (
-		<header className="sticky left-0 right-0 top-0 z-30 h-10 bg-background-800">
-			<TextTitle className="flex flex-row items-center gap-1 text-2xl pr-2">
-				<div className="p-2 flex flex-row grow gap-2">
-					<FavIcon />
-					{Messages.menu.title}
-				</div>
-				<Icon
-					className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200"
-					onClick={() => setExpanded((value) => !value)}
-				>
-					<Bars3Icon />
-				</Icon>
-			</TextTitle>
-		</header>
+export function HeaderContent({
+	children,
+}: {
+	children: ReactNode | ReactNode[];
+}) {
+	const headerContent = useContext(HeaderContentContext);
+	useEffect(
+		() => headerContent.setContent(children),
+		[children, headerContent],
 	);
-};
+	return <></>;
+}
+
+const Header = observer(
+	({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => {
+		const Messages = useMessages();
+		const toggleMenu = () => setExpanded((value) => !value);
+		const headerContent = useContext(HeaderContentContext);
+
+		return (
+			<header className="sticky left-0 right-0 top-0 z-30  bg-background-800 flex flex-row flex-wrap">
+				<TextTitle className="flex flex-row items-center gap-1 text-2xl pl-2 grow">
+					<Icon
+						className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200"
+						onClick={toggleMenu}
+					>
+						<Bars3Icon />
+					</Icon>
+					<div
+						className="p-2 flex flex-row gap-2"
+						onClick={toggleMenu}
+						onKeyDown={toggleMenu}
+					>
+						<FavIcon />
+						{Messages.menu.title}
+					</div>
+				</TextTitle>
+				{headerContent.content}
+			</header>
+		);
+	},
+);
 
 const Content = ({
 	expanded,
@@ -295,6 +288,7 @@ export default function AppMenu({
 	const [expanded, setExpanded] = useState(
 		getStorage("menu_expanded", "true", StorageKind.PERMANENT) === "true",
 	);
+	const [headerContent, setHeaderContent] = useState<ReactNode>(<span />);
 
 	useEffect(() => {
 		setStorage("menu_expanded", String(expanded), StorageKind.PERMANENT);
@@ -302,8 +296,17 @@ export default function AppMenu({
 
 	return (
 		<section className="flex h-screen flex-col">
-			<Header setExpanded={setExpanded} />
-			<Content expanded={expanded} moneeeyStore={moneeeyStore} />
+			<HeaderContentContext.Provider
+				value={{
+					setContent: (content) => {
+						setHeaderContent(content);
+					},
+					content: headerContent,
+				}}
+			>
+				<Header setExpanded={setExpanded} />
+				<Content expanded={expanded} moneeeyStore={moneeeyStore} />
+			</HeaderContentContext.Provider>
 		</section>
 	);
 }

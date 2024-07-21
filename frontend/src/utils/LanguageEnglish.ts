@@ -105,6 +105,7 @@ const Messages = {
 		clear_data_placeholder:
 			'Type "DELETE EVERYTHING" in this text area and hit "Clear data" again to delete everything and start from zero.',
 		create_entity: (entity: string) => `Create ${entity}`,
+		select_default_currency: "Select default currency",
 		select_language: "Select language",
 	},
 	budget: {
@@ -120,6 +121,7 @@ const Messages = {
 		remaining: "Remaining",
 	},
 	account: {
+		add_account: "Create account",
 		offbudget: "Off-Budget",
 		account_kind: "Type",
 		kind: {
@@ -129,6 +131,14 @@ const Messages = {
 			PAYEE: "Payee",
 			SAVINGS: "Savings Account",
 		} as Record<string, string>,
+	},
+	new_account: {
+		name: "New account name",
+		type: "Kind",
+		currency: "Currency",
+		initial_balance: "Initial balance",
+		submit_close: "Save and close",
+		submit_another: "Save and add another",
 	},
 	currencies: {
 		short: "Short name",
@@ -198,18 +208,39 @@ const Messages = {
 		next: "Next",
 		prev: "Previous",
 
-		edit_currencies: `Moneeey is multi currency, please edit the currencies
-      to fit your needs.
+		continue_language: "Continue to default currency selection",
+		continue_currency: "Continue to Moneeey",
 
-      We added the 20 most used currencies from 2020.`,
-		create_accounts: `Now that we know the currencies we are having, it is time to tell us what are your accounts:
-      credit cards, checking accounts, investment accounts...`,
-		create_budgets: `It is time to budget your Moneeey!  Budgets are like envelopes you put part of your income.
+		currencies: `Moneeey is multi currency!
+      We have added the 50 most used currencies in the world
+      Feel free to add or customize as you like!
+
+    Click 'Next' to proceed.`,
+		accounts: `You can manage your Accounts on this area.
+      Here, we can add new accounts, change currencies,
+      set them to be off-budget and archive accounts.
+
+    Click 'Next' to proceed.`,
+		transactions: `Moneeey will generate reports and
+      calculate your data based on the Transaction rows.
+
+      When looking a specific Account transactions,
+      a Running column will appear with the running
+      balance.
+
+      On the transactions table, we can easily add new payees
+      by starting typing a new payee name and hitting
+      the "Create 'typed name'" option.
+
+    Click 'Next' to proceed.`,
+		budgets: `It is time to budget your Moneeey!  Budgets are like envelopes you put part of your income.
 
       You should create budgets for things like:
-      home/mortgage, car maintenance, utilities, entertainment...
+        home/mortgage, car maintenance, utilities, entertainment...
 
-      Click on 'New budget' in one of the periods`,
+      These budgets will be calculated in real time and allow you keep track and boundaries on your moneeey!
+
+      Click on 'New budget' button and create a new budget`,
 
 		please_create_account: `Before continuing, please create an account by typing its information in the table below.
     `,
@@ -217,10 +248,6 @@ const Messages = {
 		please_create_budget: `Before continuing, please click on 'New Budget' and create a budget.
     `,
 
-		insert_transactions: `When we have our budgets, it is time to start inserting our transactions!
-
-      When Moneeey know your transactions, it will be capable of generating reports, calculating budget usage/remaining
-      and help you grow your finances!`,
 		import: `Inserting transactions manually can be quite boring...  So we allow you to import from common bank formats!
 
       When importing a transaction, we will try our best to guess which payees those transactions are related to.

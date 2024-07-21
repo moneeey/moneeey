@@ -51,6 +51,7 @@ export class AccountStore extends MappedStore<IAccount> {
 		makeObservable(this, {
 			allPayees: computed,
 			allNonPayees: computed,
+			allActive: computed,
 		});
 	}
 
@@ -64,6 +65,10 @@ export class AccountStore extends MappedStore<IAccount> {
 			this.moneeeyStore.tags.unregister(oldName);
 		}
 		this.moneeeyStore.tags.register(item.name);
+	}
+
+	get allActive() {
+		return this.all.filter((acct) => !acct.archived);
 	}
 
 	get allPayees() {

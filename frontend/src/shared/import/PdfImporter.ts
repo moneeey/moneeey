@@ -59,4 +59,4 @@ const pdfImport =
 		return txtImportFromLines({ moneeeyStore, data, onProgress, lines });
 	};
 
-export { pdfImport as default };
+export default pdfImport;

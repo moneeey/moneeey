@@ -111,6 +111,7 @@ const Messages: TMessages = {
 		clear_data_placeholder:
 			'Escriba "ELIMINAR TODO" en esta área de texto y presione "Borrar datos" nuevamente para eliminar todo y comenzar desde cero.',
 		create_entity: (entity: string) => `Crear ${entity}`,
+		select_default_currency: "Seleccionar moneda predeterminada",
 		select_language: "Seleccionar idioma",
 	},
 	budget: {
@@ -126,6 +127,7 @@ const Messages: TMessages = {
 		remaining: "Restante",
 	},
 	account: {
+		add_account: "Nueva cuenta",
 		offbudget: "Fuera del presupuesto",
 		account_kind: "Tipo",
 		kind: {
@@ -135,6 +137,14 @@ const Messages: TMessages = {
 			PAYEE: "Beneficiario",
 			SAVINGS: "Cuenta de ahorros",
 		} as Record<string, string>,
+	},
+	new_account: {
+		name: "Nuevo nombre de cuenta",
+		type: "Tipo",
+		currency: "Moneda",
+		initial_balance: "Saldo inicial",
+		submit_close: "Guardar y cerrar",
+		submit_another: "Guardar y añadir otro",
 	},
 	currencies: {
 		short: "Nombre corto",
@@ -203,34 +213,54 @@ const Messages: TMessages = {
 		next: "Siguiente",
 		prev: "Anterior",
 
-		edit_currencies: `Moneeey es multi moneda, por favor edite las monedas para adaptarlas a sus necesidades. Hemos añadido
-      las 20 monedas más utilizadas de 2020.`,
-		create_accounts: `Ahora que conocemos las monedas que tenemos, es hora de decirnos cuáles son sus cuentas:
-      tarjetas de crédito, cuentas corrientes, cuentas de inversión...`,
-		create_budgets: `¡Es hora de presupuestar su Moneeey! Los presupuestos son como sobres en los que pone parte de sus ingresos.
+		continue_language: "Continuar a la selección de moneda predeterminada",
+		continue_currency: "Continuar a Moneeey",
 
-      Debería crear presupuestos para cosas como:
-      vivienda/hipoteca, mantenimiento del coche, servicios públicos, entretenimiento...
+		currencies: `¡Moneeey es multimoneda!
+      Hemos añadido las 50 monedas más utilizadas en el mundo.
+      ¡Siéntase libre de agregar o personalizar como desee!
 
-      Haga clic en 'Nuevo presupuesto' en uno de los períodos`,
+    Haga clic en 'Siguiente' para continuar.`,
+		accounts: `Puede gestionar sus Cuentas en esta área.
+      Aquí, podemos agregar nuevas cuentas, cambiar monedas,
+      configurarlas para estar fuera del presupuesto y archivar cuentas.
 
-		please_create_account:
-			"Antes de continuar, por favor cree una cuenta escribiendo su información en la tabla de abajo.",
+    Haga clic en 'Siguiente' para continuar.`,
+		transactions: `Moneeey generará informes y
+      calculará sus datos basándose en las filas de Transacciones.
 
-		please_create_budget: `Antes de continuar, por favor haga clic en 'Nuevo Presupuesto' y cree un presupuesto.`,
+      Al mirar las transacciones de una Cuenta específica,
+      aparecerá una columna de Ejecución con el saldo
+      en curso.
 
-		insert_transactions: `¡Cuando tenemos nuestros presupuestos, es hora de empezar a insertar nuestras transacciones!
-      Cuando Moneeey conozca sus transacciones, será capaz de generar informes, calcular el uso/restante del presupuesto
-      y ayudarle a hacer crecer sus finanzas.`,
-		import: `¡Insertar transacciones manualmente puede ser bastante aburrido...
-      Así que le permitimos importar desde formatos bancarios comunes!
+      En la tabla de transacciones, podemos agregar fácilmente nuevos beneficiarios
+      comenzando a escribir un nuevo nombre de beneficiario y seleccionando
+      la opción "Crear 'nombre escrito'".
 
-      Cuando importe una transacción, haremos todo lo posible para adivinar con qué beneficiarios están relacionadas esas transacciones.
+    Haga clic en 'Siguiente' para continuar.`,
+		budgets: `¡Es hora de presupuestar tu Moneeey! Los presupuestos son como sobres en los que pones parte de tus ingresos.
 
-      ¡Cuanto más transacciones tenga Moneeey, más inteligente se vuelve!`,
+      Deberías crear presupuestos para cosas como:
+        hogar/hipoteca, mantenimiento del coche, servicios públicos, entretenimiento...
+
+      ¡Estos presupuestos se calcularán en tiempo real y te permitirán llevar un control y límites en tu Moneeey!
+
+      Haga clic en el botón 'Nuevo presupuesto' y cree un nuevo presupuesto`,
+
+		please_create_account: `Antes de continuar, por favor cree una cuenta ingresando su información en la tabla a continuación.
+    `,
+
+		please_create_budget: `Antes de continuar, por favor haga clic en 'Nuevo Presupuesto' y cree un presupuesto.
+    `,
+
+		import: `Insertar transacciones manualmente puede ser bastante aburrido... ¡Así que te permitimos importar desde formatos bancarios comunes!
+
+      Al importar una transacción, haremos todo lo posible para adivinar a qué beneficiarios están relacionadas esas transacciones.
+
+      ¡Cuantas más transacciones tenga Moneeey, más inteligente se vuelve!`,
 		your_turn: `¡Ahora es tu turno!
 
-      ¡Es hora de insertar algunas transacciones!`,
+      ¡Hora de insertar algunas transacciones!`,
 	},
 };
 

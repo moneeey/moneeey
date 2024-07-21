@@ -1,4 +1,3 @@
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { map, range } from "lodash";
 import { observer } from "mobx-react-lite";
 import {
@@ -11,7 +10,6 @@ import {
 
 import Loading from "../../components/Loading";
 import TableEditor from "../../components/TableEditor";
-import { LinkButton } from "../../components/base/Button";
 import Card from "../../components/base/Card";
 import { TextTitle } from "../../components/base/Text";
 import CurrencyAmountField from "../../components/editor/CurrencyAmountField";
@@ -40,12 +38,16 @@ const BudgetPeriods = observer(
 		viewMonths,
 	}: PeriodProps & { viewMonths: number }) => {
 		const [progress, setProgress] = useState(0);
+		const { budget } = useMoneeeyStore();
+		const budgetIds = budget.ids.join("_");
 
 		return (
 			<>
 				{map(range(0, viewMonths), (offset) => (
 					<Loading
-						key={offset}
+						key={`budgetPeriod_${viewArchived}_${viewMonths}_${formatDate(
+							startOfMonthOffset(startingDate, offset),
+						)}_${budgetIds}`}
 						loading={progress !== 0 && progress !== 100}
 						progress={progress}
 					>
@@ -82,25 +84,12 @@ const BudgetPeriod = observer(
 				setProgress(currentProgress),
 			);
 		}, [setProgress, starting, budget]);
-		const onNewBudget = () => setEditing(budget.factory());
-
 		return (
 			<Card
 				testId={`budget_period_${formatDateMonth(startingDate)}`}
 				header={
 					<TextTitle className="flex flex-row justify-between">
 						<div>{formatDateMonth(startingDate)}</div>
-						<LinkButton onClick={onNewBudget} className="text-sm">
-							<PlusCircleIcon
-								style={{
-									color: "lightgreen",
-									width: "1.2em",
-									height: "1.2em",
-									marginRight: "0.5em",
-								}}
-							/>
-							{Messages.budget.new}
-						</LinkButton>
 					</TextTitle>
 				}
 			>

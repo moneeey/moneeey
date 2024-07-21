@@ -21,4 +21,4 @@ const Navigator = () => {
 	return <Navigate />;
 };
 
-export { Navigator, Navigator as default };
+export default Navigator;

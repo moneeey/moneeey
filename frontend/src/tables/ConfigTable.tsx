@@ -69,4 +69,4 @@ const ConfigTable = observer(({ config }: { config: ConfigStore }) => {
 	);
 });
 
-export { ConfigTable, ConfigTable as default };
+export default ConfigTable;

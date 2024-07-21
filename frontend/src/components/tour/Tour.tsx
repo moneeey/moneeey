@@ -2,6 +2,7 @@ import {
 	type ReactNode,
 	createContext,
 	useContext,
+	useEffect,
 	useMemo,
 	useState,
 } from "react";
@@ -14,6 +15,7 @@ import TourSteps from "./TourSteps";
 
 export interface TourStep {
 	content: string;
+	blinkers: string[];
 	action: (tour: TourClientType) => void;
 	canGoNextStep?: () => boolean;
 }
@@ -27,6 +29,21 @@ const TourClient = () => {
 		() => TourSteps(moneeeyStore, Messages),
 		[Messages, moneeeyStore],
 	);
+
+	useEffect(() => {
+		if (!open) {
+			return;
+		}
+		const tmr = setInterval(() => {
+			for (const node of document.querySelectorAll(".blink")) {
+				node.classList.remove("blink");
+			}
+			for (const blinker of steps[step].blinkers) {
+				document.querySelector(blinker)?.classList.add("blink");
+			}
+		}, 500);
+		return () => clearTimeout(tmr);
+	}, [step, steps, open]);
 
 	return {
 		setStep(newStepp: number) {

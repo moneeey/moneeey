@@ -1,4 +1,4 @@
-import { CurrencyTable } from "../tables/CurrencyTable";
+import CurrencyTable from "../tables/CurrencyTable";
 
 import HomeRoute from "./HomeRouter";
 import { type IAppParameters, type IRouteParameters, Route } from "./Route";

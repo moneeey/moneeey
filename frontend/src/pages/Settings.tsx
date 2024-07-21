@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { HeaderContent } from "../components/AppMenu";
 import Loading from "../components/Loading";
 import { PrimaryButton, SecondaryButton } from "../components/base/Button";
 import Drawer from "../components/base/Drawer";
@@ -78,17 +79,21 @@ export default function Settings() {
 	};
 
 	return (
-		<VerticalSpace>
-			<Space>
-				<PrimaryButton onClick={onExportData}>
-					{Messages.settings.export_data}
-				</PrimaryButton>
-				<SecondaryButton onClick={onImportData}>
-					{Messages.settings.import_data}
-				</SecondaryButton>
-				<SecondaryButton onClick={onClearData}>
-					{Messages.settings.clear_all}
-				</SecondaryButton>
+		<>
+			<HeaderContent>
+				<Space className="p-2 scale-75">
+					<PrimaryButton onClick={onExportData}>
+						{Messages.settings.export_data}
+					</PrimaryButton>
+					<SecondaryButton onClick={onImportData}>
+						{Messages.settings.import_data}
+					</SecondaryButton>
+					<SecondaryButton onClick={onClearData}>
+						{Messages.settings.clear_all}
+					</SecondaryButton>
+				</Space>
+			</HeaderContent>
+			<VerticalSpace>
 				{action && (
 					<Drawer
 						testId="accountSettings"
@@ -123,8 +128,8 @@ export default function Settings() {
 						</div>
 					</Drawer>
 				)}
-			</Space>
-			<ConfigTable config={moneeeyStore.config} />
-		</VerticalSpace>
+				<ConfigTable config={moneeeyStore.config} />
+			</VerticalSpace>
+		</>
 	);
 }

@@ -28,7 +28,7 @@ export default function <TEntity>({
 	clearable: boolean;
 }): FieldDefHelper<TEntity> {
 	const Messages = useMessages();
-	const { accounts } = useMoneeeyStore();
+	const { accounts, config } = useMoneeeyStore();
 
 	const readName = (entity: TEntity) => accounts.nameForUuid(read(entity));
 
@@ -80,7 +80,7 @@ export default function <TEntity>({
 											(account_uuid) =>
 												accounts.byUuid(account_uuid)?.currency_uuid,
 										),
-									)[0] || account.currency_uuid;
+									)[0] || config.main.default_currency;
 							}
 							accounts.merge(account);
 							commit({ ...entity, ...delta(account.account_uuid) });

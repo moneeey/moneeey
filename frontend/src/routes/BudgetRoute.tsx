@@ -17,4 +17,4 @@ class BudgetRouter extends Route<IBudgetRoute> {
 }
 
 const BudgetRoute = new BudgetRouter();
-export { BudgetRoute as default };
+export default BudgetRoute;

@@ -14,11 +14,6 @@ const LandingModal = () => {
 	const Messages = useMessages();
 	const { navigation } = useMoneeeyStore();
 	const tour = useMoneeeyTour();
-	useEffect(() => {
-		if (getStorage("show_landing", "true", StorageKind.PERMANENT) === "true") {
-			navigation.openModal(NavigationModal.LANDING);
-		}
-	}, [navigation]);
 
 	return (
 		<Modal
@@ -49,4 +44,4 @@ const LandingModal = () => {
 	);
 };
 
-export { LandingModal, LandingModal as default };
+export default LandingModal;
