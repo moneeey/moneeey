@@ -217,20 +217,21 @@ const Header = ({
 	setExpanded,
 }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => {
 	const Messages = useMessages();
+	const toggleMenu = () => setExpanded((value) => !value);
 
 	return (
 		<header className="sticky left-0 right-0 top-0 z-30 h-10 bg-background-800">
-			<TextTitle className="flex flex-row items-center gap-1 text-2xl pr-2">
-				<div className="p-2 flex flex-row grow gap-2">
-					<FavIcon />
-					{Messages.menu.title}
-				</div>
+			<TextTitle className="flex flex-row items-center gap-1 text-2xl pl-2">
 				<Icon
 					className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200"
-					onClick={() => setExpanded((value) => !value)}
+					onClick={toggleMenu}
 				>
 					<Bars3Icon />
 				</Icon>
+				<div className="p-2 flex flex-row gap-2" onClick={toggleMenu}>
+					<FavIcon />
+					{Messages.menu.title}
+				</div>
 			</TextTitle>
 		</header>
 	);

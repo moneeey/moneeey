@@ -68,7 +68,7 @@ const InitialCurrencySelector = () => {
 			<p>{Messages.settings.default_currency}</p>
 			<Select
 				testId="defaultCurrencySelector"
-				placeholder={Messages.settings.default_currency}
+				placeholder={Messages.settings.select_default_currency}
 				value={defaultCurrency}
 				options={currencies.all.map((currency) => ({
 					label: (
@@ -97,7 +97,7 @@ const AppContent = observer(() => {
 	const { currentLanguage } = useLanguageSwitcher();
 
 	const moneeeyStore = useMoneeeyStore();
-	const { loaded } = moneeeyStore;
+	const { loaded, config, accounts } = moneeeyStore;
 
 	if (!loaded) return <p>{Messages.util.loading}</p>;
 
@@ -105,7 +105,7 @@ const AppContent = observer(() => {
 		return <InitialLanguageSelector />;
 	}
 
-	if (moneeeyStore.config.main.default_currency === "") {
+	if (config.main.default_currency === "") {
 		return <InitialCurrencySelector />;
 	}
 	// check if initialized is set, otherwise:
