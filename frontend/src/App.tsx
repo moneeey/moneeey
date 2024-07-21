@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 import { observer } from "mobx-react";
 
@@ -18,94 +18,31 @@ import MoneeeyTourProvider from "./components/tour/Tour";
 
 import { PouchDBFactory } from "./shared/Persistence";
 import useMessages, {
-	LanguageUnset,
 	MessagesProvider,
 	useLanguageSwitcher,
 } from "./utils/Messages";
-import LanguageSelector from "./components/LanguageSelector";
-import { OkButton } from "./components/base/Button";
-import { FavIcon } from "./components/base/Icon";
-import Select from "./components/base/Select";
-import { TCurrencyUUID } from "./entities/Currency";
+import InitialLanguageSelector, { showInitialLanguageSelector } from "./components/tour/InitialLanguageSelector";
+import InitialCurrencySelector, { showInitialCurrencySelector } from "./components/tour/InitialCurrencySelector";
+import MinimalBasicScreen from "./components/base/MinimalBaseScreen";
 
-const MinimalBasicScreen = ({ children }: { children: ReactNode }) => {
+const AppLoading = () => {
 	const Messages = useMessages();
-	return (
-		<div className="flex justify-center items-center min-h-screen">
-			<div className="flex flex-col items-center gap-4 scale-150 pb-32">
-				<h1 className="flex flex-row gap-2 scale-150 pb-4">
-					<FavIcon /> {Messages.menu.title}
-				</h1>
-				{children}
-			</div>
-		</div>
-	);
-};
-
-const InitialLanguageSelector = () => {
-	const [language, setLanguage] = useState(LanguageUnset);
-	const { selectLanguage, messagesForLanguage } = useLanguageSwitcher();
-	const Messages = messagesForLanguage(language);
-	return (
-		<MinimalBasicScreen>
-			<LanguageSelector onSelect={(selected) => setLanguage(selected)} />
-			{language !== LanguageUnset && (
-				<OkButton
-					title={Messages.tour.continue_language}
-					onClick={() => selectLanguage(language)}
-				/>
-			)}
-		</MinimalBasicScreen>
-	);
-};
-
-const InitialCurrencySelector = () => {
-	const [defaultCurrency, setDefaultCurrency] = useState("" as TCurrencyUUID);
-	const { currencies, config } = useMoneeeyStore();
-	const Messages = useMessages();
-	return (
-		<MinimalBasicScreen>
-			<p>{Messages.settings.default_currency}</p>
-			<Select
-				testId="defaultCurrencySelector"
-				placeholder={Messages.settings.select_default_currency}
-				value={defaultCurrency}
-				options={currencies.all.map((currency) => ({
-					label: (
-						<span>
-							<b>{currency.short}</b> {currency.name}
-						</span>
-					),
-					value: currency.currency_uuid,
-				}))}
-				onChange={(value: string) => setDefaultCurrency(value)}
-			/>
-			{defaultCurrency !== "" && (
-				<OkButton
-					title={Messages.tour.continue_currency}
-					onClick={() => {
-						config.merge({ ...config.main, default_currency: defaultCurrency });
-					}}
-				/>
-			)}
-		</MinimalBasicScreen>
-	);
-};
+	return <MinimalBasicScreen><p>{Messages.util.loading}</p></MinimalBasicScreen>
+}
 
 const AppContent = observer(() => {
-	const Messages = useMessages();
-	const { currentLanguage } = useLanguageSwitcher();
-
 	const moneeeyStore = useMoneeeyStore();
-	const { loaded, config, accounts } = moneeeyStore;
+	const languageSwitcher = useLanguageSwitcher();
 
-	if (!loaded) return <p>{Messages.util.loading}</p>;
+	if (!moneeeyStore.loaded) {
+    return <AppLoading />
+  }
 
-	if (currentLanguage === LanguageUnset) {
+	if (showInitialLanguageSelector(languageSwitcher)) {
 		return <InitialLanguageSelector />;
 	}
 
-	if (config.main.default_currency === "") {
+	if (showInitialCurrencySelector(moneeeyStore)) {
 		return <InitialCurrencySelector />;
 	}
 	// check if initialized is set, otherwise:

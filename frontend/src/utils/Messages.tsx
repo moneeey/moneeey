@@ -69,3 +69,4 @@ export function useLanguageSwitcher() {
 		},
 	};
 }
+export type LanguageSwitcher = ReturnType<typeof useLanguageSwitcher>
