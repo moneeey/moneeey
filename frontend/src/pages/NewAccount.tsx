@@ -6,7 +6,7 @@ import CurrencyAmountField from "../components/editor/CurrencyAmountField";
 import AccountKindField from "../components/editor/AccountKindField";
 import { AccountKind } from "../entities/Account";
 import CurrencySelectorField from "../components/editor/CurrencySelectorField";
-import { CancelButton, OkCancel } from "../components/base/Button";
+import { OkCancel } from "../components/base/Button";
 import { uuid } from "../utils/Utils";
 
 export default function NewAccount() {
@@ -15,6 +15,7 @@ export default function NewAccount() {
 		useMoneeeyStore();
 
 	const initialState = {
+		uuid: uuid(),
 		name: "",
 		kind: AccountKind.CHECKING,
 		currency: config.main.default_currency,
@@ -76,13 +77,13 @@ export default function NewAccount() {
 
 	const onSubmitAnother = () => {
 		onSubmit();
-		setState({ ...initialState });
+		setState({ ...initialState, uuid: uuid() });
 	};
 
-	const isValid = state.name.length > 3;
+	const isValid = state.name.length > 1;
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div key={state.uuid} className="flex flex-col gap-4">
 			<div>
 				<p>{Messages.new_account.name}</p>
 				<Input
