@@ -40,12 +40,16 @@ const BudgetPeriods = observer(
 		viewMonths,
 	}: PeriodProps & { viewMonths: number }) => {
 		const [progress, setProgress] = useState(0);
+		const { budget } = useMoneeeyStore();
+		const budgetIds = budget.ids.join("_");
 
 		return (
 			<>
 				{map(range(0, viewMonths), (offset) => (
 					<Loading
-						key={offset}
+						key={`budgetPeriod_${viewMonths}_${formatDate(
+							startOfMonthOffset(startingDate, offset),
+						)}_${budgetIds}`}
 						loading={progress !== 0 && progress !== 100}
 						progress={progress}
 					>

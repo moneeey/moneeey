@@ -1,0 +1,4 @@
+1. Move some UI into the top bar (i.e: Merge accounts/Report names/Import and ImportContentTabs)
+2. Fix auth jssha error, eliminate that dependency
+3. Fix budget not redrawing
+4. Tour - blinkers
