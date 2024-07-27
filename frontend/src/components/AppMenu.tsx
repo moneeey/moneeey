@@ -222,14 +222,6 @@ const Menu = observer(() => {
 	);
 });
 
-export function HeaderContent({
-	children,
-}: {
-	children: ReactNode | ReactNode[];
-}) {
-	return children;
-}
-
 const Header = observer(
 	({
 		children,
