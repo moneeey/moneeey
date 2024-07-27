@@ -17,16 +17,17 @@ interface TabsProps {
 }
 
 function useSelectedIndex(props: TabsProps & WithDataTestId) {
-  const { navigation } = useMoneeeyStore()
-  const selectedIndex = navigation.tabsSelectedIndex.get(props.testId) || 0
+	const { navigation } = useMoneeeyStore();
+	const selectedIndex = navigation.tabsSelectedIndex.get(props.testId) || 0;
 	return {
-    current: Math.min(props.items.length - 1, selectedIndex),
-    update: (newIndex: number) => navigation.updateTabsSelectedIndex(props.testId, newIndex),
-  }
+		current: Math.min(props.items.length - 1, selectedIndex),
+		update: (newIndex: number) =>
+			navigation.updateTabsSelectedIndex(props.testId, newIndex),
+	};
 }
 
 export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
-  const { current, update } = useSelectedIndex(props)
+	const { current, update } = useSelectedIndex(props);
 	return (
 		<nav data-testid={props.testId}>
 			<Space className="no-scrollbar flex-wrap mb-2 max-w-max">
@@ -43,18 +44,18 @@ export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
 			</Space>
 		</nav>
 	);
-})
+});
 
 export const TabsContent = observer((props: TabsProps & WithDataTestId) => {
-  const { current } = useSelectedIndex(props)
-  return props.items[current]?.children
-})
+	const { current } = useSelectedIndex(props);
+	return props.items[current]?.children;
+});
 
 const Tabs = (props: TabsProps & WithDataTestId) => {
 	return (
 		<section key={`Tabs_${props.testId}`} className="flex grow flex-col p-2">
-			<TabsHeader {...props } />
-      <TabsContent {...props } />
+			<TabsHeader {...props} />
+			<TabsContent {...props} />
 		</section>
 	);
 };

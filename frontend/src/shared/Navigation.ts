@@ -5,6 +5,7 @@ import { uuid } from "../utils/Utils";
 
 import type { IBudget } from "../entities/Budget";
 import Logger from "./Logger";
+import { ImportTask } from "./import/ImportContent";
 
 export enum NavigationModal {
 	NONE = "NONE",
@@ -38,7 +39,9 @@ export default class NavigationStore {
 
 	editingBudget?: IBudget;
 
-  tabsSelectedIndex = new Map<string, number>();
+	tabsSelectedIndex = new Map<string, number>();
+
+	importingTasks = new Map<string, ImportTask>();
 
 	constructor(parent: Logger) {
 		this.logger = new Logger("navigationStore", parent);
@@ -57,8 +60,11 @@ export default class NavigationStore {
 			updateCurrentPath: action,
 			editingBudget: observable,
 			updateEditingBudget: action,
-      tabsSelectedIndex: observable,
-      updateTabsSelectedIndex: action,
+			tabsSelectedIndex: observable,
+			updateTabsSelectedIndex: action,
+			importingTasks: observable,
+			updateImportingTasks: action,
+			removeImportingTask: action,
 		});
 	}
 
@@ -72,6 +78,14 @@ export default class NavigationStore {
 
 	updateTabsSelectedIndex(tabId: string, index: number) {
 		this.tabsSelectedIndex.set(tabId, index);
+	}
+
+	updateImportingTasks(task: ImportTask) {
+		this.importingTasks.set(task.input.name, task);
+	}
+
+	removeImportingTask(task: ImportTask) {
+		this.importingTasks.delete(task.input.name);
 	}
 
 	navigate(url: string) {

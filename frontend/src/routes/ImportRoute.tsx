@@ -1,4 +1,4 @@
-import Import from "../pages/import/Import";
+import Import, { ImportHeader } from "../pages/import/Import";
 
 import HomeRoute from "./HomeRouter";
 import Route, { type IRouteParameters } from "./Route";
@@ -9,6 +9,10 @@ class ImportRouter extends Route<IImportRoute> {
 	constructor() {
 		super("/import", HomeRoute);
 		this.parent?.addChild(this);
+	}
+
+	header() {
+		return <ImportHeader />;
 	}
 
 	render() {
