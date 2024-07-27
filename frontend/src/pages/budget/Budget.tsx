@@ -41,7 +41,7 @@ export const BudgetHeader = observer(() => {
 	const onNewBudget = () => navigation.updateEditingBudget(budget.factory());
 	return (
 		<Space>
-			<div className="flex flex-row">
+			<div className="flex flex-row flex-wrap">
 				{_.range(12).map((index) => (
 					<CalendarDaysIcon
 						className={`h-6 w-6 mr-2 hover:text-green-900 ${

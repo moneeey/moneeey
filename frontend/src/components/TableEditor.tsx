@@ -81,12 +81,21 @@ export default observer(
 
 		const columns = useMemo((): ColumnDef[] => {
 			return schema.map((field, index) => {
-				const { title, defaultSortOrder, width } = field;
+				const { title, defaultSortOrder, width, customClass } = field;
 
 				return {
 					title,
 					index,
 					width,
+					customClass: !customClass
+						? undefined
+						: ({ entityId }) => {
+								const entity = store.byUuid(entityId);
+								if (!entity) {
+									return "";
+								}
+								return customClass(entity);
+						  },
 					defaultSortOrder,
 					render: observer(({ entityId }) => {
 						const current = store.byUuid(entityId);

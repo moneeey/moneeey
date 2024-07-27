@@ -29,4 +29,5 @@ export type FieldDef<TEntity> = {
 	sorter(a: TEntity, b: TEntity, asc: boolean): number;
 	render(props: FieldRenderProps<TEntity>): JSX.Element;
 	validate(entity: TEntity): { valid: boolean; error?: string };
+	customClass?: (entity: TEntity) => string;
 };

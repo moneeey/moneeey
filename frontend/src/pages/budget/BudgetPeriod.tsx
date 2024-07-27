@@ -110,7 +110,7 @@ const BudgetPeriod = observer(
 					schema={[
 						{
 							title: Messages.budget.budget,
-							width: 90,
+							width: 45,
 							validate: () => ({ valid: true }),
 							...LinkField<BudgetEnvelope>({
 								read: ({ name }) => name,
@@ -134,6 +134,7 @@ const BudgetPeriod = observer(
 							title: Messages.budget.used,
 							width: 60,
 							readOnly: true,
+							customClass: () => "text-gray-400",
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
 								read: ({ used, budget: { currency_uuid } }) => ({
@@ -145,8 +146,10 @@ const BudgetPeriod = observer(
 						},
 						{
 							title: Messages.budget.remaining,
-							width: 60,
+							width: 50,
 							readOnly: true,
+							customClass: ({ remaining }) =>
+								remaining < 0 ? "text-red-500" : "text-gray-400",
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
 								read: ({ remaining, budget: { currency_uuid } }) => ({
