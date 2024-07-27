@@ -4,6 +4,7 @@ import type { StatusType } from "../components/Status";
 import { uuid } from "../utils/Utils";
 
 import Logger from "./Logger";
+import { IBudget, TBudgetUUID } from "../entities/Budget";
 
 export enum NavigationModal {
 	NONE = "NONE",
@@ -35,6 +36,8 @@ export default class NavigationStore {
 
 	currentPath = "/";
 
+	editingBudget?: IBudget;
+
 	constructor(parent: Logger) {
 		this.logger = new Logger("navigationStore", parent);
 
@@ -50,11 +53,17 @@ export default class NavigationStore {
 			openModal: action,
 			currentPath: observable,
 			updateCurrentPath: action,
+			editingBudget: observable,
+			updateEditingBudget: action,
 		});
 	}
 
 	updateCurrentPath(path: string) {
 		this.currentPath = path;
+	}
+
+	updateEditingBudget(budget?: IBudget) {
+		this.editingBudget = budget;
 	}
 
 	navigate(url: string) {

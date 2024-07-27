@@ -8,46 +8,47 @@ import type {
 	IRouteParameters,
 	Route as MyRoute,
 } from "./Route";
-import { HeaderContent } from "../components/AppMenu";
 
 interface IMappedRoute {
 	path: string;
 	route: MyRoute<IRouteParameters>;
 }
 
-const RouteElem = observer(
-	({
-		route,
-		app,
-	}: { route: MyRoute<IRouteParameters>; app: IAppParameters }) => {
-		const parameters = _.reduce(
-			useParams(),
-			(accum, value, key) => ({ ...accum, [key]: value }),
-			{},
-		);
+type RouteRender = { route: MyRoute<IRouteParameters>; app: IAppParameters };
 
-		useEffect(() => {
-			app.moneeeyStore.navigation.updateCurrentPath(route.url(parameters));
-		}, [route, app, parameters]);
+export const RouteContentRender = observer(({ route, app }: RouteRender) => {
+	const parameters = _.reduce(
+		useParams(),
+		(accum, value, key) => ({ ...accum, [key]: value }),
+		{},
+	);
 
-		return (
-			<>
-				<HeaderContent key={`${route.path}_${JSON.stringify(parameters)}`}>
-					{null}
-				</HeaderContent>
-				{route.render({ parameters, app })}
-			</>
-		);
-	},
-);
+	useEffect(() => {
+		app.moneeeyStore.navigation.updateCurrentPath(route.url(parameters));
+	}, [route, app, parameters]);
+
+	return <>{route.render({ parameters, app })}</>;
+});
+
+export const RouteHeaderRender = observer(({ route, app }: RouteRender) => {
+	const parameters = _.reduce(
+		useParams(),
+		(accum, value, key) => ({ ...accum, [key]: value }),
+		{},
+	);
+
+	return <>{route.header({ parameters, app })}</>;
+});
 
 const RouteRenderer = observer(
 	<IParameters extends IRouteParameters>({
 		root_route,
 		app,
+		Component,
 	}: {
 		root_route: MyRoute<IParameters>;
 		app: IAppParameters;
+		Component: (props: RouteRender) => React.ReactNode | JSX.Element;
 	}) => {
 		const mapRoute = ({
 			route,
@@ -69,13 +70,13 @@ const RouteRenderer = observer(
 					<Route
 						key={route.path}
 						path={route.path}
-						element={<RouteElem route={route.route} app={app} />}
+						element={<Component route={route.route} app={app} />}
 					/>
 				))}
 				<Route
 					index
 					key={"index"}
-					element={<RouteElem route={root_route} app={app} />}
+					element={<Component route={root_route} app={app} />}
 				/>
 			</Routes>
 		);

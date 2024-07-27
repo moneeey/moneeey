@@ -1,5 +1,5 @@
 import { AccountKind } from "../entities/Account";
-import AccountTable from "../tables/AccountTable";
+import AccountTable, { AccountTableHeader } from "../tables/AccountTable";
 
 import HomeRoute from "./HomeRouter";
 import { type IAppParameters, type IRouteParameters, Route } from "./Route";
@@ -22,6 +22,10 @@ export class AccountSettingsRouter extends Route<IAccountSettingsRoute> {
 				schemaFilter={(row) => row.kind !== AccountKind.PAYEE}
 			/>
 		);
+	}
+
+	header() {
+		return <AccountTableHeader />;
 	}
 }
 

@@ -1,5 +1,3 @@
-import type { Dispatch, SetStateAction } from "react";
-
 import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import Drawer from "../../components/base/Drawer";
 import { Checkbox, Input } from "../../components/base/Input";
@@ -15,7 +13,7 @@ const BudgetEditor = ({
 	setEditing,
 }: {
 	editing: IBudget;
-	setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
+	setEditing: (budget?: IBudget) => void;
 }) => {
 	const Messages = useMessages();
 	const { budget, tags, currencies, config } = useMoneeeyStore();
@@ -30,6 +28,7 @@ const BudgetEditor = ({
 		<Drawer
 			className="editor"
 			testId="budgetEditorDrawer"
+			key={editing.budget_uuid + "_" + editing._rev}
 			header={<TextTitle className="title">{editing.name || ""}</TextTitle>}
 		>
 			<VerticalSpace>
@@ -39,9 +38,7 @@ const BudgetEditor = ({
 						testId="budgetName"
 						placeholder={Messages.util.name}
 						value={editing.name}
-						onChange={(name) =>
-							setEditing((current) => current && { ...current, name })
-						}
+						onChange={(name) => setEditing({ ...editing, name })}
 					/>
 				</div>
 				<label>{Messages.util.currency}</label>
@@ -59,14 +56,10 @@ const BudgetEditor = ({
 						}))}
 						value={editing.currency_uuid}
 						onChange={(currency_uuid) =>
-							setEditing(
-								(current) =>
-									current && {
-										...current,
-										currency_uuid:
-											currency_uuid || config.main.default_currency,
-									},
-							)
+							setEditing({
+								...editing,
+								currency_uuid: currency_uuid || config.main.default_currency,
+							})
 						}
 					/>
 				</div>
@@ -79,10 +72,7 @@ const BudgetEditor = ({
 						value={editing.tags}
 						onCreate={(tagName) => {
 							tags.register(tagName);
-							setEditing(
-								(current) =>
-									current && { ...current, tags: [...editing.tags, tagName] },
-							);
+							setEditing({ ...editing, tags: [...editing.tags, tagName] });
 						}}
 						onChange={(new_tags: readonly string[]) =>
 							setEditing({ ...editing, tags: [...new_tags] })

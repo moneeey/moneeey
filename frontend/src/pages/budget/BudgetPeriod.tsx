@@ -26,7 +26,7 @@ import useMessages from "../../utils/Messages";
 
 interface PeriodProps {
 	startingDate: Date;
-	setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
+	setEditing: (budget?: IBudget) => void;
 	viewArchived: boolean;
 }
 

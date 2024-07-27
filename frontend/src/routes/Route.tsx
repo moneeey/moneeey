@@ -43,5 +43,12 @@ export abstract class Route<IParameters extends IRouteParameters> {
 		parameters,
 		app,
 	}: { parameters: IParameters; app: IAppParameters }): ReactNode;
+
+	header(_params: {
+		parameters: IParameters;
+		app: IAppParameters;
+	}): null | ReactNode {
+		return null;
+	}
 }
 export default Route;

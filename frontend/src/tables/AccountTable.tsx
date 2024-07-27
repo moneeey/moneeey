@@ -15,6 +15,7 @@ import type { CurrencyStore } from "../entities/Currency";
 import type NavigationStore from "../shared/Navigation";
 import { NavigationModal } from "../shared/Navigation";
 import useMessages from "../utils/Messages";
+import useMoneeeyStore from "../shared/useMoneeeyStore";
 
 interface AccountSettingsProps {
 	accounts: AccountStore;
@@ -24,29 +25,32 @@ interface AccountSettingsProps {
 	schemaFilter: (row: IAccount) => boolean;
 }
 
+export const AccountTableHeader = () => {
+	const { navigation } = useMoneeeyStore();
+	const Messages = useMessages();
+	return (
+		<Space className="scale-75">
+			<SecondaryButton
+				onClick={() => navigation.openModal(NavigationModal.MERGE_ACCOUNTS)}
+			>
+				{Messages.modal.merge_accounts}
+			</SecondaryButton>
+			<PrimaryButton
+				testId="addAccount"
+				onClick={() => navigation.openModal(NavigationModal.ADD_ACCOUNT)}
+			>
+				{Messages.account.add_account}
+			</PrimaryButton>
+		</Space>
+	);
+};
+
 const AccountTable = observer(
 	({ accounts, schemaFilter, kind, navigation }: AccountSettingsProps) => {
 		const Messages = useMessages();
 
 		return (
 			<>
-				<HeaderContent>
-					<Space className="p-2 scale-75">
-						<SecondaryButton
-							onClick={() =>
-								navigation.openModal(NavigationModal.MERGE_ACCOUNTS)
-							}
-						>
-							{Messages.modal.merge_accounts}
-						</SecondaryButton>
-						<PrimaryButton
-							testId="addAccount"
-							onClick={() => navigation.openModal(NavigationModal.ADD_ACCOUNT)}
-						>
-							{Messages.account.add_account}
-						</PrimaryButton>
-					</Space>
-				</HeaderContent>
 				<div className="h-full grow" key={`accountTable${kind}`}>
 					<TableEditor<IAccount>
 						key={`accountTable${kind}`}

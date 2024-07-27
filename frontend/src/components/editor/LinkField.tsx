@@ -20,9 +20,8 @@ export default function <TEntity>({
 				className="!p-0"
 				testId={`editor${field.title.replace(" ", "_")}`}
 				onClick={() => onClick(entity)}
-			>
-				{read(entity)}
-			</LinkButton>
+				title={read(entity)}
+			/>
 		)),
 		sorter: (a: TEntity, b: TEntity, asc: boolean): number =>
 			asc ? read(a).localeCompare(read(b)) : read(b).localeCompare(read(a)),

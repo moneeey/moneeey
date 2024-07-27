@@ -41,7 +41,10 @@ import { Status } from "../shared/Persistence";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import { StorageKind, getStorage, setStorage } from "../utils/Utils";
 
-import RouteRenderer from "../routes/RouteRenderer";
+import RouteRenderer, {
+	RouteContentRender,
+	RouteHeaderRender,
+} from "../routes/RouteRenderer";
 import type MoneeeyStore from "../shared/MoneeeyStore";
 
 import useMessages from "../utils/Messages";
@@ -222,29 +225,24 @@ const Menu = observer(() => {
 	);
 });
 
-const HeaderContentContext = createContext({
-	content: (<span />) as ReactNode,
-	setContent: (newContent: ReactNode) => {},
-});
-
 export function HeaderContent({
 	children,
 }: {
 	children: ReactNode | ReactNode[];
 }) {
-	const headerContent = useContext(HeaderContentContext);
-	useEffect(
-		() => headerContent.setContent(children),
-		[children, headerContent],
-	);
-	return <></>;
+	return children;
 }
 
 const Header = observer(
-	({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => {
+	({
+		setExpanded,
+		moneeeyStore,
+	}: {
+		setExpanded: Dispatch<SetStateAction<boolean>>;
+		moneeeyStore: MoneeeyStore;
+	}) => {
 		const Messages = useMessages();
 		const toggleMenu = () => setExpanded((value) => !value);
-		const headerContent = useContext(HeaderContentContext);
 
 		return (
 			<header className="sticky left-0 right-0 top-0 z-30  bg-background-800 flex flex-row flex-wrap">
@@ -264,7 +262,11 @@ const Header = observer(
 						{Messages.menu.title}
 					</div>
 				</TextTitle>
-				{headerContent.content}
+				<RouteRenderer
+					root_route={HomeRoute}
+					app={{ moneeeyStore }}
+					Component={RouteHeaderRender}
+				/>
 			</header>
 		);
 	},
@@ -277,7 +279,11 @@ const Content = ({
 	<section className="flex grow flex-row">
 		{expanded && <Menu />}
 		<section className="flex max-h-[calc(100vh-3em)] grow flex-col overflow-scroll p-4">
-			<RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
+			<RouteRenderer
+				root_route={HomeRoute}
+				app={{ moneeeyStore }}
+				Component={RouteContentRender}
+			/>
 		</section>
 	</section>
 );
@@ -288,25 +294,14 @@ export default function AppMenu({
 	const [expanded, setExpanded] = useState(
 		getStorage("menu_expanded", "true", StorageKind.PERMANENT) === "true",
 	);
-	const [headerContent, setHeaderContent] = useState<ReactNode>(<span />);
-
 	useEffect(() => {
 		setStorage("menu_expanded", String(expanded), StorageKind.PERMANENT);
 	}, [expanded]);
 
 	return (
 		<section className="flex h-screen flex-col">
-			<HeaderContentContext.Provider
-				value={{
-					setContent: (content) => {
-						setHeaderContent(content);
-					},
-					content: headerContent,
-				}}
-			>
-				<Header setExpanded={setExpanded} />
-				<Content expanded={expanded} moneeeyStore={moneeeyStore} />
-			</HeaderContentContext.Provider>
+			<Header setExpanded={setExpanded} />
+			<Content expanded={expanded} moneeeyStore={moneeeyStore} />
 		</section>
 	);
 }

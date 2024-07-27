@@ -1,4 +1,4 @@
-import Budget from "../pages/budget/Budget";
+import Budget, { BudgetHeader } from "../pages/budget/Budget";
 
 import HomeRoute from "./HomeRouter";
 import { type IRouteParameters, Route } from "./Route";
@@ -13,6 +13,10 @@ class BudgetRouter extends Route<IBudgetRoute> {
 
 	render() {
 		return <Budget />;
+	}
+
+	header() {
+		return <BudgetHeader />;
 	}
 }
 

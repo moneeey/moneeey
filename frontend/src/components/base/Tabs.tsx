@@ -15,7 +15,6 @@ interface TabItem {
 
 interface TabsProps {
 	className?: string;
-	displayOnHeader?: boolean;
 	items: Array<TabItem>;
 	persist?: StorageKind;
 	onChange?: (selectedIdx: number) => void;
@@ -41,11 +40,7 @@ const Tabs = (props: TabsProps & WithDataTestId) => {
 	const activeTab = Math.min(props.items.length - 1, selectedIdx);
 	const links = (
 		<nav data-testid={props.testId}>
-			<Space
-				className={`no-scrollbar flex-wrap mb-2 max-w-max ${
-					props.displayOnHeader ? "" : "border-b border-b-background-300"
-				}`}
-			>
+			<Space className={`no-scrollbar flex-wrap mb-2 max-w-max`}>
 				{props.items.map((item, idx) => (
 					<LinkButton
 						key={item.key}
@@ -62,7 +57,7 @@ const Tabs = (props: TabsProps & WithDataTestId) => {
 
 	return (
 		<section className={`flex grow flex-col p-2 ${props.className || ""}`}>
-			{props.displayOnHeader ? <HeaderContent>{links}</HeaderContent> : links}
+			{links}
 			{props.items[activeTab]?.children}
 		</section>
 	);

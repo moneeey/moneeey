@@ -13,7 +13,6 @@ const Reports = () => {
 
 	return (
 		<Tabs
-			displayOnHeader
 			testId="reportTabs"
 			className="grow"
 			items={[
