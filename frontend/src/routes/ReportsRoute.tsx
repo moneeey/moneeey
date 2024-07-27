@@ -1,4 +1,4 @@
-import Reports from "../pages/report/Reports";
+import Reports, { ReportsHeader } from "../pages/report/Reports";
 
 import HomeRoute from "./HomeRouter";
 import Route, { type IRouteParameters } from "./Route";
@@ -10,6 +10,10 @@ class ReportsRouter extends Route<IReportsRoute> {
 		super("/reports", HomeRoute);
 		this.parent?.addChild(this);
 	}
+
+  header() {
+    return <ReportsHeader />
+  }
 
 	render() {
 		return <Reports />;
