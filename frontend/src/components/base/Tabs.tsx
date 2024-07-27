@@ -2,7 +2,6 @@ import { type ReactNode, useState } from "react";
 
 import { type StorageKind, getStorage, setStorage } from "../../utils/Utils";
 
-import { HeaderContent } from "../AppMenu";
 import { LinkButton } from "./Button";
 import type { WithDataTestId } from "./Common";
 import Space from "./Space";

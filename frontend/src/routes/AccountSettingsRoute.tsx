@@ -1,5 +1,4 @@
 import { AccountKind } from "../entities/Account";
-import useMoneeeyStore from "../shared/useMoneeeyStore";
 import AccountTable, { AccountTableHeader } from "../tables/AccountTable";
 
 import HomeRoute from "./HomeRouter";

@@ -1,9 +1,8 @@
 import { map } from "lodash";
-import { useEffect } from "react";
 
 import { NavigationModal } from "../../shared/Navigation";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { StorageKind, getStorage, setStorage } from "../../utils/Utils";
+import { StorageKind, setStorage } from "../../utils/Utils";
 import { useMoneeeyTour } from "../tour/Tour";
 
 import useMessages from "../../utils/Messages";

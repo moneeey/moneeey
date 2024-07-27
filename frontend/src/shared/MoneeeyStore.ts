@@ -6,7 +6,6 @@ import ConfigStore from "../entities/Config";
 import CurrencyStore from "../entities/Currency";
 import TransactionStore from "../entities/Transaction";
 
-import { EntityType } from "./Entity";
 import Logger from "./Logger";
 import ManagementStore from "./Management";
 import NavigationStore from "./Navigation";

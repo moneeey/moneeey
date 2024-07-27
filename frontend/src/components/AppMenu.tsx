@@ -20,8 +20,6 @@ import {
 	type Dispatch,
 	type ReactNode,
 	type SetStateAction,
-	createContext,
-	useContext,
 	useEffect,
 	useState,
 } from "react";
@@ -45,11 +43,9 @@ import RouteRenderer, {
 	RouteContentRender,
 	RouteHeaderRender,
 } from "../routes/RouteRenderer";
-import type MoneeeyStore from "../shared/MoneeeyStore";
 
 import useMessages from "../utils/Messages";
 
-import { toJS } from "mobx";
 import LanguageSelector from "./LanguageSelector";
 import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";

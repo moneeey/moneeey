@@ -3,7 +3,7 @@ import { action, computed, makeObservable, observable } from "mobx";
 import type { StatusType } from "../components/Status";
 import { uuid } from "../utils/Utils";
 
-import { type IBudget, TBudgetUUID } from "../entities/Budget";
+import type { IBudget } from "../entities/Budget";
 import Logger from "./Logger";
 
 export enum NavigationModal {

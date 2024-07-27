@@ -1,18 +1,15 @@
 import { observer } from "mobx-react-lite";
 
-import { HeaderContent } from "../components/AppMenu";
 import TableEditor from "../components/TableEditor";
 import { PrimaryButton, SecondaryButton } from "../components/base/Button";
-import Space, { VerticalSpace } from "../components/base/Space";
+import Space from "../components/base/Space";
 import AccountKindField from "../components/editor/AccountKindField";
 import CheckboxField from "../components/editor/CheckboxField";
 import CurrencySelectorField from "../components/editor/CurrencySelectorField";
 import DateField from "../components/editor/DateField";
 import TagField from "../components/editor/TagField";
 import TextField from "../components/editor/TextField";
-import type { AccountKind, AccountStore, IAccount } from "../entities/Account";
-import type { CurrencyStore } from "../entities/Currency";
-import type NavigationStore from "../shared/Navigation";
+import type { AccountKind, IAccount } from "../entities/Account";
 import { NavigationModal } from "../shared/Navigation";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
