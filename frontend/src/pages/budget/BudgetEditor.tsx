@@ -28,7 +28,7 @@ const BudgetEditor = ({
 		<Drawer
 			className="editor"
 			testId="budgetEditorDrawer"
-			key={editing.budget_uuid + "_" + editing._rev}
+			key={`${editing.budget_uuid}_${editing._rev}`}
 			header={<TextTitle className="title">{editing.name || ""}</TextTitle>}
 		>
 			<VerticalSpace>

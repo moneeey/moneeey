@@ -14,13 +14,10 @@ import type { AccountKind, AccountStore, IAccount } from "../entities/Account";
 import type { CurrencyStore } from "../entities/Currency";
 import type NavigationStore from "../shared/Navigation";
 import { NavigationModal } from "../shared/Navigation";
-import useMessages from "../utils/Messages";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
+import useMessages from "../utils/Messages";
 
 interface AccountSettingsProps {
-	accounts: AccountStore;
-	currencies: CurrencyStore;
-	navigation: NavigationStore;
 	kind: AccountKind;
 	schemaFilter: (row: IAccount) => boolean;
 }
@@ -46,7 +43,8 @@ export const AccountTableHeader = () => {
 };
 
 const AccountTable = observer(
-	({ accounts, schemaFilter, kind, navigation }: AccountSettingsProps) => {
+	({ schemaFilter, kind }: AccountSettingsProps) => {
+		const { accounts } = useMoneeeyStore();
 		const Messages = useMessages();
 
 		return (

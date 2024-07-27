@@ -2,7 +2,7 @@ import { AccountKind } from "../entities/Account";
 import AccountTable, { AccountTableHeader } from "../tables/AccountTable";
 
 import HomeRoute from "./HomeRouter";
-import { type IAppParameters, type IRouteParameters, Route } from "./Route";
+import Route, { type IRouteParameters } from "./Route";
 
 type IPayeeSettingsRoute = IRouteParameters;
 
@@ -12,12 +12,9 @@ export class PayeeSettingsRouter extends Route<IPayeeSettingsRoute> {
 		this.parent?.addChild(this);
 	}
 
-	render({ app }: { app: IAppParameters }) {
+	render() {
 		return (
 			<AccountTable
-				accounts={app.moneeeyStore.accounts}
-				currencies={app.moneeeyStore.currencies}
-				navigation={app.moneeeyStore.navigation}
 				kind={AccountKind.PAYEE}
 				schemaFilter={(row) => row.kind === AccountKind.PAYEE}
 			/>

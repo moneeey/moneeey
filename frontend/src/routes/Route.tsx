@@ -1,17 +1,12 @@
 import type { ReactNode } from "react";
 
-import type MoneeeyStore from "../shared/MoneeeyStore";
 import { slugify } from "../utils/Utils";
-
-export interface IAppParameters {
-	moneeeyStore: MoneeeyStore;
-}
 
 export interface IRouteParameters {
 	[_index: string]: string;
 }
 
-export abstract class Route<IParameters extends IRouteParameters> {
+export default abstract class Route<IParameters extends IRouteParameters> {
 	path: string;
 
 	parent?: Route<IRouteParameters>;
@@ -39,16 +34,9 @@ export abstract class Route<IParameters extends IRouteParameters> {
 		return (parentUrl + currentUrl).replace("//", "/");
 	}
 
-	abstract render({
-		parameters,
-		app,
-	}: { parameters: IParameters; app: IAppParameters }): ReactNode;
+	abstract render({ parameters }: { parameters: IParameters }): ReactNode;
 
-	header(_params: {
-		parameters: IParameters;
-		app: IAppParameters;
-	}): null | ReactNode {
+	header(_params: { parameters: IParameters }): null | ReactNode {
 		return null;
 	}
 }
-export default Route;

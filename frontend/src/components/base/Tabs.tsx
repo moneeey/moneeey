@@ -40,7 +40,7 @@ const Tabs = (props: TabsProps & WithDataTestId) => {
 	const activeTab = Math.min(props.items.length - 1, selectedIdx);
 	const links = (
 		<nav data-testid={props.testId}>
-			<Space className={`no-scrollbar flex-wrap mb-2 max-w-max`}>
+			<Space className="no-scrollbar flex-wrap mb-2 max-w-max">
 				{props.items.map((item, idx) => (
 					<LinkButton
 						key={item.key}

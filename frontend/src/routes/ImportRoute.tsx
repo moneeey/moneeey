@@ -1,7 +1,7 @@
 import Import from "../pages/import/Import";
 
 import HomeRoute from "./HomeRouter";
-import { type IRouteParameters, Route } from "./Route";
+import Route, { type IRouteParameters } from "./Route";
 
 type IImportRoute = IRouteParameters;
 

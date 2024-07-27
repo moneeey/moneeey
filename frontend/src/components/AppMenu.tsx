@@ -236,11 +236,10 @@ export function HeaderContent({
 const Header = observer(
 	({
 		setExpanded,
-		moneeeyStore,
 	}: {
 		setExpanded: Dispatch<SetStateAction<boolean>>;
-		moneeeyStore: MoneeeyStore;
 	}) => {
+		const moneeeyStore = useMoneeeyStore();
 		const Messages = useMessages();
 		const toggleMenu = () => setExpanded((value) => !value);
 
@@ -262,35 +261,22 @@ const Header = observer(
 						{Messages.menu.title}
 					</div>
 				</TextTitle>
-				<RouteRenderer
-					root_route={HomeRoute}
-					app={{ moneeeyStore }}
-					Component={RouteHeaderRender}
-				/>
+				<RouteRenderer root_route={HomeRoute} Component={RouteHeaderRender} />
 			</header>
 		);
 	},
 );
 
-const Content = ({
-	expanded,
-	moneeeyStore,
-}: { expanded: boolean; moneeeyStore: MoneeeyStore }) => (
+const Content = ({ expanded }: { expanded: boolean }) => (
 	<section className="flex grow flex-row">
 		{expanded && <Menu />}
 		<section className="flex max-h-[calc(100vh-3em)] grow flex-col overflow-scroll p-4">
-			<RouteRenderer
-				root_route={HomeRoute}
-				app={{ moneeeyStore }}
-				Component={RouteContentRender}
-			/>
+			<RouteRenderer root_route={HomeRoute} Component={RouteContentRender} />
 		</section>
 	</section>
 );
 
-export default function AppMenu({
-	moneeeyStore,
-}: { moneeeyStore: MoneeeyStore }) {
+export default function AppMenu() {
 	const [expanded, setExpanded] = useState(
 		getStorage("menu_expanded", "true", StorageKind.PERMANENT) === "true",
 	);
@@ -301,7 +287,7 @@ export default function AppMenu({
 	return (
 		<section className="flex h-screen flex-col">
 			<Header setExpanded={setExpanded} />
-			<Content expanded={expanded} moneeeyStore={moneeeyStore} />
+			<Content expanded={expanded} />
 		</section>
 	);
 }

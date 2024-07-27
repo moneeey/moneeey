@@ -1,7 +1,7 @@
 import Budget, { BudgetHeader } from "../pages/budget/Budget";
 
 import HomeRoute from "./HomeRouter";
-import { type IRouteParameters, Route } from "./Route";
+import Route, { type IRouteParameters } from "./Route";
 
 type IBudgetRoute = IRouteParameters;
 
