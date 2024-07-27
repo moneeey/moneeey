@@ -42,21 +42,19 @@ export const BudgetHeader = observer(() => {
 	return (
 		<Space>
 			<div className="flex flex-row">
-				{_.range(6).map((index) => (
+				{_.range(12).map((index) => (
 					<CalendarDaysIcon
+						className={`h-6 w-6 mr-2 hover:text-green-900 ${
+							index + 1 <= config.main.view_months
+								? "text-green-300"
+								: "text-gray-200"
+						}`}
 						key={`view_months_${index}`}
 						onClick={() => {
 							config.merge({
 								...config.main,
 								view_months: index + 1,
 							});
-						}}
-						style={{
-							color:
-								index + 1 <= config.main.view_months ? "lightgreen" : "gray",
-							width: "1.2em",
-							height: "1.2em",
-							marginRight: "0.5em",
 						}}
 					/>
 				))}
@@ -109,7 +107,6 @@ const Budget = observer(() => {
 				setDate={setStartingDate}
 				Messages={Messages}
 			/>
-
 			<BudgetPeriods
 				startingDate={startingDate}
 				setEditing={setEditing}

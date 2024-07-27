@@ -18,7 +18,7 @@ const Card = ({
 }: CardProps & WithDataTestId) => (
 	<article className={`${className || ""}`} data-testid={testId}>
 		<header>{header}</header>
-		<article>{children}</article>
+		<article className="h-full">{children}</article>
 		<footer className="mt-4">{footer}</footer>
 	</article>
 );
