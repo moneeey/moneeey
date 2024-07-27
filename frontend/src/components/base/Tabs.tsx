@@ -1,10 +1,10 @@
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 
+import { observer } from "mobx-react-lite";
+import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { LinkButton } from "./Button";
 import type { WithDataTestId } from "./Common";
 import Space from "./Space";
-import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { observer } from "mobx-react-lite";
 
 interface TabItem {
 	key: string;

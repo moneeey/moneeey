@@ -24,7 +24,7 @@ const MonthDateSelector = ({
 	date,
 	Messages,
 }: MonthDateSelectorProps) => (
-	<Space>
+	<Space className="justify-center">
 		<SecondaryButton onClick={() => setDate(startOfMonthOffset(date, -1))}>
 			{Messages.budget.prev}
 		</SecondaryButton>

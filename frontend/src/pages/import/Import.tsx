@@ -1,14 +1,13 @@
 import { observer } from "mobx-react";
 
-import Tabs, { TabsContent, TabsHeader } from "../../components/base/Tabs";
+import { TabsContent, TabsHeader } from "../../components/base/Tabs";
 import type { ImportTask } from "../../shared/import/ImportContent";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import useMessages from "../../utils/Messages";
 
+import type MoneeeyStore from "../../shared/MoneeeyStore";
 import ImportProcess from "./ImportProcessor";
 import ImportStarter from "./ImportStarter";
-import NavigationStore from "../../shared/Navigation";
-import MoneeeyStore from "../../shared/MoneeeyStore";
 
 const tabItems = (
 	moneeeyStore: MoneeeyStore,

@@ -1,4 +1,4 @@
-import Tabs, { TabsContent, TabsHeader } from "../../components/base/Tabs";
+import { TabsContent, TabsHeader } from "../../components/base/Tabs";
 
 import useMessages from "../../utils/Messages";
 
@@ -8,7 +8,7 @@ import PayeeBalanceReport from "./PayeeBalanceReport";
 import TagExpensesReport from "./TagExpensesReport";
 import WealthGrowReport from "./WealthGrowReport";
 
-const availableReports = (Messages) => [
+const availableReports = (Messages: ReturnType<typeof useMessages>) => [
 	{
 		label: Messages.reports.account_balance,
 		key: Messages.reports.account_balance,

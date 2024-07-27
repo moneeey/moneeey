@@ -10,7 +10,6 @@ import { NavigationModal } from "../../shared/Navigation";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
 import useMessages from "../../utils/Messages";
-import { StorageKind } from "../../utils/Utils";
 import { BaseFormEditor } from "../FormEditor";
 import { Status } from "../Status";
 import { CancelButton, OkButton } from "../base/Button";
@@ -196,7 +195,6 @@ export default function SyncModal() {
 				<span className="white-space-preline">{Messages.sync.intro}</span>
 				<Tabs
 					testId="syncSettings"
-					persist={StorageKind.PERMANENT}
 					items={[
 						{
 							key: "moneeeyAccount",

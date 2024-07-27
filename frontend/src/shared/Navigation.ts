@@ -5,7 +5,7 @@ import { uuid } from "../utils/Utils";
 
 import type { IBudget } from "../entities/Budget";
 import Logger from "./Logger";
-import { ImportTask } from "./import/ImportContent";
+import type { ImportTask } from "./import/ImportContent";
 
 export enum NavigationModal {
 	NONE = "NONE",
