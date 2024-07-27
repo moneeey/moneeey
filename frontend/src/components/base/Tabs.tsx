@@ -1,10 +1,10 @@
-import { type ReactNode, useState } from "react";
-
-import { type StorageKind, getStorage, setStorage } from "../../utils/Utils";
+import { type ReactNode } from "react";
 
 import { LinkButton } from "./Button";
 import type { WithDataTestId } from "./Common";
 import Space from "./Space";
+import useMoneeeyStore from "../../shared/useMoneeeyStore";
+import { observer } from "mobx-react-lite";
 
 interface TabItem {
 	key: string;
@@ -13,39 +13,29 @@ interface TabItem {
 }
 
 interface TabsProps {
-	className?: string;
 	items: Array<TabItem>;
-	persist?: StorageKind;
-	onChange?: (selectedIdx: number) => void;
 }
 
-const Tabs = (props: TabsProps & WithDataTestId) => {
-	const key = `Tabs_${props.testId}`;
-	const [selectedIdx, setSelectedIdx] = useState(
-		props.persist
-			? Number.parseInt(getStorage(key, "0", props.persist), 10)
-			: 0,
-	);
-	const onChange = (newIdx: number) => {
-		setSelectedIdx(newIdx);
-		if (props.persist) {
-			setStorage(key, `${newIdx}`, props.persist);
-		}
-		if (props.onChange) {
-			props.onChange(newIdx);
-		}
-	};
+function useSelectedIndex(props: TabsProps & WithDataTestId) {
+  const { navigation } = useMoneeeyStore()
+  const selectedIndex = navigation.tabsSelectedIndex.get(props.testId) || 0
+	return {
+    current: Math.min(props.items.length - 1, selectedIndex),
+    update: (newIndex: number) => navigation.updateTabsSelectedIndex(props.testId, newIndex),
+  }
+}
 
-	const activeTab = Math.min(props.items.length - 1, selectedIdx);
-	const links = (
+export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
+  const { current, update } = useSelectedIndex(props)
+	return (
 		<nav data-testid={props.testId}>
 			<Space className="no-scrollbar flex-wrap mb-2 max-w-max">
 				{props.items.map((item, idx) => (
 					<LinkButton
 						key={item.key}
-						onClick={() => onChange(idx)}
+						onClick={() => update(idx)}
 						testId={`${props.testId}_${item.key}`}
-						className={idx === activeTab ? "underline" : ""}
+						className={idx === current ? "underline" : ""}
 					>
 						{item.label}
 					</LinkButton>
@@ -53,11 +43,18 @@ const Tabs = (props: TabsProps & WithDataTestId) => {
 			</Space>
 		</nav>
 	);
+})
 
+export const TabsContent = observer((props: TabsProps & WithDataTestId) => {
+  const { current } = useSelectedIndex(props)
+  return props.items[current]?.children
+})
+
+const Tabs = (props: TabsProps & WithDataTestId) => {
 	return (
-		<section className={`flex grow flex-col p-2 ${props.className || ""}`}>
-			{links}
-			{props.items[activeTab]?.children}
+		<section key={`Tabs_${props.testId}`} className="flex grow flex-col p-2">
+			<TabsHeader {...props } />
+      <TabsContent {...props } />
 		</section>
 	);
 };

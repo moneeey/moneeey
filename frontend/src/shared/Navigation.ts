@@ -38,6 +38,8 @@ export default class NavigationStore {
 
 	editingBudget?: IBudget;
 
+  tabsSelectedIndex = new Map<string, number>();
+
 	constructor(parent: Logger) {
 		this.logger = new Logger("navigationStore", parent);
 
@@ -55,6 +57,8 @@ export default class NavigationStore {
 			updateCurrentPath: action,
 			editingBudget: observable,
 			updateEditingBudget: action,
+      tabsSelectedIndex: observable,
+      updateTabsSelectedIndex: action,
 		});
 	}
 
@@ -64,6 +68,10 @@ export default class NavigationStore {
 
 	updateEditingBudget(budget?: IBudget) {
 		this.editingBudget = budget;
+	}
+
+	updateTabsSelectedIndex(tabId: string, index: number) {
+		this.tabsSelectedIndex.set(tabId, index);
 	}
 
 	navigate(url: string) {
