@@ -42,10 +42,10 @@ export const RouteHeaderRender = observer(({ route }: RouteRender) => {
 const RouteRenderer = observer(
 	<IParameters extends IRouteParameters>({
 		root_route,
-		Component,
+		children,
 	}: {
 		root_route: MyRoute<IParameters>;
-		Component: (props: RouteRender) => React.ReactNode | JSX.Element;
+		children: (props: RouteRender) => React.ReactNode;
 	}) => {
 		const mapRoute = ({
 			route,
@@ -60,6 +60,7 @@ const RouteRenderer = observer(
 			return [..._.flatten(children), current];
 		};
 		const routes = mapRoute({ route: root_route, path: root_route.path });
+		const Component = children;
 
 		return (
 			<Routes>
@@ -67,10 +68,10 @@ const RouteRenderer = observer(
 					<Route
 						key={route.path}
 						path={route.path}
+						index={route.path === "/"}
 						element={<Component route={route.route} />}
 					/>
 				))}
-				<Route index key={"index"} element={<Component route={root_route} />} />
 			</Routes>
 		);
 	},

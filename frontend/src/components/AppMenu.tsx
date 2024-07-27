@@ -55,6 +55,7 @@ const Menu = observer(() => {
 	const Messages = useMessages();
 	const { navigation, accounts, currencies, persistence, transactions } =
 		useMoneeeyStore();
+	const { all: allTransactions } = transactions;
 
 	const getAccountCurrency = (account: IAccount) => {
 		const curr = currencies.byUuid(account.currency_uuid);
@@ -67,7 +68,7 @@ const Menu = observer(() => {
 	);
 	const unclassified = transactions.viewAllUnclassified().length;
 	const activePath = navigation.currentPath;
-	const hasTransactions = transactions.all.length > 0;
+	const hasTransactions = allTransactions.length > 0;
 	const runningBalances = new Map(
 		Array.from(transactions.runningBalance.accountBalance.entries()).map(
 			([account_uuid, balance]) => [
@@ -231,11 +232,12 @@ export function HeaderContent({
 
 const Header = observer(
 	({
+		children,
 		setExpanded,
 	}: {
+		children: ReactNode;
 		setExpanded: Dispatch<SetStateAction<boolean>>;
 	}) => {
-		const moneeeyStore = useMoneeeyStore();
 		const Messages = useMessages();
 		const toggleMenu = () => setExpanded((value) => !value);
 
@@ -257,17 +259,20 @@ const Header = observer(
 						{Messages.menu.title}
 					</div>
 				</TextTitle>
-				<RouteRenderer root_route={HomeRoute} Component={RouteHeaderRender} />
+				{children}
 			</header>
 		);
 	},
 );
 
-const Content = ({ expanded }: { expanded: boolean }) => (
+const Content = ({
+	expanded,
+	children,
+}: { expanded: boolean; children: ReactNode }) => (
 	<section className="flex grow flex-row">
 		{expanded && <Menu />}
 		<section className="flex max-h-[calc(100vh-3em)] grow flex-col overflow-scroll p-4">
-			<RouteRenderer root_route={HomeRoute} Component={RouteContentRender} />
+			{children}
 		</section>
 	</section>
 );
@@ -282,8 +287,18 @@ export default function AppMenu() {
 
 	return (
 		<section className="flex h-screen flex-col">
-			<Header setExpanded={setExpanded} />
-			<Content expanded={expanded} />
+			<RouteRenderer root_route={HomeRoute}>
+				{({ route }) => (
+					<>
+						<Header setExpanded={setExpanded}>
+							<RouteHeaderRender route={route} />
+						</Header>
+						<Content expanded={expanded}>
+							<RouteContentRender route={route} />
+						</Content>
+					</>
+				)}
+			</RouteRenderer>
 		</section>
 	);
 }
