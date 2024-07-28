@@ -95,12 +95,6 @@ const ImportProcessResult = ({
 		};
 	}
 
-	// readOnly: if (
-	// readOnly: 	referenceAccount === account_uuid &&
-	// readOnly: 	transaction.from_account !== transaction.to_account
-	// readOnly: ) {
-	// readOnly: 	return <span>{moneeeyStore.accounts.nameForUuid(account_uuid)}</span>;
-	// readOnly: }
 	return (
 		<VerticalSpace className="h-full grow">
 			{map(result.errors, (err) => (
@@ -163,8 +157,9 @@ const ImportProcessResult = ({
 							customClass: classAlreadyExistAccount(
 								({ from_account }: ITransaction) => from_account,
 							),
-							readOnly: ({ from_account }: ITransaction) =>
-								from_account === task.config.referenceAccount,
+							readOnly: ({ from_account, to_account }: ITransaction) =>
+								from_account === task.config.referenceAccount &&
+								from_account !== to_account,
 							...AccountField<ITransaction>({
 								read: ({ from_account }) => from_account,
 								delta: (from_account) => ({ from_account }),
@@ -179,8 +174,9 @@ const ImportProcessResult = ({
 							customClass: classAlreadyExistAccount(
 								({ to_account }: ITransaction) => to_account,
 							),
-							readOnly: ({ to_account }: ITransaction) =>
-								to_account === task.config.referenceAccount,
+							readOnly: ({ to_account, from_account }: ITransaction) =>
+								to_account === task.config.referenceAccount &&
+								from_account !== to_account,
 							...AccountField<ITransaction>({
 								read: ({ to_account }) => to_account,
 								delta: (to_account) => ({ to_account }),
