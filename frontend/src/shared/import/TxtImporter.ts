@@ -157,9 +157,9 @@ const txtImport =
 		onProgress: ProcessProgressFn,
 	): Promise<ImportResult> => {
 		onProgress(30);
-		const text = (await data.input.contents.text()).replace("\r", "");
+		const text = (await data.input.contents.text()).replace("\r", "\n");
 		onProgress(60);
-		const lines = text.split("\n");
+		const lines = text.split("\n").filter((line) => line.trim().length !== 0);
 		onProgress(90);
 
 		return txtImportFromLines({

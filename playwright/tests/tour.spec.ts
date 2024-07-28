@@ -214,6 +214,17 @@ async function insertTransaction(
 	await Input(page, "editorAmount", undefined, index).change(amount);
 }
 
+const classForTestIdTDs =
+	(page: Page, testId: string) => async (index: number) =>
+		await page
+			.getByTestId(testId)
+			.nth(index)
+			.evaluate((el) =>
+				String(
+					el?.parentElement?.parentElement?.parentElement?.className,
+				).replace(/\s+/g, " "),
+			);
+
 test.beforeEach(async ({ page }) => {
 	await page.goto("/");
 	await page.evaluate(() => {
@@ -262,14 +273,7 @@ test.describe("Tour", () => {
 		await BudgetEditorSave(page, "Gas", mostUsedCurrencies[0], "Gas Station");
 		await BudgetEditorSave(page, "Bakery", mostUsedCurrencies[0], "Bakery");
 
-		const classForTestIdTDs = (testId) => async (index) =>
-			await (await page.getByTestId(testId).nth(index)).evaluate((el) =>
-				String(el.parentElement.parentElement.parentElement.className).replace(
-					/\s+/g,
-					" ",
-				),
-			);
-		const editorRemainingClass = classForTestIdTDs("editorRemaining");
+		const editorRemainingClass = classForTestIdTDs(page, "editorRemaining");
 
 		// Allocate on budget and wait for calculated used/remaining
 		expect(page.getByText("R$").first()).toBeDefined();
@@ -302,8 +306,13 @@ test.describe("Tour", () => {
 
 		// Tour is closed
 		expect(page.getByTestId("nm-modal-title")).toBeHidden();
+	});
 
-		// Import
+	test("Import", async ({ page }) => {
+		await completeLandingWizard(page);
+
+		await page.getByTestId("nm-modal-card").getByTestId("close").click(); // Close Tour
+
 		await page.getByText("Import").click();
 
 		await page
@@ -320,8 +329,8 @@ test.describe("Tour", () => {
 		const expectedImportRows = 5;
 		expect(page.getByTestId("editorTo")).toHaveCount(expectedImportRows);
 
-		const editorFromClass = classForTestIdTDs("editorFrom");
-		const editorToClass = classForTestIdTDs("editorTo");
+		const editorFromClass = classForTestIdTDs(page, "editorFrom");
+		const editorToClass = classForTestIdTDs(page, "editorTo");
 		expect(
 			await Promise.all(
 				Array.from({ length: expectedImportRows }).map(async (_v, index) => ({
