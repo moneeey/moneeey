@@ -60,7 +60,7 @@ jobs:
   PACKAGE:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [FRONTEND, BACKEND, PLAYWRIGHT]
+    needs: [FRONTEND, BACKEND]
     strategy:
       matrix:
         service: [backend, frontend]
