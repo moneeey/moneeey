@@ -110,7 +110,10 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 		const accountSet = new Set(accounts);
 
 		return (row: ITransaction) =>
-			accountSet.has(row.from_account) || accountSet.has(row.to_account);
+			accountSet.has(row.from_account) ||
+			accountSet.has(row.to_account) ||
+			(accountSet.size === 0 &&
+				(row.from_account === "" || row.to_account === ""));
 	}
 
 	viewAllWithAccounts(accounts: TAccountUUID[]) {

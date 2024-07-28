@@ -58,6 +58,10 @@ const Menu = observer(() => {
 		useMoneeeyStore();
 	const { all: allTransactions } = transactions;
 
+	const allAccountsKey = allTransactions
+		.map(({ from_account, to_account }) => `${from_account}_${to_account}`)
+		.join("__");
+
 	const getAccountCurrency = (account: IAccount) => {
 		const curr = currencies.byUuid(account.currency_uuid);
 
@@ -96,6 +100,7 @@ const Menu = observer(() => {
 
 	return (
 		<Navbar
+			key={allAccountsKey}
 			className="px-2"
 			testId="appMenu"
 			footer={<LanguageSelector />}

@@ -26,7 +26,11 @@ export default function <TEntity>({
 				const { to, from } = read(entity);
 				const renderField = field as unknown as FieldDef<CurrencyAmount>;
 
-				if (to.currency?.currency_uuid === from.currency?.currency_uuid) {
+				if (
+					to.currency?.currency_uuid === from.currency?.currency_uuid ||
+					!to.currency ||
+					!from.currency
+				) {
 					const fromToField = CurrencyAmountField<CurrencyAmount>({
 						read: (entityy) => entityy,
 						delta: (update) => update,

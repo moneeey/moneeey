@@ -3,6 +3,7 @@ import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
 import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
 import VirtualizedGrid from "react-virtualized/dist/commonjs/Grid";
 
+import { observer } from "mobx-react-lite";
 import type { WithDataTestId } from "./base/Common";
 import Icon from "./base/Icon";
 
@@ -144,22 +145,25 @@ const HeaderCell = ({ column, style, sort, setSort }: GridRenderCell) => {
 	);
 };
 
-const ContentCell = ({ rowIndex, row, column, style }: GridRenderCell) => {
-	const Renderer = column.render;
+const ContentCell = observer(
+	({ rowIndex, row, column, style }: GridRenderCell) => {
+		const Renderer = column.render;
 
-	const bgColor =
-		rowIndex % 2 === 0 ? "bg-background-800" : "bg-background-600";
-	const columnClass = column.customClass
-		? column.customClass(row, rowIndex)
-		: "";
-	return row ? (
-		<span style={style} className={`${bgColor} ${columnClass}`}>
-			<Renderer entityId={row.entityId} />
-		</span>
-	) : (
-		<span style={style} />
-	);
-};
+		const bgColor =
+			rowIndex % 2 === 0 ? "bg-background-800" : "bg-background-600";
+		const columnClass = column.customClass
+			? column.customClass(row, rowIndex)
+			: "";
+		const clzz = `${bgColor} ${columnClass}`;
+		return row ? (
+			<span key={`${clzz}_${row.entityId}`} style={style} className={clzz}>
+				<Renderer entityId={row.entityId} />
+			</span>
+		) : (
+			<span style={style} />
+		);
+	},
+);
 
 const VirtualTableGrid = ({
 	testId,

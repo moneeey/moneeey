@@ -26,8 +26,9 @@ const TourClient = () => {
 	const [step, setStep] = useState(0);
 	const [open, setOpen] = useState(false);
 	const steps = useMemo(
-		() => TourSteps(moneeeyStore, Messages),
-		[Messages, moneeeyStore],
+		() =>
+			TourSteps(moneeeyStore, Messages, moneeeyStore.accounts.allNonPayees[0]),
+		[Messages, moneeeyStore.accounts.allNonPayees, moneeeyStore],
 	);
 
 	useEffect(() => {

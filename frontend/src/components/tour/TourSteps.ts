@@ -10,11 +10,13 @@ import type MappedStore from "../../shared/MappedStore";
 import type MoneeeyStore from "../../shared/MoneeeyStore";
 import type { TMessages } from "../../utils/Messages";
 
+import type { IAccount } from "../../entities/Account";
 import type { TourStep } from "./Tour";
 
 export default function TourSteps(
-	{ navigation, budget, accounts }: MoneeeyStore,
+	{ navigation, budget }: MoneeeyStore,
 	Messages: TMessages,
+	firstNonPayee?: IAccount,
 ): TourStep[] {
 	const navigateTo = (url: string) => () => navigation.navigate(url);
 
@@ -30,11 +32,6 @@ export default function TourSteps(
 
 		return true;
 	};
-
-	const firstNonPayee = accounts.allNonPayees[0];
-	const accountTransactionsUrl = firstNonPayee
-		? AccountRoute.accountUrlForName(firstNonPayee.name)
-		: AccountRoute.accountUrlForAll();
 
 	return [
 		{
@@ -53,7 +50,11 @@ export default function TourSteps(
 		},
 		{
 			content: Messages.tour.transactions,
-			action: navigateTo(accountTransactionsUrl),
+			action: navigateTo(
+				firstNonPayee
+					? AccountRoute.accountUrlForName(firstNonPayee.name)
+					: AccountRoute.accountUrlForAll(),
+			),
 			blinkers: [".transactionTable-body", ".mn-active-navbar"],
 		},
 		{

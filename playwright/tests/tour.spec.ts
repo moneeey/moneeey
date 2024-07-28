@@ -54,8 +54,8 @@ const mostUsedCurrencies = [
 	"RSD Serbian Dinar",
 ];
 
-function Select(page: Page, testId: string) {
-	const select = page.getByTestId(testId).first();
+function Select(page: Page, testId: string, index = 0) {
+	const select = page.getByTestId(testId).nth(index);
 	const input = select.locator(".mn-select__input");
 	const menuList = page.locator(".mn-select__menu-list");
 
@@ -66,31 +66,49 @@ function Select(page: Page, testId: string) {
 		}
 	};
 
+	const listOptions = async () =>
+		await menuList.locator(".mn-select__option").allTextContents();
+	const findMenuItem = (optionName: string, exact = true) =>
+		menuList.getByText(optionName, { exact });
+	const createNew = async (optionName: string) => {
+		await input.fill(optionName);
+		await input.press("Enter");
+	};
+
 	return {
 		async value() {
 			return select.locator(".mn-select__single-value").innerText();
 		},
 		async options() {
 			await open();
-			return await menuList.locator(".mn-select__option").allTextContents();
+			return listOptions();
 		},
 		async create(optionName: string) {
 			await open();
-			await input.fill(optionName);
-			await input.press("Enter");
+			await createNew(optionName);
 			await isClosed();
 		},
 		async choose(optionName: string, exact = true) {
 			await open();
-			const option = menuList.getByText(optionName, { exact });
+			const option = findMenuItem(optionName, exact);
 			await option.click();
+			await isClosed();
+		},
+		async chooseOrCreate(optionName: string) {
+			await open();
+			const option = findMenuItem(optionName, false);
+			if ((await option.count()) > 0) {
+				await option.click();
+			} else {
+				await createNew(optionName);
+			}
 			await isClosed();
 		},
 	};
 }
 
-function Input(page: Page, testId: string, container?: Locator) {
-	const input = (container || page).getByTestId(testId).first();
+function Input(page: Page, testId: string, container?: Locator, index = 0) {
+	const input = (container || page).getByTestId(testId).nth(index);
 
 	return {
 		async change(value: string) {
@@ -107,6 +125,8 @@ async function BudgetEditorSave(
 	currency: string,
 	tag: string,
 ) {
+	await page.getByTestId("addNewBudget").first().click();
+
 	const budgetEditor = page.getByTestId("budgetEditorDrawer");
 	await Input(page, "budgetName", budgetEditor).change(name);
 
@@ -116,6 +136,7 @@ async function BudgetEditorSave(
 
 	const budgetTags = Select(page, "budgetTags");
 	expect(await budgetTags.options()).toEqual([
+		"Bakery",
 		"Banco Moneeey",
 		"Bitcoinss",
 		"Gas Station",
@@ -177,6 +198,22 @@ async function completeLandingWizard(page: Page) {
 	await expect(page.getByText("Dashboard")).toBeVisible();
 }
 
+async function insertTransaction(
+	page: Page,
+	index: number,
+	fromAccountName: string,
+	toAccountName: string,
+	amount: string,
+) {
+	const editorFrom = Select(page, "editorFrom", index);
+	await editorFrom.chooseOrCreate(fromAccountName);
+
+	const editorTo = Select(page, "editorTo", index);
+	await editorTo.chooseOrCreate(toAccountName);
+
+	await Input(page, "editorAmount", undefined, index).change(amount);
+}
+
 test.beforeEach(async ({ page }) => {
 	await page.goto("/");
 	await page.evaluate(() => {
@@ -205,22 +242,10 @@ test.describe("Tour", () => {
 
 		// Progress Tour to Transactions
 		expect(page.getByText("start inserting transactions")).toBeDefined();
-		const editorFrom = Select(page, "editorFrom");
-		expect((await editorFrom.options()).sort()).toEqual([
-			"Banco Moneeey",
-			"Bitcoinss",
-			"Initial balance BRL",
-			"Initial balance BTC",
-		]);
-		await editorFrom.choose("Banco Moneeey");
 
-		// Create new payee
-		const editorTo = Select(page, "editorTo");
-		await editorTo.create("Gas Station");
-
-		// Fill the amount
-		await expect(page.getByTestId("editorAmount")).toHaveCount(3);
-		await Input(page, "editorAmount").change("1234,56");
+		await insertTransaction(page, 2, "Banco Moneeey", "Gas Station", "1234,56");
+		await insertTransaction(page, 3, "Banco Moneeey", "Bakery", "78,69");
+		await insertTransaction(page, 4, "Banco Moneeey", "Bakery", "11,11");
 
 		// Progress Tour to Transactions
 		await tourNext(page);
@@ -233,23 +258,23 @@ test.describe("Tour", () => {
 			"Before continuing, please click on 'New Budget' and create a budget",
 		);
 
-		// New budget
-		await page.getByTestId("addNewBudget").first().click();
-
-		// Create budget
-		BudgetEditorSave(page, "Budget test", mostUsedCurrencies[0], "Gas Station");
+		// Create budgets
+		await BudgetEditorSave(page, "Gas", mostUsedCurrencies[0], "Gas Station");
+		await BudgetEditorSave(page, "Bakery", mostUsedCurrencies[0], "Bakery");
 
 		// Allocate on budget and wait for calculated used/remaining
 		expect(page.getByText("R$").first()).toBeDefined();
-		await Input(page, "editorAllocated").change("5435,25");
-		// TODO: validate colors, check negative scenario
-		await expect(page.getByTestId("editorUsed").first()).toHaveValue(
-			"1.234,56",
-		);
-		await expect(page.getByTestId("editorRemaining").first()).toHaveValue(
-			"4.200,69",
+		await Input(page, "editorAllocated", undefined, 0).change("65,00");
+		await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("89,8");
+		await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue(
+			"-24,8",
 		);
 
+		await Input(page, "editorAllocated", undefined, 1).change("5435,25");
+		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("1.234,56");
+		await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
+			"4.200,69",
+		);
 		// Go to Import
 		await tourNext(page);
 		expect(page.getByText("New import")).toBeDefined();
