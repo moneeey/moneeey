@@ -8,7 +8,11 @@ import type { TDate } from "../../utils/Date";
 
 import useMessages, { type TMessages } from "../../utils/Messages";
 
-import { BaseColumnChart, BaseReport } from "./BaseReport";
+import {
+	BaseColumnChart,
+	BaseReport,
+	ChartColorGeneratorForColors,
+} from "./BaseReport";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
@@ -29,10 +33,10 @@ const incomeVsExpensesProcess =
 			}
 
 			let kind = "";
-			if (account.kind === AccountKind.PAYEE && value < 0) {
+			if (account.kind === AccountKind.PAYEE) {
 				kind = Messages.reports.expense;
 			}
-			if (account.kind !== AccountKind.PAYEE && value > 0) {
+			if (account.kind !== AccountKind.PAYEE) {
 				kind = Messages.reports.income;
 			}
 			if (kind === "") {
@@ -41,15 +45,10 @@ const incomeVsExpensesProcess =
 			const key = dateToPeriod(period, date);
 			const prev_record = data.points.get(key);
 			const prev_balance = prev_record?.[kind] || 0;
-			const balance = prev_balance + value;
+			const balance = prev_balance + Math.abs(value);
 			data.columns.add(kind);
 			data.points.set(key, { ...prev_record, [kind]: balance });
 		};
-		addBalanceToData(
-			transaction.from_account,
-			transaction.from_value,
-			transaction.date,
-		);
 		addBalanceToData(
 			transaction.to_account,
 			transaction.to_value,
@@ -68,7 +67,16 @@ const IncomeVsExpensesReport = () => {
 			processFn={incomeVsExpensesProcess(moneeeyStore, Messages)}
 			title={Messages.reports.income_vs_expenses}
 			chartFn={(data, period) => (
-				<BaseColumnChart data={data} xFormatter={period.formatter} />
+				<BaseColumnChart
+					data={data}
+					xFormatter={period.formatter}
+					colorGenerator={() =>
+						ChartColorGeneratorForColors([
+							"text-green-600 fill-green-300 stroke-green-300",
+							"text-red-600 fill-red-300 stroke-red-300",
+						])
+					}
+				/>
 			)}
 		/>
 	);

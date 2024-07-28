@@ -4,10 +4,11 @@ import { Input } from "../base/Input";
 
 import { TagsMemo } from "../Tags";
 
-import type {
-	FieldAcessor,
-	FieldDefHelper,
-	FieldRenderProps,
+import {
+	type FieldAcessor,
+	type FieldDefHelper,
+	type FieldRenderProps,
+	readOnlyForFieldAndEntity,
 } from "./FieldDef";
 
 const tagsForText = (text: string): string[] =>
@@ -24,7 +25,7 @@ export default function <TEntity>({
 			({ entity, commit, field, isError }: FieldRenderProps<TEntity>) => (
 				<Input
 					testId={`editor${field.title.replace(" ", "_")}`}
-					readOnly={field.readOnly}
+					readOnly={readOnlyForFieldAndEntity(field, entity)}
 					placeholder={field.title}
 					isError={isError}
 					value={read(entity)}

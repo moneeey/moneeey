@@ -16,6 +16,7 @@ type BaseSelectProps = {
 	options: Option[];
 	onCreate?: (name: string) => void;
 	creatable?: boolean;
+	clearable?: boolean;
 };
 
 type SelectProps = InputProps<string> & WithDataTestId & BaseSelectProps;
@@ -33,6 +34,7 @@ const Select = ({
 	suffix,
 	isError,
 	onCreate,
+	clearable,
 }: SelectProps) => {
 	const SelectComponent = onCreate ? CreatableReactSelect : ReactSelect;
 
@@ -40,6 +42,7 @@ const Select = ({
 		prefix,
 		suffix,
 		isError,
+		readOnly,
 		input: (
 			<div data-testid={testId}>
 				<SelectComponent
@@ -51,10 +54,11 @@ const Select = ({
 					isMulti={false}
 					options={options}
 					value={options.find((opt) => opt.value === value)}
-					onChange={(newValue) => newValue && onChange(newValue.value)}
+					onChange={(newValue) => onChange(newValue?.value ?? "")}
 					onCreateOption={(name) => onCreate?.(name)}
 					placeholder={placeholder}
-					isDisabled={disabled || readOnly}
+					isDisabled={disabled === true || readOnly === true}
+					isClearable={clearable}
 				/>
 			</div>
 		),
@@ -75,6 +79,7 @@ const MultiSelect = ({
 	suffix,
 	isError,
 	onCreate,
+	clearable,
 }: MultiSelectProps) => {
 	const SelectComponent = onCreate ? CreatableReactSelect : ReactSelect;
 
@@ -82,6 +87,7 @@ const MultiSelect = ({
 		prefix,
 		suffix,
 		isError,
+		readOnly,
 		input: (
 			<div data-testid={testId}>
 				<SelectComponent
@@ -105,7 +111,8 @@ const MultiSelect = ({
 					}
 					onCreateOption={(name) => onCreate?.(name)}
 					placeholder={placeholder}
-					isDisabled={disabled || readOnly}
+					isDisabled={disabled === true || readOnly === true}
+					isClearable={clearable}
 				/>
 			</div>
 		),

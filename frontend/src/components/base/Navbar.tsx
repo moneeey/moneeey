@@ -23,7 +23,10 @@ interface NavbarProps {
 	className?: string;
 }
 
-const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
+const NavbarItems = ({
+	items,
+	testId,
+}: { items: NavbarItem[] } & WithDataTestId) =>
 	items.map((item: NavbarItem): JSX.Element[] => {
 		if (item.visible === false) {
 			return [];
@@ -34,7 +37,7 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 				className={`flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 ${
 					item.isActive ? "opacity-75 !bg-background-900 mn-active-navbar" : ""
 				}`}
-				testId={`${dataTestId}_${item.key}`}
+				testId={`${testId}_${item.key}`}
 				onClick={item.onClick || (() => ({}))}
 				key={item.key}
 				title={item.label}
@@ -46,7 +49,10 @@ const renderNavbarItems = (dataTestId: string, items: NavbarItem[]) =>
 					key={`subitems_${item.key}`}
 					className="flex flex-col pl-4 align-middle"
 				>
-					{renderNavbarItems(dataTestId, item.children || [])}
+					<NavbarItems
+						testId={`${testId}_subitems_${item.key}`}
+						items={item.children}
+					/>
 				</div>
 			),
 		]);
@@ -60,7 +66,7 @@ const Navbar = (props: NavbarProps & WithDataTestId) => {
 			}`}
 			data-testid={props.testId}
 		>
-			{renderNavbarItems(props.testId, props.items)}
+			<NavbarItems testId={props.testId} items={props.items} />
 			<div className="p-4 self-end">{props.footer}</div>
 		</nav>
 	);

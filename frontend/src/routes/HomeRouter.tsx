@@ -1,6 +1,6 @@
 import Dashboard from "../pages/Dashboard";
 
-import { type IRouteParameters, Route } from "./Route";
+import Route, { type IRouteParameters } from "./Route";
 
 class HomeRouter extends Route<IRouteParameters> {
 	constructor() {

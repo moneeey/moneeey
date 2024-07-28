@@ -2,10 +2,11 @@ import { observer } from "mobx-react";
 
 import { InputNumber, type InputNumberProps } from "../base/Input";
 
-import type {
-	FieldAcessor,
-	FieldDefHelper,
-	FieldRenderProps,
+import {
+	type FieldAcessor,
+	type FieldDefHelper,
+	type FieldRenderProps,
+	readOnlyForFieldAndEntity,
 } from "./FieldDef";
 
 export default function <TEntity>({
@@ -30,7 +31,7 @@ export default function <TEntity>({
 			({ entity, commit, field, isError }: FieldRenderProps<TEntity>) => (
 				<InputNumber
 					testId={`editor${field.title.replace(" ", "_")}`}
-					readOnly={field.readOnly}
+					readOnly={readOnlyForFieldAndEntity(field, entity)}
 					placeholder={field.title}
 					isError={isError}
 					thousandSeparator={thousandSeparator}

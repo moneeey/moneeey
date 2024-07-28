@@ -2,7 +2,6 @@ import type { ICurrency } from "../entities/Currency";
 
 import { EntityType } from "./Entity";
 import { MockLogger } from "./Logger";
-import type MappedStore from "./MappedStore";
 import PersistenceStore from "./Persistence";
 
 describe("Persistence", () => {

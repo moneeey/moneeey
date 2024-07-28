@@ -22,6 +22,7 @@ export type ColumnDef = {
 	defaultSortOrder?: SortOrder;
 	sorter?: (a: Row, b: Row, asc: boolean) => number;
 	render: (row: Row) => JSX.Element;
+	customClass?: (row: Row, rowIndex: number) => string;
 };
 
 type SortColumn = {
@@ -146,11 +147,13 @@ const HeaderCell = ({ column, style, sort, setSort }: GridRenderCell) => {
 const ContentCell = ({ rowIndex, row, column, style }: GridRenderCell) => {
 	const Renderer = column.render;
 
+	const bgColor =
+		rowIndex % 2 === 0 ? "bg-background-800" : "bg-background-600";
+	const columnClass = column.customClass
+		? column.customClass(row, rowIndex)
+		: "";
 	return row ? (
-		<span
-			style={style}
-			className={rowIndex % 2 === 0 ? "bg-background-800" : "bg-background-600"}
-		>
+		<span style={style} className={`${bgColor} ${columnClass}`}>
 			<Renderer entityId={row.entityId} />
 		</span>
 	) : (

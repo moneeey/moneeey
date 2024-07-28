@@ -3,7 +3,9 @@ import { action, computed, makeObservable, observable } from "mobx";
 import type { StatusType } from "../components/Status";
 import { uuid } from "../utils/Utils";
 
+import type { IBudget } from "../entities/Budget";
 import Logger from "./Logger";
+import type { ImportTask } from "./import/ImportContent";
 
 export enum NavigationModal {
 	NONE = "NONE",
@@ -35,6 +37,12 @@ export default class NavigationStore {
 
 	currentPath = "/";
 
+	editingBudget?: IBudget;
+
+	tabsSelectedIndex = new Map<string, number>();
+
+	importingTasks = new Map<string, ImportTask>();
+
 	constructor(parent: Logger) {
 		this.logger = new Logger("navigationStore", parent);
 
@@ -50,11 +58,34 @@ export default class NavigationStore {
 			openModal: action,
 			currentPath: observable,
 			updateCurrentPath: action,
+			editingBudget: observable,
+			updateEditingBudget: action,
+			tabsSelectedIndex: observable,
+			updateTabsSelectedIndex: action,
+			importingTasks: observable,
+			updateImportingTasks: action,
+			removeImportingTask: action,
 		});
 	}
 
 	updateCurrentPath(path: string) {
 		this.currentPath = path;
+	}
+
+	updateEditingBudget(budget?: IBudget) {
+		this.editingBudget = budget;
+	}
+
+	updateTabsSelectedIndex(tabId: string, index: number) {
+		this.tabsSelectedIndex.set(tabId, index);
+	}
+
+	updateImportingTasks(task: ImportTask) {
+		this.importingTasks.set(task.input.name, task);
+	}
+
+	removeImportingTask(task: ImportTask) {
+		this.importingTasks.delete(task.input.name);
 	}
 
 	navigate(url: string) {

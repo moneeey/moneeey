@@ -20,8 +20,6 @@ import {
 	type Dispatch,
 	type ReactNode,
 	type SetStateAction,
-	createContext,
-	useContext,
 	useEffect,
 	useState,
 } from "react";
@@ -41,12 +39,14 @@ import { Status } from "../shared/Persistence";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import { StorageKind, getStorage, setStorage } from "../utils/Utils";
 
-import RouteRenderer from "../routes/RouteRenderer";
-import type MoneeeyStore from "../shared/MoneeeyStore";
+import RouteRenderer, {
+	RouteContentRender,
+	RouteHeaderRender,
+} from "../routes/RouteRenderer";
 
 import useMessages from "../utils/Messages";
 
-import { toJS } from "mobx";
+import SyncRoute from "../routes/SyncRoute";
 import LanguageSelector from "./LanguageSelector";
 import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
@@ -56,6 +56,7 @@ const Menu = observer(() => {
 	const Messages = useMessages();
 	const { navigation, accounts, currencies, persistence, transactions } =
 		useMoneeeyStore();
+	const { all: allTransactions } = transactions;
 
 	const getAccountCurrency = (account: IAccount) => {
 		const curr = currencies.byUuid(account.currency_uuid);
@@ -68,7 +69,7 @@ const Menu = observer(() => {
 	);
 	const unclassified = transactions.viewAllUnclassified().length;
 	const activePath = navigation.currentPath;
-	const hasTransactions = transactions.all.length > 0;
+	const hasTransactions = allTransactions.length > 0;
 	const runningBalances = new Map(
 		Array.from(transactions.runningBalance.accountBalance.entries()).map(
 			([account_uuid, balance]) => [
@@ -215,36 +216,23 @@ const Menu = observer(() => {
 						) : (
 							<StopCircleIcon color="red" />
 						),
-					...modalLink(NavigationModal.SYNC),
+					...routeLink(SyncRoute.url()),
 				},
 			]}
 		/>
 	);
 });
 
-const HeaderContentContext = createContext({
-	content: (<span />) as ReactNode,
-	setContent: (newContent: ReactNode) => {},
-});
-
-export function HeaderContent({
-	children,
-}: {
-	children: ReactNode | ReactNode[];
-}) {
-	const headerContent = useContext(HeaderContentContext);
-	useEffect(
-		() => headerContent.setContent(children),
-		[children, headerContent],
-	);
-	return <></>;
-}
-
 const Header = observer(
-	({ setExpanded }: { setExpanded: Dispatch<SetStateAction<boolean>> }) => {
+	({
+		children,
+		setExpanded,
+	}: {
+		children: ReactNode;
+		setExpanded: Dispatch<SetStateAction<boolean>>;
+	}) => {
 		const Messages = useMessages();
 		const toggleMenu = () => setExpanded((value) => !value);
-		const headerContent = useContext(HeaderContentContext);
 
 		return (
 			<header className="sticky left-0 right-0 top-0 z-30  bg-background-800 flex flex-row flex-wrap">
@@ -264,7 +252,7 @@ const Header = observer(
 						{Messages.menu.title}
 					</div>
 				</TextTitle>
-				{headerContent.content}
+				{children}
 			</header>
 		);
 	},
@@ -272,41 +260,38 @@ const Header = observer(
 
 const Content = ({
 	expanded,
-	moneeeyStore,
-}: { expanded: boolean; moneeeyStore: MoneeeyStore }) => (
+	children,
+}: { expanded: boolean; children: ReactNode }) => (
 	<section className="flex grow flex-row">
 		{expanded && <Menu />}
 		<section className="flex max-h-[calc(100vh-3em)] grow flex-col overflow-scroll p-4">
-			<RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
+			{children}
 		</section>
 	</section>
 );
 
-export default function AppMenu({
-	moneeeyStore,
-}: { moneeeyStore: MoneeeyStore }) {
+export default function AppMenu() {
 	const [expanded, setExpanded] = useState(
 		getStorage("menu_expanded", "true", StorageKind.PERMANENT) === "true",
 	);
-	const [headerContent, setHeaderContent] = useState<ReactNode>(<span />);
-
 	useEffect(() => {
 		setStorage("menu_expanded", String(expanded), StorageKind.PERMANENT);
 	}, [expanded]);
 
 	return (
 		<section className="flex h-screen flex-col">
-			<HeaderContentContext.Provider
-				value={{
-					setContent: (content) => {
-						setHeaderContent(content);
-					},
-					content: headerContent,
-				}}
-			>
-				<Header setExpanded={setExpanded} />
-				<Content expanded={expanded} moneeeyStore={moneeeyStore} />
-			</HeaderContentContext.Provider>
+			<RouteRenderer root_route={HomeRoute}>
+				{({ route }) => (
+					<>
+						<Header setExpanded={setExpanded}>
+							<RouteHeaderRender route={route} />
+						</Header>
+						<Content expanded={expanded}>
+							<RouteContentRender route={route} />
+						</Content>
+					</>
+				)}
+			</RouteRenderer>
 		</section>
 	);
 }

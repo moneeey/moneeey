@@ -13,4 +13,4 @@ const MoneeeyStoreProvider = ({
 	<MoneeeyContext.Provider value={value}>{children}</MoneeeyContext.Provider>
 );
 
-export { MoneeeyStoreProvider, useMoneeeyStore, useMoneeeyStore as default };
+export { MoneeeyStoreProvider, useMoneeeyStore as default };

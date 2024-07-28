@@ -1,52 +1,51 @@
 import { observer } from "mobx-react-lite";
 
-import { HeaderContent } from "../components/AppMenu";
 import TableEditor from "../components/TableEditor";
 import { PrimaryButton, SecondaryButton } from "../components/base/Button";
-import Space, { VerticalSpace } from "../components/base/Space";
+import Space from "../components/base/Space";
 import AccountKindField from "../components/editor/AccountKindField";
 import CheckboxField from "../components/editor/CheckboxField";
 import CurrencySelectorField from "../components/editor/CurrencySelectorField";
 import DateField from "../components/editor/DateField";
 import TagField from "../components/editor/TagField";
 import TextField from "../components/editor/TextField";
-import type { AccountKind, AccountStore, IAccount } from "../entities/Account";
-import type { CurrencyStore } from "../entities/Currency";
-import type NavigationStore from "../shared/Navigation";
+import type { AccountKind, IAccount } from "../entities/Account";
 import { NavigationModal } from "../shared/Navigation";
+import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
 
 interface AccountSettingsProps {
-	accounts: AccountStore;
-	currencies: CurrencyStore;
-	navigation: NavigationStore;
 	kind: AccountKind;
 	schemaFilter: (row: IAccount) => boolean;
 }
 
+export const AccountTableHeader = () => {
+	const { navigation } = useMoneeeyStore();
+	const Messages = useMessages();
+	return (
+		<Space className="scale-75">
+			<SecondaryButton
+				onClick={() => navigation.openModal(NavigationModal.MERGE_ACCOUNTS)}
+			>
+				{Messages.modal.merge_accounts}
+			</SecondaryButton>
+			<PrimaryButton
+				testId="addAccount"
+				onClick={() => navigation.openModal(NavigationModal.ADD_ACCOUNT)}
+			>
+				{Messages.account.add_account}
+			</PrimaryButton>
+		</Space>
+	);
+};
+
 const AccountTable = observer(
-	({ accounts, schemaFilter, kind, navigation }: AccountSettingsProps) => {
+	({ schemaFilter, kind }: AccountSettingsProps) => {
+		const { accounts } = useMoneeeyStore();
 		const Messages = useMessages();
 
 		return (
 			<>
-				<HeaderContent>
-					<Space className="p-2 scale-75">
-						<SecondaryButton
-							onClick={() =>
-								navigation.openModal(NavigationModal.MERGE_ACCOUNTS)
-							}
-						>
-							{Messages.modal.merge_accounts}
-						</SecondaryButton>
-						<PrimaryButton
-							testId="addAccount"
-							onClick={() => navigation.openModal(NavigationModal.ADD_ACCOUNT)}
-						>
-							{Messages.account.add_account}
-						</PrimaryButton>
-					</Space>
-				</HeaderContent>
 				<div className="h-full grow" key={`accountTable${kind}`}>
 					<TableEditor<IAccount>
 						key={`accountTable${kind}`}

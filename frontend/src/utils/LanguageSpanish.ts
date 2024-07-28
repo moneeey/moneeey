@@ -65,6 +65,7 @@ const Messages: TMessages = {
 		configuration: "Configuración",
 		select_reference_account: "Por favor seleccione la cuenta de referencia",
 		updated: "Actualizado",
+		existing: "Existente",
 		new: "Nuevo",
 		unchanged: "Sin cambios",
 		import_transactions: "Importar transacciones",
@@ -91,6 +92,7 @@ const Messages: TMessages = {
 		ok: "Aceptar",
 		cancel: "Cancelar",
 		clear: "Limpiar",
+		required: "Requerido",
 	},
 	settings: {
 		reload_page: "Recargue su página",

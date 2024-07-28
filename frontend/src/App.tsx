@@ -72,7 +72,7 @@ const AppLoaded = observer(() => {
 		}
 	}
 
-	return <AppMenu moneeeyStore={moneeeyStore} />;
+	return <AppMenu />;
 });
 
 const AppContent = observer(() => {

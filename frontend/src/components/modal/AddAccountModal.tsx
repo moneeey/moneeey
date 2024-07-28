@@ -1,5 +1,4 @@
 import { isEmpty } from "lodash";
-import React from "react";
 import NewAccount from "../../pages/NewAccount";
 import { NavigationModal } from "../../shared/Navigation";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";

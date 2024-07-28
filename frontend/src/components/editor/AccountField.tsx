@@ -13,18 +13,20 @@ import useMessages from "../../utils/Messages";
 import { TagsFrom, TagsTo } from "../Tags";
 import Select from "../base/Select";
 
-import type {
-	FieldAcessor,
-	FieldDefHelper,
-	FieldRenderProps,
+import {
+	type FieldAcessor,
+	type FieldDefHelper,
+	type FieldRenderProps,
+	readOnlyForFieldAndEntity,
 } from "./FieldDef";
 
 export default function <TEntity>({
 	read,
 	delta,
 	readOptions,
+	clearable,
 }: FieldAcessor<TEntity, TAccountUUID> & {
-	readOptions(): IAccount[];
+	readOptions(entity: TEntity): IAccount[];
 	clearable: boolean;
 }): FieldDefHelper<TEntity> {
 	const Messages = useMessages();
@@ -48,13 +50,14 @@ export default function <TEntity>({
 				return (
 					<Select
 						testId={`editor${field.title.replace(" ", "_")}`}
-						readOnly={field.readOnly}
+						readOnly={readOnlyForFieldAndEntity(field, entity)}
 						placeholder={field.title}
 						isError={isError}
 						value={read(entity)}
+						clearable={clearable}
 						options={uniqBy(
 							compact([
-								...map(readOptions(), (account) => ({
+								...map(readOptions(entity), (account) => ({
 									label: account.name,
 									value: account.account_uuid,
 								})),
