@@ -238,8 +238,8 @@ test.beforeEach(async ({ page }) => {
 	});
 });
 
-test.describe("Tour", () => {
-	test("Moneeey Tour", async ({ page }) => {
+test.describe("Moneeey", () => {
+	test("Tour", async ({ page }) => {
 		await completeLandingWizard(page);
 
 		await page.getByTestId("start-tour").click(); // Start Tour
@@ -331,12 +331,15 @@ test.describe("Tour", () => {
 
 		const editorFromClass = classForTestIdTDs(page, "editorFrom");
 		const editorToClass = classForTestIdTDs(page, "editorTo");
+		const rowFromToClass = async (index: number) => ({
+			fromClasses: await editorFromClass(index),
+			toClasses: await editorToClass(index),
+		});
 		expect(
 			await Promise.all(
-				Array.from({ length: expectedImportRows }).map(async (_v, index) => ({
-					fromClasses: await editorFromClass(index),
-					toClasses: await editorToClass(index),
-				})),
+				Array.from({ length: expectedImportRows }).map((_v, index) =>
+					rowFromToClass(index),
+				),
 			),
 		).toEqual([
 			{
