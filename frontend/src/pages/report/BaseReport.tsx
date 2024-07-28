@@ -188,14 +188,16 @@ const CustomTooltip = ({
 		return (
 			<div className="rounded bg-background-100 p-2">
 				<TextTitle className="text-info-800">{label}</TextTitle>
-				{payload.map((pld) => (
-					<p
-						key={pld.name}
-						className={(pld as unknown as { className: string }).className}
-					>
-						{pld.name}: {pld.value}
-					</p>
-				))}
+				{payload
+					.sort((a, b) => Number(b?.value) - Number(a?.value))
+					.map((pld) => (
+						<p
+							key={pld.name}
+							className={(pld as unknown as { className: string }).className}
+						>
+							{pld.name}: {pld.value}
+						</p>
+					))}
 			</div>
 		);
 	}
