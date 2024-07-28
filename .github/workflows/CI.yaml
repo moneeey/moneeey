@@ -24,7 +24,7 @@ jobs:
       - name: Run Playwright tests using Docker
         uses: addnab/docker-run-action@v3
         with:
-          image: mcr.microsoft.com/playwright:bionic
+          image: mcr.microsoft.com/playwright:v1.36.1-jammy
           options: --rm -v ${{ github.workspace }}:/workspace
           run: |
             cd /workspace
