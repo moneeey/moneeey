@@ -27,11 +27,12 @@ jobs:
           image: mcr.microsoft.com/playwright:bionic
           options: --rm
           run: |
-            find / -name package.json
+            cd /github/workspace
+            ls -la
+            cd playwright
             yarn install --frozen-lockfile
             yarn run playwright install --with-deps
             yarn run playwright test
-            ls -la
 
       - uses: actions/upload-artifact@v3
         if: always()
