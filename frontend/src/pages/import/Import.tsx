@@ -40,17 +40,7 @@ const useTabItems = (
 		},
 		...sortedTasks.map((task) => ({
 			key: task.input.name,
-			label: (
-				<span>
-					{task.input.name}{" "}
-					<span
-						onClick={() => closeImportTask(task)}
-						onKeyDown={() => closeImportTask(task)}
-					>
-						X
-					</span>
-				</span>
-			),
+			label: task.input.name,
 			children: (
 				<ImportProcess task={task} close={() => closeImportTask(task)} />
 			),
