@@ -1,0 +1,16 @@
+{
+	"name": "moneeey",
+	"version": "1.0.0",
+	"main": "index.js",
+	"repository": "git@github.com:moneeey/moneeey.git",
+	"author": "Fernando Baroni <f@baroni.tech>",
+	"license": "MIT",
+	"scripts": {
+		"ci": "biome ci .",
+		"fmt": "biome format --write .",
+		"lint": "biome check --fix --unsafe . && yarn --cwd frontend run lint"
+	},
+	"dependencies": {
+		"@biomejs/biome": "^1.8.3"
+	}
+}

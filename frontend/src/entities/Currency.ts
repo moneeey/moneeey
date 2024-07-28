@@ -9,6 +9,342 @@ import { uuid } from "../utils/Utils";
 
 export type TCurrencyUUID = string;
 
+export const DefaultCurrencies = [
+	{
+		name: "Brazilian Real",
+		code: "BRL",
+		prefix: "R$",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "United States Dollar",
+		code: "USD",
+		prefix: "$",
+		suffix: "",
+		decimals: 2,
+	},
+	{ name: "Euro", code: "EUR", prefix: "€", suffix: "", decimals: 2 },
+	{ name: "Bitcoin", code: "BTC", prefix: "₿", suffix: "", decimals: 8 },
+	{ name: "Ethereum", code: "ETH", prefix: "Ξ", suffix: "", decimals: 18 },
+	{
+		name: "Japanese Yen",
+		code: "JPY",
+		prefix: "¥",
+		suffix: "",
+		decimals: 0,
+	},
+	{
+		name: "British Pound Sterling",
+		code: "GBP",
+		prefix: "£",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Australian Dollar",
+		code: "AUD",
+		prefix: "$",
+		suffix: "AUD",
+		decimals: 2,
+	},
+	{
+		name: "Canadian Dollar",
+		code: "CAD",
+		prefix: "$",
+		suffix: "CAD",
+		decimals: 2,
+	},
+	{
+		name: "Swiss Franc",
+		code: "CHF",
+		prefix: "CHF",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Chinese Yuan",
+		code: "CNY",
+		prefix: "¥",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Swedish Krona",
+		code: "SEK",
+		prefix: "kr",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "New Zealand Dollar",
+		code: "NZD",
+		prefix: "$",
+		suffix: "NZD",
+		decimals: 2,
+	},
+	{
+		name: "Mexican Peso",
+		code: "MXN",
+		prefix: "$",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Singapore Dollar",
+		code: "SGD",
+		prefix: "$",
+		suffix: "SGD",
+		decimals: 2,
+	},
+	{
+		name: "Hong Kong Dollar",
+		code: "HKD",
+		prefix: "$",
+		suffix: "HKD",
+		decimals: 2,
+	},
+	{
+		name: "Norwegian Krone",
+		code: "NOK",
+		prefix: "kr",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "South Korean Won",
+		code: "KRW",
+		prefix: "₩",
+		suffix: "",
+		decimals: 0,
+	},
+	{
+		name: "Turkish Lira",
+		code: "TRY",
+		prefix: "₺",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Russian Ruble",
+		code: "RUB",
+		prefix: "₽",
+		suffix: "",
+		decimals: 8,
+	},
+	{
+		name: "Indian Rupee",
+		code: "INR",
+		prefix: "₹",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "South African Rand",
+		code: "ZAR",
+		prefix: "R",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Philippine Peso",
+		code: "PHP",
+		prefix: "₱",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Czech Koruna",
+		code: "CZK",
+		prefix: "Kč",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Indonesian Rupiah",
+		code: "IDR",
+		prefix: "Rp",
+		suffix: "",
+		decimals: 0,
+	},
+	{
+		name: "Malaysian Ringgit",
+		code: "MYR",
+		prefix: "RM",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Hungarian Forint",
+		code: "HUF",
+		prefix: "Ft",
+		suffix: "",
+		decimals: 0,
+	},
+	{
+		name: "Icelandic Krona",
+		code: "ISK",
+		prefix: "kr",
+		suffix: "",
+		decimals: 0,
+	},
+	{
+		name: "Croatian Kuna",
+		code: "HRK",
+		prefix: "kn",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Bulgarian Lev",
+		code: "BGN",
+		prefix: "лв",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Israeli New Shekel",
+		code: "ILS",
+		prefix: "₪",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Chilean Peso",
+		code: "CLP",
+		prefix: "$",
+		suffix: "",
+		decimals: 0,
+	},
+	{
+		name: "UAE Dirham",
+		code: "AED",
+		prefix: "د.إ",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Saudi Riyal",
+		code: "SAR",
+		prefix: "ر.س",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Romanian Leu",
+		code: "RON",
+		prefix: "lei",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Colombian Peso",
+		code: "COP",
+		prefix: "$",
+		suffix: "",
+		decimals: 0,
+	},
+	{ name: "Thai Baht", code: "THB", prefix: "฿", suffix: "", decimals: 2 },
+	{
+		name: "Vietnamese Dong",
+		code: "VND",
+		prefix: "₫",
+		suffix: "",
+		decimals: 0,
+	},
+	{
+		name: "Egyptian Pound",
+		code: "EGP",
+		prefix: "£",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Peruvian Sol",
+		code: "PEN",
+		prefix: "S/",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Pakistani Rupee",
+		code: "PKR",
+		prefix: "₨",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Kuwaiti Dinar",
+		code: "KWD",
+		prefix: "د.ك",
+		suffix: "",
+		decimals: 3,
+	},
+	{
+		name: "Ukrainian Hryvnia",
+		code: "UAH",
+		prefix: "₴",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Bangladeshi Taka",
+		code: "BDT",
+		prefix: "৳",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Argentine Peso",
+		code: "ARS",
+		prefix: "$",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Algerian Dinar",
+		code: "DZD",
+		prefix: "د.ج",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Moroccan Dirham",
+		code: "MAD",
+		prefix: "د.م",
+		suffix: "",
+		decimals: 2,
+	},
+	{
+		name: "Jordanian Dinar",
+		code: "JOD",
+		prefix: "د.ا",
+		suffix: "",
+		decimals: 3,
+	},
+	{
+		name: "Bahraini Dinar",
+		code: "BHD",
+		prefix: "ب.د",
+		suffix: "",
+		decimals: 3,
+	},
+	{
+		name: "Omani Rial",
+		code: "OMR",
+		prefix: "ر.ع",
+		suffix: "",
+		decimals: 3,
+	},
+	{
+		name: "Serbian Dinar",
+		code: "RSD",
+		prefix: "дин",
+		suffix: "",
+		decimals: 2,
+	},
+];
+
 export interface ICurrency extends IBaseEntity {
 	currency_uuid: TCurrencyUUID;
 	name: string;
@@ -61,8 +397,8 @@ export class CurrencyStore extends MappedStore<ICurrency> {
 
 	formatAmount(currency: ICurrency, value: TMonetary) {
 		return value.toLocaleString(undefined, {
-			maximumFractionDigits: currency.decimals,
-			minimumFractionDigits: currency.decimals,
+			maximumFractionDigits: Math.max(1, Math.min(currency.decimals, 100)),
+			minimumFractionDigits: Math.max(1, Math.min(currency.decimals, 100)),
 		});
 	}
 
@@ -95,182 +431,16 @@ export class CurrencyStore extends MappedStore<ICurrency> {
 
 		// Prettier-ignore
 		if (isEmpty(this.all)) {
-			addDefault({
-				...this.factory(),
-				name: "Real brasileiro",
-				short: "BRL",
-				prefix: "R$",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "United States dollar",
-				short: "USD",
-				prefix: "$",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Euro",
-				short: "EUR",
-				prefix: "€",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Japonese yen",
-				short: "JPY",
-				prefix: "¥",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "British sterling",
-				short: "GBP",
-				prefix: "£",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Australian dollar",
-				short: "AUD",
-				prefix: "A$",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Canadian dollar",
-				short: "CAD",
-				prefix: "C$",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Swiss franc",
-				short: "CHF",
-				prefix: "CHF",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Chinese renminbi",
-				short: "CNY",
-				prefix: "¥",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Hong Kong dollar",
-				short: "HKD",
-				prefix: "HK$",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "New Zealand dollar",
-				short: "NZD",
-				prefix: "NZ$",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Swedish krona",
-				short: "SEK",
-				prefix: "",
-				suffix: "KR",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "South Korean won",
-				short: "KRW",
-				prefix: "₩",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Singapore dollar",
-				short: "SGD",
-				prefix: "S$",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Norwegian krone",
-				short: "NOK",
-				prefix: "",
-				suffix: "kr",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Mexican peso",
-				short: "MXN",
-				prefix: "$",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Indian rupee",
-				short: "INR",
-				prefix: "₹",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Russian ruble",
-				short: "RUB",
-				prefix: "",
-				suffix: "₽",
-				decimals: 20,
-			});
-			addDefault({
-				...this.factory(),
-				name: "South African rand",
-				short: "ZAR",
-				prefix: "R",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Turkish lira",
-				short: "TRY",
-				prefix: "₺",
-				suffix: "",
-				decimals: 2,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Bitcoin",
-				short: "BTC",
-				prefix: "₿",
-				suffix: "",
-				decimals: 8,
-			});
-			addDefault({
-				...this.factory(),
-				name: "Etherium",
-				short: "ETH",
-				prefix: "Ξ",
-				suffix: "",
-				decimals: 8,
-			});
+			for (const def of DefaultCurrencies) {
+				addDefault({
+					...this.factory(),
+					name: def.name,
+					short: def.code,
+					prefix: def.prefix,
+					suffix: def.suffix,
+					decimals: def.decimals,
+				});
+			}
 		}
 	}
 }

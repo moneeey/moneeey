@@ -1,7 +1,7 @@
-import Budget from "../pages/budget/Budget";
+import Budget, { BudgetHeader } from "../pages/budget/Budget";
 
 import HomeRoute from "./HomeRouter";
-import { type IRouteParameters, Route } from "./Route";
+import Route, { type IRouteParameters } from "./Route";
 
 type IBudgetRoute = IRouteParameters;
 
@@ -14,7 +14,11 @@ class BudgetRouter extends Route<IBudgetRoute> {
 	render() {
 		return <Budget />;
 	}
+
+	header() {
+		return <BudgetHeader />;
+	}
 }
 
 const BudgetRoute = new BudgetRouter();
-export { BudgetRoute as default };
+export default BudgetRoute;

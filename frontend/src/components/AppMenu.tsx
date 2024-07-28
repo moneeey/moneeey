@@ -39,55 +39,24 @@ import { Status } from "../shared/Persistence";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import { StorageKind, getStorage, setStorage } from "../utils/Utils";
 
-import RouteRenderer from "../routes/RouteRenderer";
-import type MoneeeyStore from "../shared/MoneeeyStore";
+import RouteRenderer, {
+	RouteContentRender,
+	RouteHeaderRender,
+} from "../routes/RouteRenderer";
 
-import useMessages, {
-	type AvailableLanguages,
-	useLanguageSwitcher,
-} from "../utils/Messages";
+import useMessages from "../utils/Messages";
 
-import Icon, { FavIcon, IconBrazil, IconSpain, IconUSA } from "./base/Icon";
+import SyncRoute from "../routes/SyncRoute";
+import LanguageSelector from "./LanguageSelector";
+import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
-
-const LanguageSelector = () => {
-	const Messages = useMessages();
-	const { currentLanguage, selectLanguage } = useLanguageSwitcher();
-	const LangSelect = ({
-		icon,
-		language,
-	}: { icon: ReactNode; language: AvailableLanguages }) => {
-		const isCurrentLanguage = currentLanguage === language;
-		const setCurrentLanguage = () => selectLanguage(language);
-		return (
-			<i
-				className={`inline-block h-6 w-6 rounded-xl hover:ring-2 ring-secondary-500 ${
-					isCurrentLanguage ? "ring-2" : ""
-				}`}
-				onClick={setCurrentLanguage}
-				onKeyDown={setCurrentLanguage}
-			>
-				{icon}
-			</i>
-		);
-	};
-	return (
-		<div>
-			<p>{Messages.settings.select_language}</p>
-			<div className="flex flex-row justify-end pt-1 gap-2">
-				<LangSelect icon={<IconBrazil />} language="portuguese" />
-				<LangSelect icon={<IconUSA />} language="english" />
-				<LangSelect icon={<IconSpain />} language="spanish" />
-			</div>
-		</div>
-	);
-};
 
 const Menu = observer(() => {
 	const Messages = useMessages();
 	const { navigation, accounts, currencies, persistence, transactions } =
 		useMoneeeyStore();
+	const { all: allTransactions } = transactions;
 
 	const getAccountCurrency = (account: IAccount) => {
 		const curr = currencies.byUuid(account.currency_uuid);
@@ -100,7 +69,7 @@ const Menu = observer(() => {
 	);
 	const unclassified = transactions.viewAllUnclassified().length;
 	const activePath = navigation.currentPath;
-	const hasTransactions = transactions.all.length > 0;
+	const hasTransactions = allTransactions.length > 0;
 	const runningBalances = new Map(
 		Array.from(transactions.runningBalance.accountBalance.entries()).map(
 			([account_uuid, balance]) => [
@@ -247,63 +216,82 @@ const Menu = observer(() => {
 						) : (
 							<StopCircleIcon color="red" />
 						),
-					...modalLink(NavigationModal.SYNC),
+					...routeLink(SyncRoute.url()),
 				},
 			]}
 		/>
 	);
 });
 
-const Header = ({
-	setExpanded,
-}: { setExpanded: Dispatch<SetStateAction<boolean>> }) => {
-	const Messages = useMessages();
+const Header = observer(
+	({
+		children,
+		setExpanded,
+	}: {
+		children: ReactNode;
+		setExpanded: Dispatch<SetStateAction<boolean>>;
+	}) => {
+		const Messages = useMessages();
+		const toggleMenu = () => setExpanded((value) => !value);
 
-	return (
-		<header className="sticky left-0 right-0 top-0 z-30 h-10 bg-background-800">
-			<TextTitle className="flex flex-row items-center gap-1 text-2xl pr-2">
-				<div className="p-2 flex flex-row grow gap-2">
-					<FavIcon />
-					{Messages.menu.title}
-				</div>
-				<Icon
-					className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200"
-					onClick={() => setExpanded((value) => !value)}
-				>
-					<Bars3Icon />
-				</Icon>
-			</TextTitle>
-		</header>
-	);
-};
+		return (
+			<header className="sticky left-0 right-0 top-0 z-30  bg-background-800 flex flex-row flex-wrap">
+				<TextTitle className="flex flex-row items-center gap-1 text-2xl pl-2 grow">
+					<Icon
+						className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200"
+						onClick={toggleMenu}
+					>
+						<Bars3Icon />
+					</Icon>
+					<div
+						className="p-2 flex flex-row gap-2"
+						onClick={toggleMenu}
+						onKeyDown={toggleMenu}
+					>
+						<FavIcon />
+						{Messages.menu.title}
+					</div>
+				</TextTitle>
+				{children}
+			</header>
+		);
+	},
+);
 
 const Content = ({
 	expanded,
-	moneeeyStore,
-}: { expanded: boolean; moneeeyStore: MoneeeyStore }) => (
+	children,
+}: { expanded: boolean; children: ReactNode }) => (
 	<section className="flex grow flex-row">
 		{expanded && <Menu />}
 		<section className="flex max-h-[calc(100vh-3em)] grow flex-col overflow-scroll p-4">
-			<RouteRenderer root_route={HomeRoute} app={{ moneeeyStore }} />
+			{children}
 		</section>
 	</section>
 );
 
-export default function AppMenu({
-	moneeeyStore,
-}: { moneeeyStore: MoneeeyStore }) {
+export default function AppMenu() {
 	const [expanded, setExpanded] = useState(
 		getStorage("menu_expanded", "true", StorageKind.PERMANENT) === "true",
 	);
-
 	useEffect(() => {
 		setStorage("menu_expanded", String(expanded), StorageKind.PERMANENT);
 	}, [expanded]);
 
 	return (
 		<section className="flex h-screen flex-col">
-			<Header setExpanded={setExpanded} />
-			<Content expanded={expanded} moneeeyStore={moneeeyStore} />
+			<RouteRenderer root_route={HomeRoute}>
+				{({ route }) => (
+					<>
+						<Header setExpanded={setExpanded}>
+							<RouteHeaderRender route={route} />
+						</Header>
+						<Content expanded={expanded}>
+							<RouteContentRender route={route} />
+						</Content>
+					</>
+				)}
+			</RouteRenderer>
 		</section>
 	);
 }

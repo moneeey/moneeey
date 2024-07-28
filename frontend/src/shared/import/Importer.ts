@@ -167,4 +167,4 @@ class Importer {
 	}
 }
 
-export { Importer, Importer as default };
+export default Importer;

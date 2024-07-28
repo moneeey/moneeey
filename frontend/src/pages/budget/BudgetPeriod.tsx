@@ -1,4 +1,3 @@
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { map, range } from "lodash";
 import { observer } from "mobx-react-lite";
 import {
@@ -11,7 +10,6 @@ import {
 
 import Loading from "../../components/Loading";
 import TableEditor from "../../components/TableEditor";
-import { LinkButton } from "../../components/base/Button";
 import Card from "../../components/base/Card";
 import { TextTitle } from "../../components/base/Text";
 import CurrencyAmountField from "../../components/editor/CurrencyAmountField";
@@ -28,7 +26,7 @@ import useMessages from "../../utils/Messages";
 
 interface PeriodProps {
 	startingDate: Date;
-	setEditing: Dispatch<SetStateAction<IBudget | undefined>>;
+	setEditing: (budget?: IBudget) => void;
 	viewArchived: boolean;
 }
 
@@ -40,24 +38,32 @@ const BudgetPeriods = observer(
 		viewMonths,
 	}: PeriodProps & { viewMonths: number }) => {
 		const [progress, setProgress] = useState(0);
+		const { budget } = useMoneeeyStore();
+		const budgetIds = budget.ids.join("_");
 
 		return (
-			<>
+			<div className="flex flex-row flex-wrap gap-4">
 				{map(range(0, viewMonths), (offset) => (
-					<Loading
-						key={offset}
-						loading={progress !== 0 && progress !== 100}
-						progress={progress}
+					<div
+						className="grow w-[26em] lg:w-[36em] xl:w-[40em] h-80 pb-4"
+						key={`budgetPeriod_${viewArchived}_${viewMonths}_${formatDate(
+							startOfMonthOffset(startingDate, offset),
+						)}_${budgetIds}`}
 					>
-						<BudgetPeriod
-							startingDate={startOfMonthOffset(startingDate, offset)}
-							setEditing={setEditing}
-							viewArchived={viewArchived}
-							setProgress={setProgress}
-						/>
-					</Loading>
+						<Loading
+							loading={progress !== 0 && progress !== 100}
+							progress={progress}
+						>
+							<BudgetPeriod
+								startingDate={startOfMonthOffset(startingDate, offset)}
+								setEditing={setEditing}
+								viewArchived={viewArchived}
+								setProgress={setProgress}
+							/>
+						</Loading>
+					</div>
 				))}
-			</>
+			</div>
 		);
 	},
 );
@@ -82,90 +88,79 @@ const BudgetPeriod = observer(
 				setProgress(currentProgress),
 			);
 		}, [setProgress, starting, budget]);
-		const onNewBudget = () => setEditing(budget.factory());
-
 		return (
 			<Card
+				className="h-full w-full"
 				testId={`budget_period_${formatDateMonth(startingDate)}`}
 				header={
 					<TextTitle className="flex flex-row justify-between">
 						<div>{formatDateMonth(startingDate)}</div>
-						<LinkButton onClick={onNewBudget} className="text-sm">
-							<PlusCircleIcon
-								style={{
-									color: "lightgreen",
-									width: "1.2em",
-									height: "1.2em",
-									marginRight: "0.5em",
-								}}
-							/>
-							{Messages.budget.new}
-						</LinkButton>
 					</TextTitle>
 				}
 			>
-				<div className="h-full min-h-[16em]">
-					<TableEditor
-						testId={`budget_period_table_${formatDateMonth(startingDate)}`}
-						store={budget.envelopes}
-						factory={budget.envelopes.factory}
-						creatable={false}
-						schemaFilter={(b) =>
-							b.starting === starting && (!b.budget.archived || viewArchived)
-						}
-						showRecentEntries={false}
-						schema={[
-							{
-								title: Messages.budget.budget,
-								width: 80,
-								validate: () => ({ valid: true }),
-								...LinkField<BudgetEnvelope>({
-									read: ({ name }) => name,
-									delta: () => ({}),
-									onClick: (entity) => setEditing(entity.budget),
+				<TableEditor
+					testId={`budget_period_table_${formatDateMonth(startingDate)}`}
+					store={budget.envelopes}
+					factory={budget.envelopes.factory}
+					creatable={false}
+					schemaFilter={(b) =>
+						b.starting === starting && (!b.budget.archived || viewArchived)
+					}
+					showRecentEntries={false}
+					schema={[
+						{
+							title: Messages.budget.budget,
+							width: 45,
+							validate: () => ({ valid: true }),
+							...LinkField<BudgetEnvelope>({
+								read: ({ name }) => name,
+								delta: () => ({}),
+								onClick: (entity) => setEditing(entity.budget),
+							}),
+						},
+						{
+							title: Messages.budget.allocated,
+							width: 60,
+							validate: () => ({ valid: true }),
+							...CurrencyAmountField<BudgetEnvelope>({
+								read: ({ allocated, budget: { currency_uuid } }) => ({
+									amount: allocated,
+									currency: currencies.byUuid(currency_uuid),
 								}),
-							},
-							{
-								title: Messages.budget.allocated,
-								width: 90,
-								validate: () => ({ valid: true }),
-								...CurrencyAmountField<BudgetEnvelope>({
-									read: ({ allocated, budget: { currency_uuid } }) => ({
-										amount: allocated,
-										currency: currencies.byUuid(currency_uuid),
-									}),
-									delta: ({ amount: allocated }) => ({ allocated }),
+								delta: ({ amount: allocated }) => ({ allocated }),
+							}),
+						},
+						{
+							title: Messages.budget.used,
+							width: 60,
+							readOnly: true,
+							customClass: () => "text-gray-400",
+							validate: () => ({ valid: true }),
+							...CurrencyAmountField<BudgetEnvelope>({
+								read: ({ used, budget: { currency_uuid } }) => ({
+									amount: used,
+									currency: currencies.byUuid(currency_uuid),
 								}),
-							},
-							{
-								title: Messages.budget.used,
-								width: 90,
-								readOnly: true,
-								validate: () => ({ valid: true }),
-								...CurrencyAmountField<BudgetEnvelope>({
-									read: ({ used, budget: { currency_uuid } }) => ({
-										amount: used,
-										currency: currencies.byUuid(currency_uuid),
-									}),
-									delta: () => ({}),
+								delta: () => ({}),
+							}),
+						},
+						{
+							title: Messages.budget.remaining,
+							width: 50,
+							readOnly: true,
+							customClass: ({ remaining }) =>
+								remaining < 0 ? "bg-red-800" : "",
+							validate: () => ({ valid: true }),
+							...CurrencyAmountField<BudgetEnvelope>({
+								read: ({ remaining, budget: { currency_uuid } }) => ({
+									amount: remaining,
+									currency: currencies.byUuid(currency_uuid),
 								}),
-							},
-							{
-								title: Messages.budget.remaining,
-								width: 90,
-								readOnly: true,
-								validate: () => ({ valid: true }),
-								...CurrencyAmountField<BudgetEnvelope>({
-									read: ({ remaining, budget: { currency_uuid } }) => ({
-										amount: remaining,
-										currency: currencies.byUuid(currency_uuid),
-									}),
-									delta: () => ({}),
-								}),
-							},
-						]}
-					/>
-				</div>
+								delta: () => ({}),
+							}),
+						},
+					]}
+				/>
 			</Card>
 		);
 	},

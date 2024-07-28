@@ -78,8 +78,8 @@ export default function Settings() {
 	};
 
 	return (
-		<VerticalSpace>
-			<Space>
+		<>
+			<Space className="p-2 scale-75">
 				<PrimaryButton onClick={onExportData}>
 					{Messages.settings.export_data}
 				</PrimaryButton>
@@ -89,6 +89,8 @@ export default function Settings() {
 				<SecondaryButton onClick={onClearData}>
 					{Messages.settings.clear_all}
 				</SecondaryButton>
+			</Space>
+			<VerticalSpace>
 				{action && (
 					<Drawer
 						testId="accountSettings"
@@ -123,8 +125,8 @@ export default function Settings() {
 						</div>
 					</Drawer>
 				)}
-			</Space>
-			<ConfigTable config={moneeeyStore.config} />
-		</VerticalSpace>
+				<ConfigTable config={moneeeyStore.config} />
+			</VerticalSpace>
+		</>
 	);
 }

@@ -4,17 +4,13 @@ import TableEditor from "../components/TableEditor";
 import NumberField from "../components/editor/NumberField";
 import TagField from "../components/editor/TagField";
 import TextField from "../components/editor/TextField";
-import type { CurrencyStore, ICurrency } from "../entities/Currency";
+import type { ICurrency } from "../entities/Currency";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
 
-interface CurrencySettingsProps {
-	currencies: CurrencyStore;
-}
-
-const CurrencyTable = observer(({ currencies }: CurrencySettingsProps) => {
+const CurrencyTable = observer(() => {
 	const Messages = useMessages();
-	const { config } = useMoneeeyStore();
+	const { config, currencies } = useMoneeeyStore();
 
 	return (
 		<TableEditor
@@ -87,4 +83,4 @@ const CurrencyTable = observer(({ currencies }: CurrencySettingsProps) => {
 	);
 });
 
-export { CurrencyTable, CurrencyTable as default };
+export default CurrencyTable;

@@ -22,6 +22,7 @@ const DatePicker = ({
 		prefix,
 		suffix,
 		isError,
+		readOnly,
 		input: (
 			<ReactDatePicker
 				data-testid={testId}
@@ -31,10 +32,10 @@ const DatePicker = ({
 				selected={value}
 				onChange={(newValue: Date) => newValue && onChange(newValue)}
 				readOnly={readOnly}
-				disabled={disabled}
+				disabled={disabled === true || readOnly === true}
 			/>
 		),
 	});
 };
 
-export { DatePicker as default };
+export default DatePicker;

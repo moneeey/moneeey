@@ -24,6 +24,7 @@ type InputContainerProps = {
 	prefix: AddonType;
 	suffix: AddonType;
 	isError: boolean | undefined;
+	readOnly?: boolean;
 	input: ReactNode;
 	baseClassname?: string;
 };
@@ -34,12 +35,14 @@ export const InputContainer = ({
 	suffix,
 	isError,
 	input,
+	readOnly,
 }: InputContainerProps) => {
 	return (
 		<div
 			className={`${baseClassname || BaseInputClzz} flex ${
 				isError ? "border border-red-400" : ""
-			}`}
+			}
+      ${readOnly ? "text-slate-300" : "text-slate-100"}`}
 		>
 			{prefix}
 			<div className="grow">{input}</div>
@@ -74,6 +77,7 @@ const Input = ({
 		prefix,
 		suffix,
 		isError,
+		readOnly,
 		input: (
 			<input
 				data-testid={testId}
@@ -85,7 +89,7 @@ const Input = ({
 				}
 				onBlur={() => currentValue !== value && onChange(currentValue)}
 				placeholder={placeholder}
-				disabled={disabled}
+				disabled={disabled === true || readOnly === true}
 				readOnly={readOnly}
 			/>
 		),
@@ -123,6 +127,7 @@ const InputNumber = ({
 		prefix,
 		suffix,
 		isError,
+		readOnly,
 		input: (
 			<NumericFormat
 				data-testid={testId}
@@ -143,7 +148,7 @@ const InputNumber = ({
 				thousandSeparator={thousandSeparator}
 				decimalSeparator={decimalSeparator}
 				decimalScale={decimalScale}
-				disabled={disabled}
+				disabled={disabled === true || readOnly === true}
 				readOnly={readOnly}
 			/>
 		),
@@ -167,6 +172,7 @@ const TextArea = ({
 		prefix,
 		suffix,
 		isError,
+		readOnly,
 		input: (
 			<textarea
 				data-testid={testId}
@@ -177,7 +183,7 @@ const TextArea = ({
 					newValue !== value && onChange(newValue)
 				}
 				placeholder={placeholder}
-				disabled={disabled}
+				disabled={disabled === true || readOnly === true}
 				readOnly={readOnly}
 				rows={rows}
 			/>
@@ -203,8 +209,9 @@ const Checkbox = ({
 }: CheckboxProps) =>
 	InputContainer({
 		prefix,
-		baseClassname: "color-white bg-transparent",
+		baseClassname: "bg-transparent",
 		suffix,
+		readOnly,
 		isError,
 		input: (
 			<label>
@@ -215,7 +222,7 @@ const Checkbox = ({
 					checked={value}
 					onChange={({ target: { checked: newValue } }) => onChange(newValue)}
 					placeholder={placeholder}
-					disabled={disabled}
+					disabled={disabled === true || readOnly === true}
 					readOnly={readOnly}
 				/>
 				{children}

@@ -1,9 +1,10 @@
 import type { ITransaction } from "../entities/Transaction";
+import useMoneeeyStore from "../shared/useMoneeeyStore";
 
 import TransactionTable from "../tables/TransactionTable";
 
 import HomeRoute from "./HomeRouter";
-import { type IAppParameters, type IRouteParameters, Route } from "./Route";
+import Route, { type IRouteParameters } from "./Route";
 
 interface ITagsRoute extends IRouteParameters {
 	tag: string;
@@ -15,14 +16,15 @@ class TagsRouter extends Route<ITagsRoute> {
 		this.parent?.addChild(this);
 	}
 
-	render({ app, parameters }: { app: IAppParameters; parameters: ITagsRoute }) {
-		const { transactions, accounts, currencies } = app.moneeeyStore;
+	render({ parameters }: { parameters: ITagsRoute }) {
+		const { transactions, accounts, currencies } = useMoneeeyStore();
 		const filterByTag = transactions.filterByTag(parameters.tag, accounts);
 		const schemaFilter = (row: ITransaction) => filterByTag(row);
 		const referenceAccount = "";
 
 		return (
 			<TransactionTable
+				tableId={`tagsTransactions${parameters.tag}`}
 				{...{
 					transactions,
 					accounts,
@@ -41,4 +43,4 @@ class TagsRouter extends Route<ITagsRoute> {
 }
 
 const TagsRoute = new TagsRouter();
-export { TagsRoute as default };
+export default TagsRoute;

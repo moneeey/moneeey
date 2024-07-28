@@ -10,7 +10,7 @@ import {
 	parseDateTime,
 } from "../utils/Date";
 
-import VirtualTable, { type ColumnDef } from "./VirtualTableEditor";
+import VirtualTable, { type Row, type ColumnDef } from "./VirtualTableEditor";
 
 import type { WithDataTestId } from "./base/Common";
 import type { FieldDef } from "./editor/FieldDef";
@@ -32,6 +32,7 @@ export default observer(
 		factory,
 		creatable,
 		showRecentEntries,
+		testId,
 	}: TableEditorProps<T>) => {
 		const [newEntityId, setNewEntityId] = useState(() =>
 			store.getUuid(store.factory()),
@@ -80,12 +81,21 @@ export default observer(
 
 		const columns = useMemo((): ColumnDef[] => {
 			return schema.map((field, index) => {
-				const { title, defaultSortOrder, width } = field;
+				const { title, defaultSortOrder, width, customClass } = field;
 
 				return {
 					title,
 					index,
 					width,
+					customClass: !customClass
+						? undefined
+						: ({ entityId }: Row, rowIndex: number) => {
+								const entity = store.byUuid(entityId);
+								if (!entity) {
+									return "";
+								}
+								return customClass(entity, rowIndex);
+							},
 					defaultSortOrder,
 					render: observer(({ entityId }) => {
 						const current = store.byUuid(entityId);
@@ -102,18 +112,19 @@ export default observer(
 							/>
 						);
 					}),
-					sorter: (a, b, asc) =>
-						field.sorter(
-							store.byUuid(a.entityId) as T,
-							store.byUuid(b.entityId) as T,
-							asc,
-						),
+					sorter: (a, b, asc) => {
+						const tA = store.byUuid(a.entityId) as T;
+						const tB = store.byUuid(b.entityId) as T;
+						return tA && tB ? field.sorter(tA, tB, asc) : 0;
+					},
 				};
 			});
 		}, [store, schema]);
 
 		return (
 			<VirtualTable
+				testId={testId}
+				key={testId}
 				columns={columns}
 				rows={entities}
 				isNewEntity={(row) => row.entityId === newEntityId}
