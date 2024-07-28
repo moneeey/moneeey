@@ -262,12 +262,22 @@ test.describe("Tour", () => {
 		await BudgetEditorSave(page, "Gas", mostUsedCurrencies[0], "Gas Station");
 		await BudgetEditorSave(page, "Bakery", mostUsedCurrencies[0], "Bakery");
 
+		const editorRemainingClass = async (index) =>
+			await (await page.getByTestId("editorRemaining").nth(index)).evaluate(
+				(el) =>
+					String(
+						el.parentElement.parentElement.parentElement.className,
+					).replace(/\s+/g, " "),
+			);
 		// Allocate on budget and wait for calculated used/remaining
 		expect(page.getByText("R$").first()).toBeDefined();
 		await Input(page, "editorAllocated", undefined, 0).change("65,00");
 		await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("89,8");
 		await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue(
-			"-24,8",
+			"-24,80",
+		);
+		expect(await editorRemainingClass(0)).toEqual(
+			"bg-background-800 bg-red-800",
 		);
 
 		await Input(page, "editorAllocated", undefined, 1).change("5435,25");
@@ -275,6 +285,7 @@ test.describe("Tour", () => {
 		await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
 			"4.200,69",
 		);
+		expect(await editorRemainingClass(1)).toEqual("bg-background-600 ");
 
 		// Go to Import
 		await tourNext(page);
