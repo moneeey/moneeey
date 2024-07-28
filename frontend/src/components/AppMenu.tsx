@@ -78,15 +78,15 @@ const Menu = observer(() => {
 		Array.from(transactions.runningBalance.accountBalance.entries()).map(
 			([account_uuid, balance]) => [
 				account_uuid,
-				Messages.menu.balance(
-					currencies.formatByUuid(
-						accounts.byUuid(account_uuid)?.currency_uuid || "",
-						balance,
-					),
+				currencies.formatByUuid(
+					accounts.byUuid(account_uuid)?.currency_uuid || "",
+					balance,
 				),
 			],
 		),
 	);
+
+	const allRunningBalances = Array.from(runningBalances.values()).join("_");
 
 	const routeLink = (url: string) => ({
 		onClick: () => navigation.navigate(url),
@@ -100,7 +100,7 @@ const Menu = observer(() => {
 
 	return (
 		<Navbar
-			key={allAccountsKey}
+			key={`${allAccountsKey}@@${allRunningBalances}`}
 			className="px-2"
 			testId="appMenu"
 			footer={<LanguageSelector />}
@@ -128,10 +128,15 @@ const Menu = observer(() => {
 								icon: <WalletIcon />,
 								customLabel: (
 									<TextNormal
-										title={runningBalances.get(acct.account_uuid) || acct.name}
+										title={Messages.menu.balance(
+											runningBalances.get(acct.account_uuid) || "loading",
+										)}
 									>
 										<TextSecondary>{getAccountCurrency(acct)}</TextSecondary>{" "}
 										{acct.name}{" "}
+										<span className="text-slate-400 text-xs">
+											{runningBalances.get(acct.account_uuid)}
+										</span>
 									</TextNormal>
 								),
 								...routeLink(AccountRoute.accountUrl(acct)),

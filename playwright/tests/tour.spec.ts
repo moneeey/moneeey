@@ -275,6 +275,7 @@ test.describe("Tour", () => {
 		await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
 			"4.200,69",
 		);
+
 		// Go to Import
 		await tourNext(page);
 		expect(page.getByText("New import")).toBeDefined();
