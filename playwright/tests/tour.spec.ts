@@ -262,13 +262,15 @@ test.describe("Tour", () => {
 		await BudgetEditorSave(page, "Gas", mostUsedCurrencies[0], "Gas Station");
 		await BudgetEditorSave(page, "Bakery", mostUsedCurrencies[0], "Bakery");
 
-		const editorRemainingClass = async (index) =>
-			await (await page.getByTestId("editorRemaining").nth(index)).evaluate(
-				(el) =>
-					String(
-						el.parentElement.parentElement.parentElement.className,
-					).replace(/\s+/g, " "),
+		const classForTestIdTDs = (testId) => async (index) =>
+			await (await page.getByTestId(testId).nth(index)).evaluate((el) =>
+				String(el.parentElement.parentElement.parentElement.className).replace(
+					/\s+/g,
+					" ",
+				),
 			);
+		const editorRemainingClass = classForTestIdTDs("editorRemaining");
+
 		// Allocate on budget and wait for calculated used/remaining
 		expect(page.getByText("R$").first()).toBeDefined();
 		await Input(page, "editorAllocated", undefined, 0).change("65,00");
@@ -300,5 +302,54 @@ test.describe("Tour", () => {
 
 		// Tour is closed
 		expect(page.getByTestId("nm-modal-title")).toBeHidden();
+
+		// Import
+		await page.getByText("Import").click();
+
+		await page
+			.getByTestId("importFile")
+			.setInputFiles("./fixture/bank_statement_a.csv");
+
+		expect(page.getByText("bank_statement_a.csv")).toBeDefined();
+
+		await page.waitForFunction(
+			(selector) => !document.querySelector(selector),
+			"[data-testid=loadingProgress]",
+		);
+
+		const expectedImportRows = 5;
+		expect(page.getByTestId("editorTo")).toHaveCount(expectedImportRows);
+
+		const editorFromClass = classForTestIdTDs("editorFrom");
+		const editorToClass = classForTestIdTDs("editorTo");
+		expect(
+			await Promise.all(
+				Array.from({ length: expectedImportRows }).map(async (_v, index) => ({
+					fromClasses: await editorFromClass(index),
+					toClasses: await editorToClass(index),
+				})),
+			),
+		).toEqual([
+			{
+				fromClasses: "bg-background-800 ",
+				toClasses: "bg-background-800 bg-green-900",
+			},
+			{
+				fromClasses: "bg-background-600 ",
+				toClasses: "bg-background-600 bg-green-950",
+			},
+			{
+				fromClasses: "bg-background-800 ",
+				toClasses: "bg-background-800 bg-green-900",
+			},
+			{
+				fromClasses: "bg-background-600 ",
+				toClasses: "bg-background-600 bg-green-950",
+			},
+			{
+				fromClasses: "bg-background-800 ",
+				toClasses: "bg-background-800 bg-green-900",
+			},
+		]);
 	});
 });

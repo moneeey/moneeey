@@ -54,7 +54,7 @@ const FileUploader = ({ onFile, error }: FileUploaderProps) => {
 		},
 	});
 
-	const inputProps = getInputProps();
+	const inputProps = { ...getInputProps(), "data-testid": "importFile" };
 
 	return (
 		<>

@@ -70,6 +70,7 @@ const ImportProcess = ({
 		process({ moneeeyStore, task, processor, setProgress, setResult });
 	}, [moneeeyStore, task]);
 
+	console.log(JSON.stringify({ result }));
 	return (
 		<div className="mt-2 flex grow flex-col bg-background-800 p-2">
 			<TextTitle>
