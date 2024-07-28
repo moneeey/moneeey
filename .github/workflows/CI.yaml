@@ -26,6 +26,8 @@ jobs:
         with:
           image: mcr.microsoft.com/playwright:v1.36.1-jammy
           options: --rm -v ${{ github.workspace }}:/workspace
+          env:
+            CI: true
           run: |
             cd /workspace
             ls -la
