@@ -33,7 +33,7 @@ jobs:
             ls -la
             cd playwright
             yarn install --frozen-lockfile
-            yarn run playwright install --with-deps
+            yarn run playwright install --with-deps firefox chromium
             yarn run playwright test
 
       - uses: actions/upload-artifact@v3
