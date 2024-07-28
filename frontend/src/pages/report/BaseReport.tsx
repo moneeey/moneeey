@@ -111,50 +111,52 @@ export const BaseReport = ({
 	);
 };
 
-const ChartColorGenerator = () => {
-	const colors = [
-		"text-emerald-200 fill-emerald-200 stroke-emerald-200",
-		"text-cyan-200 fill-cyan-200 stroke-cyan-200",
-		"text-yellow-200 fill-yellow-200 stroke-yellow-200",
-		"text-orange-200 fill-orange-200 stroke-orange-200",
-		"text-violet-200 fill-violet-200 stroke-violet-200",
-		"text-teal-200 fill-teal-200 stroke-teal-200",
-		"text-blue-200 fill-blue-200 stroke-blue-200",
-		"text-stone-200 fill-stone-200 stroke-stone-200",
-		"text-green-200 fill-green-200 stroke-green-200",
-		"text-fuchsia-200 fill-fuchsia-200 stroke-fuchsia-200",
-		"text-lime-200 fill-lime-200 stroke-lime-200",
-		"text-pink-200 fill-pink-200 stroke-pink-200",
-		"text-purple-200 fill-purple-200 stroke-purple-200",
-		"text-sky-200 fill-sky-200 stroke-sky-200",
-		"text-slate-200 fill-slate-200 stroke-slate-200",
-		"text-red-200 fill-red-200 stroke-red-200",
-		"text-white-200 fill-white-200 stroke-white-200",
-		"text-amber-200 fill-amber-200 stroke-amber-200",
-		"text-indigo-200 fill-indigo-200 stroke-indigo-200",
-	];
-	let index = 0;
+type ColorGeneratorFn = () => string;
 
+export const ChartColorGeneratorForColors = (colors: string[]) => {
+	let index = 0;
 	return () => {
 		index += 1;
 		index %= colors.length;
-
 		return colors[index];
 	};
-};
+}
+
+const ChartColorGenerator = (): ColorGeneratorFn => ChartColorGeneratorForColors([
+		"text-emerald-600 fill-emerald-400 stroke-emerald-400",
+		"text-cyan-600 fill-cyan-400 stroke-cyan-400",
+		"text-yellow-600 fill-yellow-400 stroke-yellow-400",
+		"text-orange-600 fill-orange-400 stroke-orange-400",
+		"text-violet-600 fill-violet-400 stroke-violet-400",
+		"text-teal-600 fill-teal-400 stroke-teal-400",
+		"text-blue-600 fill-blue-400 stroke-blue-400",
+		"text-green-600 fill-green-400 stroke-green-400",
+		"text-fuchsia-600 fill-fuchsia-400 stroke-fuchsia-400",
+		"text-lime-600 fill-lime-400 stroke-lime-400",
+		"text-pink-600 fill-pink-400 stroke-pink-400",
+		"text-purple-600 fill-purple-400 stroke-purple-400",
+		"text-sky-600 fill-sky-400 stroke-sky-400",
+		"text-red-600 fill-red-400 stroke-red-400",
+		"text-white-600 fill-white-400 stroke-white-400",
+		"text-amber-600 fill-amber-400 stroke-amber-400",
+		"text-indigo-600 fill-indigo-400 stroke-indigo-400",
+	])
 
 interface ChartRenderProps {
 	columns: string[];
 	rows: object[];
 	width: number;
 	height: number;
+  colorGenerator: () => ColorGeneratorFn,
 }
 
 const BaseChart = ({
 	data,
+  colorGenerator,
 	Chart,
 }: {
 	data: ReportDataMap;
+  colorGenerator: () => ColorGeneratorFn;
 	Chart: (props: ChartRenderProps) => ReactElement;
 }) => {
 	const columns = Array.from(data.columns.keys());
@@ -165,7 +167,7 @@ const BaseChart = ({
 
 	return (
 		<ResponsiveContainer width="100%" height="100%" minHeight="42em">
-			<Chart width={0} height={0} columns={columns} rows={rows} />
+			<Chart width={0} height={0} columns={columns} rows={rows} colorGenerator={colorGenerator} />
 		</ResponsiveContainer>
 	);
 };
@@ -177,8 +179,8 @@ const CustomTooltip = ({
 }: TooltipProps<ValueType, NameType>) => {
 	if (active && payload && payload.length) {
 		return (
-			<div className="rounded bg-background-400 p-2">
-				<TextTitle>{label}</TextTitle>
+			<div className="rounded bg-background-100 p-2">
+				<TextTitle className="text-info-800">{label}</TextTitle>
 				{payload.map((pld) => (
 					<p
 						key={pld.name}
@@ -205,15 +207,18 @@ const BaseTooltip = (xFormatter: (v: TDate) => string) => (
 
 export const BaseColumnChart = ({
 	data,
+  colorGenerator,
 	xFormatter,
 }: {
 	data: ReportDataMap;
+  colorGenerator?: () => ColorGeneratorFn,
 	xFormatter: (v: TDate) => string;
 }) => (
 	<BaseChart
+    colorGenerator={colorGenerator || ChartColorGenerator}
 		data={data}
 		Chart={(props: ChartRenderProps) => {
-			const nextColor = ChartColorGenerator();
+      const nextColor = props.colorGenerator()
 
 			return (
 				<BarChart
@@ -242,13 +247,16 @@ export const BaseColumnChart = ({
 
 export const BaseLineChart = ({
 	data,
+  colorGenerator,
 	xFormatter,
 }: {
 	data: ReportDataMap;
+  colorGenerator?: () => ColorGeneratorFn;
 	xFormatter: (v: TDate) => string;
 }) => (
 	<BaseChart
 		data={data}
+    colorGenerator={colorGenerator || ChartColorGenerator}
 		Chart={(props: ChartRenderProps) => {
 			const nextColor = ChartColorGenerator();
 
