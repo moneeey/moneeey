@@ -5,13 +5,13 @@ import {
 	type SetStateAction,
 	useState,
 } from "react";
-import { Checkbox, Input } from "../components/base/Input";
-import useMessages from "../utils/Messages";
-import useMoneeeyStore from "../shared/useMoneeeyStore";
-import { Status } from "../components/Status";
 import { BaseFormEditor } from "../components/FormEditor";
+import { Status } from "../components/Status";
 import { OkButton } from "../components/base/Button";
+import { Checkbox, Input } from "../components/base/Input";
 import Tabs from "../components/base/Tabs";
+import useMoneeeyStore from "../shared/useMoneeeyStore";
+import useMessages from "../utils/Messages";
 
 const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
 	placeholder,

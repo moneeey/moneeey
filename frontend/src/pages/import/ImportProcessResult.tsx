@@ -1,22 +1,24 @@
-import { compact, isEmpty, isNumber, map } from "lodash";
-import type { Dispatch, SetStateAction } from "react";
-
-import VirtualTable, { type Row } from "../../components/VirtualTableEditor";
+import { compact, map } from "lodash";
+import { useMemo } from "react";
+import TableEditor from "../../components/TableEditor";
 import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import Space, { VerticalSpace } from "../../components/base/Space";
 import { TextDanger, TextNormal } from "../../components/base/Text";
 import AccountField from "../../components/editor/AccountField";
-import type { FieldDef } from "../../components/editor/FieldDef";
-import type { TAccountUUID } from "../../entities/Account";
-import type { ITransaction } from "../../entities/Transaction";
-import type MoneeeyStore from "../../shared/MoneeeyStore";
+import CurrencyAmountField from "../../components/editor/CurrencyAmountField";
+import DateField from "../../components/editor/DateField";
+import MemoField from "../../components/editor/MemoField";
+import TransactionStore, {
+	type ITransaction,
+} from "../../entities/Transaction";
 import type {
 	ImportResult,
 	ImportTask,
 } from "../../shared/import/ImportContent";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import useMessages, { type TMessages } from "../../utils/Messages";
+import useMessages from "../../utils/Messages";
 
+/*
 const accountRender =
 	({
 		Messages,
@@ -91,14 +93,14 @@ const accountRender =
 							field={{ title: "Account" } as FieldDef<ITransaction>}
 							isError={false}
 							commit={(updated_transaction) => {
-								setResult({
-									...result,
+								setResult((currentResult) => ({
+									...currentResult,
 									transactions: map(result?.transactions, (t) =>
 										t.transaction_uuid === transaction.transaction_uuid
 											? updated_transaction
 											: t,
 									),
-								});
+								}));
 							}}
 						/>
 					</div>
@@ -200,14 +202,12 @@ const ContentTransactionTable = ({
 	transactions,
 	task,
 	result,
-	setResult,
 }: {
 	Messages: TMessages;
 	moneeeyStore: MoneeeyStore;
 	transactions: ITransaction[];
 	task: ImportTask;
 	result: ImportResult;
-	setResult: Dispatch<SetStateAction<ImportResult>>;
 }) =>
 	isEmpty(transactions) ? null : (
 		<VirtualTable
@@ -278,38 +278,55 @@ const ContentTransactionTable = ({
 			]}
 		/>
 	);
+*/
 
 const ImportProcessResult = ({
 	task,
 	result,
-	setResult,
 	close,
 }: {
 	task: ImportTask;
 	result: ImportResult;
-	setResult: Dispatch<SetStateAction<ImportResult>>;
 	close: () => void;
 }) => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
+	const localTransactions = useMemo(() => {
+		const ls = new TransactionStore(moneeeyStore);
+		for (const t of result.transactions) {
+			ls.merge(t);
+		}
+		return ls;
+	}, [moneeeyStore, result]);
+	const { currencies, accounts } = moneeeyStore;
 
 	const onImport = () => {
-		for (const t of result.transactions) {
+		for (const t of localTransactions.all) {
 			moneeeyStore.transactions.merge(t);
 		}
 		close();
 	};
 
 	const onInvertFromTo = () => {
-		setResult({
-			...result,
-			transactions: result.transactions.map((t) => {
-				const { from_account, to_account } = t;
+		for (const t of localTransactions.all) {
+			const { from_account, to_account } = t;
 
-				return { ...t, from_account: to_account, to_account: from_account };
-			}),
-		});
+			return localTransactions.merge({
+				...t,
+				from_account: to_account,
+				to_account: from_account,
+			});
+		}
 	};
+
+	const readAccountOptionsForTransaction = (t: ITransaction) =>
+		compact([
+			...map(
+				result?.recommended_accounts[t.transaction_uuid],
+				(cur_account_uuid) => moneeeyStore.accounts.byUuid(cur_account_uuid),
+			),
+			...moneeeyStore.accounts.allActive,
+		]);
 
 	return (
 		<VerticalSpace className="h-full grow">
@@ -335,20 +352,73 @@ const ImportProcessResult = ({
 				</SecondaryButton>
 			</Space>
 			<div className="static flex-1">
-				<ContentTransactionTable
-					Messages={Messages}
-					moneeeyStore={moneeeyStore}
-					task={task}
-					transactions={[
-						...result.transactions.filter(
-							(t) => result.update[t.transaction_uuid],
-						),
-						...result.transactions.filter(
-							(t) => !result.update[t.transaction_uuid],
-						),
+				<TableEditor
+					key={"importResultTransactions"}
+					testId={"importResultTransactions"}
+					creatable={false}
+					store={localTransactions}
+					schemaFilter={() => true}
+					factory={localTransactions.factory}
+					schema={[
+						{
+							title: Messages.util.date,
+							width: 100,
+							defaultSortOrder: "ascend",
+							readOnly: true,
+							validate: () => ({ valid: true }),
+							...DateField<ITransaction>({
+								read: ({ date }) => date,
+								delta: () => ({}),
+							}),
+						},
+						{
+							title: Messages.transactions.from_account,
+							width: 140,
+							validate: () => ({ valid: true }),
+							...AccountField<ITransaction>({
+								read: ({ from_account }) => from_account,
+								delta: (from_account) => ({ from_account }),
+								clearable: true,
+								readOptions: readAccountOptionsForTransaction,
+							}),
+						},
+						{
+							title: Messages.transactions.to_account,
+							width: 140,
+							validate: () => ({ valid: true }),
+							...AccountField<ITransaction>({
+								read: ({ to_account }) => to_account,
+								delta: (to_account) => ({ to_account }),
+								clearable: true,
+								readOptions: readAccountOptionsForTransaction,
+							}),
+						},
+						{
+							title: Messages.transactions.amount,
+							width: 140,
+							readOnly: true,
+							validate: () => ({ valid: true }),
+							...CurrencyAmountField<ITransaction>({
+								read: ({ from_account, from_value }) => ({
+									currency: currencies.byUuid(
+										accounts.byUuid(from_account)?.currency_uuid,
+									),
+									amount: from_value,
+								}),
+								delta: () => ({}),
+							}),
+						},
+						{
+							title: Messages.transactions.memo,
+							width: 400,
+							readOnly: true,
+							validate: () => ({ valid: true }),
+							...MemoField<ITransaction>({
+								read: ({ memo }) => memo,
+								delta: () => ({}),
+							}),
+						},
 					]}
-					result={result}
-					setResult={setResult}
 				/>
 			</div>
 		</VerticalSpace>

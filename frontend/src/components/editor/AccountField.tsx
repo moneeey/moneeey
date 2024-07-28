@@ -24,7 +24,7 @@ export default function <TEntity>({
 	delta,
 	readOptions,
 }: FieldAcessor<TEntity, TAccountUUID> & {
-	readOptions(): IAccount[];
+	readOptions(entity: TEntity): IAccount[];
 	clearable: boolean;
 }): FieldDefHelper<TEntity> {
 	const Messages = useMessages();
@@ -54,7 +54,7 @@ export default function <TEntity>({
 						value={read(entity)}
 						options={uniqBy(
 							compact([
-								...map(readOptions(), (account) => ({
+								...map(readOptions(entity), (account) => ({
 									label: account.name,
 									value: account.account_uuid,
 								})),

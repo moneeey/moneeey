@@ -242,6 +242,7 @@ test.describe("Tour", () => {
 		// Allocate on budget and wait for calculated used/remaining
 		expect(page.getByText("R$").first()).toBeDefined();
 		await Input(page, "editorAllocated").change("5435,25");
+		// TODO: validate colors, check negative scenario
 		await expect(page.getByTestId("editorUsed").first()).toHaveValue(
 			"1.234,56",
 		);

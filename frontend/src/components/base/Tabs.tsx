@@ -30,13 +30,13 @@ export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
 	const { current, update } = useSelectedIndex(props);
 	return (
 		<nav data-testid={props.testId}>
-			<Space className="no-scrollbar flex-wrap mb-2 max-w-max">
+			<Space className="no-scrollbar flex-wrap m-2 max-w-max">
 				{props.items.map((item, idx) => (
 					<LinkButton
 						key={item.key}
 						onClick={() => update(idx)}
 						testId={`${props.testId}_${item.key}`}
-						className={idx === current ? "underline" : ""}
+						className={idx === current ? "!bg-background-400" : ""}
 					>
 						{item.label}
 					</LinkButton>

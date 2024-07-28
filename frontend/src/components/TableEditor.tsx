@@ -112,12 +112,11 @@ export default observer(
 							/>
 						);
 					}),
-					sorter: (a, b, asc) =>
-						field.sorter(
-							store.byUuid(a.entityId) as T,
-							store.byUuid(b.entityId) as T,
-							asc,
-						),
+					sorter: (a, b, asc) => {
+						const tA = store.byUuid(a.entityId) as T;
+						const tB = store.byUuid(b.entityId) as T;
+						return tA && tB ? field.sorter(tA, tB, asc) : 0;
+					},
 				};
 			});
 		}, [store, schema]);

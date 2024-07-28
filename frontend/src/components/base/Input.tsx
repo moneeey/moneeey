@@ -24,6 +24,7 @@ type InputContainerProps = {
 	prefix: AddonType;
 	suffix: AddonType;
 	isError: boolean | undefined;
+	readOnly?: boolean;
 	input: ReactNode;
 	baseClassname?: string;
 };
@@ -34,12 +35,14 @@ export const InputContainer = ({
 	suffix,
 	isError,
 	input,
+	readOnly,
 }: InputContainerProps) => {
 	return (
 		<div
 			className={`${baseClassname || BaseInputClzz} flex ${
 				isError ? "border border-red-400" : ""
-			}`}
+			}
+      ${readOnly ? "text-slate-300" : "text-slate-100"}`}
 		>
 			{prefix}
 			<div className="grow">{input}</div>
@@ -74,6 +77,7 @@ const Input = ({
 		prefix,
 		suffix,
 		isError,
+		readOnly,
 		input: (
 			<input
 				data-testid={testId}
@@ -123,6 +127,7 @@ const InputNumber = ({
 		prefix,
 		suffix,
 		isError,
+		readOnly,
 		input: (
 			<NumericFormat
 				data-testid={testId}
@@ -167,6 +172,7 @@ const TextArea = ({
 		prefix,
 		suffix,
 		isError,
+		readOnly,
 		input: (
 			<textarea
 				data-testid={testId}
@@ -205,6 +211,7 @@ const Checkbox = ({
 		prefix,
 		baseClassname: "color-white bg-transparent",
 		suffix,
+		readOnly,
 		isError,
 		input: (
 			<label>

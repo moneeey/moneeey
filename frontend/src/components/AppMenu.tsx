@@ -46,11 +46,11 @@ import RouteRenderer, {
 
 import useMessages from "../utils/Messages";
 
+import SyncRoute from "../routes/SyncRoute";
 import LanguageSelector from "./LanguageSelector";
 import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
-import SyncRoute from "../routes/SyncRoute";
 
 const Menu = observer(() => {
 	const Messages = useMessages();

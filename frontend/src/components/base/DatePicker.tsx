@@ -22,6 +22,7 @@ const DatePicker = ({
 		prefix,
 		suffix,
 		isError,
+		readOnly,
 		input: (
 			<ReactDatePicker
 				data-testid={testId}
