@@ -50,6 +50,7 @@ import LanguageSelector from "./LanguageSelector";
 import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
+import SyncRoute from "../routes/SyncRoute";
 
 const Menu = observer(() => {
 	const Messages = useMessages();
@@ -215,7 +216,7 @@ const Menu = observer(() => {
 						) : (
 							<StopCircleIcon color="red" />
 						),
-					...modalLink(NavigationModal.SYNC),
+					...routeLink(SyncRoute.url()),
 				},
 			]}
 		/>

@@ -5,17 +5,13 @@ import {
 	type SetStateAction,
 	useState,
 } from "react";
-
-import { NavigationModal } from "../../shared/Navigation";
-import useMoneeeyStore from "../../shared/useMoneeeyStore";
-
-import useMessages from "../../utils/Messages";
-import { BaseFormEditor } from "../FormEditor";
-import { Status } from "../Status";
-import { CancelButton, OkButton } from "../base/Button";
-import { Checkbox, Input } from "../base/Input";
-import Modal from "../base/Modal";
-import Tabs from "../base/Tabs";
+import { Checkbox, Input } from "../components/base/Input";
+import useMessages from "../utils/Messages";
+import useMoneeeyStore from "../shared/useMoneeeyStore";
+import { Status } from "../components/Status";
+import { BaseFormEditor } from "../components/FormEditor";
+import { OkButton } from "../components/base/Button";
+import Tabs from "../components/base/Tabs";
 
 const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
 	placeholder,
@@ -138,7 +134,7 @@ const DatabaseConfig = () => {
 							field="url"
 							state={state}
 							setState={setState}
-							placeholder="http://localcouchdb.moneeey.io:4280/mydatabase"
+							placeholder="http://local.moneeey.io:4280/db/mydatabase"
 						/>
 					),
 				},
@@ -176,39 +172,27 @@ const DatabaseConfig = () => {
 	);
 };
 
-export default function SyncModal() {
+export default function Sync() {
 	const Messages = useMessages();
-	const { navigation } = useMoneeeyStore();
 
 	return (
-		<Modal
-			modalId={NavigationModal.SYNC}
-			title={Messages.modal.sync}
-			footer={
-				<CancelButton
-					onClick={() => navigation.closeModal()}
-					title={Messages.util.close}
-				/>
-			}
-		>
-			<>
-				<span className="white-space-preline">{Messages.sync.intro}</span>
-				<Tabs
-					testId="syncSettings"
-					items={[
-						{
-							key: "moneeeyAccount",
-							label: Messages.sync.moneeey_account,
-							children: <MoneeeyAccountConfig />,
-						},
-						{
-							key: "database",
-							label: Messages.sync.database,
-							children: <DatabaseConfig />,
-						},
-					]}
-				/>
-			</>
-		</Modal>
+		<div className="bg-background-800 p-2">
+			<span className="white-space-preline">{Messages.sync.intro}</span>
+			<Tabs
+				testId="syncSettings"
+				items={[
+					{
+						key: "moneeeyAccount",
+						label: Messages.sync.moneeey_account,
+						children: <MoneeeyAccountConfig />,
+					},
+					{
+						key: "database",
+						label: Messages.sync.database,
+						children: <DatabaseConfig />,
+					},
+				]}
+			/>
+		</div>
 	);
 }
