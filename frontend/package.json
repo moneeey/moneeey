@@ -8,10 +8,7 @@
 		"dev": "vite",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
-		"test": "jest",
-		"ci": "biome ci .",
-		"fmt": "biome format --write .",
-		"lint": "biome check --apply . && biome check --apply-unsafe . && tsc"
+		"test": "jest"
 	},
 	"dependencies": {
 		"@heroicons/react": "2.1.1",
@@ -39,7 +36,6 @@
 		"recharts": "2.12.2"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.6.0",
 		"@types/jest": "29.5.12",
 		"@types/lodash": "4.14.202",
 		"@types/pouchdb": "6.4.2",
