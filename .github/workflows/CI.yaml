@@ -63,9 +63,9 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: mcr.microsoft.com/playwright:bionic
-          working-directory: playwright
           options: --rm
           run: |
+            cd playwright
             yarn install --frozen-lockfile
             yarn run playwright install --with-deps
             yarn run playwright test
