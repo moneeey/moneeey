@@ -69,7 +69,7 @@ export function setupMagic(authRouter: oak.Router) {
 
 	authRouter.get("/magic/validate/:jwtCode", async (ctx) => {
 		try {
-			const jwtCode = ctx.params["jwtCode"];
+			const jwtCode = ctx.params.jwtCode;
 			await validateMagic(ctx, jwtCode);
 		} catch (err) {
 			Logger("/magic/validate").error("error", { err });

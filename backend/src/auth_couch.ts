@@ -20,7 +20,7 @@ async function sha384(value: string) {
 }
 
 export async function couchDbId({ strategy, userId, email }: UserId) {
-	return strategy + "_" + (await sha384(`${strategy}:${userId}:${email}`));
+	return `${strategy}_${await sha384(`${strategy}:${userId}:${email}`)}`;
 }
 
 export async function authAndEnsureDbExists({
@@ -64,9 +64,8 @@ export function setupCouch(authRouter: oak.Router) {
 		const userId = String(validatedJwt.payload.userId || "");
 		if (email && strategy && userId) {
 			return authAndEnsureDbExists({ strategy, email, userId });
-		} else {
-			return { authenticated: false };
 		}
+		return { authenticated: false };
 	};
 
 	authRouter.post("/couch", async (ctx: oak.Context) => {

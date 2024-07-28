@@ -8,7 +8,7 @@
 	"scripts": {
 		"ci": "biome ci .",
 		"fmt": "biome format --write .",
-		"lint": "biome check --write . && biome check --write-unsafe . && tsc"
+		"lint": "biome check --fix --unsafe . && yarn --cwd frontend run lint"
 	},
 	"dependencies": {
 		"@biomejs/biome": "^1.8.3"

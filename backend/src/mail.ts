@@ -17,9 +17,8 @@ export const mailInternals = {
 		if (!mailInternals.apiKey || mailInternals.apiKey === "off") {
 			logger.info("fetch", { url, options });
 			return Promise.resolve(new Response("local sent", { status: 202 }));
-		} else {
-			return fetch(url, options);
 		}
+		return fetch(url, options);
 	},
 };
 
@@ -67,9 +66,8 @@ export const sendEmail = async ({
 	);
 	if (res.status === 202) {
 		return { success: true };
-	} else {
-		const error = await res.text();
-		Logger("mail").error("error", { error });
-		return { success: false };
 	}
+	const error = await res.text();
+	Logger("mail").error("error", { error });
+	return { success: false };
 };

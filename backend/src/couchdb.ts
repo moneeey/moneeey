@@ -14,9 +14,7 @@ async function dbApi(method: string, url: string, data?: object) {
 			body,
 			method,
 			headers: {
-				Authorization:
-					"Basic " +
-					btoa(`${COUCHDB_ADMIN_USERNAME}:${COUCHDB_ADMIN_PASSWORD}`),
+				Authorization: `Basic ${btoa(`${COUCHDB_ADMIN_USERNAME}:${COUCHDB_ADMIN_PASSWORD}`)}`,
 			},
 		});
 	} catch (e) {

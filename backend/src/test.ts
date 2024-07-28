@@ -12,7 +12,7 @@ export async function runServerRequest(
 	body?: object,
 ) {
 	const app = createServer();
-	const req = new Request(new URL("http://local.moneeey.io:4269" + path), {
+	const req = new Request(new URL(`http://local.moneeey.io:4269${path}`), {
 		body: body && JSON.stringify(body),
 		method,
 	});

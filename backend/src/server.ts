@@ -27,6 +27,6 @@ export function createServer() {
 
 export async function runServer(app: ReturnType<typeof createServer>) {
 	const port = PORT;
-	Logger("runServer").info(`Moneeey API listening`, { port });
+	Logger("runServer").info("Moneeey API listening", { port });
 	await app.listen({ port });
 }
