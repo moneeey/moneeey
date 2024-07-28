@@ -59,11 +59,15 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install playwright
-        run: yarn run playwright install --with-deps
-
-      - name: Run Playwright tests
-        run: yarn run playwright test
+      - name: Run Playwright tests using Docker
+        uses: addnab/docker-run-action@v3
+        with:
+          image: mcr.microsoft.com/playwright:bionic
+          options: --rm
+          run: |
+            yarn install --frozen-lockfile
+            yarn run playwright install --with-deps
+            yarn run playwright test
 
       - uses: actions/upload-artifact@v3
         if: always()
