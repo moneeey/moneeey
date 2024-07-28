@@ -1,28 +1,26 @@
-import { dotenv, fs } from "./deps.ts";
+import { fs, dotenv } from "./deps.ts";
 
 const ENV_FILES = [
-  "/run/secret/prod.env",
-  "/run/secret/dev.env",
-  "env",
-  "env.example",
+	"/run/secret/prod.env",
+	"/run/secret/dev.env",
+	"env",
+	"env.example",
 ];
 
 const loadEnvFile = (envPath?: string) => {
-  if (envPath) {
-    return dotenv.loadSync({ envPath });
-  }
-  return null;
+	if (envPath) {
+		return dotenv.loadSync({ envPath });
+	}
+	return null;
 };
 
 const env = loadEnvFile(ENV_FILES.find((fileName) => fs.existsSync(fileName)));
 
 if (!env) {
-  throw new Error(
-    `Could not load env file, tried ${ENV_FILES.join(" || ")}`,
-  );
+	throw new Error(`Could not load env file, tried ${ENV_FILES.join(" || ")}`);
 }
 
-export const PORT = parseInt(env["PORT"]);
+export const PORT = Number.parseInt(env["PORT"]);
 export const APP_EMAIL = env["APP_EMAIL"];
 export const APP_URL = env["APP_URL"];
 export const COUCHDB_HOST = env["COUCHDB_HOST"];

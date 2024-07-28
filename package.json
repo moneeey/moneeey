@@ -1,16 +1,16 @@
 {
-  "name": "moneeey",
-  "version": "1.0.0",
-  "main": "index.js",
-  "repository": "git@github.com:moneeey/moneeey.git",
-  "author": "Fernando Baroni <f@baroni.tech>",
-  "license": "MIT",
-  "scripts": {
-    "ci": "biome ci .",
-    "fmt": "biome format --write .",
-    "lint": "biome check --apply . && biome check --apply-unsafe . && tsc"
-  },
-  "dependencies": {
-    "@biomejs/biome": "^1.8.3"
-  }
+	"name": "moneeey",
+	"version": "1.0.0",
+	"main": "index.js",
+	"repository": "git@github.com:moneeey/moneeey.git",
+	"author": "Fernando Baroni <f@baroni.tech>",
+	"license": "MIT",
+	"scripts": {
+		"ci": "biome ci .",
+		"fmt": "biome format --write .",
+		"lint": "biome check --write . && biome check --write-unsafe . && tsc"
+	},
+	"dependencies": {
+		"@biomejs/biome": "^1.8.3"
+	}
 }

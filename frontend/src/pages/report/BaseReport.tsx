@@ -120,9 +120,10 @@ export const ChartColorGeneratorForColors = (colors: string[]) => {
 		index %= colors.length;
 		return colors[index];
 	};
-}
+};
 
-const ChartColorGenerator = (): ColorGeneratorFn => ChartColorGeneratorForColors([
+const ChartColorGenerator = (): ColorGeneratorFn =>
+	ChartColorGeneratorForColors([
 		"text-emerald-600 fill-emerald-400 stroke-emerald-400",
 		"text-cyan-600 fill-cyan-400 stroke-cyan-400",
 		"text-yellow-600 fill-yellow-400 stroke-yellow-400",
@@ -140,23 +141,23 @@ const ChartColorGenerator = (): ColorGeneratorFn => ChartColorGeneratorForColors
 		"text-white-600 fill-white-400 stroke-white-400",
 		"text-amber-600 fill-amber-400 stroke-amber-400",
 		"text-indigo-600 fill-indigo-400 stroke-indigo-400",
-	])
+	]);
 
 interface ChartRenderProps {
 	columns: string[];
 	rows: object[];
 	width: number;
 	height: number;
-  colorGenerator: () => ColorGeneratorFn,
+	colorGenerator: () => ColorGeneratorFn;
 }
 
 const BaseChart = ({
 	data,
-  colorGenerator,
+	colorGenerator,
 	Chart,
 }: {
 	data: ReportDataMap;
-  colorGenerator: () => ColorGeneratorFn;
+	colorGenerator: () => ColorGeneratorFn;
 	Chart: (props: ChartRenderProps) => ReactElement;
 }) => {
 	const columns = Array.from(data.columns.keys());
@@ -167,7 +168,13 @@ const BaseChart = ({
 
 	return (
 		<ResponsiveContainer width="100%" height="100%" minHeight="42em">
-			<Chart width={0} height={0} columns={columns} rows={rows} colorGenerator={colorGenerator} />
+			<Chart
+				width={0}
+				height={0}
+				columns={columns}
+				rows={rows}
+				colorGenerator={colorGenerator}
+			/>
 		</ResponsiveContainer>
 	);
 };
@@ -207,18 +214,18 @@ const BaseTooltip = (xFormatter: (v: TDate) => string) => (
 
 export const BaseColumnChart = ({
 	data,
-  colorGenerator,
+	colorGenerator,
 	xFormatter,
 }: {
 	data: ReportDataMap;
-  colorGenerator?: () => ColorGeneratorFn,
+	colorGenerator?: () => ColorGeneratorFn;
 	xFormatter: (v: TDate) => string;
 }) => (
 	<BaseChart
-    colorGenerator={colorGenerator || ChartColorGenerator}
+		colorGenerator={colorGenerator || ChartColorGenerator}
 		data={data}
 		Chart={(props: ChartRenderProps) => {
-      const nextColor = props.colorGenerator()
+			const nextColor = props.colorGenerator();
 
 			return (
 				<BarChart
@@ -247,16 +254,16 @@ export const BaseColumnChart = ({
 
 export const BaseLineChart = ({
 	data,
-  colorGenerator,
+	colorGenerator,
 	xFormatter,
 }: {
 	data: ReportDataMap;
-  colorGenerator?: () => ColorGeneratorFn;
+	colorGenerator?: () => ColorGeneratorFn;
 	xFormatter: (v: TDate) => string;
 }) => (
 	<BaseChart
 		data={data}
-    colorGenerator={colorGenerator || ChartColorGenerator}
+		colorGenerator={colorGenerator || ChartColorGenerator}
 		Chart={(props: ChartRenderProps) => {
 			const nextColor = ChartColorGenerator();
 

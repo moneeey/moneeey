@@ -95,7 +95,7 @@ export default observer(
 									return "";
 								}
 								return customClass(entity);
-						  },
+							},
 					defaultSortOrder,
 					render: observer(({ entityId }) => {
 						const current = store.byUuid(entityId);

@@ -8,7 +8,11 @@ import type { TDate } from "../../utils/Date";
 
 import useMessages, { type TMessages } from "../../utils/Messages";
 
-import { BaseColumnChart, BaseReport, ChartColorGeneratorForColors } from "./BaseReport";
+import {
+	BaseColumnChart,
+	BaseReport,
+	ChartColorGeneratorForColors,
+} from "./BaseReport";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
@@ -63,10 +67,16 @@ const IncomeVsExpensesReport = () => {
 			processFn={incomeVsExpensesProcess(moneeeyStore, Messages)}
 			title={Messages.reports.income_vs_expenses}
 			chartFn={(data, period) => (
-				<BaseColumnChart data={data} xFormatter={period.formatter} colorGenerator={() => ChartColorGeneratorForColors([
-          "text-green-600 fill-green-300 stroke-green-300",
-          "text-red-600 fill-red-300 stroke-red-300",
-        ])} />
+				<BaseColumnChart
+					data={data}
+					xFormatter={period.formatter}
+					colorGenerator={() =>
+						ChartColorGeneratorForColors([
+							"text-green-600 fill-green-300 stroke-green-300",
+							"text-red-600 fill-red-300 stroke-red-300",
+						])
+					}
+				/>
 			)}
 		/>
 	);
