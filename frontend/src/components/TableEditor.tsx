@@ -10,7 +10,7 @@ import {
 	parseDateTime,
 } from "../utils/Date";
 
-import VirtualTable, { type ColumnDef } from "./VirtualTableEditor";
+import VirtualTable, { type Row, type ColumnDef } from "./VirtualTableEditor";
 
 import type { WithDataTestId } from "./base/Common";
 import type { FieldDef } from "./editor/FieldDef";
@@ -89,12 +89,12 @@ export default observer(
 					width,
 					customClass: !customClass
 						? undefined
-						: ({ entityId }) => {
+						: ({ entityId }: Row, rowIndex: number) => {
 								const entity = store.byUuid(entityId);
 								if (!entity) {
 									return "";
 								}
-								return customClass(entity);
+								return customClass(entity, rowIndex);
 							},
 					defaultSortOrder,
 					render: observer(({ entityId }) => {

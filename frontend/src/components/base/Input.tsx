@@ -89,7 +89,7 @@ const Input = ({
 				}
 				onBlur={() => currentValue !== value && onChange(currentValue)}
 				placeholder={placeholder}
-				disabled={disabled}
+				disabled={disabled === true || readOnly === true}
 				readOnly={readOnly}
 			/>
 		),
@@ -148,7 +148,7 @@ const InputNumber = ({
 				thousandSeparator={thousandSeparator}
 				decimalSeparator={decimalSeparator}
 				decimalScale={decimalScale}
-				disabled={disabled}
+				disabled={disabled === true || readOnly === true}
 				readOnly={readOnly}
 			/>
 		),
@@ -183,7 +183,7 @@ const TextArea = ({
 					newValue !== value && onChange(newValue)
 				}
 				placeholder={placeholder}
-				disabled={disabled}
+				disabled={disabled === true || readOnly === true}
 				readOnly={readOnly}
 				rows={rows}
 			/>
@@ -209,7 +209,7 @@ const Checkbox = ({
 }: CheckboxProps) =>
 	InputContainer({
 		prefix,
-		baseClassname: "color-white bg-transparent",
+		baseClassname: "bg-transparent",
 		suffix,
 		readOnly,
 		isError,
@@ -222,7 +222,7 @@ const Checkbox = ({
 					checked={value}
 					onChange={({ target: { checked: newValue } }) => onChange(newValue)}
 					placeholder={placeholder}
-					disabled={disabled}
+					disabled={disabled === true || readOnly === true}
 					readOnly={readOnly}
 				/>
 				{children}

@@ -59,6 +59,7 @@ const Messages = {
 		configuration: "Configuration",
 		select_reference_account: "Please select reference account",
 		updated: "Updated",
+		existing: "Existing",
 		new: "New",
 		unchanged: "Unchanged",
 		import_transactions: "Import transactions",
@@ -85,6 +86,7 @@ const Messages = {
 		ok: "Ok",
 		cancel: "Cancel",
 		clear: "Clear",
+		required: "Required",
 	},
 	settings: {
 		reload_page: "Reload your page",

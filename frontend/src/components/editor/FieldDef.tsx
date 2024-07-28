@@ -21,7 +21,7 @@ export type FieldDefHelper<TEntity> = {
 
 export type FieldDef<TEntity> = {
 	title: string;
-	readOnly?: boolean;
+	readOnly?: boolean | ((entity: TEntity) => boolean);
 	required?: boolean;
 	defaultSortOrder?: "descend" | "ascend";
 	width: number;
@@ -29,5 +29,18 @@ export type FieldDef<TEntity> = {
 	sorter(a: TEntity, b: TEntity, asc: boolean): number;
 	render(props: FieldRenderProps<TEntity>): JSX.Element;
 	validate(entity: TEntity): { valid: boolean; error?: string };
-	customClass?: (entity: TEntity) => string;
+	customClass?: (entity: TEntity, rowIndex: number) => string;
 };
+
+export function readOnlyForFieldAndEntity<TEntity>(
+	field: FieldDef<TEntity>,
+	entity: TEntity,
+): boolean {
+	if (typeof field.readOnly === "boolean") {
+		return field.readOnly;
+	}
+	if (typeof field.readOnly === "function") {
+		return field.readOnly(entity);
+	}
+	return false;
+}

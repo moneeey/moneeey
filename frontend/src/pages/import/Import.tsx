@@ -1,15 +1,16 @@
 import { observer } from "mobx-react";
 
 import { TabsContent, TabsHeader } from "../../components/base/Tabs";
+import type MoneeeyStore from "../../shared/MoneeeyStore";
 import type { ImportTask } from "../../shared/import/ImportContent";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import useMessages from "../../utils/Messages";
-
-import type MoneeeyStore from "../../shared/MoneeeyStore";
 import ImportProcess from "./ImportProcessor";
 import ImportStarter from "./ImportStarter";
 
-const tabItems = (
+const tabId = "importTabs";
+
+const useTabItems = (
 	moneeeyStore: MoneeeyStore,
 	Messages: ReturnType<typeof useMessages>,
 	importingTasks: Map<string, ImportTask>,
@@ -26,7 +27,13 @@ const tabItems = (
 			key: Messages.import.start,
 			children: (
 				<ImportStarter
-					onTask={(task) => moneeeyStore.navigation.updateImportingTasks(task)}
+					onTask={(task) => {
+						moneeeyStore.navigation.updateImportingTasks(task);
+						moneeeyStore.navigation.updateTabsSelectedIndex(
+							tabId,
+							moneeeyStore.navigation.importingTasks.size,
+						);
+					}}
 					configuration={moneeeyStore.config}
 				/>
 			),
@@ -55,26 +62,18 @@ export const ImportHeader = observer(() => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { importingTasks } = moneeeyStore.navigation;
+	const tabItems = useTabItems(moneeeyStore, Messages, importingTasks);
 
-	return (
-		<TabsHeader
-			testId="importTabs"
-			items={tabItems(moneeeyStore, Messages, importingTasks)}
-		/>
-	);
+	return <TabsHeader testId={tabId} items={tabItems} />;
 });
 
 const Import = observer(() => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { importingTasks } = moneeeyStore.navigation;
+	const tabItems = useTabItems(moneeeyStore, Messages, importingTasks);
 
-	return (
-		<TabsContent
-			testId="importTabs"
-			items={tabItems(moneeeyStore, Messages, importingTasks)}
-		/>
-	);
+	return <TabsContent testId={tabId} items={tabItems} />;
 });
 
 export default Import;
