@@ -26,12 +26,11 @@ jobs:
         with:
           image: mcr.microsoft.com/playwright:v1.36.1-jammy
           options: --rm -v ${{ github.workspace }}:/workspace
-          env:
-            CI: true
           run: |
             cd /workspace
             ls -la
             cd playwright
+            export CI=true
             yarn install --frozen-lockfile
             yarn run playwright install --with-deps firefox chromium
             yarn run playwright test
