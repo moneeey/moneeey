@@ -21,44 +21,6 @@ jobs:
       - run: yarn test
         name: Test
 
-  BACKEND:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.35.3
-
-      - run: deno cache main.ts
-        name: Install
-
-      - run: deno test --allow-all
-        name: Test
-
-  PLAYWRIGHT:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: playwright
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "20.11"
-
-      - run: yarn install --frozen-lockfile
-        name: Install
-        working-directory: frontend
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
       - name: Run Playwright tests using Docker
         uses: addnab/docker-run-action@v3
         with:
@@ -76,6 +38,24 @@ jobs:
           name: playwright-report
           path: playwright/playwright-report/
           retention-days: 30
+
+  BACKEND:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.35.3
+
+      - run: deno cache main.ts
+        name: Install
+
+      - run: deno test --allow-all
+        name: Test
 
   PACKAGE:
     runs-on: ubuntu-latest
