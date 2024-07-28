@@ -24,6 +24,7 @@ export default function <TEntity>({
 		render: observer(
 			({ entity, commit, field, isError, rev }: FieldRenderProps<TEntity>) => {
 				const { to, from } = read(entity);
+				const renderField = field as unknown as FieldDef<CurrencyAmount>;
 
 				if (to.currency?.currency_uuid === from.currency?.currency_uuid) {
 					const fromToField = CurrencyAmountField<CurrencyAmount>({
@@ -35,7 +36,7 @@ export default function <TEntity>({
 						<fromToField.render
 							rev={rev}
 							entity={from}
-							field={field as FieldDef<CurrencyAmount>}
+							field={renderField}
 							isError={isError}
 							commit={(amount: CurrencyAmount) =>
 								commit({ ...entity, ...delta({ to: amount, from: amount }) })
@@ -58,7 +59,7 @@ export default function <TEntity>({
 						<fromField.render
 							rev={rev}
 							entity={from}
-							field={field as FieldDef<CurrencyAmount>}
+							field={renderField}
 							isError={isError}
 							commit={(amount: CurrencyAmount) =>
 								commit({ ...entity, ...delta({ to, from: amount }) })
@@ -67,7 +68,7 @@ export default function <TEntity>({
 						<toField.render
 							rev={rev}
 							entity={to}
-							field={field as FieldDef<CurrencyAmount>}
+							field={renderField}
 							isError={isError}
 							commit={(amount: CurrencyAmount) =>
 								commit({ ...entity, ...delta({ to: amount, from }) })

@@ -1,7 +1,7 @@
-import { CurrencyTable } from "../tables/CurrencyTable";
+import CurrencyTable from "../tables/CurrencyTable";
 
 import HomeRoute from "./HomeRouter";
-import { type IAppParameters, type IRouteParameters, Route } from "./Route";
+import Route, { type IRouteParameters } from "./Route";
 
 type ICurrencySettingsRoute = IRouteParameters;
 
@@ -11,8 +11,8 @@ export class CurrencySettingsRouter extends Route<ICurrencySettingsRoute> {
 		this.parent?.addChild(this);
 	}
 
-	render({ app }: { app: IAppParameters }) {
-		return <CurrencyTable currencies={app.moneeeyStore.currencies} />;
+	render() {
+		return <CurrencyTable />;
 	}
 }
 

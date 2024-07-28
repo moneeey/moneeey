@@ -1,7 +1,7 @@
-import Import from "../pages/import/Import";
+import Import, { ImportHeader } from "../pages/import/Import";
 
 import HomeRoute from "./HomeRouter";
-import { type IRouteParameters, Route } from "./Route";
+import Route, { type IRouteParameters } from "./Route";
 
 type IImportRoute = IRouteParameters;
 
@@ -11,10 +11,14 @@ class ImportRouter extends Route<IImportRoute> {
 		this.parent?.addChild(this);
 	}
 
+	header() {
+		return <ImportHeader />;
+	}
+
 	render() {
 		return <Import />;
 	}
 }
 
 const ImportRoute = new ImportRouter();
-export { ImportRoute as default };
+export default ImportRoute;

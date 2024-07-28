@@ -84,4 +84,4 @@ const ofxImport =
 		});
 	};
 
-export { ofxImport as default };
+export default ofxImport;

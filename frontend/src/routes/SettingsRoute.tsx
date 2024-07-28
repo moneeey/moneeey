@@ -1,7 +1,7 @@
 import Settings from "../pages/Settings";
 
 import HomeRoute from "./HomeRouter";
-import { type IRouteParameters, Route } from "./Route";
+import Route, { type IRouteParameters } from "./Route";
 
 type ISettingsRoute = IRouteParameters;
 
@@ -17,5 +17,4 @@ class SettingsRouter extends Route<ISettingsRoute> {
 }
 
 const SettingsRoute = new SettingsRouter();
-
-export { SettingsRoute as default };
+export default SettingsRoute;

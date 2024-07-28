@@ -1,7 +1,7 @@
 {
 	"$schema": "https://biomejs.dev/schemas/1.6.0/schema.json",
 	"files": {
-		"ignore": ["dist/*", "src/polyfills.ts"]
+		"ignore": ["**/dist/*", "**/src/polyfills.ts", "./docker/*"]
 	},
 	"organizeImports": {
 		"enabled": true
@@ -9,7 +9,10 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"correctness": {
+				"noUnusedImports": "error"
+			}
 		}
 	}
 }

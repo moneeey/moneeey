@@ -14,6 +14,8 @@ export default class ManagementStore {
 
 	monitorTmr = 0;
 
+	attempts = 0;
+
 	persistence: PersistenceStore;
 
 	constructor(persistence: PersistenceStore) {
@@ -49,12 +51,18 @@ export default class ManagementStore {
 			email,
 		});
 
+		this.attempts = 0;
 		this.startMonitor();
 
 		return Boolean(sent);
 	}
 
 	async checkLoggedIn() {
+		this.attempts++;
+		if (this.attempts > 20) {
+			this.stopMonitor();
+			return;
+		}
 		const { authenticated, database, accessToken } = await this.post<{
 			authenticated: boolean;
 			database: string;
@@ -71,10 +79,13 @@ export default class ManagementStore {
 
 	startMonitor() {
 		this.stopMonitor();
-		this.monitorTmr = setTimeout(() => {
-			this.startMonitor();
-			this.checkLoggedIn();
-		}, 10000) as unknown as number;
+		this.monitorTmr = setTimeout(
+			() => {
+				this.startMonitor();
+				this.checkLoggedIn();
+			},
+			10000 + this.attempts * 4000,
+		);
 	}
 
 	applySync() {

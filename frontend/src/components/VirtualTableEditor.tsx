@@ -3,6 +3,7 @@ import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
 import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
 import VirtualizedGrid from "react-virtualized/dist/commonjs/Grid";
 
+import type { WithDataTestId } from "./base/Common";
 import Icon from "./base/Icon";
 
 const SCROLLBAR_WIDTH = 24;
@@ -21,6 +22,7 @@ export type ColumnDef = {
 	defaultSortOrder?: SortOrder;
 	sorter?: (a: Row, b: Row, asc: boolean) => number;
 	render: (row: Row) => JSX.Element;
+	customClass?: (row: Row, rowIndex: number) => string;
 };
 
 type SortColumn = {
@@ -145,11 +147,13 @@ const HeaderCell = ({ column, style, sort, setSort }: GridRenderCell) => {
 const ContentCell = ({ rowIndex, row, column, style }: GridRenderCell) => {
 	const Renderer = column.render;
 
+	const bgColor =
+		rowIndex % 2 === 0 ? "bg-background-800" : "bg-background-600";
+	const columnClass = column.customClass
+		? column.customClass(row, rowIndex)
+		: "";
 	return row ? (
-		<span
-			style={style}
-			className={rowIndex % 2 === 0 ? "bg-background-800" : "bg-background-600"}
-		>
+		<span style={style} className={`${bgColor} ${columnClass}`}>
 			<Renderer entityId={row.entityId} />
 		</span>
 	) : (
@@ -158,6 +162,7 @@ const ContentCell = ({ rowIndex, row, column, style }: GridRenderCell) => {
 };
 
 const VirtualTableGrid = ({
+	testId,
 	width,
 	height,
 	columns,
@@ -171,7 +176,7 @@ const VirtualTableGrid = ({
 	rows: Row[];
 	setSort: Dispatch<SetStateAction<SortColumn>>;
 	sort: SortColumn;
-}) => {
+} & WithDataTestId) => {
 	const [scroll, setScroll] = useState({
 		scrollTop: 0,
 		scrollLeft: 0,
@@ -199,7 +204,7 @@ const VirtualTableGrid = ({
 	return (
 		<>
 			<VirtualGrid
-				className="!overflow-hidden bg-background-700 px-2"
+				className={`!overflow-hidden bg-background-700 px-2 ${testId}-header`}
 				gridHeight={ROW_HEIGHT}
 				{...common}
 				scroll={{ scrollTop: 0, scrollLeft: scroll.scrollLeft }}
@@ -210,7 +215,7 @@ const VirtualTableGrid = ({
 				RenderCell={HeaderCell}
 			/>
 			<VirtualGrid
-				className="bg-background-800 px-2 pb-2"
+				className={`bg-background-800 px-2 pb-2 ${testId}-body`}
 				gridHeight={height - ROW_HEIGHT}
 				{...common}
 				rows={rows}
@@ -223,8 +228,9 @@ const VirtualTableGrid = ({
 const VirtualTable = function VirtualTableRenderer({
 	columns,
 	rows,
+	testId,
 	isNewEntity,
-}: VirtualTableProps) {
+}: VirtualTableProps & WithDataTestId) {
 	const [sort, setSort] = useState(() => {
 		const column =
 			columns.find((col) => Boolean(col.defaultSortOrder)) || columns[0];
@@ -252,6 +258,7 @@ const VirtualTable = function VirtualTableRenderer({
 		<AutoSizer>
 			{({ width, height }: { width: number; height: number }) => (
 				<VirtualTableGrid
+					testId={testId}
 					width={width}
 					height={height}
 					columns={columns}
@@ -264,4 +271,4 @@ const VirtualTable = function VirtualTableRenderer({
 	);
 };
 
-export { VirtualTable, VirtualTable as default };
+export default VirtualTable;

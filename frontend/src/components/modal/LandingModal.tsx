@@ -1,9 +1,8 @@
 import { map } from "lodash";
-import { useEffect } from "react";
 
 import { NavigationModal } from "../../shared/Navigation";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { StorageKind, getStorage, setStorage } from "../../utils/Utils";
+import { StorageKind, setStorage } from "../../utils/Utils";
 import { useMoneeeyTour } from "../tour/Tour";
 
 import useMessages from "../../utils/Messages";
@@ -14,11 +13,6 @@ const LandingModal = () => {
 	const Messages = useMessages();
 	const { navigation } = useMoneeeyStore();
 	const tour = useMoneeeyTour();
-	useEffect(() => {
-		if (getStorage("show_landing", "true", StorageKind.PERMANENT) === "true") {
-			navigation.openModal(NavigationModal.LANDING);
-		}
-	}, [navigation]);
 
 	return (
 		<Modal
@@ -49,4 +43,4 @@ const LandingModal = () => {
 	);
 };
 
-export { LandingModal, LandingModal as default };
+export default LandingModal;

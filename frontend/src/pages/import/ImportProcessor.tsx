@@ -17,7 +17,7 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
 import useMessages from "../../utils/Messages";
 
-import { ImportProcessResult } from "./ImportProcessResult";
+import ImportProcessResult from "./ImportProcessResult";
 
 export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
 	txt: txtImport(),
@@ -87,4 +87,4 @@ const ImportProcess = ({
 	);
 };
 
-export { ImportProcess, ImportProcess as default };
+export default ImportProcess;

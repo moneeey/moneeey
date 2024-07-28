@@ -35,7 +35,7 @@ export interface ITransaction extends IBaseEntity {
 	import_data?: string;
 }
 
-class TransactionStore extends MappedStore<ITransaction> {
+export default class TransactionStore extends MappedStore<ITransaction> {
 	oldest_dt: Date = new Date();
 
 	newest_dt: Date = new Date();
@@ -162,9 +162,9 @@ class TransactionStore extends MappedStore<ITransaction> {
 	}
 }
 
-const isTransaction = isEntityType<ITransaction>(EntityType.TRANSACTION);
+export const isTransaction = isEntityType<ITransaction>(EntityType.TRANSACTION);
 
-const mockTransaction = (
+export const mockTransaction = (
 	data: Pick<
 		ITransaction,
 		"transaction_uuid" | "from_account" | "to_account" | "from_value"
@@ -178,10 +178,3 @@ const mockTransaction = (
 	tags: [],
 	...data,
 });
-
-export {
-	TransactionStore,
-	TransactionStore as default,
-	isTransaction,
-	mockTransaction,
-};
