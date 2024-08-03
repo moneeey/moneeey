@@ -17,6 +17,7 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
 import useMessages from "../../utils/Messages";
 
+import TransactionStore from "../../entities/Transaction";
 import ImportProcessResult from "./ImportProcessResult";
 
 export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
@@ -54,13 +55,12 @@ const process = async ({
 const ImportProcess = ({ task }: { task: ImportTask }) => {
 	const Messages = useMessages();
 	const [progress, setProgress] = useState(0);
+	const moneeeyStore = useMoneeeyStore();
 	const [result, setResult] = useState<ImportResult>({
 		errors: [],
-		transactions: [],
-		recommended_accounts: {},
-		update: {},
+		recommendedAccounts: {},
+		localTransactions: new TransactionStore(moneeeyStore),
 	});
-	const moneeeyStore = useMoneeeyStore();
 
 	useEffect(() => {
 		const processor = ContentProcessor[task.input.mode];

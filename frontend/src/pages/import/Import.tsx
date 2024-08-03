@@ -1,5 +1,4 @@
 import { observer } from "mobx-react";
-
 import { TabsContent, TabsHeader } from "../../components/base/Tabs";
 import type MoneeeyStore from "../../shared/MoneeeyStore";
 import type { ImportTask } from "../../shared/import/ImportContent";
@@ -13,14 +12,8 @@ const tabId = "importTabs";
 const useTabItems = (
 	moneeeyStore: MoneeeyStore,
 	Messages: ReturnType<typeof useMessages>,
-	importingTasks: Map<string, ImportTask>,
+	importingTasks: ImportTask[],
 ) => {
-	const closeImportTask = (task: ImportTask) =>
-		moneeeyStore.navigation.removeImportingTask(task);
-	const sortedTasks = Array.from(importingTasks.values()).sort((a, b) =>
-		a.input.name.localeCompare(b.input.name),
-	);
-
 	return [
 		{
 			label: Messages.import.start,
@@ -31,19 +24,17 @@ const useTabItems = (
 						moneeeyStore.navigation.updateImportingTasks(task);
 						moneeeyStore.navigation.updateTabsSelectedIndex(
 							tabId,
-							moneeeyStore.navigation.importingTasks.size,
+							moneeeyStore.navigation.importingTasks.length,
 						);
 					}}
 					configuration={moneeeyStore.config}
 				/>
 			),
 		},
-		...sortedTasks.map((task) => ({
+		...importingTasks.map((task) => ({
 			key: task.input.name,
 			label: task.input.name,
-			children: (
-				<ImportProcess task={task} close={() => closeImportTask(task)} />
-			),
+			children: <ImportProcess task={task} />,
 		})),
 	];
 };
@@ -55,7 +46,7 @@ export const ImportHeader = observer(() => {
 	const tabItems = useTabItems(moneeeyStore, Messages, importingTasks);
 
 	return (
-		<TabsHeader key={importingTasks.size} testId={tabId} items={tabItems} />
+		<TabsHeader key={importingTasks.length} testId={tabId} items={tabItems} />
 	);
 });
 
@@ -66,7 +57,7 @@ const Import = observer(() => {
 	const tabItems = useTabItems(moneeeyStore, Messages, importingTasks);
 
 	return (
-		<TabsContent key={importingTasks.size} testId={tabId} items={tabItems} />
+		<TabsContent key={importingTasks.length} testId={tabId} items={tabItems} />
 	);
 });
 

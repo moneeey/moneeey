@@ -1,5 +1,5 @@
 import { compact, map } from "lodash";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import TableEditor from "../../components/TableEditor";
 import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import Space, { VerticalSpace } from "../../components/base/Space";
@@ -8,9 +8,9 @@ import AccountField from "../../components/editor/AccountField";
 import CurrencyAmountField from "../../components/editor/CurrencyAmountField";
 import DateField from "../../components/editor/DateField";
 import MemoField from "../../components/editor/MemoField";
-import TransactionStore, {
-	type ITransaction,
-} from "../../entities/Transaction";
+import type { TAccountUUID } from "../../entities/Account";
+import type TransactionStore from "../../entities/Transaction";
+import type { ITransaction } from "../../entities/Transaction";
 import type {
 	ImportResult,
 	ImportTask,
@@ -51,6 +51,115 @@ function classAlreadyExistAccount<TValue>(
 	};
 }
 
+function ImportProcessResultTable({
+	result,
+	referenceAccount,
+}: {
+	result: ImportResult;
+	referenceAccount: TAccountUUID;
+}) {
+	const Messages = useMessages();
+	const moneeeyStore = useMoneeeyStore();
+	const { currencies, accounts, transactions } = moneeeyStore;
+	const readAccountOptionsForTransaction = (t: ITransaction) =>
+		compact([
+			...map(
+				result.recommendedAccounts[t.transaction_uuid],
+				(cur_account_uuid) => accounts.byUuid(cur_account_uuid),
+			),
+			...accounts.allActive,
+		]);
+
+	return (
+		<TableEditor
+			key={"importResultTransactions"}
+			testId={"importResultTransactions"}
+			creatable={false}
+			store={result.localTransactions}
+			schemaFilter={() => true}
+			factory={result.localTransactions.factory}
+			schema={[
+				{
+					title: Messages.util.date,
+					width: 100,
+					defaultSortOrder: "ascend",
+					readOnly: true,
+					validate: () => ({ valid: true }),
+					customClass: classAlreadyExist(transactions, ({ date }) => date),
+					...DateField<ITransaction>({
+						read: ({ date }) => date,
+						delta: () => ({}),
+					}),
+				},
+				{
+					title: Messages.transactions.from_account,
+					width: 140,
+					validate: () => ({ valid: true }),
+					customClass: classAlreadyExistAccount(
+						transactions,
+						({ from_account }: ITransaction) => from_account,
+					),
+					readOnly: ({ from_account, to_account }: ITransaction) =>
+						from_account === referenceAccount && from_account !== to_account,
+					...AccountField<ITransaction>({
+						read: ({ from_account }) => from_account,
+						delta: (from_account) => ({ from_account }),
+						clearable: true,
+						readOptions: readAccountOptionsForTransaction,
+					}),
+				},
+				{
+					title: Messages.transactions.to_account,
+					width: 140,
+					validate: () => ({ valid: true }),
+					customClass: classAlreadyExistAccount(
+						transactions,
+						({ to_account }: ITransaction) => to_account,
+					),
+					readOnly: ({ to_account, from_account }: ITransaction) =>
+						to_account === referenceAccount && from_account !== to_account,
+					...AccountField<ITransaction>({
+						read: ({ to_account }) => to_account,
+						delta: (to_account) => ({ to_account }),
+						clearable: true,
+						readOptions: readAccountOptionsForTransaction,
+					}),
+				},
+				{
+					title: Messages.transactions.amount,
+					width: 140,
+					readOnly: true,
+					validate: () => ({ valid: true }),
+					customClass: classAlreadyExist(
+						transactions,
+						({ from_value }) => from_value,
+					),
+					...CurrencyAmountField<ITransaction>({
+						read: ({ from_account, from_value }) => ({
+							currency: currencies.byUuid(
+								accounts.byUuid(from_account)?.currency_uuid,
+							),
+							amount: from_value,
+						}),
+						delta: () => ({}),
+					}),
+				},
+				{
+					title: Messages.transactions.memo,
+					width: 400,
+					readOnly: true,
+					validate: () => ({ valid: true }),
+					customClass: classAlreadyExist(transactions, ({ memo }) => memo),
+					...MemoField<ITransaction>({
+						read: ({ memo }) => memo,
+						delta: () => ({}),
+					}),
+				},
+			]}
+		/>
+	);
+}
+
 const ImportProcessResult = ({
 	task,
 	result,
@@ -60,49 +169,30 @@ const ImportProcessResult = ({
 }) => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
-	const localTransactions = useMemo(() => {
-		const ls = new TransactionStore(moneeeyStore);
-		for (const t of result.transactions) {
-			ls.merge(t);
-		}
-		return ls;
-	}, [moneeeyStore, result]);
-	const { currencies, accounts, transactions, navigation } = moneeeyStore;
+	const { transactions, navigation } = moneeeyStore;
 
 	const onClose = useCallback(() => {
 		navigation.removeImportingTask(task);
 	}, [navigation, task]);
 
 	const onImport = useCallback(() => {
-		for (const t of localTransactions.all) {
+		for (const t of result.localTransactions.all) {
 			transactions.merge(t);
 		}
 		onClose();
-	}, [localTransactions, transactions, onClose]);
+	}, [result, transactions, onClose]);
 
 	const onInvertFromTo = useCallback(() => {
-		for (const t of localTransactions.all) {
+		for (const t of result.localTransactions.all) {
 			const { from_account, to_account } = t;
 
-			localTransactions.merge({
+			result.localTransactions.merge({
 				...t,
 				from_account: to_account,
 				to_account: from_account,
 			});
 		}
-	}, [localTransactions]);
-
-	const readAccountOptionsForTransaction = useCallback(
-		(t: ITransaction) =>
-			compact([
-				...map(
-					result?.recommended_accounts[t.transaction_uuid],
-					(cur_account_uuid) => accounts.byUuid(cur_account_uuid),
-				),
-				...accounts.allActive,
-			]),
-		[result, accounts],
-	);
+	}, [result]);
 
 	return (
 		<VerticalSpace className="h-full grow">
@@ -139,93 +229,9 @@ const ImportProcessResult = ({
 				</div>
 			</Space>
 			<div className="static flex-1">
-				<TableEditor
-					key={"importResultTransactions"}
-					testId={"importResultTransactions"}
-					creatable={false}
-					store={localTransactions}
-					schemaFilter={() => true}
-					factory={localTransactions.factory}
-					schema={[
-						{
-							title: Messages.util.date,
-							width: 100,
-							defaultSortOrder: "ascend",
-							readOnly: true,
-							validate: () => ({ valid: true }),
-							customClass: classAlreadyExist(transactions, ({ date }) => date),
-							...DateField<ITransaction>({
-								read: ({ date }) => date,
-								delta: () => ({}),
-							}),
-						},
-						{
-							title: Messages.transactions.from_account,
-							width: 140,
-							validate: () => ({ valid: true }),
-							customClass: classAlreadyExistAccount(
-								transactions,
-								({ from_account }: ITransaction) => from_account,
-							),
-							readOnly: ({ from_account, to_account }: ITransaction) =>
-								from_account === task.config.referenceAccount &&
-								from_account !== to_account,
-							...AccountField<ITransaction>({
-								read: ({ from_account }) => from_account,
-								delta: (from_account) => ({ from_account }),
-								clearable: true,
-								readOptions: readAccountOptionsForTransaction,
-							}),
-						},
-						{
-							title: Messages.transactions.to_account,
-							width: 140,
-							validate: () => ({ valid: true }),
-							customClass: classAlreadyExistAccount(
-								transactions,
-								({ to_account }: ITransaction) => to_account,
-							),
-							readOnly: ({ to_account, from_account }: ITransaction) =>
-								to_account === task.config.referenceAccount &&
-								from_account !== to_account,
-							...AccountField<ITransaction>({
-								read: ({ to_account }) => to_account,
-								delta: (to_account) => ({ to_account }),
-								clearable: true,
-								readOptions: readAccountOptionsForTransaction,
-							}),
-						},
-						{
-							title: Messages.transactions.amount,
-							width: 140,
-							readOnly: true,
-							validate: () => ({ valid: true }),
-							customClass: classAlreadyExist(
-								transactions,
-								({ from_value }) => from_value,
-							),
-							...CurrencyAmountField<ITransaction>({
-								read: ({ from_account, from_value }) => ({
-									currency: currencies.byUuid(
-										accounts.byUuid(from_account)?.currency_uuid,
-									),
-									amount: from_value,
-								}),
-								delta: () => ({}),
-							}),
-						},
-						{
-							title: Messages.transactions.memo,
-							width: 400,
-							readOnly: true,
-							validate: () => ({ valid: true }),
-							customClass: classAlreadyExist(transactions, ({ memo }) => memo),
-							...MemoField<ITransaction>({
-								read: ({ memo }) => memo,
-								delta: () => ({}),
-							}),
-						},
-					]}
+				<ImportProcessResultTable
+					referenceAccount={task.config.referenceAccount}
+					result={result}
 				/>
 			</div>
 		</VerticalSpace>

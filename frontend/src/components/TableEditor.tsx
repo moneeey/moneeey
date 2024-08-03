@@ -1,6 +1,6 @@
 import { uniq } from "lodash";
 import { observer } from "mobx-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { IBaseEntity } from "../shared/Entity";
 import type MappedStore from "../shared/MappedStore";
@@ -121,13 +121,18 @@ export default observer(
 			});
 		}, [store, schema]);
 
+		const isNewEntity = useCallback(
+			(row: Row) => row.entityId === newEntityId,
+			[newEntityId],
+		);
+
 		return (
 			<VirtualTable
 				testId={testId}
 				key={testId}
 				columns={columns}
 				rows={entities}
-				isNewEntity={(row) => row.entityId === newEntityId}
+				isNewEntity={isNewEntity}
 			/>
 		);
 	},
