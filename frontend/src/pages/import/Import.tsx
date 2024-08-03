@@ -54,7 +54,9 @@ export const ImportHeader = observer(() => {
 	const { importingTasks } = moneeeyStore.navigation;
 	const tabItems = useTabItems(moneeeyStore, Messages, importingTasks);
 
-	return <TabsHeader testId={tabId} items={tabItems} />;
+	return (
+		<TabsHeader key={importingTasks.size} testId={tabId} items={tabItems} />
+	);
 });
 
 const Import = observer(() => {
@@ -63,7 +65,9 @@ const Import = observer(() => {
 	const { importingTasks } = moneeeyStore.navigation;
 	const tabItems = useTabItems(moneeeyStore, Messages, importingTasks);
 
-	return <TabsContent testId={tabId} items={tabItems} />;
+	return (
+		<TabsContent key={importingTasks.size} testId={tabId} items={tabItems} />
+	);
 });
 
 export default Import;

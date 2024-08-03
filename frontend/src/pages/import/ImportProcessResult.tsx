@@ -1,5 +1,5 @@
 import { compact, map } from "lodash";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import TableEditor from "../../components/TableEditor";
 import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import Space, { VerticalSpace } from "../../components/base/Space";
@@ -22,14 +22,41 @@ const classExisting = ["bg-cyan-900", "bg-cyan-950"];
 const classUpdated = ["bg-fuchsia-900", "bg-fuchsia-950"];
 const classRequired = ["bg-green-900", "bg-green-950"];
 
+function classAlreadyExist<TValue>(
+	transactions: TransactionStore,
+	read: (entity: ITransaction) => TValue,
+) {
+	return (transaction: ITransaction, rowIndex: number) => {
+		const { transaction_uuid } = transaction;
+		const alreadyExists = transactions.byUuid(transaction_uuid);
+		if (alreadyExists) {
+			if (read(transaction) !== read(alreadyExists)) {
+				return classUpdated[rowIndex % 2];
+			}
+			return classExisting[rowIndex % 2];
+		}
+		return "";
+	};
+}
+
+function classAlreadyExistAccount<TValue>(
+	transactions: TransactionStore,
+	read: (entity: ITransaction) => TValue,
+) {
+	return (transaction: ITransaction, rowIndex: number) => {
+		if (read(transaction) === "") {
+			return classRequired[rowIndex % 2];
+		}
+		return classAlreadyExist(transactions, read)(transaction, rowIndex);
+	};
+}
+
 const ImportProcessResult = ({
 	task,
 	result,
-	close,
 }: {
 	task: ImportTask;
 	result: ImportResult;
-	close: () => void;
 }) => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
@@ -40,60 +67,42 @@ const ImportProcessResult = ({
 		}
 		return ls;
 	}, [moneeeyStore, result]);
-	const { currencies, accounts } = moneeeyStore;
+	const { currencies, accounts, transactions, navigation } = moneeeyStore;
 
-	const onImport = () => {
+	const onClose = useCallback(() => {
+		navigation.removeImportingTask(task);
+	}, [navigation, task]);
+
+	const onImport = useCallback(() => {
 		for (const t of localTransactions.all) {
-			moneeeyStore.transactions.merge(t);
+			transactions.merge(t);
 		}
-		close();
-	};
+		onClose();
+	}, [localTransactions, transactions, onClose]);
 
-	const onInvertFromTo = () => {
+	const onInvertFromTo = useCallback(() => {
 		for (const t of localTransactions.all) {
 			const { from_account, to_account } = t;
 
-			return localTransactions.merge({
+			localTransactions.merge({
 				...t,
 				from_account: to_account,
 				to_account: from_account,
 			});
 		}
-	};
+	}, [localTransactions]);
 
-	const readAccountOptionsForTransaction = (t: ITransaction) =>
-		compact([
-			...map(
-				result?.recommended_accounts[t.transaction_uuid],
-				(cur_account_uuid) => moneeeyStore.accounts.byUuid(cur_account_uuid),
-			),
-			...moneeeyStore.accounts.allActive,
-		]);
-
-	function classAlreadyExist<TValue>(read: (entity: ITransaction) => TValue) {
-		return (transaction: ITransaction, rowIndex: number) => {
-			const { transaction_uuid } = transaction;
-			const alreadyExists = moneeeyStore.transactions.byUuid(transaction_uuid);
-			if (alreadyExists) {
-				if (read(transaction) !== read(alreadyExists)) {
-					return classUpdated[rowIndex % 2];
-				}
-				return classExisting[rowIndex % 2];
-			}
-			return "";
-		};
-	}
-
-	function classAlreadyExistAccount<TValue>(
-		read: (entity: ITransaction) => TValue,
-	) {
-		return (transaction: ITransaction, rowIndex: number) => {
-			if (read(transaction) === "") {
-				return classRequired[rowIndex % 2];
-			}
-			return classAlreadyExist(read)(transaction, rowIndex);
-		};
-	}
+	const readAccountOptionsForTransaction = useCallback(
+		(t: ITransaction) =>
+			compact([
+				...map(
+					result?.recommended_accounts[t.transaction_uuid],
+					(cur_account_uuid) => accounts.byUuid(cur_account_uuid),
+				),
+				...accounts.allActive,
+			]),
+		[result, accounts],
+	);
 
 	return (
 		<VerticalSpace className="h-full grow">
@@ -114,7 +123,7 @@ const ImportProcessResult = ({
 				<SecondaryButton onClick={onInvertFromTo}>
 					{Messages.import.invert_from_to_accounts}
 				</SecondaryButton>
-				<SecondaryButton onClick={close}>
+				<SecondaryButton onClick={onClose}>
 					{Messages.util.cancel}
 				</SecondaryButton>
 				<div className="grow flex flex-row justify-end gap-2">
@@ -144,7 +153,7 @@ const ImportProcessResult = ({
 							defaultSortOrder: "ascend",
 							readOnly: true,
 							validate: () => ({ valid: true }),
-							customClass: classAlreadyExist(({ date }) => date),
+							customClass: classAlreadyExist(transactions, ({ date }) => date),
 							...DateField<ITransaction>({
 								read: ({ date }) => date,
 								delta: () => ({}),
@@ -155,6 +164,7 @@ const ImportProcessResult = ({
 							width: 140,
 							validate: () => ({ valid: true }),
 							customClass: classAlreadyExistAccount(
+								transactions,
 								({ from_account }: ITransaction) => from_account,
 							),
 							readOnly: ({ from_account, to_account }: ITransaction) =>
@@ -172,6 +182,7 @@ const ImportProcessResult = ({
 							width: 140,
 							validate: () => ({ valid: true }),
 							customClass: classAlreadyExistAccount(
+								transactions,
 								({ to_account }: ITransaction) => to_account,
 							),
 							readOnly: ({ to_account, from_account }: ITransaction) =>
@@ -189,7 +200,10 @@ const ImportProcessResult = ({
 							width: 140,
 							readOnly: true,
 							validate: () => ({ valid: true }),
-							customClass: classAlreadyExist(({ from_value }) => from_value),
+							customClass: classAlreadyExist(
+								transactions,
+								({ from_value }) => from_value,
+							),
 							...CurrencyAmountField<ITransaction>({
 								read: ({ from_account, from_value }) => ({
 									currency: currencies.byUuid(
@@ -205,7 +219,7 @@ const ImportProcessResult = ({
 							width: 400,
 							readOnly: true,
 							validate: () => ({ valid: true }),
-							customClass: classAlreadyExist(({ memo }) => memo),
+							customClass: classAlreadyExist(transactions, ({ memo }) => memo),
 							...MemoField<ITransaction>({
 								read: ({ memo }) => memo,
 								delta: () => ({}),

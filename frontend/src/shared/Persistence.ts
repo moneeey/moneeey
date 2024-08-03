@@ -129,7 +129,7 @@ export default class PersistenceStore {
 
 	constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
 		this.logger = new Logger("persistence", parent);
-		// this.logger.level = "info";
+		this.logger.level = "info";
 		this.db = dbFactory();
 
 		makeObservable(this, {

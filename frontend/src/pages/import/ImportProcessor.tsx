@@ -51,10 +51,7 @@ const process = async ({
 	}
 };
 
-const ImportProcess = ({
-	task,
-	close,
-}: { task: ImportTask; close: () => void }) => {
+const ImportProcess = ({ task }: { task: ImportTask }) => {
 	const Messages = useMessages();
 	const [progress, setProgress] = useState(0);
 	const [result, setResult] = useState<ImportResult>({
@@ -70,7 +67,6 @@ const ImportProcess = ({
 		process({ moneeeyStore, task, processor, setProgress, setResult });
 	}, [moneeeyStore, task]);
 
-	console.log(JSON.stringify({ result }));
 	return (
 		<div className="mt-2 flex grow flex-col bg-background-800 p-2">
 			<TextTitle>
@@ -79,9 +75,7 @@ const ImportProcess = ({
 			</TextTitle>
 			<Loading loading={progress !== 100} progress={progress}>
 				<div className="h-full">
-					{result && (
-						<ImportProcessResult {...{ task, result, setResult, close }} />
-					)}
+					{result && <ImportProcessResult {...{ task, result, setResult }} />}
 				</div>
 			</Loading>
 		</div>
