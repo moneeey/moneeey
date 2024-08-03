@@ -82,7 +82,7 @@ export default class NavigationStore {
 
 	updateImportingTasks(task: ImportTask) {
 		const existing = this.importingTasks.findIndex(
-			(t) => t.input.name === task.input.name,
+			(t) => t.taskId === task.taskId,
 		);
 		if (existing >= 0) {
 			this.importingTasks[existing] = { ...task };
@@ -96,7 +96,7 @@ export default class NavigationStore {
 
 	removeImportingTask(task: ImportTask) {
 		this.importingTasks = this.importingTasks.filter(
-			(t) => t.input.name === task.input.name,
+			(t) => t.taskId === task.taskId,
 		);
 	}
 

@@ -34,6 +34,7 @@ export interface ImportConfig {
 }
 
 export interface ImportTask {
+	taskId: string;
 	input: ImportInput;
 	config: ImportConfig;
 }

@@ -33,6 +33,8 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
 	ofx: ofxImport(),
 };
 
+const cachedResults = new Map<string, ImportResult>();
+
 const process = async ({
 	moneeeyStore,
 	task,
@@ -48,7 +50,15 @@ const process = async ({
 }) => {
 	const onProgress = (percentage: number) => setProgress(percentage);
 	if (processor) {
-		setResult(await processor(moneeeyStore, task, onProgress));
+		const cached = cachedResults.get(task.taskId);
+		if (cached) {
+			setProgress(100);
+			setResult(cached);
+			return;
+		}
+		const importResult = await processor(moneeeyStore, task, onProgress);
+		cachedResults.set(task.taskId, importResult);
+		setResult(importResult);
 	}
 };
 

@@ -32,7 +32,7 @@ const useTabItems = (
 			),
 		},
 		...importingTasks.map((task) => ({
-			key: task.input.name,
+			key: task.taskId,
 			label: task.input.name,
 			children: <ImportProcess task={task} />,
 		})),
