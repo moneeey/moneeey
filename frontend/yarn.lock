@@ -6833,7 +6833,7 @@ __metadata:
     react-datepicker: "npm:4.8.0"
     react-dom: "npm:18.2.0"
     react-dropzone: "npm:14.2.3"
-    react-number-format: "npm:5.3.3"
+    react-number-format: "npm:5.4.0"
     react-router-dom: "npm:6.22.3"
     react-select: "npm:5.8.0"
     react-virtualized: "npm:9.22.5"
@@ -7618,15 +7618,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-number-format@npm:5.3.3":
-  version: 5.3.3
-  resolution: "react-number-format@npm:5.3.3"
+"react-number-format@npm:5.4.0":
+  version: 5.4.0
+  resolution: "react-number-format@npm:5.4.0"
   dependencies:
     prop-types: "npm:^15.7.2"
   peerDependencies:
     react: ^0.14 || ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^0.14 || ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/cfd853ffc80bbb8a87a52ac0e983a017bbee4cd0088cfc227c06d6902df64099a2555d95143dc458b0c3c4c8e59d7944258353d1d2fe622366293a0bf5108fe8
+  checksum: 10c0/19785cbf7fcb6db7e34d29136ac8daf1708b46bba2a38e2e8851a65bd1e9c6463b13c31f17de156afbf681da43a2934565be9d8955aec23084a19a8d45f79149
   languageName: node
   linkType: hard
 
