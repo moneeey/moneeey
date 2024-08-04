@@ -22,3 +22,10 @@ The backend will be available at: [local.moneeey.io:4280/api/](<http://local.mon
 CouchDB admin is available at: [local.moneeey.io:4280/db/_utils/#login](<http://local.moneeey.io:4280/db/_utils/#login>)
 use `dev/dev` to login as admin.
 
+## Features
+
+### Guided tour into the application
+[tour.webm](https://github.com/user-attachments/assets/a753d951-12c1-49d7-8073-cd558977964f)
+
+### Importing csv and ofx files
+[import.webm](https://github.com/user-attachments/assets/8a59885d-2d91-4075-acb0-49d5747bf03e)
