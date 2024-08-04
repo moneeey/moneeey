@@ -96,7 +96,7 @@ export default class NavigationStore {
 
 	removeImportingTask(task: ImportTask) {
 		this.importingTasks = this.importingTasks.filter(
-			(t) => t.taskId === task.taskId,
+			(t) => t.taskId !== task.taskId,
 		);
 	}
 

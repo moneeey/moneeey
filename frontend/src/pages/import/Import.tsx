@@ -24,7 +24,9 @@ const useTabItems = (
 						moneeeyStore.navigation.updateImportingTasks(task);
 						moneeeyStore.navigation.updateTabsSelectedIndex(
 							tabId,
-							moneeeyStore.navigation.importingTasks.length,
+							moneeeyStore.navigation.importingTasks.findIndex(
+								(t) => t.taskId === task.taskId,
+							) + 1,
 						);
 					}}
 					configuration={moneeeyStore.config}
