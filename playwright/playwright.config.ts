@@ -6,6 +6,8 @@ import { defineConfig, devices } from "@playwright/test";
  */
 // require('dotenv').config();
 
+const isCI = !!process.env.CI;
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -14,22 +16,23 @@ export default defineConfig({
 	/* Run tests in files in parallel */
 	fullyParallel: true,
 	/* Fail the build on CI if you accidentally left test.only in the source code. */
-	forbidOnly: !!process.env.CI,
+	forbidOnly: isCI,
 	/* Retry on CI only */
-	retries: process.env.CI ? 3 : 0,
+	retries: isCI ? 3 : 1,
 	/* Opt out of parallel tests on CI. */
-	workers: process.env.CI ? 1 : undefined,
+	workers: isCI ? 1 : undefined,
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
 	reporter: "html",
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
 		/* Base URL to use in actions like `await page.goto('/')`. */
-		baseURL: process.env.CI
-			? "http://127.0.0.1:4270/"
-			: "http://local.moneeey.io:4280",
+		baseURL: isCI ? "http://127.0.0.1:4270/" : "http://local.moneeey.io:4280",
 
 		/* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
 		trace: "on-first-retry",
+
+		// Record video
+		video: isCI ? "on" : "off",
 	},
 
 	/* Configure projects for major browsers */
@@ -39,12 +42,10 @@ export default defineConfig({
 			use: { ...devices["Desktop Chrome"] },
 		},
 
-		/* TODO: FIXME: locator.click: Target closed (getTestById('editorAllocated'))
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    */
+		{
+			name: "firefox",
+			use: { ...devices["Desktop Firefox"] },
+		},
 
 		/* Test against safari. */
 		// {
@@ -77,6 +78,6 @@ export default defineConfig({
 	webServer: {
 		command: "cd ../frontend && yarn dev",
 		url: "http://127.0.0.1:4270/",
-		reuseExistingServer: !process.env.CI,
+		reuseExistingServer: !isCI,
 	},
 });

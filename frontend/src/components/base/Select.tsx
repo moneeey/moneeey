@@ -43,6 +43,7 @@ const Select = ({
 		suffix,
 		isError,
 		readOnly,
+		testId,
 		input: (
 			<div data-testid={testId}>
 				<SelectComponent
@@ -88,6 +89,7 @@ const MultiSelect = ({
 		suffix,
 		isError,
 		readOnly,
+		testId,
 		input: (
 			<div data-testid={testId}>
 				<SelectComponent

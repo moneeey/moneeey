@@ -27,7 +27,7 @@ type InputContainerProps = {
 	readOnly?: boolean;
 	input: ReactNode;
 	baseClassname?: string;
-};
+} & WithDataTestId;
 
 export const InputContainer = ({
 	baseClassname,
@@ -36,9 +36,11 @@ export const InputContainer = ({
 	isError,
 	input,
 	readOnly,
+	testId,
 }: InputContainerProps) => {
 	return (
 		<div
+			data-testid={`inputContainer${testId}`}
 			className={`${baseClassname || BaseInputClzz} flex ${
 				isError ? "border border-red-400" : ""
 			}
@@ -78,6 +80,7 @@ const Input = ({
 		suffix,
 		isError,
 		readOnly,
+		testId,
 		input: (
 			<input
 				data-testid={testId}
@@ -128,6 +131,7 @@ const InputNumber = ({
 		suffix,
 		isError,
 		readOnly,
+		testId,
 		input: (
 			<NumericFormat
 				data-testid={testId}
@@ -173,6 +177,7 @@ const TextArea = ({
 		suffix,
 		isError,
 		readOnly,
+		testId,
 		input: (
 			<textarea
 				data-testid={testId}
@@ -212,6 +217,7 @@ const Checkbox = ({
 		baseClassname: "bg-transparent",
 		suffix,
 		readOnly,
+		testId,
 		isError,
 		input: (
 			<label>
