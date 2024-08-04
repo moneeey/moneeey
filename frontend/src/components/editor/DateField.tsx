@@ -8,6 +8,7 @@ import {
 } from "../../utils/Date";
 import DatePicker from "../base/DatePicker";
 
+import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import {
 	type FieldAcessor,
 	type FieldDefHelper,
@@ -19,6 +20,8 @@ export default function <TEntity>({
 	read,
 	delta,
 }: FieldAcessor<TEntity, TDate>): FieldDefHelper<TEntity> {
+	const { config } = useMoneeeyStore();
+
 	return {
 		render: observer(
 			({ entity, commit, field, isError }: FieldRenderProps<TEntity>) => (
@@ -27,6 +30,7 @@ export default function <TEntity>({
 					readOnly={readOnlyForFieldAndEntity(field, entity)}
 					placeholder={field.title}
 					isError={isError}
+					dateFormat={config.main.date_format}
 					value={parseDateOrTime(read(entity))}
 					onChange={(value) =>
 						commit({ ...entity, ...delta(formatDate(value)) })
