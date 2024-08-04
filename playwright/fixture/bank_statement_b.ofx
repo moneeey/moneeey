@@ -1,0 +1,87 @@
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+        <MESSAGE>OK</MESSAGE>
+      </STATUS>
+      <DTSERVER>20240404</DTSERVER>
+      <LANGUAGE>ENG</LANGUAGE>
+      <FI>
+        <ORG>MyBank</ORG>
+        <FID>12345</FID>
+      </FI>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>1001</TRNUID>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+        <MESSAGE>OK</MESSAGE>
+      </STATUS>
+      <STMTRS>
+        <CURDEF>USD</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>987654321</BANKID>
+          <ACCTID>1122334455</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20150201</DTSTART>
+          <DTEND>20150228</DTEND>
+          <STMTTRN>
+            <TRNTYPE>DEP</TRNTYPE>
+            <DTPOSTED>20150207</DTPOSTED>
+            <TRNAMT>50.50</TRNAMT>
+            <FITID>20150207001</FITID>
+            <NAME>FromMyOtherAccount</NAME>
+            <MEMO>Transfer from savings</MEMO>
+          </STMTTRN>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20150210</DTPOSTED>
+            <TRNAMT>-60.60</TRNAMT>
+            <FITID>20150210001</FITID>
+            <NAME>Drogaria Drogas 420</NAME>
+            <MEMO>Pharmacy purchase</MEMO>
+          </STMTTRN>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20150210</DTPOSTED>
+            <TRNAMT>-70.70</TRNAMT>
+            <FITID>20150210002</FITID>
+            <NAME>Restaurante Monteiro</NAME>
+            <MEMO>Dining out</MEMO>
+          </STMTTRN>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20150211</DTPOSTED>
+            <TRNAMT>-80.80</TRNAMT>
+            <FITID>20150211001</FITID>
+            <NAME>Mercado Bom Preco</NAME>
+            <MEMO>Grocery shopping</MEMO>
+          </STMTTRN>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20150217</DTPOSTED>
+            <TRNAMT>-90.90</TRNAMT>
+            <FITID>20150217001</FITID>
+            <NAME>Lava Jato Eco</NAME>
+            <MEMO>Car wash</MEMO>
+          </STMTTRN>
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>500.00</BALAMT>
+          <DTASOF>20150228</DTASOF>
+        </LEDGERBAL>
+        <AVAILBAL>
+          <BALAMT>450.00</BALAMT>
+          <DTASOF>20150228</DTASOF>
+        </AVAILBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>

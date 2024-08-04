@@ -67,7 +67,7 @@ const ofxImport =
 				);
 				const date = formatDateFmt(datets, data.config.dateFormat);
 				const value = t.TRNAMT;
-				const other = t.MEMO;
+				const other = `${t.NAME} ${t.MEMO}`;
 
 				return `${date}${SEP}${value}${SEP}${other}`;
 			}
