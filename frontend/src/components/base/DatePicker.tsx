@@ -51,6 +51,7 @@ const DatePicker = ({
 		suffix,
 		isError,
 		readOnly,
+		testId,
 		input: (
 			<ReactDatePicker
 				withPortal
