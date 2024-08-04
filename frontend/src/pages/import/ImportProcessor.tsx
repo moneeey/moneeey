@@ -17,6 +17,7 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
 import useMessages from "../../utils/Messages";
 
+import TransactionStore from "../../entities/Transaction";
 import ImportProcessResult from "./ImportProcessResult";
 
 export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
@@ -31,6 +32,8 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
 	pdf: pdfImport(),
 	ofx: ofxImport(),
 };
+
+const cachedResults = new Map<string, ImportResult>();
 
 const process = async ({
 	moneeeyStore,
@@ -47,30 +50,33 @@ const process = async ({
 }) => {
 	const onProgress = (percentage: number) => setProgress(percentage);
 	if (processor) {
-		setResult(await processor(moneeeyStore, task, onProgress));
+		const cached = cachedResults.get(task.taskId);
+		if (cached) {
+			setProgress(100);
+			setResult(cached);
+			return;
+		}
+		const importResult = await processor(moneeeyStore, task, onProgress);
+		cachedResults.set(task.taskId, importResult);
+		setResult(importResult);
 	}
 };
 
-const ImportProcess = ({
-	task,
-	close,
-}: { task: ImportTask; close: () => void }) => {
+const ImportProcess = ({ task }: { task: ImportTask }) => {
 	const Messages = useMessages();
 	const [progress, setProgress] = useState(0);
+	const moneeeyStore = useMoneeeyStore();
 	const [result, setResult] = useState<ImportResult>({
 		errors: [],
-		transactions: [],
-		recommended_accounts: {},
-		update: {},
+		recommendedAccounts: {},
+		localTransactions: new TransactionStore(moneeeyStore),
 	});
-	const moneeeyStore = useMoneeeyStore();
 
 	useEffect(() => {
 		const processor = ContentProcessor[task.input.mode];
 		process({ moneeeyStore, task, processor, setProgress, setResult });
 	}, [moneeeyStore, task]);
 
-	console.log(JSON.stringify({ result }));
 	return (
 		<div className="mt-2 flex grow flex-col bg-background-800 p-2">
 			<TextTitle>
@@ -79,9 +85,7 @@ const ImportProcess = ({
 			</TextTitle>
 			<Loading loading={progress !== 100} progress={progress}>
 				<div className="h-full">
-					{result && (
-						<ImportProcessResult {...{ task, result, setResult, close }} />
-					)}
+					{result && <ImportProcessResult {...{ task, result, setResult }} />}
 				</div>
 			</Loading>
 		</div>

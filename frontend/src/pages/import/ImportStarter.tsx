@@ -18,6 +18,7 @@ import type {
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { TDateFormat } from "../../utils/Date";
 import useMessages from "../../utils/Messages";
+import { uuid } from "../../utils/Utils";
 
 export interface FileUploaderProps {
 	onFile: (input: ImportInput) => void;
@@ -127,7 +128,7 @@ const ImportStarter = ({
 		isEmpty(config.referenceAccount) &&
 		Messages.import.select_reference_account;
 	const onFile = (input: ImportInput) => {
-		onTask({ input, config });
+		onTask({ input, config, taskId: uuid() });
 	};
 
 	return (

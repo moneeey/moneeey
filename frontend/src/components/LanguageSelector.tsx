@@ -39,7 +39,7 @@ export default function LanguageSelector({ onSelect }: LanguageSelectorProps) {
 	return (
 		<div className="flex flex-col justify-center gap-2">
 			<p>{Messages.settings.select_language}</p>
-			<div className="flex flex-row justify-around">
+			<div className="flex flex-row justify-end gap-4">
 				<LangSelect icon={<IconBrazil />} language="portuguese" />
 				<LangSelect icon={<IconUSA />} language="english" />
 				<LangSelect icon={<IconSpain />} language="spanish" />

@@ -1,5 +1,4 @@
 import { observer } from "mobx-react";
-
 import { TabsContent, TabsHeader } from "../../components/base/Tabs";
 import type MoneeeyStore from "../../shared/MoneeeyStore";
 import type { ImportTask } from "../../shared/import/ImportContent";
@@ -13,14 +12,8 @@ const tabId = "importTabs";
 const useTabItems = (
 	moneeeyStore: MoneeeyStore,
 	Messages: ReturnType<typeof useMessages>,
-	importingTasks: Map<string, ImportTask>,
+	importingTasks: ImportTask[],
 ) => {
-	const closeImportTask = (task: ImportTask) =>
-		moneeeyStore.navigation.removeImportingTask(task);
-	const sortedTasks = Array.from(importingTasks.values()).sort((a, b) =>
-		a.input.name.localeCompare(b.input.name),
-	);
-
 	return [
 		{
 			label: Messages.import.start,
@@ -31,19 +24,19 @@ const useTabItems = (
 						moneeeyStore.navigation.updateImportingTasks(task);
 						moneeeyStore.navigation.updateTabsSelectedIndex(
 							tabId,
-							moneeeyStore.navigation.importingTasks.size,
+							moneeeyStore.navigation.importingTasks.findIndex(
+								(t) => t.taskId === task.taskId,
+							) + 1,
 						);
 					}}
 					configuration={moneeeyStore.config}
 				/>
 			),
 		},
-		...sortedTasks.map((task) => ({
-			key: task.input.name,
+		...importingTasks.map((task) => ({
+			key: task.taskId,
 			label: task.input.name,
-			children: (
-				<ImportProcess task={task} close={() => closeImportTask(task)} />
-			),
+			children: <ImportProcess task={task} />,
 		})),
 	];
 };
@@ -54,7 +47,9 @@ export const ImportHeader = observer(() => {
 	const { importingTasks } = moneeeyStore.navigation;
 	const tabItems = useTabItems(moneeeyStore, Messages, importingTasks);
 
-	return <TabsHeader testId={tabId} items={tabItems} />;
+	return (
+		<TabsHeader key={importingTasks.length} testId={tabId} items={tabItems} />
+	);
 });
 
 const Import = observer(() => {
@@ -63,7 +58,9 @@ const Import = observer(() => {
 	const { importingTasks } = moneeeyStore.navigation;
 	const tabItems = useTabItems(moneeeyStore, Messages, importingTasks);
 
-	return <TabsContent testId={tabId} items={tabItems} />;
+	return (
+		<TabsContent key={importingTasks.length} testId={tabId} items={tabItems} />
+	);
 });
 
 export default Import;

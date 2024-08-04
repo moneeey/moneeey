@@ -5,6 +5,7 @@ import { asyncProcess, tokenize } from "../../utils/Utils";
 import Logger from "../Logger";
 import type MoneeeyStore from "../MoneeeyStore";
 
+import TransactionStore from "../../entities/Transaction";
 import {
 	type ImportResult,
 	type ImportTask,
@@ -31,6 +32,7 @@ const txtImportFromLines = ({
 	lines: string[];
 	separator?: string;
 }): Promise<ImportResult> => {
+	const localTransactions = new TransactionStore(moneeeyStore);
 	if (isEmpty(lines)) {
 		logger.warn("txtImportFromLines empty lines");
 
@@ -41,9 +43,8 @@ const txtImportFromLines = ({
 					description: "Empty",
 				},
 			],
-			transactions: [],
-			recommended_accounts: {},
-			update: {},
+			recommendedAccounts: {},
+			localTransactions,
 		});
 	}
 	const { importer } = moneeeyStore;
@@ -72,9 +73,8 @@ const txtImportFromLines = ({
 					} column not found`,
 				},
 			],
-			transactions: [],
-			recommended_accounts: {},
-			update: {},
+			recommendedAccounts: {},
+			localTransactions,
 		});
 	}
 	onProgress(60);
@@ -125,12 +125,12 @@ const txtImportFromLines = ({
 						other,
 						other_account,
 						query_tokens,
-						recommended_accounts: accounts,
+						recommendedAccounts: accounts,
 						transaction,
+						existing,
 					});
-					stt.transactions.push(transaction);
-					stt.update[transaction.transaction_uuid] = Boolean(existing);
-					stt.recommended_accounts[transaction.transaction_uuid] = accounts.map(
+					stt.localTransactions.merge(transaction);
+					stt.recommendedAccounts[transaction.transaction_uuid] = accounts.map(
 						(a) => a.account_uuid,
 					);
 				} catch (err) {
@@ -141,9 +141,8 @@ const txtImportFromLines = ({
 		{
 			state: {
 				errors: [],
-				transactions: [],
-				recommended_accounts: {},
-				update: {},
+				recommendedAccounts: {},
+				localTransactions,
 			},
 		},
 	);

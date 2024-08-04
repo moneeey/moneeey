@@ -16,6 +16,7 @@ import { EntityType } from "../Entity";
 
 import type MoneeeyStore from "../MoneeeyStore";
 
+import type TransactionStore from "../../entities/Transaction";
 import type Importer from "./Importer";
 
 export type FileUploaderMode = "txt" | "csv" | "ofx" | "pdf";
@@ -33,6 +34,7 @@ export interface ImportConfig {
 }
 
 export interface ImportTask {
+	taskId: string;
 	input: ImportInput;
 	config: ImportConfig;
 }
@@ -42,9 +44,8 @@ export interface ImportResult {
 		data: string;
 		description: string;
 	}[];
-	transactions: ITransaction[];
-	update: Record<TTransactionUUID, boolean>;
-	recommended_accounts: Record<TTransactionUUID, TAccountUUID[]>;
+	recommendedAccounts: Record<TTransactionUUID, TAccountUUID[]>;
+	localTransactions: TransactionStore;
 }
 
 export type ProcessProgressFn = (percentage: number) => void;

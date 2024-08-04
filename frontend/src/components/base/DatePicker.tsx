@@ -28,7 +28,7 @@ const DatePicker = ({
 				data-testid={testId}
 				withPortal
 				fixedHeight
-				className={`${BaseInputClzz || ""} z-50 ${className || ""}`}
+				className={`${BaseInputClzz || ""} z-50 ${className || ""} testId-${testId}`}
 				selected={value}
 				onChange={(newValue: Date) => newValue && onChange(newValue)}
 				readOnly={readOnly}

@@ -41,7 +41,7 @@ export default class NavigationStore {
 
 	tabsSelectedIndex = new Map<string, number>();
 
-	importingTasks = new Map<string, ImportTask>();
+	importingTasks: ImportTask[] = [];
 
 	constructor(parent: Logger) {
 		this.logger = new Logger("navigationStore", parent);
@@ -81,11 +81,23 @@ export default class NavigationStore {
 	}
 
 	updateImportingTasks(task: ImportTask) {
-		this.importingTasks.set(task.input.name, task);
+		const existing = this.importingTasks.findIndex(
+			(t) => t.taskId === task.taskId,
+		);
+		if (existing >= 0) {
+			this.importingTasks[existing] = { ...task };
+		} else {
+			this.importingTasks = [...this.importingTasks, task];
+		}
+		this.importingTasks = this.importingTasks.sort((a, b) =>
+			a.input.name.localeCompare(b.input.name),
+		);
 	}
 
 	removeImportingTask(task: ImportTask) {
-		this.importingTasks.delete(task.input.name);
+		this.importingTasks = this.importingTasks.filter(
+			(t) => t.taskId !== task.taskId,
+		);
 	}
 
 	navigate(url: string) {
