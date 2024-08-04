@@ -39,12 +39,10 @@ export default defineConfig({
 			use: { ...devices["Desktop Chrome"] },
 		},
 
-		/* TODO: FIXME: locator.click: Target closed (getTestById('editorAllocated'))
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    */
+		{
+			name: "firefox",
+			use: { ...devices["Desktop Firefox"] },
+		},
 
 		/* Test against safari. */
 		// {
