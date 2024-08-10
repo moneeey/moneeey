@@ -131,7 +131,7 @@ export function parseWeirdAmount(input: string) {
 }
 
 export const extractValueAndOther = (rest: string) => {
-	const amountMatch = /(?:\b|[+-])?\d{1,3}(?:[.,\s]\d{3})*(?:[.,]\d+)?\b/.exec(
+	const amountMatch = /(?:\b|[ +-])*\d{1,3}(?:[.,\s]\d{3})*(?:[.,]\d+)?\b/.exec(
 		rest,
 	);
 	if (amountMatch) {
