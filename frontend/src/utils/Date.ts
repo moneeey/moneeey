@@ -81,15 +81,12 @@ export const addDay = (date: Date, offset: number) =>
 	add(date, { days: offset });
 
 export const MostCommonDateFormats = [
-	"yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
 	"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-	"yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
 	"yyyy-MM-dd HH:mm:ss.SSS'Z'",
 	"yyyy-MM-dd'T'HH:mm:ss.SSS",
 	"yyyy-MM-dd'T'HH:mm:ss.SSS",
 	"yyyy-MM-dd'T'HH:mm:ss.SSSS",
 	"yyyy-MM-dd HH:mm:ss.SSSS",
-	"yyyy-MM-dd'T'HH:mm:ssXXX",
 	"yyyy-MM-dd'T'HH:mm:ss'Z'",
 	"yyyy-MM-dd HH:mm:ss.S'Z'",
 	"yyyy-MM-dd'T'HH:mm:ss.SSS",
@@ -97,7 +94,6 @@ export const MostCommonDateFormats = [
 	"yyyyMMdd'T'HHmm'Z'.SSS'Z'",
 	"yyyy-MM-dd'T'HH:mm:ss.S",
 	"yyyy-MM-dd'T'HH:mm:ss'Z'",
-	"yyyy-MM-dd'T'HH:mm:ssXXX",
 	"yyyy-MM-dd'T'HH:mm:ss.SS",
 	"yyyy-MM-dd'T'HH:mm:ss'Z'",
 	"yyyy-MM-dd'T'HH:mm:ss'Z'",
