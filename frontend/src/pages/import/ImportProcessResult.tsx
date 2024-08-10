@@ -196,13 +196,6 @@ const ImportProcessResult = ({
 
 	return (
 		<VerticalSpace className="h-full grow">
-			{map(result.errors, (err) => (
-				<p>
-					<TextDanger key={err.description}>
-						{err.data} {err.description}
-					</TextDanger>
-				</p>
-			))}
 			<p>
 				<TextNormal>{Messages.import.success(task.input.name)}</TextNormal>
 			</p>
@@ -228,6 +221,11 @@ const ImportProcessResult = ({
 					</span>
 				</div>
 			</Space>
+			{map(result.errors, (err) => (
+				<TextDanger key={err.description}>
+					{err.description} {err.data}
+				</TextDanger>
+			))}
 			<div className="static flex-1">
 				<ImportProcessResultTable
 					referenceAccount={task.config.referenceAccount}

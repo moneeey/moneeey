@@ -1,14 +1,13 @@
-import { isEmpty } from "lodash";
-
 import type { TAccountUUID } from "../../entities/Account";
 import type {
 	ITransaction,
 	TTransactionUUID,
 } from "../../entities/Transaction";
 import {
+	MostCommonDateFormats,
 	currentDateTime,
 	formatDate,
-	isValidDate,
+	formatDateFmt,
 	parseDateFmt,
 } from "../../utils/Date";
 import { uuid } from "../../utils/Utils";
@@ -29,8 +28,6 @@ export interface ImportInput {
 
 export interface ImportConfig {
 	referenceAccount: string;
-	dateFormat: string;
-	decimalSeparator: string;
 }
 
 export interface ImportTask {
@@ -55,51 +52,129 @@ export type ProcessContentFn = (
 	onProgress: ProcessProgressFn,
 ) => Promise<ImportResult>;
 
-export const findSeparator = (text: string): string => {
-	const candidates = new Map<string, number>();
-	for (const mm of text.matchAll(/([^\w\d-+\\/" ])/gm)) {
-		const [sep] = mm;
-		candidates.set(sep, (candidates.get(sep) || 0) + 1);
+const MostCommonDatePatterns = MostCommonDateFormats.map((dateFormat) => ({
+	dateFormat,
+	pattern: new RegExp(
+		`\\b${formatDateFmt(new Date(), dateFormat)
+			.replace(/[A-Za-z]/g, "[A-Za-z]")
+			.replace(/\d/g, "\\d")}\\b`,
+	),
+}));
+
+const retrieveFirstFoundDate = (line: string, dateFormat: string) => {
+	const fmt = MostCommonDatePatterns.find(
+		(item) => item.dateFormat === dateFormat,
+	);
+	if (fmt) {
+		const { pattern } = fmt;
+		const match = pattern.exec(line);
+		if (match) {
+			const dateStr = match[0];
+			try {
+				const date = formatDate(parseDateFmt(dateStr, dateFormat));
+				return {
+					date,
+					rest: line.replace(
+						dateStr,
+						Array.from({ length: dateStr.length }).join(" "),
+					),
+				};
+			} catch (e) {}
+		}
+	}
+	return null;
+};
+
+export const findMostCommonDateFormat = (lines: string[]) => {
+	let topAmount = 0;
+	let topPattern = undefined;
+	const patterns = new Map<string, number>();
+	for (const line of lines) {
+		for (const { pattern, dateFormat } of MostCommonDatePatterns) {
+			if (pattern.test(line) && retrieveFirstFoundDate(line, dateFormat)) {
+				const occurrencies = (patterns.get(dateFormat) || 0) + 1;
+				patterns.set(dateFormat, occurrencies);
+				if (occurrencies > topAmount) {
+					topAmount = occurrencies;
+					topPattern = { pattern, dateFormat };
+				}
+			}
+		}
+	}
+	return topPattern;
+};
+
+export function parseWeirdAmount(input: string) {
+	// Remove any leading/trailing whitespace
+	const amountStr = input.trim();
+
+	// Identify the last occurrence of a comma or period to separate integer and decimal parts
+	const lastCommaIndex = amountStr.lastIndexOf(",");
+	const lastPeriodIndex = amountStr.lastIndexOf(".");
+
+	// Determine which is the decimal separator
+	const decimalSeparatorIndex = Math.max(lastCommaIndex, lastPeriodIndex);
+	let integerPart = amountStr;
+	let decimalPart = "";
+
+	// Split the string into integer and decimal parts
+	if (decimalSeparatorIndex !== -1) {
+		integerPart = amountStr.slice(0, decimalSeparatorIndex);
+		decimalPart = amountStr.slice(decimalSeparatorIndex + 1);
 	}
 
-	return Array.from(candidates.entries()).reduce(
-		(accum, [sep, count]) => {
-			if (count > accum.count) {
-				return { sep, count };
-			}
+	// Remove any thousand separators (spaces, commas, or periods) from the integer part
+	integerPart = integerPart.replace(/[\s,.]/g, "");
 
-			return accum;
-		},
-		{ sep: "", count: 0 },
-	).sep;
+	// Reconstruct the normalized string
+	let normalizedStr = integerPart;
+	if (decimalPart) {
+		normalizedStr += `.${decimalPart}`;
+	}
+
+	// Convert the string to a floating-point number
+	return Number.parseFloat(normalizedStr);
+}
+
+export const extractValueAndOther = (rest: string) => {
+	const pattern = /(?:\b|[+-]?)\d{1,3}(?:[.,\s]?\d{3})*(?:[.,]\d+)?\b/g;
+	const matches = [...rest.matchAll(pattern)].map((match) => ({
+		...match,
+		fromStart: match.index,
+		fromEnd: rest.length - match.index,
+	}));
+	if (matches.length) {
+		const smallestDistanceToBoundaries = matches.sort(
+			(a, b) =>
+				Math.min(a.fromEnd, a.fromStart) - Math.min(b.fromEnd, b.fromStart),
+		)[0];
+		const amountStr = smallestDistanceToBoundaries[0];
+		const other = rest
+			.replace(amountStr, "")
+			.replace(/[^\w\s\d]/g, " ")
+			.replace(/\s+/g, " ")
+			.trim();
+		const value = parseWeirdAmount(amountStr);
+		return { other, value };
+	}
+	return null;
 };
 
-export const findColumns = (tokens: string[], dateFormat: string) => {
-	const dateIndex = tokens.findIndex((tok) =>
-		isValidDate(parseDateFmt(tok, dateFormat)),
-	);
-	const valueIndex = tokens.findIndex(
-		(tok, idx) => idx !== dateIndex && !isEmpty(tok.match(/^[\d.",+\\-]+$/gm)),
-	);
-
-	return { dateIndex, valueIndex };
-};
-
-export const retrieveColumns = (
-	tokens: string[],
-	columns: ReturnType<typeof findColumns>,
-	dateFormat: string,
-) => {
-	return {
-		value: Number.parseFloat(
-			(tokens[columns.valueIndex] || "").replace(/,/, "."),
-		),
-		date: formatDate(parseDateFmt(tokens[columns.dateIndex] || "", dateFormat)),
-		other: tokens.filter(
-			(_v, index) =>
-				index !== columns.valueIndex && index !== columns.dateIndex,
-		),
-	};
+export const retrieveLineColumns = (line: string, dateFormat: string) => {
+	const dateFound = retrieveFirstFoundDate(line, dateFormat);
+	if (dateFound) {
+		const { date, rest } = dateFound;
+		const valueAndOther = extractValueAndOther(rest);
+		if (valueAndOther) {
+			const { value, other } = valueAndOther;
+			return {
+				value,
+				other,
+				date,
+			};
+		}
+	}
+	return null;
 };
 
 export const importTransaction = ({

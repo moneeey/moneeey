@@ -2,13 +2,10 @@ import { head, isEmpty, last } from "lodash";
 import { observer } from "mobx-react";
 import { type Dispatch, useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-
-import { Input } from "../../components/base/Input";
 import Select from "../../components/base/Select";
 import { VerticalSpace } from "../../components/base/Space";
 import { TextSubtitle, TextTitle } from "../../components/base/Text";
 import type { TAccountUUID } from "../../entities/Account";
-import type ConfigStore from "../../entities/Config";
 import type {
 	FileUploaderMode,
 	ImportConfig,
@@ -16,7 +13,6 @@ import type {
 	ImportTask,
 } from "../../shared/import/ImportContent";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import { TDateFormat } from "../../utils/Date";
 import useMessages from "../../utils/Messages";
 import { uuid } from "../../utils/Utils";
 
@@ -108,18 +104,14 @@ export const ReferenceAccountSelector = observer(
 
 const ImportStarter = ({
 	onTask,
-	configuration,
 }: {
 	onTask: Dispatch<ImportTask>;
-	configuration: ConfigStore;
 }) => {
 	const Messages = useMessages();
 	const { accounts } = useMoneeeyStore();
 	const [config, setConfig] = useState(
 		() =>
 			({
-				dateFormat: configuration.main.date_format,
-				decimalSeparator: configuration.main.decimal_separator,
 				referenceAccount: head(accounts.allNonPayees)?.account_uuid || "",
 			}) as ImportConfig,
 	);
@@ -144,35 +136,6 @@ const ImportStarter = ({
 							setConfig((currentConfig) => ({
 								...currentConfig,
 								referenceAccount,
-							}))
-						}
-					/>
-				</div>
-			</div>
-			<div>
-				{Messages.util.date_format}
-				<div className="bg-background-900 p-2">
-					<Input
-						testId="inputDateFormat"
-						placeholder={TDateFormat}
-						value={config.dateFormat}
-						onChange={(dateFormat) =>
-							setConfig((currentConfig) => ({ ...currentConfig, dateFormat }))
-						}
-					/>
-				</div>
-			</div>
-			<div>
-				{Messages.settings.decimal_separator}
-				<div className="bg-background-900 p-2">
-					<Input
-						testId="inputDecimalSeparator"
-						placeholder={". or ,"}
-						value={config.decimalSeparator}
-						onChange={(decimalSeparator) =>
-							setConfig((currentConfig) => ({
-								...currentConfig,
-								decimalSeparator,
 							}))
 						}
 					/>

@@ -1,6 +1,4 @@
-import { compact, head, isEmpty, shuffle } from "lodash";
-
-import { TDateFormat } from "../../utils/Date";
+import { isEmpty, shuffle } from "lodash";
 import { asyncProcess, tokenize } from "../../utils/Utils";
 import Logger from "../Logger";
 import type MoneeeyStore from "../MoneeeyStore";
@@ -11,10 +9,9 @@ import {
 	type ImportTask,
 	type ProcessContentFn,
 	type ProcessProgressFn,
-	findColumns,
-	findSeparator,
+	findMostCommonDateFormat,
 	importTransaction,
-	retrieveColumns,
+	retrieveLineColumns,
 } from "./ImportContent";
 
 const logger = new Logger("txtImporter", undefined);
@@ -24,7 +21,6 @@ const txtImportFromLines = ({
 	data,
 	onProgress,
 	lines,
-	separator = "",
 }: {
 	moneeeyStore: MoneeeyStore;
 	data: ImportTask;
@@ -48,62 +44,32 @@ const txtImportFromLines = ({
 		});
 	}
 	const { importer } = moneeeyStore;
-	onProgress(30);
-	const first10 = lines.slice(0, 10);
-	const sep = isEmpty(separator)
-		? findSeparator(first10.join("\n"))
-		: separator;
-	logger.info("txtImportFromLines sep", { first10, sep });
-	const columns = findColumns(
-		(head(shuffle(first10)) || "").split(sep),
-		data.config.dateFormat || TDateFormat,
-	);
-	logger.info("txtImportFromLines columns", { columns });
-	if (columns.dateIndex === -1 || columns.valueIndex === -1) {
-		logger.warn("txtImportFromLines date or value column not found", {
-			columns,
-		});
-
-		return Promise.resolve({
-			errors: [
-				{
-					data: first10.join("\n"),
-					description: `${
-						columns.dateIndex === -1 ? "Date" : "Value"
-					} column not found`,
-				},
-			],
-			recommendedAccounts: {},
-			localTransactions,
-		});
-	}
-	onProgress(60);
+	onProgress(10);
 	const { tokenMap } = importer;
 	logger.info("tokenMap", tokenMap);
-	onProgress(90);
+	onProgress(20);
+
+	const mostCommonDateFormat = findMostCommonDateFormat(
+		shuffle(lines)
+			.filter((line) => /\d/.test(line))
+			.slice(0, 50),
+	);
 
 	return asyncProcess<string, ImportResult>(
 		lines,
 		(chunk, stt, percentage) => {
 			onProgress(percentage);
+			if (!mostCommonDateFormat) return;
 			for (const line of chunk) {
-				const { referenceAccount, dateFormat } = data.config;
-				const tokens = line.replace('"', "").split(sep);
-				if (tokens.length < 2) {
-					stt.errors.push({
-						data: line,
-						description: `Not enough tokens: ${tokens.join(",")}`,
-					});
-
-					return;
-				}
+				const { referenceAccount } = data.config;
 				try {
-					const { value, date, other } = retrieveColumns(
-						tokens,
-						columns,
-						dateFormat || TDateFormat,
+					const foundColumns = retrieveLineColumns(
+						line,
+						mostCommonDateFormat.dateFormat,
 					);
-					const query_tokens = compact(other.flatMap(tokenize));
+					if (!foundColumns) continue;
+					const { value, date, other } = foundColumns;
+					const query_tokens = tokenize(other);
 					const accounts = importer.findAccountsForTokens(
 						referenceAccount,
 						tokenMap,
@@ -135,6 +101,10 @@ const txtImportFromLines = ({
 					);
 				} catch (err) {
 					logger.error("process line error", { err, line });
+					stt.errors.push({
+						data: String(err),
+						description: "process line error",
+					});
 				}
 			}
 		},

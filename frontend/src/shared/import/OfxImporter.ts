@@ -44,7 +44,7 @@ const ofxImport =
 		onProgress: ProcessProgressFn,
 	): Promise<ImportResult> => {
 		const preloadSteps = 9;
-		const SEP = "@";
+		const SEP = "  ";
 		let loadStep = 1;
 		const step = () => {
 			onProgress(loadStep / preloadSteps);
@@ -65,11 +65,14 @@ const ofxImport =
 					dtposted.slice(0, ofxDateFormat.length),
 					ofxDateFormat,
 				);
-				const date = formatDateFmt(datets, data.config.dateFormat);
+				const date = formatDateFmt(
+					datets,
+					moneeeyStore.config.main.date_format,
+				);
 				const value = t.TRNAMT;
-				const other = `${t.NAME} ${t.MEMO}`;
+				const other = `${t.NAME || ""} ${t.MEMO || ""}`.trim();
 
-				return `${date}${SEP}${value}${SEP}${other}`;
+				return `${value}${SEP}${other}${SEP}${date}`;
 			}
 
 			return "";
