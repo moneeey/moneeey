@@ -5,17 +5,7 @@ describe("ImportContent", () => {
 	it("MostCommonDateFormats", () =>
 		expect(
 			MostCommonDateFormats.map((pattern) => {
-				const date = new Date(
-					Date.UTC(
-						2024,
-						11,
-						29,
-						22,
-						33 - new Date().getTimezoneOffset(),
-						44,
-						567,
-					),
-				);
+				const date = new Date(Date.UTC(2024, 11, 29, 22, 33, 44, 567));
 				return `${pattern} -> ${formatDateFmt(date, pattern)}`;
 			}),
 		).toMatchInlineSnapshot(`
