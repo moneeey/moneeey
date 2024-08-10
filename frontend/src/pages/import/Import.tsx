@@ -29,7 +29,6 @@ const useTabItems = (
 							) + 1,
 						);
 					}}
-					configuration={moneeeyStore.config}
 				/>
 			),
 		},

@@ -12,13 +12,18 @@ type DatePickerProps = { dateFormat: string } & InputProps<Date> &
 type CustomDateInputProps = Partial<{
 	className: string;
 	value: string;
+	disabled?: boolean;
+	readOnly?: boolean;
 	onChange: (value: string) => void;
 	onClick: () => void;
 }> &
 	WithDataTestId;
 
 const CustomDateInput = forwardRef<HTMLInputElement, CustomDateInputProps>(
-	({ className, value, onClick, onChange, testId }, ref) => {
+	(
+		{ className, value, onClick, onChange, testId, disabled, readOnly },
+		ref,
+	) => {
 		return (
 			<input
 				ref={ref}
@@ -28,6 +33,8 @@ const CustomDateInput = forwardRef<HTMLInputElement, CustomDateInputProps>(
 				value={value}
 				onChange={(e) => onChange?.(e.target.value)}
 				onClick={onClick}
+				disabled={disabled}
+				readOnly={readOnly}
 			/>
 		);
 	},
@@ -63,7 +70,13 @@ const DatePicker = ({
 				readOnly={readOnly}
 				disabled={disabled === true || readOnly === true}
 				customInput={
-					(<CustomDateInput testId={testId} />) as unknown as ReactNode
+					(
+						<CustomDateInput
+							testId={testId}
+							disabled={disabled === true || readOnly === true}
+							readOnly={readOnly}
+						/>
+					) as unknown as ReactNode
 				}
 			/>
 		),

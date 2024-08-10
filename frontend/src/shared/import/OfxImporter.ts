@@ -65,7 +65,10 @@ const ofxImport =
 					dtposted.slice(0, ofxDateFormat.length),
 					ofxDateFormat,
 				);
-				const date = formatDateFmt(datets, data.config.dateFormat);
+				const date = formatDateFmt(
+					datets,
+					moneeeyStore.config.main.date_format,
+				);
 				const value = t.TRNAMT;
 				const other = `${t.NAME} ${t.MEMO}`;
 

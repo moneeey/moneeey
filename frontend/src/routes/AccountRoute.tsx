@@ -29,7 +29,10 @@ const AccountTransactions = observer(
 			compact([account_uuid]),
 		);
 		const schemaFilter = (row: ITransaction) =>
-			account_name === "all" || filterByAccount(row);
+			account_name === "all" ||
+			(account_name === "-" && !row.from_account) ||
+			!row.to_account ||
+			filterByAccount(row);
 		const referenceAccount = account_uuid;
 
 		return (
