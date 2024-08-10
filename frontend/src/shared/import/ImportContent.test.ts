@@ -4,12 +4,21 @@ import { findMostCommonDateFormat, retrieveLineColumns } from "./ImportContent";
 describe("ImportContent", () => {
 	it("MostCommonDateFormats", () =>
 		expect(
-  MostCommonDateFormats.map((pattern) => {
-    const date = new Date(Date.UTC(2024, 11, 29, 22, 33, 44, 567));
-    console.log(date.getTimezoneOffset());
-    return `${pattern} -> ${formatDateFmt(date, pattern)}`;
-  })
-).toMatchInlineSnapshot(`
+			MostCommonDateFormats.map((pattern) => {
+				const date = new Date(
+					Date.UTC(
+						2024,
+						11,
+						29,
+						22,
+						33 - new Date().getTimezoneOffset(),
+						44,
+						567,
+					),
+				);
+				return `${pattern} -> ${formatDateFmt(date, pattern)}`;
+			}),
+		).toMatchInlineSnapshot(`
 [
   "yyyy-MM-dd'T'HH:mm:ss.SSS'Z' -> 2024-12-29T19:33:44.567Z",
   "yyyy-MM-dd HH:mm:ss.SSS'Z' -> 2024-12-29 19:33:44.567Z",
