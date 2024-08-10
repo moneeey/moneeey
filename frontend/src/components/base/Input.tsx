@@ -68,12 +68,8 @@ const Input = ({
 	const [currentValue, setCurrentValue] = useState<string>(value);
 
 	useEffect(() => {
-		return () => {
-			if (currentValue !== value) {
-				onChange(currentValue);
-			}
-		};
-	}, [currentValue, onChange, value]);
+		setCurrentValue(value);
+	}, [value]);
 
 	return InputContainer({
 		prefix,

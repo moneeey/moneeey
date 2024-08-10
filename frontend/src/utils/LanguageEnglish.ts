@@ -89,6 +89,7 @@ const Messages = {
 		required: "Required",
 	},
 	settings: {
+		locale: "Locale",
 		reload_page: "Reload your page",
 		export_data: "Export data",
 		import_data: "Import data",

@@ -92,6 +92,7 @@ const Messages: TMessages = {
 		required: "Requerido",
 	},
 	settings: {
+		locale: "Localização",
 		reload_page: "Recarregue sua página",
 		export_data: "Exportar dados",
 		import_data: "Importar dados",

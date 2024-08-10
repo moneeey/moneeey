@@ -179,8 +179,9 @@ Date
 		line,
 	]: string[]) => {
 		const foundDateFormat = findMostCommonDateFormat([line]);
-		if (!foundDateFormat) throw new Error("foundDateFormat undefined");
-		expect(retrieveLineColumns(line, foundDateFormat?.dateFormat)).toEqual({
+		if (!foundDateFormat || !foundDateFormat.dateFormat)
+			throw new Error("foundDateFormat undefined");
+		expect(retrieveLineColumns(line, foundDateFormat.dateFormat)).toEqual({
 			date: expectedDate,
 			other: expectedOther,
 			value: Number.parseFloat(expectedAmount),
