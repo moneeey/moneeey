@@ -1,6 +1,5 @@
 import * as PDFJS from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.entry.js";
-import type { TextItem } from "pdfjs-dist/types/src/display/api";
 
 import type MoneeeyStore from "../MoneeeyStore";
 
@@ -21,7 +20,7 @@ const pdfImport =
 		data: ImportTask,
 		onProgress: ProcessProgressFn,
 	): Promise<ImportResult> => {
-		const preloadSteps = 8;
+		const preloadSteps = 7;
 		let loadStep = 1;
 		const step = (totalTasks = preloadSteps) => {
 			onProgress(loadStep / totalTasks);
@@ -39,22 +38,25 @@ const pdfImport =
 				const page = await pdf.getPage(i + 1);
 				step(preloadSteps + pdf.numPages);
 				const tokens = await page.getTextContent();
-				const txt = tokens.items
-					.map((token) => (token as TextItem).str || "")
-					.join("");
-
-				return txt;
+				let txt = "";
+				let lineTop = -1;
+				for (const token of tokens.items) {
+					if ("str" in token) {
+						const tokenTop = Number(token.transform[5]);
+						if (tokenTop !== lineTop) {
+							txt += "\n";
+							lineTop = tokenTop;
+						}
+						txt += `${token.str.trim()} `;
+					}
+				}
+				return txt.trim();
 			}),
 		);
 		step();
-		const pdfTxt = pdfTxtPages.join("\n");
+		const pdfTxt = pdfTxtPages.join("\n\n").replace("\r", "\n");
 		step();
-		const datePattern = data.config.dateFormat
-			.replace(/\w/g, "\\w")
-			.replace("/", "\\/");
-		const pattern = `(?=${datePattern})`;
-		const lines = pdfTxt.split(new RegExp(pattern));
-		step();
+		const lines = pdfTxt.split("\n").map((line) => line.trim());
 
 		return txtImportFromLines({ moneeeyStore, data, onProgress, lines });
 	};

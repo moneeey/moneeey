@@ -80,8 +80,7 @@ const ImportProcess = ({ task }: { task: ImportTask }) => {
 	return (
 		<div className="mt-2 flex grow flex-col bg-background-800 p-2">
 			<TextTitle>
-				{Messages.import.processing} <strong>{task.input.mode}</strong>{" "}
-				{task.input.name}
+				{Messages.import.processing} {task.input.name}
 			</TextTitle>
 			<Loading loading={progress !== 100} progress={progress}>
 				<div className="h-full">

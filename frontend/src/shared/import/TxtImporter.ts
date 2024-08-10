@@ -49,13 +49,15 @@ const txtImportFromLines = ({
 	}
 	const { importer } = moneeeyStore;
 	onProgress(30);
-	const first10 = lines.slice(0, 10);
+	const someRows = shuffle(lines)
+		.filter((line) => /\d+/.test(line))
+		.slice(0, 20);
 	const sep = isEmpty(separator)
-		? findSeparator(first10.join("\n"))
+		? findSeparator(someRows.join("\n"))
 		: separator;
-	logger.info("txtImportFromLines sep", { first10, sep });
+	logger.info("txtImportFromLines sep", { someRows, sep });
 	const columns = findColumns(
-		(head(shuffle(first10)) || "").split(sep),
+		(head(shuffle(someRows)) || "").split(sep),
 		data.config.dateFormat || TDateFormat,
 	);
 	logger.info("txtImportFromLines columns", { columns });
@@ -67,7 +69,7 @@ const txtImportFromLines = ({
 		return Promise.resolve({
 			errors: [
 				{
-					data: first10.join("\n"),
+					data: someRows.join("\n"),
 					description: `${
 						columns.dateIndex === -1 ? "Date" : "Value"
 					} column not found`,

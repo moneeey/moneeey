@@ -197,11 +197,10 @@ const ImportProcessResult = ({
 	return (
 		<VerticalSpace className="h-full grow">
 			{map(result.errors, (err) => (
-				<p>
-					<TextDanger key={err.description}>
-						{err.data} {err.description}
-					</TextDanger>
-				</p>
+				<>
+					<TextDanger key={err.description}>{err.description}</TextDanger>
+					<pre>{err.data}</pre>
+				</>
 			))}
 			<p>
 				<TextNormal>{Messages.import.success(task.input.name)}</TextNormal>

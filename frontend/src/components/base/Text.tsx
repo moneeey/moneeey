@@ -36,9 +36,9 @@ const TextSubtitle = BaseText("", "h2");
 const TextParagraph = BaseText("", "p");
 const TextNormal = BaseText("", "span");
 const TextSecondary = BaseText("opacity-75", "span");
-const TextDanger = BaseText("text-red", "span");
-const TextWarning = BaseText("text-yellow", "span");
-const TextSuccess = BaseText("text-green", "span");
+const TextDanger = BaseText("text-red-500", "span");
+const TextWarning = BaseText("text-yellow-500", "span");
+const TextSuccess = BaseText("text-green-500", "span");
 
 export {
 	TextTitle,
