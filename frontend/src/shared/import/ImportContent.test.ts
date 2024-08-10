@@ -262,4 +262,36 @@ Date
 			"Rent",
 			"Rent > -1 200 000.00 | 07/14/24",
 		]));
+
+	it("retrieveLineColumns huge number at start", () =>
+		testRetrieveLineColumns([
+			"2022-01-10",
+			"-76214.74",
+			"Transferencia recebida",
+			"-76214.74  Transferencia recebida  2022-01-10",
+		]));
+
+	it("retrieveLineColumns huge number at start comma decimal separator", () =>
+		testRetrieveLineColumns([
+			"2022-01-10",
+			"-76214.74",
+			"Transferencia recebida",
+			"-76214,74  Transferencia recebida  2022-01-10",
+		]));
+
+	it("retrieveLineColumns number in other, amount in suffix", () =>
+		testRetrieveLineColumns([
+			"2024-08-10",
+			"5.75",
+			"51 Coffee 42 Shop 68",
+			"2024-08-10 | 51 Coffee 42 Shop 68 | $5.75",
+		]));
+
+	it("retrieveLineColumns number in other, amount in prefix", () =>
+		testRetrieveLineColumns([
+			"2024-08-10",
+			"7.25",
+			"51 Coffee 42 Shop 68",
+			"7.25 | 2024-08-10 | 51 Coffee 42 Shop 68",
+		]));
 });

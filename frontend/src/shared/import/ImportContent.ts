@@ -72,7 +72,13 @@ const retrieveFirstFoundDate = (line: string, dateFormat: string) => {
 			const dateStr = match[0];
 			try {
 				const date = formatDate(parseDateFmt(dateStr, dateFormat));
-				return { date, rest: line.replace(dateStr, "") };
+				return {
+					date,
+					rest: line.replace(
+						dateStr,
+						Array.from({ length: dateStr.length }).join(" "),
+					),
+				};
 			} catch (e) {}
 		}
 	}
@@ -131,11 +137,18 @@ export function parseWeirdAmount(input: string) {
 }
 
 export const extractValueAndOther = (rest: string) => {
-	const amountMatch = /(?:\b|[ +-])*\d{1,3}(?:[.,\s]\d{3})*(?:[.,]\d+)?\b/.exec(
-		rest,
-	);
-	if (amountMatch) {
-		const amountStr = amountMatch[0];
+	const pattern = /(?:\b|[+-]?)\d{1,3}(?:[.,\s]?\d{3})*(?:[.,]\d+)?\b/g;
+	const matches = [...rest.matchAll(pattern)].map((match) => ({
+		...match,
+		fromStart: match.index,
+		fromEnd: rest.length - match.index,
+	}));
+	if (matches.length) {
+		const smallestDistanceToBoundaries = matches.sort(
+			(a, b) =>
+				Math.min(a.fromEnd, a.fromStart) - Math.min(b.fromEnd, b.fromStart),
+		)[0];
+		const amountStr = smallestDistanceToBoundaries[0];
 		const other = rest
 			.replace(amountStr, "")
 			.replace(/[^\w\s\d]/g, " ")
@@ -151,18 +164,14 @@ export const retrieveLineColumns = (line: string, dateFormat: string) => {
 	const dateFound = retrieveFirstFoundDate(line, dateFormat);
 	if (dateFound) {
 		const { date, rest } = dateFound;
-		const amountMatch =
-			/(?:\b|[+-])?\d{1,3}(?:[.,\s]\d{3})*(?:[.,]\d+)?\b/.exec(rest);
-		if (amountMatch) {
-			const valueAndOther = extractValueAndOther(rest);
-			if (valueAndOther) {
-				const { value, other } = valueAndOther;
-				return {
-					value,
-					other,
-					date,
-				};
-			}
+		const valueAndOther = extractValueAndOther(rest);
+		if (valueAndOther) {
+			const { value, other } = valueAndOther;
+			return {
+				value,
+				other,
+				date,
+			};
 		}
 	}
 	return null;
