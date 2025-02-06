@@ -155,6 +155,13 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 		return [...from_acct, ...to_acct, ...transaction.tags];
 	}
 
+  getSearchBuffer(
+		transaction: ITransaction,
+		accountsStore: AccountStore,
+  ) {
+    return `${this.getAllTransactionTags(transaction, accountsStore).join('_')} ${transaction.memo} ${transaction.date}`
+  }
+
 	replaceAccount(from_uuid: TAccountUUID, to_uuid: TAccountUUID) {
 		for (const t of this.viewAllWithAccount(from_uuid)) {
 			const from_account =

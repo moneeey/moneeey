@@ -101,7 +101,7 @@ export const findMostCommonDateFormat = (lines: string[]) => {
 			}
 		}
 	}
-	return topPattern;
+	return { ...topPattern, patterns };
 };
 
 export function parseWeirdAmount(input: string) {

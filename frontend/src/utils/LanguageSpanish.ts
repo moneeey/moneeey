@@ -93,8 +93,11 @@ const Messages: TMessages = {
 		cancel: "Cancelar",
 		clear: "Limpiar",
 		required: "Requerido",
+    global_search_tags: 'Etiquetas',
+    global_search_text: 'Texto',
 	},
 	settings: {
+		locale: "localización",
 		reload_page: "Recargue su página",
 		export_data: "Exportar datos",
 		import_data: "Importar datos",

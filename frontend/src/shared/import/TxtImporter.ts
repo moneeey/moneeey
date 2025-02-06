@@ -49,17 +49,18 @@ const txtImportFromLines = ({
 	logger.info("tokenMap", tokenMap);
 	onProgress(20);
 
-	const mostCommonDateFormat = findMostCommonDateFormat(
-		shuffle(lines)
-			.filter((line) => /\d/.test(line))
-			.slice(0, 50),
-	);
+	const samples = shuffle(lines)
+		.filter((line) => /\d/.test(line))
+		.slice(0, 50);
+	const mostCommonDateFormat = findMostCommonDateFormat(samples);
+	logger.info("mostCommonDateFormat", { mostCommonDateFormat, samples });
+	onProgress(20);
 
 	return asyncProcess<string, ImportResult>(
 		lines,
 		(chunk, stt, percentage) => {
 			onProgress(percentage);
-			if (!mostCommonDateFormat) return;
+			if (!mostCommonDateFormat || !mostCommonDateFormat.dateFormat) return;
 			for (const line of chunk) {
 				const { referenceAccount } = data.config;
 				try {

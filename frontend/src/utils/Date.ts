@@ -7,11 +7,25 @@ import {
 	formatISO,
 	isValid,
 	parse,
+	setDefaultOptions,
 	startOfMonth,
 } from "date-fns";
+import * as dateFnsLocale from "date-fns/locale";
+import { keys } from "lodash";
 
 export type TDate = string;
 export type TDateTime = string;
+
+export function knownLocales() {
+	return keys(dateFnsLocale);
+}
+
+export function setLocale(localeKey: string) {
+	const locale = (dateFnsLocale as { [_i: string]: typeof dateFnsLocale.enUS })[
+		localeKey
+	];
+	setDefaultOptions({ locale: locale || dateFnsLocale.enUS });
+}
 
 export const TDateFormat = "yyyy-MM-dd";
 export const TDateMonthFormat = "MMM yyyy";

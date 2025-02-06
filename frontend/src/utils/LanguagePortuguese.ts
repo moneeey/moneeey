@@ -90,8 +90,11 @@ const Messages: TMessages = {
 		cancel: "Cancelar",
 		clear: "Limpar",
 		required: "Requerido",
+    global_search_tags: 'Tags',
+    global_search_text: 'Texto',
 	},
 	settings: {
+		locale: "Localização",
 		reload_page: "Recarregue sua página",
 		export_data: "Exportar dados",
 		import_data: "Importar dados",

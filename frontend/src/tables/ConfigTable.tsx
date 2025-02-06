@@ -5,6 +5,7 @@ import CurrencySelectorField from "../components/editor/CurrencySelectorField";
 import TextField from "../components/editor/TextField";
 import type ConfigStore from "../entities/Config";
 import type { IConfig } from "../entities/Config";
+import { knownLocales } from "../utils/Date";
 import useMessages from "../utils/Messages";
 
 const ConfigTable = observer(({ config }: { config: ConfigStore }) => {
@@ -62,6 +63,18 @@ const ConfigTable = observer(({ config }: { config: ConfigStore }) => {
 					...CurrencySelectorField<IConfig>({
 						read: ({ default_currency }) => default_currency,
 						delta: (default_currency) => ({ default_currency }),
+					}),
+				},
+				{
+					title: Messages.settings.locale,
+					width: 100,
+					validate: ({ locale }) => ({
+						valid: !!knownLocales().find((cur) => cur === locale),
+						error: `Locale not found, should be one of ${knownLocales().join(", ")}`,
+					}),
+					...TextField<IConfig>({
+						read: ({ locale }) => locale,
+						delta: (locale) => ({ locale }),
 					}),
 				},
 			]}
