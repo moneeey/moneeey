@@ -1,6 +1,5 @@
 import React, { type ReactNode } from "react";
 
-import TagsRoute from "../routes/TagsRoute";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import { identity } from "../utils/Utils";
 
@@ -45,7 +44,7 @@ const TagsRenderer = ({ color, tags }: IStyledTagsProp) => {
 						title={t}
 						onClick={(e) => {
 							e.preventDefault();
-							moneeeyStore.navigation.navigate(TagsRoute.tagsUrl(t));
+              moneeeyStore.navigation.globalSearchToggleTags([t])
 						}}
 					/>
 				);

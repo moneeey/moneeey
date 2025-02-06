@@ -87,6 +87,8 @@ const Messages = {
 		cancel: "Cancel",
 		clear: "Clear",
 		required: "Required",
+    global_search_tags: 'Tags',
+    global_search_text: 'Search',
 	},
 	settings: {
 		locale: "Locale",

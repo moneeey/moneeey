@@ -93,6 +93,8 @@ const Messages: TMessages = {
 		cancel: "Cancelar",
 		clear: "Limpiar",
 		required: "Requerido",
+    global_search_tags: 'Etiquetas',
+    global_search_text: 'Texto',
 	},
 	settings: {
 		locale: "localización",
