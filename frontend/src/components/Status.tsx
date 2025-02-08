@@ -33,6 +33,7 @@ export const Status = ({ type, children, onDismiss }: StatusProps) => {
 			className={`mb-2 rounded-lg p-2 text-sm ${styles[type]} flex flex-row`}
 			onClick={doDismiss}
 			onKeyDown={doDismiss}
+			data-testid={`mn-status-${type}`}
 		>
 			<div className="grow">{children}</div>
 			<Icon testId="mn-dismiss-status">
