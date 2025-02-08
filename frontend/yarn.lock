@@ -2811,13 +2811,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-virtualized@npm:9.21.29":
-  version: 9.21.29
-  resolution: "@types/react-virtualized@npm:9.21.29"
+"@types/react-virtualized@npm:9.21.30":
+  version: 9.21.30
+  resolution: "@types/react-virtualized@npm:9.21.30"
   dependencies:
     "@types/prop-types": "npm:*"
     "@types/react": "npm:*"
-  checksum: 10c0/13cb3a55bbf662ebc76e0653274a51f62dbc6574a641a4ec6f0c258658e444eabff05680983b4b0a70bc2ac0a20fb88d4e5e0be949f3db4068b434a42e0f267e
+  checksum: 10c0/267fd00de3fe1f93ba535e1b98b1106d61c9172a6741d8a65aa4f16720177edb359bf997518f3deb2c078b4b275e512bccd3ee941ae4019b5c7836aa16b8ed8e
   languageName: node
   linkType: hard
 
@@ -6811,7 +6811,7 @@ __metadata:
     "@types/react-datepicker": "npm:4.8.0"
     "@types/react-dom": "npm:18.3.0"
     "@types/react-router-dom": "npm:5.3.3"
-    "@types/react-virtualized": "npm:9.21.29"
+    "@types/react-virtualized": "npm:9.21.30"
     "@vitejs/plugin-react": "npm:4.2.1"
     autoprefixer: "npm:10.4.19"
     classnames: "npm:2.5.1"
