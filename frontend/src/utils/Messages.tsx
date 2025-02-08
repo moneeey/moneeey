@@ -1,25 +1,45 @@
 import React, { type ReactNode } from "react";
 
-import LanguageEnglish from "./LanguageEnglish";
-import LanguagePortuguese from "./LanguagePortuguese";
-import LanguageSpanish from "./LanguageSpanish";
+import Language from "./Language";
 import { StorageKind, getStorage, identity, setStorage } from "./Utils";
 
-export type TMessages = typeof LanguageEnglish;
+export const LanguageUnset: LanguageCode = "unset";
 
-const Languages = {
-	unset: LanguageEnglish,
-	english: LanguageEnglish,
-	portuguese: LanguagePortuguese,
-	spanish: LanguageSpanish,
+type RealLanguageCode = keyof typeof Language.menu.title;
+export type LanguageCode = keyof typeof Language.menu.title | "unset";
+
+type ExtractSingleLanguage<T> = {
+	[K in keyof T]: {
+		[P in keyof T[K]]: T[K][P] extends Record<RealLanguageCode, infer V>
+			? V
+			: never;
+	};
 };
 
-export type AvailableLanguages = keyof typeof Languages;
-export const LanguageUnset: AvailableLanguages = "unset";
+function LanguageForCode<L extends LanguageCode>(
+	code: L,
+): ExtractSingleLanguage<typeof Language> {
+	if (code === "unset") {
+		return LanguageForCode("en");
+	}
+	return Object.fromEntries(
+		Object.entries(Language).map(([category, entries]) => [
+			category,
+			Object.fromEntries(
+				Object.entries(entries).map(([key, value]) => [
+					key,
+					(value as Record<LanguageCode, unknown>)[code],
+				]),
+			),
+		]),
+	) as ExtractSingleLanguage<typeof Language>;
+}
+
+export type TMessages = ReturnType<typeof LanguageForCode>;
 
 const MessagesContext = React.createContext({
-	currentLanguage: LanguageUnset as AvailableLanguages,
-	selectLanguage: (language: AvailableLanguages) => identity(language),
+	currentLanguage: LanguageUnset as LanguageCode,
+	selectLanguage: (code: LanguageCode) => identity(code),
 });
 
 export function MessagesProvider({ children }: { children: ReactNode }) {
@@ -27,7 +47,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		"language",
 		LanguageUnset,
 		StorageKind.PERMANENT,
-	) as AvailableLanguages;
+	) as LanguageCode;
 	const [currentLanguage, selectLanguage] = React.useState(
 		storedLanguage ?? LanguageUnset,
 	);
@@ -45,7 +65,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 }
 
 export default function useMessages(): TMessages {
-	return Languages[React.useContext(MessagesContext).currentLanguage];
+	return LanguageForCode(React.useContext(MessagesContext).currentLanguage);
 }
 
 export function WithMessages({
@@ -60,12 +80,12 @@ export function useLanguageSwitcher() {
 	const { selectLanguage, currentLanguage } = React.useContext(MessagesContext);
 	return {
 		currentLanguage,
-		selectLanguage(language: AvailableLanguages) {
-			setStorage("language", language, StorageKind.PERMANENT);
-			selectLanguage(language);
+		selectLanguage(code: LanguageCode) {
+			setStorage("language", code, StorageKind.PERMANENT);
+			selectLanguage(code);
 		},
-		messagesForLanguage(language: AvailableLanguages) {
-			return Languages[language];
+		messagesForLanguage(code: LanguageCode) {
+			return LanguageForCode(code);
 		},
 	};
 }

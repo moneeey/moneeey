@@ -44,7 +44,7 @@ const TagsRenderer = ({ color, tags }: IStyledTagsProp) => {
 						title={t}
 						onClick={(e) => {
 							e.preventDefault();
-              moneeeyStore.navigation.globalSearchToggleTags([t])
+							moneeeyStore.navigation.globalSearchToggleTags([t]);
 						}}
 					/>
 				);

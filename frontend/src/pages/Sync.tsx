@@ -54,9 +54,9 @@ const MoneeeyLogin = ({
 	const onLogin = async () => {
 		const success = await management.start(state.email);
 		if (success) {
-			setMessage(<Status type="info">{Messages.sync.login.started}</Status>);
+			setMessage(<Status type="info">{Messages.sync.login_started}</Status>);
 		} else {
-			setMessage(<Status type="error">{Messages.sync.login.error}</Status>);
+			setMessage(<Status type="error">{Messages.sync.login_error}</Status>);
 		}
 	};
 
@@ -128,7 +128,7 @@ const DatabaseConfig = () => {
 			testId="selfHostedSync"
 			items={[
 				{
-					label: Messages.sync.couchdb.url,
+					label: Messages.sync.couchdb_url,
 					editor: (
 						<ConfigEditor
 							field="url"
@@ -139,24 +139,24 @@ const DatabaseConfig = () => {
 					),
 				},
 				{
-					label: Messages.sync.couchdb.username,
+					label: Messages.sync.couchdb_username,
 					editor: (
 						<ConfigEditor
 							field="username"
 							state={state}
 							setState={setState}
-							placeholder={Messages.sync.couchdb.username}
+							placeholder={Messages.sync.couchdb_username}
 						/>
 					),
 				},
 				{
-					label: Messages.sync.couchdb.password,
+					label: Messages.sync.couchdb_password,
 					editor: (
 						<ConfigEditor
 							field="password"
 							state={state}
 							setState={setState}
-							placeholder={Messages.sync.couchdb.password}
+							placeholder={Messages.sync.couchdb_password}
 						/>
 					),
 				},
@@ -183,12 +183,12 @@ export default function Sync() {
 				items={[
 					{
 						key: "moneeeyAccount",
-						label: Messages.sync.moneeey_account,
+						label: Messages.sync.moneeey_sync,
 						children: <MoneeeyAccountConfig />,
 					},
 					{
 						key: "database",
-						label: Messages.sync.database,
+						label: Messages.sync.database_sync,
 						children: <DatabaseConfig />,
 					},
 				]}

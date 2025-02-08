@@ -15,7 +15,6 @@ type Option = {
 type BaseSelectProps = {
 	options: Option[];
 	onCreate?: (name: string) => void;
-	creatable?: boolean;
 	clearable?: boolean;
 };
 

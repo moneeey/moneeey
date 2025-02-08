@@ -218,7 +218,7 @@ const Menu = observer(() => {
 				{
 					key: "sync",
 					label: `${Messages.modal.sync} ${
-						Messages.menu.sync[persistence.status]
+						Messages.menu[`sync_${persistence.status}`]
 					}`,
 					icon:
 						persistence.status === Status.ONLINE ? (

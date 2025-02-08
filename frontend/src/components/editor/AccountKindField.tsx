@@ -27,7 +27,7 @@ export default function <TEntity>({
 					isError={isError}
 					value={read(entity)}
 					options={Object.values(AccountKind).map((accountType) => ({
-						label: Messages.account.kind[accountType],
+						label: Messages.account[`kind_${accountType}`],
 						value: accountType,
 					}))}
 					onChange={(value: string) =>
