@@ -154,7 +154,7 @@ async function BudgetEditorSave(
 }
 
 async function dismissNotification(page: Page, text: string) {
-	await expect(page.getByText(text)).toContainText(text);
+	await expect(page.getByTestId('mn-status-warning')).toContainText(text);
 	const dismissIcon = () => page.getByTestId("mn-dismiss-status");
 	expect(dismissIcon()).toBeVisible();
 	await dismissIcon().click();
@@ -169,12 +169,12 @@ async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("minimalScreenTitle")).toContainText("Moneeey");
 	// Select language
 	expect(page.getByText("Select language")).toBeDefined();
-	expect(page.getByTestId("languageSelector_portuguese")).toBeDefined();
-	expect(page.getByTestId("languageSelector_spanish")).toBeDefined();
-	expect(page.getByTestId("languageSelector_english")).toBeDefined();
-	await page.getByTestId("languageSelector_spanish").click();
+	expect(page.getByTestId("languageSelector_pt")).toBeDefined();
+	expect(page.getByTestId("languageSelector_es")).toBeDefined();
+	expect(page.getByTestId("languageSelector_en")).toBeDefined();
+	await page.getByTestId("languageSelector_es").click();
 	await expect(page.getByTestId("ok-button")).toContainText("Continuar");
-	await page.getByTestId("languageSelector_english").click();
+	await page.getByTestId("languageSelector_en").click();
 	await expect(page.getByTestId("ok-button")).toContainText("Continue");
 
 	// Select default currency
@@ -280,7 +280,7 @@ test.describe("Moneeey", () => {
 		await tourNext(page);
 		await dismissNotification(
 			page,
-			"Before continuing, please click on 'New Budget' and create a budget",
+			"Before continuing, click 'New Budget' and create a budget.",
 		);
 
 		// Create budgets
