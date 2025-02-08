@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { LanguageCode } from "../utils/Language";
 import useMessages, { useLanguageSwitcher } from "../utils/Messages";
-import { IconBrazil, IconSpain, IconUSA } from "./base/Icon";
+import { IconBrazil, IconChina, IconIndia, IconSpain, IconUSA } from "./base/Icon";
 
 type LanguageSelectorProps = {
 	onSelect?: (language: LanguageCode) => void;

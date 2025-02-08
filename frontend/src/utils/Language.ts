@@ -782,26 +782,26 @@ const Language = {
 			pt: "Você pode importar transações de formatos bancários comuns.",
 			es: "Puede importar transacciones desde formatos bancarios comunes.",
 		},
-    currencies: {
-      en: "Moneeey is multi-currency! We have added the 50 most used currencies in the world. Feel free to add or customize as you like!",
-      pt: "O Moneeey é multimoeda! Adicionamos as 50 moedas mais usadas no mundo. Sinta-se à vontade para adicionar ou personalizar como quiser!",
-      es: "¡Moneeey es multimoneda! Hemos añadido las 50 monedas más utilizadas en el mundo. ¡Siéntase libre de agregar o personalizar como desee!"
-    },
-    accounts: {
-      en: "You can manage your Accounts in this area. Here, we can add new accounts, change currencies, set them off-budget, and archive accounts.",
-      pt: "Você pode gerenciar suas Contas nesta área. Aqui, podemos adicionar novas contas, mudar moedas, configurá-las como fora do orçamento e arquivar contas.",
-      es: "Puede gestionar sus Cuentas en esta área. Aquí, podemos agregar nuevas cuentas, cambiar monedas, configurarlas como fuera del presupuesto y archivar cuentas."
-    },
-    transactions: {
-      en: "Moneeey will generate reports and calculate your data based on Transactions. On the transactions table, we can easily add new payees by starting to type a new name and selecting 'Create'.",
-      pt: "O Moneeey gerará relatórios e calculará seus dados com base nas Transações. Na tabela de transações, podemos adicionar facilmente novos beneficiários começando a digitar um novo nome e selecionando 'Criar'.",
-      es: "Moneeey generará informes y calculará sus datos basándose en las Transacciones. En la tabla de transacciones, podemos agregar fácilmente nuevos beneficiarios comenzando a escribir un nuevo nombre y seleccionando 'Crear'."
-    },
-    budgets: {
-      en: "It is time to budget your Moneeey! Budgets are like envelopes where you allocate parts of your income.",
-      pt: "É hora de orçar seu Moneeey! Os orçamentos são como envelopes onde você aloca partes de sua renda.",
-      es: "¡Es hora de presupuestar su Moneeey! Los presupuestos son como sobres donde asigna partes de sus ingresos."
-    },
+		currencies: {
+			en: "Moneeey is multi-currency! We have added the 50 most used currencies in the world. Feel free to add or customize as you like!",
+			pt: "O Moneeey é multimoeda! Adicionamos as 50 moedas mais usadas no mundo. Sinta-se à vontade para adicionar ou personalizar como quiser!",
+			es: "¡Moneeey es multimoneda! Hemos añadido las 50 monedas más utilizadas en el mundo. ¡Siéntase libre de agregar o personalizar como desee!",
+		},
+		accounts: {
+			en: "You can manage your Accounts in this area. Here, we can add new accounts, change currencies, set them off-budget, and archive accounts.",
+			pt: "Você pode gerenciar suas Contas nesta área. Aqui, podemos adicionar novas contas, mudar moedas, configurá-las como fora do orçamento e arquivar contas.",
+			es: "Puede gestionar sus Cuentas en esta área. Aquí, podemos agregar nuevas cuentas, cambiar monedas, configurarlas como fuera del presupuesto y archivar cuentas.",
+		},
+		transactions: {
+			en: "Moneeey will generate reports and calculate your data based on Transactions. On the transactions table, we can easily add new payees by starting to type a new name and selecting 'Create'.",
+			pt: "O Moneeey gerará relatórios e calculará seus dados com base nas Transações. Na tabela de transações, podemos adicionar facilmente novos beneficiários começando a digitar um novo nome e selecionando 'Criar'.",
+			es: "Moneeey generará informes y calculará sus datos basándose en las Transacciones. En la tabla de transacciones, podemos agregar fácilmente nuevos beneficiarios comenzando a escribir un nuevo nombre y seleccionando 'Crear'.",
+		},
+		budgets: {
+			en: "It is time to budget your Moneeey! Budgets are like envelopes where you allocate parts of your income.",
+			pt: "É hora de orçar seu Moneeey! Os orçamentos são como envelopes onde você aloca partes de sua renda.",
+			es: "¡Es hora de presupuestar su Moneeey! Los presupuestos son como sobres donde asigna partes de sus ingresos.",
+		},
 		your_turn: {
 			en: "Now it's your turn! Time to insert some transactions!",
 			pt: "Agora é sua vez! Hora de inserir algumas transações!",
