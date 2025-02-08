@@ -1,12 +1,10 @@
 import type { ReactNode } from "react";
-import useMessages, {
-	type AvailableLanguages,
-	useLanguageSwitcher,
-} from "../utils/Messages";
+import type { LanguageCode } from "../utils/Language";
+import useMessages, { useLanguageSwitcher } from "../utils/Messages";
 import { IconBrazil, IconSpain, IconUSA } from "./base/Icon";
 
 type LanguageSelectorProps = {
-	onSelect?: (language: AvailableLanguages) => void;
+	onSelect?: (language: LanguageCode) => void;
 };
 
 export default function LanguageSelector({ onSelect }: LanguageSelectorProps) {
@@ -15,7 +13,7 @@ export default function LanguageSelector({ onSelect }: LanguageSelectorProps) {
 	const LangSelect = ({
 		icon,
 		language,
-	}: { icon: ReactNode; language: AvailableLanguages }) => {
+	}: { icon: ReactNode; language: LanguageCode }) => {
 		const isCurrentLanguage = currentLanguage === language;
 		const setCurrentLanguage = () => {
 			if (onSelect) {
@@ -40,9 +38,9 @@ export default function LanguageSelector({ onSelect }: LanguageSelectorProps) {
 		<div className="flex flex-col justify-center gap-2">
 			<p>{Messages.settings.select_language}</p>
 			<div className="flex flex-row justify-end gap-4">
-				<LangSelect icon={<IconBrazil />} language="portuguese" />
-				<LangSelect icon={<IconUSA />} language="english" />
-				<LangSelect icon={<IconSpain />} language="spanish" />
+				<LangSelect icon={<IconBrazil />} language="pt" />
+				<LangSelect icon={<IconUSA />} language="en" />
+				<LangSelect icon={<IconSpain />} language="es" />
 			</div>
 		</div>
 	);

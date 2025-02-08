@@ -1,25 +1,15 @@
 import React, { type ReactNode } from "react";
 
-import LanguageEnglish from "./LanguageEnglish";
-import LanguagePortuguese from "./LanguagePortuguese";
-import LanguageSpanish from "./LanguageSpanish";
+import Language, { type LanguageCode, type LanguageType } from "./Language";
 import { StorageKind, getStorage, identity, setStorage } from "./Utils";
 
-export type TMessages = typeof LanguageEnglish;
+export const LanguageUnset: LanguageCode = "unset";
 
-const Languages = {
-	unset: LanguageEnglish,
-	english: LanguageEnglish,
-	portuguese: LanguagePortuguese,
-	spanish: LanguageSpanish,
-};
-
-export type AvailableLanguages = keyof typeof Languages;
-export const LanguageUnset: AvailableLanguages = "unset";
+export type TMessages = LanguageType;
 
 const MessagesContext = React.createContext({
-	currentLanguage: LanguageUnset as AvailableLanguages,
-	selectLanguage: (language: AvailableLanguages) => identity(language),
+	currentLanguage: LanguageUnset as LanguageCode,
+	selectLanguage: (code: LanguageCode) => identity(code),
 });
 
 export function MessagesProvider({ children }: { children: ReactNode }) {
@@ -27,7 +17,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		"language",
 		LanguageUnset,
 		StorageKind.PERMANENT,
-	) as AvailableLanguages;
+	) as LanguageCode;
 	const [currentLanguage, selectLanguage] = React.useState(
 		storedLanguage ?? LanguageUnset,
 	);
@@ -45,7 +35,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 }
 
 export default function useMessages(): TMessages {
-	return Languages[React.useContext(MessagesContext).currentLanguage];
+	return Language(React.useContext(MessagesContext).currentLanguage);
 }
 
 export function WithMessages({
@@ -60,12 +50,12 @@ export function useLanguageSwitcher() {
 	const { selectLanguage, currentLanguage } = React.useContext(MessagesContext);
 	return {
 		currentLanguage,
-		selectLanguage(language: AvailableLanguages) {
-			setStorage("language", language, StorageKind.PERMANENT);
-			selectLanguage(language);
+		selectLanguage(code: LanguageCode) {
+			setStorage("language", code, StorageKind.PERMANENT);
+			selectLanguage(code);
 		},
-		messagesForLanguage(language: AvailableLanguages) {
-			return Languages[language];
+		messagesForLanguage(code: LanguageCode) {
+			return Language(code);
 		},
 	};
 }
