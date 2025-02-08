@@ -15,6 +15,8 @@ type Option = {
 type BaseSelectProps = {
 	options: Option[];
 	onCreate?: (name: string) => void;
+	onSearch?: (search: string) => void;
+	createLabel?: string;
 	clearable?: boolean;
 };
 
@@ -33,9 +35,12 @@ const Select = ({
 	suffix,
 	isError,
 	onCreate,
+	onSearch,
+	createLabel,
 	clearable,
 }: SelectProps) => {
-	const SelectComponent = onCreate ? CreatableReactSelect : ReactSelect;
+	const SelectComponent =
+		onCreate || onSearch ? CreatableReactSelect : ReactSelect;
 
 	return InputContainer({
 		prefix,
@@ -55,7 +60,10 @@ const Select = ({
 					options={options}
 					value={options.find((opt) => opt.value === value)}
 					onChange={(newValue) => onChange(newValue?.value ?? "")}
-					onCreateOption={(name) => onCreate?.(name)}
+					onCreateOption={(name) => (onCreate ?? onSearch)?.(name)}
+					formatCreateLabel={(value: string) =>
+						`${createLabel || "Create"} ${value}`
+					}
 					placeholder={placeholder}
 					isDisabled={disabled === true || readOnly === true}
 					isClearable={clearable}
@@ -79,9 +87,12 @@ const MultiSelect = ({
 	suffix,
 	isError,
 	onCreate,
+	onSearch,
+	createLabel,
 	clearable,
 }: MultiSelectProps) => {
-	const SelectComponent = onCreate ? CreatableReactSelect : ReactSelect;
+	const SelectComponent =
+		onCreate || onSearch ? CreatableReactSelect : ReactSelect;
 
 	return InputContainer({
 		prefix,
@@ -110,7 +121,10 @@ const MultiSelect = ({
 								.filter((val) => val !== ""),
 						)
 					}
-					onCreateOption={(name) => onCreate?.(name)}
+					onCreateOption={(name) => (onCreate ?? onSearch)?.(name)}
+					formatCreateLabel={(value: string) =>
+						`${createLabel || "Create"} ${value}`
+					}
 					placeholder={placeholder}
 					isDisabled={disabled === true || readOnly === true}
 					isClearable={clearable}

@@ -156,7 +156,7 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 	}
 
 	getSearchBuffer(transaction: ITransaction, accountsStore: AccountStore) {
-		return `${this.getAllTransactionTags(transaction, accountsStore).join("_")} ${transaction.memo} ${transaction.date}`;
+		return `${this.getAllTransactionTags(transaction, accountsStore).join("@.@")} ${transaction.memo} ${transaction.date}`;
 	}
 
 	replaceAccount(from_uuid: TAccountUUID, to_uuid: TAccountUUID) {

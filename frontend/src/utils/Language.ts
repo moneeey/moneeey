@@ -516,17 +516,10 @@ export default {
 			in: "आवश्यक",
 			cn: "必填",
 		},
-		global_search_tags: {
-			en: "Tags",
-			pt: "Tags",
-			es: "Etiquetas",
-			in: "टैग्स",
-			cn: "标签",
-		},
-		global_search_text: {
+		global_search: {
 			en: "Search",
-			pt: "Texto",
-			es: "Texto",
+			pt: "Busca",
+			es: "Busca",
 			in: "खोजें",
 			cn: "搜索",
 		},
