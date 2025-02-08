@@ -1,11 +1,41 @@
 import React, { type ReactNode } from "react";
 
-import Language, { type LanguageCode, type LanguageType } from "./Language";
+import Language from "./Language";
 import { StorageKind, getStorage, identity, setStorage } from "./Utils";
 
 export const LanguageUnset: LanguageCode = "unset";
 
-export type TMessages = LanguageType;
+type RealLanguageCode = keyof typeof Language.menu.title;
+export type LanguageCode = keyof typeof Language.menu.title | "unset";
+
+type ExtractSingleLanguage<T> = {
+	[K in keyof T]: {
+		[P in keyof T[K]]: T[K][P] extends Record<RealLanguageCode, infer V>
+			? V
+			: never;
+	};
+};
+
+function LanguageForCode<L extends LanguageCode>(
+	code: L,
+): ExtractSingleLanguage<typeof Language> {
+	if (code === "unset") {
+		return LanguageForCode("en");
+	}
+	return Object.fromEntries(
+		Object.entries(Language).map(([category, entries]) => [
+			category,
+			Object.fromEntries(
+				Object.entries(entries).map(([key, value]) => [
+					key,
+					(value as Record<LanguageCode, unknown>)[code],
+				]),
+			),
+		]),
+	) as ExtractSingleLanguage<typeof Language>;
+}
+
+export type TMessages = ReturnType<typeof LanguageForCode>;
 
 const MessagesContext = React.createContext({
 	currentLanguage: LanguageUnset as LanguageCode,
@@ -35,7 +65,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 }
 
 export default function useMessages(): TMessages {
-	return Language(React.useContext(MessagesContext).currentLanguage);
+	return LanguageForCode(React.useContext(MessagesContext).currentLanguage);
 }
 
 export function WithMessages({
@@ -55,7 +85,7 @@ export function useLanguageSwitcher() {
 			selectLanguage(code);
 		},
 		messagesForLanguage(code: LanguageCode) {
-			return Language(code);
+			return LanguageForCode(code);
 		},
 	};
 }

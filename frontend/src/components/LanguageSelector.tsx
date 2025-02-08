@@ -1,7 +1,15 @@
 import type { ReactNode } from "react";
-import type { LanguageCode } from "../utils/Language";
-import useMessages, { useLanguageSwitcher } from "../utils/Messages";
-import { IconBrazil, IconChina, IconIndia, IconSpain, IconUSA } from "./base/Icon";
+import useMessages, {
+	type LanguageCode,
+	useLanguageSwitcher,
+} from "../utils/Messages";
+import {
+	IconBrazil,
+	IconChina,
+	IconIndia,
+	IconSpain,
+	IconUSA,
+} from "./base/Icon";
 
 type LanguageSelectorProps = {
 	onSelect?: (language: LanguageCode) => void;
@@ -38,9 +46,11 @@ export default function LanguageSelector({ onSelect }: LanguageSelectorProps) {
 		<div className="flex flex-col justify-center gap-2">
 			<p>{Messages.settings.select_language}</p>
 			<div className="flex flex-row justify-end gap-4">
-				<LangSelect icon={<IconBrazil />} language="pt" />
 				<LangSelect icon={<IconUSA />} language="en" />
+				<LangSelect icon={<IconChina />} language="cn" />
+				<LangSelect icon={<IconIndia />} language="in" />
 				<LangSelect icon={<IconSpain />} language="es" />
+				<LangSelect icon={<IconBrazil />} language="pt" />
 			</div>
 		</div>
 	);
