@@ -3,74 +3,95 @@ name: CI/CD
 on: push
 
 jobs:
-  SETUP:
+  FRONTEND:
     runs-on: ubuntu-latest
-    outputs:
-      cache-key: ${{ steps.cache-deps.outputs.cache-hit }}
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v3
-
-      - uses: actions/cache@v3
-        id: cache-deps
-        with:
-          path: |
-            ~/.cache/yarn
-          key: yarn-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
 
       - uses: actions/setup-node@v3
         with:
           node-version: "20.11"
           cache: yarn
 
-  LINT:
-    runs-on: ubuntu-latest
-    needs: SETUP
-    steps:
-      - run: yarn lint
-        name: Lint
+      - run: yarn install --immutable
+        name: Install frontend
 
-  FRONTEND:
-    runs-on: ubuntu-latest
-    needs: SETUP
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
       - run: yarn test
         name: Test
 
-      - name: Run Playwright tests using Docker
+      - name: Set up Playwright cache path
+        run: echo "PLAYWRIGHT_CACHE=${{ github.workspace }}/playwright-cache" >> $GITHUB_ENV
+
+      - name: Playwright Dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/playwright-cache
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Playwright
         uses: addnab/docker-run-action@v3
         with:
           image: mcr.microsoft.com/playwright:v1.36.1-jammy
-          options: --rm -v ${{ github.workspace }}:/workspace
+          options: --rm -v ${{ github.workspace }}:/workspace -v ${{ github.workspace }}/playwright-cache:/root/.cache/ms-playwright
           run: |
             cd /workspace/playwright
+            yarn install --immutable
+            yarn playwright install --with-deps
             export CI=true
-            yarn test
+            yarn test --reporter=html,json
 
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: playwright-report
+          working-directory: playwright
           path: |
-            playwright/playwright-report/
-            playwright/test-results/videos/
+            playwright-report/
+            test-results/videos/
           retention-days: 30
 
   BACKEND:
     runs-on: ubuntu-latest
-    needs: SETUP
     defaults:
       run:
         working-directory: backend
     steps:
+      - uses: actions/checkout@v3
+
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.35.3
 
+      - run: deno cache main.ts
+        name: Install
+
       - run: deno test --allow-all
         name: Test
+
+  LINT:
+    needs: [FRONTEND]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20.11"
+          cache: yarn
+
+      - run: yarn install --immutable
+        name: Install biome
+
+      - run: yarn install --immutable
+        name: Install frontend
+        working-directory: frontend
+
+      - run: yarn lint
+        name: Lint
 
   PACKAGE:
     runs-on: ubuntu-latest
