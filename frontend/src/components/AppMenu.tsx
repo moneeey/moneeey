@@ -55,9 +55,11 @@ import { useMoneeeyTour } from "./tour/Tour";
 
 const Menu = observer(({
 setExpanded
+  , expanded
 
 }:{
 setExpanded: Dispatch<SetStateAction<boolean>>;
+    expanded: boolean;
   }) => {
 	const Messages = useMessages();
 	const { navigation, accounts, currencies, persistence, transactions } =
@@ -115,7 +117,8 @@ setExpanded: Dispatch<SetStateAction<boolean>>;
 			key={`${allAccountsKey}@@${allRunningBalances}`}
 			className="px-2"
 			testId="appMenu"
-			footer={<LanguageSelector />}
+      expanded={expanded}
+			footer={expanded ? <LanguageSelector /> : null}
 			items={[
 				{
 					key: "dashboard",
@@ -123,6 +126,20 @@ setExpanded: Dispatch<SetStateAction<boolean>>;
 					icon: <ClipboardDocumentIcon />,
 					visible: activeAccounts.length > 0,
 					...routeLink(HomeRoute.url()),
+				},
+				{
+					key: "budget",
+					label: Messages.menu.budget,
+					icon: <EnvelopeIcon />,
+					visible: hasTransactions,
+					...routeLink(BudgetRoute.url()),
+				},
+				{
+					key: "reports",
+					label: Messages.menu.reports,
+					icon: <ChartPieIcon />,
+					visible: hasTransactions,
+					...routeLink(ReportsRoute.url()),
 				},
 				{
 					key: "transactions",
@@ -173,20 +190,6 @@ setExpanded: Dispatch<SetStateAction<boolean>>;
 							...routeLink(ImportRoute.url()),
 						},
 					],
-				},
-				{
-					key: "budget",
-					label: Messages.menu.budget,
-					icon: <EnvelopeIcon />,
-					visible: hasTransactions,
-					...routeLink(BudgetRoute.url()),
-				},
-				{
-					key: "reports",
-					label: Messages.menu.reports,
-					icon: <ChartPieIcon />,
-					visible: hasTransactions,
-					...routeLink(ReportsRoute.url()),
 				},
 				{
 					key: "settings",
@@ -286,7 +289,7 @@ const Content = ({
   setExpanded,
 }: { expanded: boolean; setExpanded: Dispatch<SetStateAction<boolean>>; children: ReactNode }) => (
 	<section className="flex grow flex-row">
-		{expanded && <Menu setExpanded={setExpanded} />}
+		<Menu setExpanded={setExpanded} expanded={expanded} />
 		<section className="flex max-h-[calc(100vh-3em)] grow flex-col p-4">
 			{children}
 		</section>
