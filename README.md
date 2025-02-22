@@ -25,7 +25,8 @@ use `dev/dev` to login as admin.
 ## Features
 
 ### Guided tour into the application
-[Tour.webm](https://raw.githubusercontent.com/moneeey/moneeey/refs/heads/main/Tour.webm)
+[Tour.webm](https://github.com/user-attachments/assets/e6fd3ee7-e9b6-47f2-82a6-c44a4fc5c56b)
 
 ### Importing csv and ofx files
-[Import.webm](https://raw.githubusercontent.com/moneeey/moneeey/refs/heads/main/Import.webm)
+[Import.webm](https://github.com/user-attachments/assets/d361ddad-1068-4157-99ee-6e6d56e89ff8)
+
