@@ -516,13 +516,6 @@ export default {
 			in: "आवश्यक",
 			cn: "必填",
 		},
-		global_search: {
-			en: "Search",
-			pt: "Busca",
-			es: "Busca",
-			in: "खोजें",
-			cn: "搜索",
-		},
 	},
 	settings: {
 		locale: {

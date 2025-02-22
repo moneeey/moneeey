@@ -79,7 +79,7 @@ const GlobalSearcher = observer(({ account_name }: AccountTransactionProps) => {
 		<Space className="bg-background-700 py-1 px-2 w-full md:w-1/2">
 			<MultiSelect
 				testId="globalSearch"
-				placeholder={`${Messages.util.global_search} ${context.toLowerCase()}`}
+				placeholder={`${Messages.menu.search} ${context.toLowerCase()}`}
 				options={tags.all
 					.concat(navigation.globalSearchTags)
 					.map((t) => ({ label: t, value: t }))}
@@ -90,7 +90,7 @@ const GlobalSearcher = observer(({ account_name }: AccountTransactionProps) => {
 				onSearch={(search: string) =>
 					navigation.globalSearchToggleTags([search])
 				}
-				createLabel={Messages.util.global_search}
+				createLabel={Messages.menu.search}
 			/>
 		</Space>
 	);
