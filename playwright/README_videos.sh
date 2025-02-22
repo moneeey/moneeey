@@ -7,7 +7,8 @@ function slowdown() {
   local VID_PATH=$2
   local OUT_VID="../${NAME}.webm"
   rm -f "${OUT_VID}"
-  ffmpeg -i "${VID_PATH}" -vf "setpts=2.0*PTS" -an "${OUT_VID}"
+  ffmpeg -i "${VID_PATH}" -filter:v "setpts=5.0*PTS" -af "atempo=0.5" -c:v libvpx-vp9 -b:v 2M -c:a libopus "${OUT_VID}"
+
 }
 
 slowdown "Tour" "test-results/tour-Moneeey-Tour-chromium/video.webm"
