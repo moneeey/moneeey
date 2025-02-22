@@ -3,6 +3,22 @@ name: CI/CD
 on: push
 
 jobs:
+  LINT:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20.11"
+
+      - run: yarn install --frozen-lockfile
+        name: Install
+
+      - run: yarn lint
+        name: Lint
+
+
   FRONTEND:
     runs-on: ubuntu-latest
     defaults:
