@@ -9,6 +9,7 @@ export type FieldRenderProps<TEntity> = {
 	commit(entity: TEntity): void;
 	field: FieldDef<TEntity>;
 	isError: boolean;
+  containerArea?: boolean;
 };
 export type FieldRenderFn<TEntity> = (
 	props: FieldRenderProps<TEntity>,
