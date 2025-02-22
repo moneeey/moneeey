@@ -101,7 +101,7 @@ const Budget = observer(() => {
 		navigation.updateEditingBudget(budget);
 
 	return (
-		<VerticalSpace>
+		<VerticalSpace className="overflow-scroll pr-2 pb-4">
 			<MonthDateSelector
 				date={startingDate}
 				setDate={setStartingDate}

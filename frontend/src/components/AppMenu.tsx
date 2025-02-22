@@ -51,8 +51,14 @@ import LanguageSelector from "./LanguageSelector";
 import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
+import { useMoneeeyTour } from "./tour/Tour";
 
-const Menu = observer(() => {
+const Menu = observer(({
+setExpanded
+
+}:{
+setExpanded: Dispatch<SetStateAction<boolean>>;
+  }) => {
 	const Messages = useMessages();
 	const { navigation, accounts, currencies, persistence, transactions } =
 		useMoneeeyStore();
@@ -89,12 +95,18 @@ const Menu = observer(() => {
 	const allRunningBalances = Array.from(runningBalances.values()).join("_");
 
 	const routeLink = (url: string) => ({
-		onClick: () => navigation.navigate(url),
+		onClick: () => {
+      navigation.navigate(url)
+      setExpanded(false)
+    },
 		isActive: activePath === url,
 	});
 
 	const modalLink = (modal: NavigationModal) => ({
-		onClick: () => navigation.openModal(modal),
+		onClick: () => {
+      navigation.openModal(modal)
+      setExpanded(false)
+    },
 		isActive: navigation.modal === modal,
 	});
 
@@ -271,16 +283,18 @@ const Header = observer(
 const Content = ({
 	expanded,
 	children,
-}: { expanded: boolean; children: ReactNode }) => (
+  setExpanded,
+}: { expanded: boolean; setExpanded: Dispatch<SetStateAction<boolean>>; children: ReactNode }) => (
 	<section className="flex grow flex-row">
-		{expanded && <Menu />}
-		<section className="flex max-h-[calc(100vh-3em)] grow flex-col overflow-scroll p-4">
+		{expanded && <Menu setExpanded={setExpanded} />}
+		<section className="flex max-h-[calc(100vh-3em)] grow flex-col p-4">
 			{children}
 		</section>
 	</section>
 );
 
-export default function AppMenu() {
+export default observer(function AppMenu() {
+  const tour = useMoneeeyTour()
 	const [expanded, setExpanded] = useState(
 		getStorage("menu_expanded", "true", StorageKind.PERMANENT) === "true",
 	);
@@ -296,7 +310,7 @@ export default function AppMenu() {
 						<Header setExpanded={setExpanded}>
 							<RouteHeaderRender route={route} />
 						</Header>
-						<Content expanded={expanded}>
+						<Content expanded={expanded || tour.isOpen()} setExpanded={setExpanded}>
 							<RouteContentRender route={route} />
 						</Content>
 					</>
@@ -304,4 +318,4 @@ export default function AppMenu() {
 			</RouteRenderer>
 		</section>
 	);
-}
+})

@@ -61,7 +61,7 @@ const NavbarItems = ({
 const Navbar = (props: NavbarProps & WithDataTestId) => {
 	return (
 		<nav
-			className={`flex flex-col bottom-0 left-0 top-0 pt-2 w-80 bg-background-800 ${
+			className={`flex flex-col bottom-0 left-0 top-0 pt-2 bg-background-800 ${
 				props.className || ""
 			}`}
 			data-testid={props.testId}
