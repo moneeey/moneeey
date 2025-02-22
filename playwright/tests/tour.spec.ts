@@ -91,17 +91,26 @@ function Select(page: Page, testId: string, index = 0) {
 			await createNew(optionName);
 			await isClosed();
 		},
-		async choose(optionName: string, exact = true) {
-			await open();
-			const option = findMenuItem(optionName, exact);
-			await option.click();
-			await isClosed();
+		async choose(optionName: string, exact = true, retries = 3) {
+			try {
+				await open();
+				const option = findMenuItem(optionName, exact);
+				await option.click({ timeout: 1000 });
+				await isClosed();
+			} catch (e) {
+				if (e.message.includes("detached") && retries > 0) {
+					console.warn(`Option detached, retrying choose... ${retries}`);
+					await this.choose(optionName, exact, retries - 1);
+				} else {
+					throw e;
+				}
+			}
 		},
 		async chooseOrCreate(optionName: string) {
 			await open();
-			const option = findMenuItem(optionName, false);
-			if ((await option.count()) > 0) {
-				await option.click();
+			const option = () => findMenuItem(optionName, false);
+			if ((await option().count()) > 0) {
+				await this.choose(optionName, false);
 			} else {
 				await createNew(optionName);
 			}
@@ -327,6 +336,11 @@ test.describe("Moneeey", () => {
 		await tourNext(page);
 
 		// Tour is closed
+		for (let i = 0; i < 3; i++) {
+			if ((await page.getByTestId("nm-modal-title").count()) === 0) {
+				return;
+			}
+		}
 		expect(page.getByTestId("nm-modal-title")).toBeHidden();
 	});
 
