@@ -1,7 +1,13 @@
 {
 	"$schema": "https://biomejs.dev/schemas/1.6.0/schema.json",
 	"files": {
-		"ignore": ["**/dist/*", "**/src/polyfills.ts", "./docker/*"]
+		"ignore": [
+			"**/dist/*",
+			"**/src/polyfills.ts",
+			"./docker/*",
+			"**/playwright-report/*",
+			"**/sw.bundle.js"
+		]
 	},
 	"organizeImports": {
 		"enabled": true
