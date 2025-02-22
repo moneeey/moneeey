@@ -17,7 +17,7 @@ export type InputProps<T> = WithDataTestId & {
 	disabled?: boolean;
 	readOnly?: boolean;
 	isError?: boolean;
-  containerArea?: boolean;
+	containerArea?: boolean;
 };
 
 type AddonType = string | ReactNode | undefined;
@@ -28,7 +28,7 @@ type InputContainerProps = {
 	readOnly?: boolean;
 	input: ReactNode;
 	baseClassname?: string;
-  containerArea?: boolean;
+	containerArea?: boolean;
 } & WithDataTestId;
 
 export const InputContainer = ({
@@ -38,7 +38,7 @@ export const InputContainer = ({
 	isError,
 	input,
 	readOnly,
-  containerArea,
+	containerArea,
 	testId,
 }: InputContainerProps) => {
 	return (
@@ -48,7 +48,7 @@ export const InputContainer = ({
 				isError ? "border border-red-400" : ""
 			}
       ${readOnly ? "text-slate-300" : "text-slate-100"}
-      ${containerArea ? '!bg-background-800 rounded-md p-2' : ''}
+      ${containerArea ? "!bg-background-800 rounded-md p-2" : ""}
 `}
 		>
 			{prefix}
@@ -65,7 +65,7 @@ const Input = ({
 	placeholder,
 	testId,
 	disabled,
-  containerArea,
+	containerArea,
 	readOnly,
 	prefix,
 	suffix,
@@ -83,7 +83,7 @@ const Input = ({
 		isError,
 		readOnly,
 		testId,
-    containerArea,
+		containerArea,
 		input: (
 			<input
 				data-testid={testId}
@@ -117,7 +117,7 @@ const InputNumber = ({
 	prefix,
 	suffix,
 	disabled,
-  containerArea,
+	containerArea,
 	readOnly,
 	isError,
 	thousandSeparator,
@@ -136,7 +136,7 @@ const InputNumber = ({
 		isError,
 		readOnly,
 		testId,
-    containerArea,
+		containerArea,
 		input: (
 			<NumericFormat
 				data-testid={testId}
@@ -173,7 +173,7 @@ const TextArea = ({
 	prefix,
 	suffix,
 	disabled,
-  containerArea,
+	containerArea,
 	readOnly,
 	isError,
 	rows,
@@ -184,7 +184,7 @@ const TextArea = ({
 		isError,
 		readOnly,
 		testId,
-    containerArea,
+		containerArea,
 		input: (
 			<textarea
 				data-testid={testId}
@@ -215,7 +215,7 @@ const Checkbox = ({
 	children,
 	prefix,
 	suffix,
-  containerArea,
+	containerArea,
 	disabled,
 	readOnly,
 	isError,
@@ -227,7 +227,7 @@ const Checkbox = ({
 		readOnly,
 		testId,
 		isError,
-    containerArea,
+		containerArea,
 		input: (
 			<label>
 				<input

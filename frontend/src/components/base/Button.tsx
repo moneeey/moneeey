@@ -36,10 +36,10 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind) =>
 				{...omit(base, ["testId"])}
 				{...omit(props, ["testId"])}
 				data-testid={props.testId || base.testId}
-        disabled={props.disabled}
+				disabled={props.disabled}
 				className={`flex whitespace-nowrap rounded p-2 ${styles[kind]} ${
 					props.className || ""
-				} ${props.disabled ? 'opacity-20' : ''}`}
+				} ${props.disabled ? "opacity-20 hover:opacity-25" : ""}`}
 			>
 				{props.children || props.title || base.title}
 			</button>
@@ -89,8 +89,8 @@ interface OkCancelProps {
 	onCancel: () => void;
 	okTitle?: string;
 	cancelTitle?: string;
-  okDisabled?: boolean;
-  cancelDisabled?: boolean;
+	okDisabled?: boolean;
+	cancelDisabled?: boolean;
 }
 
 export const OkCancel = ({
@@ -98,20 +98,20 @@ export const OkCancel = ({
 	okTitle,
 	onCancel,
 	cancelTitle,
-  okDisabled,
-  cancelDisabled,
+	okDisabled,
+	cancelDisabled,
 }: OkCancelProps) => (
 	<WithMessages>
 		{(Messages) => (
 			<Space>
 				<CancelButton
-            disabled={cancelDisabled}
+					disabled={cancelDisabled}
 					onClick={onCancel}
 					title={cancelTitle || Messages.util.cancel}
 					testId={slugify(cancelTitle || Messages.util.cancel)}
 				/>
 				<OkButton
-            disabled={okDisabled}
+					disabled={okDisabled}
 					onClick={onOk}
 					title={okTitle || Messages.util.ok}
 					testId={slugify(okTitle || Messages.util.ok)}

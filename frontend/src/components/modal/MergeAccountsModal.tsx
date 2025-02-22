@@ -56,7 +56,7 @@ export const MergeAccountsModal = observer(() => {
 				</span>
 				<p>{Messages.merge_accounts.source}</p>
 				<Select
-          containerArea
+					containerArea
 					testId="source_account"
 					placeholder={Messages.merge_accounts.source}
 					value={state.source_account}
@@ -68,7 +68,7 @@ export const MergeAccountsModal = observer(() => {
 				/>
 				<p>{Messages.merge_accounts.target}</p>
 				<Select
-          containerArea
+					containerArea
 					testId="target_account"
 					placeholder={Messages.merge_accounts.target}
 					value={state.target_account}

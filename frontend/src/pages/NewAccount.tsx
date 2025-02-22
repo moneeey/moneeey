@@ -88,7 +88,7 @@ export default function NewAccount() {
 			<div>
 				<p>{Messages.new_account.name}</p>
 				<Input
-          containerArea
+					containerArea
 					testId="name"
 					placeholder={Messages.new_account.name}
 					value={state.name}
@@ -101,7 +101,7 @@ export default function NewAccount() {
 				<p>{Messages.new_account.type}</p>
 				<AccountTypeEditor
 					rev={""}
-          containerArea
+					containerArea
 					entity={state}
 					isError={false}
 					commit={({ kind }) => setState((current) => ({ ...current, kind }))}
@@ -119,7 +119,7 @@ export default function NewAccount() {
 				<p>{Messages.new_account.currency}</p>
 				<CurrencyEditor
 					rev={""}
-          containerArea
+					containerArea
 					entity={state}
 					isError={false}
 					commit={({ currency }) =>
@@ -139,7 +139,7 @@ export default function NewAccount() {
 				<p>{Messages.new_account.initial_balance}</p>
 				<InitialBalalanceEditor
 					rev={""}
-          containerArea
+					containerArea
 					entity={state}
 					isError={false}
 					commit={({ initialBalance }) =>
@@ -156,15 +156,19 @@ export default function NewAccount() {
 				/>
 			</div>
 			<div className="flex flex-row items-center gap-4">
-					<CancelButton disabled={!canClose} title={Messages.util.close} onClick={onClose} />
-					<OkCancel
-            okDisabled={!isValid}
-            cancelDisabled={!isValid}
-						okTitle={Messages.new_account.submit_close}
-						onOk={onSubmitClose}
-						cancelTitle={Messages.new_account.submit_another}
-						onCancel={onSubmitAnother}
-					/>
+				<CancelButton
+					disabled={!canClose}
+					title={Messages.util.close}
+					onClick={onClose}
+				/>
+				<OkCancel
+					okDisabled={!isValid}
+					cancelDisabled={!isValid}
+					okTitle={Messages.new_account.submit_close}
+					onOk={onSubmitClose}
+					cancelTitle={Messages.new_account.submit_another}
+					onCancel={onSubmitAnother}
+				/>
 			</div>
 		</div>
 	);

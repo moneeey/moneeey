@@ -20,7 +20,13 @@ export default function <TEntity>({
 
 	return {
 		render: observer(
-			({ entity, commit, field, isError, containerArea }: FieldRenderProps<TEntity>) => {
+			({
+				entity,
+				commit,
+				field,
+				isError,
+				containerArea,
+			}: FieldRenderProps<TEntity>) => {
 				const { amount, currency } = read(entity);
 
 				return (
@@ -38,7 +44,7 @@ export default function <TEntity>({
 						decimalScale={currency?.decimals || 2}
 						prefix={currency?.prefix}
 						suffix={currency?.suffix}
-            containerArea={containerArea}
+						containerArea={containerArea}
 					/>
 				);
 			},
