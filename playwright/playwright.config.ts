@@ -32,7 +32,7 @@ export default defineConfig({
 		trace: "on-first-retry",
 
 		// Record video
-		video: isCI ? "on" : "off",
+		video: "on",
 	},
 
 	/* Configure projects for major browsers */
@@ -76,7 +76,7 @@ export default defineConfig({
 
 	/* Run your local dev server before starting the tests */
 	webServer: {
-		command: "cd ../frontend && yarn dev",
+		command: "cd ../frontend && yarn install --immutable && yarn dev",
 		url: "http://127.0.0.1:4270/",
 		reuseExistingServer: !isCI,
 	},
