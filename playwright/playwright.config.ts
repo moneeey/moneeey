@@ -32,7 +32,7 @@ export default defineConfig({
 		trace: "on-first-retry",
 
 		// Record video
-		video: isCI ? "on" : "off",
+		video: "on",
 	},
 
 	/* Configure projects for major browsers */

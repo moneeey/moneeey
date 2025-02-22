@@ -48,10 +48,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          working-directory: playwright
           path: |
-            playwright-report/
-            test-results/videos/
+            ${{ github.workspace }}/playwright/playwright-report/
+            ${{ github.workspace }}/playwright/test-results/videos/
           retention-days: 30
 
   BACKEND:
