@@ -21,14 +21,14 @@ interface NavbarProps {
 	items: Array<NavbarItem>;
 	footer: ReactNode;
 	className?: string;
-  expanded: boolean;
+	expanded: boolean;
 }
 
 const NavbarItems = ({
 	items,
 	testId,
-  expanded,
-}: { items: NavbarItem[], expanded: boolean } & WithDataTestId) =>
+	expanded,
+}: { items: NavbarItem[]; expanded: boolean } & WithDataTestId) =>
 	items.map((item: NavbarItem): JSX.Element[] => {
 		if (item.visible === false) {
 			return [];
@@ -44,7 +44,8 @@ const NavbarItems = ({
 				key={item.key}
 				title={item.label}
 			>
-				{item.icon && <Icon>{item.icon}</Icon>} {expanded ? item.customLabel || item.label : ''}
+				{item.icon && <Icon>{item.icon}</Icon>}{" "}
+				{expanded ? item.customLabel || item.label : ""}
 			</LinkButton>,
 			item.children && (
 				<div
@@ -54,7 +55,7 @@ const NavbarItems = ({
 					<NavbarItems
 						testId={`${testId}_subitems_${item.key}`}
 						items={item.children}
-            expanded={expanded}
+						expanded={expanded}
 					/>
 				</div>
 			),
@@ -69,7 +70,11 @@ const Navbar = (props: NavbarProps & WithDataTestId) => {
 			}`}
 			data-testid={props.testId}
 		>
-			<NavbarItems testId={props.testId} items={props.items} expanded={props.expanded} />
+			<NavbarItems
+				testId={props.testId}
+				items={props.items}
+				expanded={props.expanded}
+			/>
 			<div className="p-4 self-end">{props.footer}</div>
 		</nav>
 	);

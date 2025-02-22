@@ -50,7 +50,7 @@ const DatePicker = ({
 	prefix,
 	suffix,
 	isError,
-  containerArea,
+	containerArea,
 	dateFormat,
 }: DatePickerProps) => {
 	const clazzName = `${BaseInputClzz || ""} z-50 ${className || ""}`;
@@ -60,7 +60,7 @@ const DatePicker = ({
 		isError,
 		readOnly,
 		testId,
-    containerArea,
+		containerArea,
 		input: (
 			<ReactDatePicker
 				withPortal

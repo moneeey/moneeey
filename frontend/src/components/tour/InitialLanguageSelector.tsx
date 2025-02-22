@@ -21,11 +21,11 @@ export default function InitialLanguageSelector() {
 	return (
 		<MinimalBasicScreen>
 			<LanguageSelector onSelect={(selected) => setLanguage(selected)} />
-      <OkButton
-        disabled={language === LanguageUnset}
-        title={Messages.tour.continue_language}
-        onClick={() => selectLanguage(language)}
-      />
+			<OkButton
+				disabled={language === LanguageUnset}
+				title={Messages.tour.continue_language}
+				onClick={() => selectLanguage(language)}
+			/>
 		</MinimalBasicScreen>
 	);
 }

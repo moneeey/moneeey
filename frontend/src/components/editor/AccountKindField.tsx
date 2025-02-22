@@ -19,7 +19,13 @@ export default function <TEntity>({
 
 	return {
 		render: observer(
-			({ entity, commit, field, isError, containerArea }: FieldRenderProps<TEntity>) => (
+			({
+				entity,
+				commit,
+				field,
+				isError,
+				containerArea,
+			}: FieldRenderProps<TEntity>) => (
 				<Select
 					testId={`editor${field.title.replace(" ", "_")}`}
 					readOnly={readOnlyForFieldAndEntity(field, entity)}
@@ -33,7 +39,7 @@ export default function <TEntity>({
 					onChange={(value: string) =>
 						commit({ ...entity, ...delta(value as AccountKind) })
 					}
-          containerArea={containerArea}
+					containerArea={containerArea}
 				/>
 			),
 		),

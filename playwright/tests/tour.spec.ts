@@ -56,29 +56,31 @@ const mostUsedCurrencies = [
 ];
 
 function Select(page: Page, testId: string, index = 0) {
-	const select = page.getByTestId(testId).nth(index);
-	const input = select.locator(".mn-select__input");
-	const menuList = page.locator(".mn-select__menu-list");
+	const select = () => page.getByTestId(testId).nth(index);
+	const input = () => select().locator(".mn-select__input");
+	const menuList = () => page.locator(".mn-select__menu-list");
 
-	const isClosed = async () => await menuList.isHidden();
+	const isClosed = async () => await menuList().isHidden();
 	const open = async () => {
 		if (await isClosed()) {
-			await select.click();
+			await select().click();
 		}
 	};
 
 	const listOptions = async () =>
-		await menuList.locator(".mn-select__option").allTextContents();
+		await menuList().locator(".mn-select__option").allTextContents();
 	const findMenuItem = (optionName: string, exact = true) =>
-		menuList.getByText(optionName, { exact });
+		menuList().getByText(optionName, { exact });
 	const createNew = async (optionName: string) => {
-		await input.fill(optionName);
-		await input.press("Enter");
+		await input().fill(optionName);
+		await input().press("Enter");
 	};
+	const currentValue = async () =>
+		select().locator(".mn-select__single-value").innerText();
 
 	return {
 		async value() {
-			return select.locator(".mn-select__single-value").innerText();
+			return await currentValue();
 		},
 		async options() {
 			await open();
@@ -121,6 +123,14 @@ function Input(page: Page, testId: string, container?: Locator, index = 0) {
 			await input.blur();
 		},
 	};
+}
+
+async function OpenMenuItem(page: Page, title: string) {
+	const toggle = page.getByTestId("toggleMenu");
+	if ((await toggle.getAttribute("data-expanded")) === "false") {
+		await toggle.click();
+	}
+	return await page.getByText(title).click();
 }
 
 async function BudgetEditorSave(
@@ -332,7 +342,7 @@ test.describe("Moneeey", () => {
 
 		await page.getByTestId("nm-modal-card").getByTestId("close").click(); // Close Tour
 
-		await page.getByText("Import").click();
+		await OpenMenuItem(page, "Import");
 
 		const importFile = async (fileName: string) => {
 			await page
@@ -427,7 +437,7 @@ test.describe("Moneeey", () => {
 		await updateEditorTos([null, "Pharmacy", null, "Groceries", null]);
 		await page.getByTestId("primary-button").click();
 
-		await page.getByText("All transactions").click();
+		await OpenMenuItem(page, "All transactions");
 
 		const transactionRow = async (index: number) =>
 			`
