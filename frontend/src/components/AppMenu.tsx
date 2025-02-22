@@ -245,8 +245,8 @@ const Header = observer(
 		const toggleMenu = () => setExpanded((value) => !value);
 
 		return (
-			<header className="sticky left-0 right-0 top-0 z-30  bg-background-800 flex flex-row flex-wrap">
-				<TextTitle className="flex flex-row items-center gap-1 text-2xl pl-2 grow">
+			<header className="sticky left-0 right-0 top-0 z-30  bg-background-800 flex flex-row flex-wrap justify-between">
+				<TextTitle className="flex flex-row items-center gap-1 text-2xl pl-2">
 					<Icon
 						className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200"
 						onClick={toggleMenu}

@@ -45,8 +45,6 @@ export default class NavigationStore {
 
 	globalSearchTags: string[] = [];
 
-	globalSearchText = "";
-
 	constructor(parent: Logger) {
 		this.logger = new Logger("navigationStore", parent);
 
@@ -69,22 +67,17 @@ export default class NavigationStore {
 			importingTasks: observable,
 			updateImportingTasks: action,
 			removeImportingTask: action,
-			globalSearchText: observable,
 			globalSearchTags: observable,
 			globalSearch: action,
 		});
 	}
 
-	globalSearch(search: string, tags: string[]) {
+	globalSearch(tags: string[]) {
 		this.globalSearchTags = Array.from(new Set(tags).values()).sort();
-		this.globalSearchText = search;
 	}
 
 	globalSearchToggleTags(new_tags: readonly string[]): void {
-		this.globalSearch(this.globalSearchText, [
-			...this.globalSearchTags,
-			...new_tags,
-		]);
+		this.globalSearch([...this.globalSearchTags, ...new_tags]);
 	}
 
 	updateCurrentPath(path: string) {

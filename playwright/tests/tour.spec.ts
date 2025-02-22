@@ -154,7 +154,7 @@ async function BudgetEditorSave(
 }
 
 async function dismissNotification(page: Page, text: string) {
-	await expect(page.getByTestId('mn-status-warning')).toContainText(text);
+	await expect(page.getByTestId("mn-status-warning")).toContainText(text);
 	const dismissIcon = () => page.getByTestId("mn-dismiss-status");
 	expect(dismissIcon()).toBeVisible();
 	await dismissIcon().click();
