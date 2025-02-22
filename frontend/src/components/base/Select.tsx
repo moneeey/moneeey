@@ -33,6 +33,7 @@ const Select = ({
 	readOnly,
 	prefix,
 	suffix,
+  containerArea,
 	isError,
 	onCreate,
 	onSearch,
@@ -48,6 +49,7 @@ const Select = ({
 		isError,
 		readOnly,
 		testId,
+    containerArea,
 		input: (
 			<div data-testid={testId}>
 				<SelectComponent
@@ -85,6 +87,7 @@ const MultiSelect = ({
 	readOnly,
 	prefix,
 	suffix,
+  containerArea,
 	isError,
 	onCreate,
 	onSearch,
@@ -100,6 +103,7 @@ const MultiSelect = ({
 		isError,
 		readOnly,
 		testId,
+    containerArea,
 		input: (
 			<div data-testid={testId}>
 				<SelectComponent

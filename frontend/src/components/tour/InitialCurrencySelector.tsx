@@ -20,28 +20,28 @@ export default function InitialCurrencySelector() {
 	return (
 		<MinimalBasicScreen>
 			<p>{Messages.settings.default_currency}</p>
-			<Select
-				testId="defaultCurrencySelector"
-				placeholder={Messages.settings.select_default_currency}
-				value={defaultCurrency}
-				options={currencies.all.map((currency) => ({
-					label: (
-						<span>
-							<b>{currency.short}</b> {currency.name}
-						</span>
-					),
-					value: currency.currency_uuid,
-				}))}
-				onChange={(value: string) => setDefaultCurrency(value)}
-			/>
-			{defaultCurrency !== "" && (
+        <Select
+          containerArea
+          testId="defaultCurrencySelector"
+          placeholder={Messages.settings.select_default_currency}
+          value={defaultCurrency}
+          options={currencies.all.map((currency) => ({
+            label: (
+              <span>
+                <b>{currency.short}</b> {currency.name}
+              </span>
+            ),
+            value: currency.currency_uuid,
+          }))}
+          onChange={(value: string) => setDefaultCurrency(value)}
+        />
 				<OkButton
+          disabled={defaultCurrency === "" }
 					title={Messages.tour.continue_currency}
 					onClick={() => {
 						config.merge({ ...config.main, default_currency: defaultCurrency });
 					}}
 				/>
-			)}
 		</MinimalBasicScreen>
 	);
 }
