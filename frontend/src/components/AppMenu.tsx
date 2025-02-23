@@ -51,7 +51,6 @@ import LanguageSelector from "./LanguageSelector";
 import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
-import { useMoneeeyTour } from "./tour/Tour";
 
 const Menu = observer(
 	({
@@ -297,14 +296,13 @@ const Content = ({
 }) => (
 	<section className="flex grow flex-row">
 		<Menu setExpanded={setExpanded} expanded={expanded} />
-		<section className="flex max-h-[calc(100vh-3em)] grow flex-col p-4">
+		<section className="flex max-h-[calc(100vh-3em)] grow flex-col p-2 md:p-4">
 			{children}
 		</section>
 	</section>
 );
 
 export default observer(function AppMenu() {
-	const tour = useMoneeeyTour();
 	const [expanded, setExpanded] = useState(
 		getStorage("menu_expanded", "true", StorageKind.PERMANENT) === "true",
 	);
@@ -320,10 +318,7 @@ export default observer(function AppMenu() {
 						<Header expanded={expanded} setExpanded={setExpanded}>
 							<RouteHeaderRender route={route} />
 						</Header>
-						<Content
-							expanded={expanded || tour.isOpen()}
-							setExpanded={setExpanded}
-						>
+						<Content expanded={expanded} setExpanded={setExpanded}>
 							<RouteContentRender route={route} />
 						</Content>
 					</>

@@ -56,7 +56,7 @@ const AccountTable = observer(
 						schema={[
 							{
 								title: Messages.util.name,
-								width: 300,
+								width: 80,
 								validate: ({ name }) => ({
 									valid: name.length > 2,
 									error: "Invalid name",
@@ -68,7 +68,7 @@ const AccountTable = observer(
 							},
 							{
 								title: Messages.util.currency,
-								width: 200,
+								width: 120,
 								required: true,
 								validate: () => ({ valid: true }),
 								...CurrencySelectorField<IAccount>({
@@ -78,7 +78,7 @@ const AccountTable = observer(
 							},
 							{
 								title: Messages.util.tags,
-								width: 200,
+								width: 80,
 								validate: () => ({ valid: true }),
 								...TagField<IAccount>({
 									read: ({ tags }) => tags,
@@ -87,7 +87,7 @@ const AccountTable = observer(
 							},
 							{
 								title: Messages.account.account_kind,
-								width: 200,
+								width: 80,
 								validate: () => ({ valid: true }),
 								...AccountKindField<IAccount>({
 									read: ({ kind: currentKind }) => currentKind,
@@ -96,7 +96,7 @@ const AccountTable = observer(
 							},
 							{
 								title: Messages.account.offbudget,
-								width: 200,
+								width: 80,
 								validate: () => ({ valid: true }),
 								...CheckboxField<IAccount>({
 									read: ({ offbudget }) => offbudget,
@@ -105,7 +105,7 @@ const AccountTable = observer(
 							},
 							{
 								title: Messages.util.archived,
-								width: 200,
+								width: 80,
 								validate: () => ({ valid: true }),
 								...CheckboxField<IAccount>({
 									read: ({ archived }) => archived,
@@ -114,7 +114,7 @@ const AccountTable = observer(
 							},
 							{
 								title: Messages.util.created,
-								width: 200,
+								width: 80,
 								readOnly: true,
 								validate: () => ({ valid: true }),
 								...DateField<IAccount>({

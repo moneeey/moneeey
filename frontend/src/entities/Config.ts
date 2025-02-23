@@ -21,7 +21,6 @@ export interface IConfig extends IBaseEntity {
 	decimal_separator: string;
 	thousand_separator: string;
 	default_currency: TCurrencyUUID;
-	view_months: number;
 	view_archived: boolean;
 	couchSync?: SyncConfig;
 }
@@ -38,7 +37,6 @@ export class ConfigStore extends MappedStore<IConfig> {
 					decimal_separator: ",",
 					thousand_separator: ".",
 					default_currency: "",
-					view_months: 3,
 					view_archived: false,
 					couchSync: {
 						enabled: false,

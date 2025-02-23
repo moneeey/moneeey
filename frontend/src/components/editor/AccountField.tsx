@@ -92,6 +92,7 @@ export default function <TEntity>({
 				);
 			},
 		),
+		groupBy: (row: TEntity): string => readName(row),
 		sorter: (a: TEntity, b: TEntity, asc: boolean): number =>
 			asc
 				? readName(a).localeCompare(readName(b))

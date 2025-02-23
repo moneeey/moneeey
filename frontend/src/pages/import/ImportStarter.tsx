@@ -141,7 +141,7 @@ const ImportStarter = ({
 					/>
 				</div>
 			</div>
-			<div className="rounded bg-secondary-200 p-4 text-secondary-900">
+			<div className="rounded bg-secondary-200 p-2 md:p-4 text-secondary-900">
 				{!error && <FileUploader onFile={onFile} error={error} />}
 			</div>
 		</VerticalSpace>

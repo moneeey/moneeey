@@ -75,7 +75,7 @@ const Navbar = (props: NavbarProps & WithDataTestId) => {
 				items={props.items}
 				expanded={props.expanded}
 			/>
-			<div className="p-4 self-end">{props.footer}</div>
+			<div className="p-2 self-end">{props.footer}</div>
 		</nav>
 	);
 };

@@ -9,8 +9,7 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { formatDateMonth, startOfMonthOffset } from "../../utils/Date";
 import useMessages, { type TMessages } from "../../utils/Messages";
 
-import { CalendarDaysIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
-import _ from "lodash";
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import BudgetEditor from "./BudgetEditor";
 import BudgetPeriods from "./BudgetPeriod";
 
@@ -41,34 +40,6 @@ export const BudgetHeader = observer(() => {
 	const onNewBudget = () => navigation.updateEditingBudget(budget.factory());
 	return (
 		<Space>
-			<div className="flex flex-row flex-wrap">
-				{_.range(12).map((index) => (
-					<CalendarDaysIcon
-						className={`h-6 w-6 mr-2 hover:text-green-900 ${
-							index + 1 <= config.main.view_months
-								? "text-green-300"
-								: "text-gray-200"
-						}`}
-						key={`view_months_${index}`}
-						onClick={() => {
-							config.merge({
-								...config.main,
-								view_months: index + 1,
-							});
-						}}
-					/>
-				))}
-			</div>
-			<Checkbox
-				testId="checkboxViewArchived"
-				value={config.main.view_archived === true}
-				onChange={(view_archived) =>
-					config.merge({ ...config.main, view_archived })
-				}
-				placeholder={Messages.budget.show_archived}
-			>
-				{Messages.budget.show_archived}
-			</Checkbox>
 			<LinkButton
 				testId="addNewBudget"
 				onClick={onNewBudget}
@@ -90,28 +61,36 @@ export const BudgetHeader = observer(() => {
 
 const Budget = observer(() => {
 	const Messages = useMessages();
-	const { config, navigation, budget } = useMoneeeyStore();
+	const { config, navigation } = useMoneeeyStore();
 	const [startingDate, setStartingDate] = useState(() =>
 		startOfMonthOffset(new Date(), 0),
 	);
-	const viewMonths = config.main?.view_months || 3;
 	const viewArchived = config.main?.view_archived === true;
 	const editing = navigation.editingBudget;
 	const setEditing = (budget?: IBudget) =>
 		navigation.updateEditingBudget(budget);
 
 	return (
-		<VerticalSpace className="overflow-scroll pr-2 pb-4">
+		<VerticalSpace className="overflow-auto pr-2 pb-4">
 			<MonthDateSelector
 				date={startingDate}
 				setDate={setStartingDate}
 				Messages={Messages}
 			/>
+			<Checkbox
+				testId="checkboxViewArchived"
+				value={config.main.view_archived === true}
+				onChange={(view_archived) =>
+					config.merge({ ...config.main, view_archived })
+				}
+				placeholder={Messages.budget.show_archived}
+			>
+				{Messages.budget.show_archived}
+			</Checkbox>
 			<BudgetPeriods
 				startingDate={startingDate}
 				setEditing={setEditing}
 				viewArchived={viewArchived}
-				viewMonths={viewMonths}
 			/>
 			{editing && <BudgetEditor editing={editing} setEditing={setEditing} />}
 		</VerticalSpace>

@@ -44,6 +44,8 @@ export default function <TEntity>({
 				/>
 			),
 		),
+		groupBy: (row: TEntity): string =>
+			String(Math.floor(Math.log10(read(row)))),
 		sorter: (a: TEntity, b: TEntity, asc: boolean): number =>
 			asc ? read(a) - read(b) : read(b) - read(a),
 	};

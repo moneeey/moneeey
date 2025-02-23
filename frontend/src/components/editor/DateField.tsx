@@ -38,6 +38,7 @@ export default function <TEntity>({
 				/>
 			),
 		),
+		groupBy: (row: TEntity): string => formatDate(parseDateOrTime(read(row))),
 		sorter: (a: TEntity, b: TEntity, asc: boolean): number =>
 			asc ? compareDates(read(a), read(b)) : compareDates(read(b), read(a)),
 	};

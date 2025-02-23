@@ -20,7 +20,7 @@ const CurrencyTable = observer(() => {
 			schema={[
 				{
 					title: Messages.util.name,
-					width: 200,
+					width: 100,
 					validate: ({ name }) => ({
 						valid: name.length > 2,
 						error: "Invalid name",
@@ -32,7 +32,7 @@ const CurrencyTable = observer(() => {
 				},
 				{
 					title: Messages.currencies.short,
-					width: 100,
+					width: 40,
 					validate: () => ({ valid: true }),
 					...TextField<ICurrency>({
 						read: ({ short }) => short,
@@ -41,7 +41,7 @@ const CurrencyTable = observer(() => {
 				},
 				{
 					title: Messages.currencies.prefix,
-					width: 100,
+					width: 40,
 					validate: () => ({ valid: true }),
 					...TextField<ICurrency>({
 						read: ({ prefix }) => prefix,
@@ -50,7 +50,7 @@ const CurrencyTable = observer(() => {
 				},
 				{
 					title: Messages.currencies.suffix,
-					width: 100,
+					width: 40,
 					validate: () => ({ valid: true }),
 					...TextField<ICurrency>({
 						read: ({ suffix }) => suffix,
@@ -59,7 +59,7 @@ const CurrencyTable = observer(() => {
 				},
 				{
 					title: Messages.currencies.decimals,
-					width: 100,
+					width: 50,
 					validate: () => ({ valid: true }),
 					...NumberField<ICurrency>({
 						read: ({ decimals }) => decimals,
@@ -71,7 +71,7 @@ const CurrencyTable = observer(() => {
 				},
 				{
 					title: Messages.util.tags,
-					width: 100,
+					width: 120,
 					validate: () => ({ valid: true }),
 					...TagField<ICurrency>({
 						read: ({ tags }) => tags,

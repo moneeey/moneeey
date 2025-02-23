@@ -8,7 +8,7 @@ import type { WithDataTestId } from "./base/Common";
 import Icon from "./base/Icon";
 
 const SCROLLBAR_WIDTH = 24;
-const ROW_HEIGHT = 24;
+const ROW_HEIGHT = 20;
 
 export type Row = {
 	entityId: string;

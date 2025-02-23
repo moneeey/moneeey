@@ -28,6 +28,7 @@ export default function <TEntity>({
 				</Checkbox>
 			),
 		),
+		groupBy: (row: TEntity): string => (read(row) ? "Y" : "N"),
 		sorter: (a: TEntity, b: TEntity, asc: boolean): number =>
 			asc
 				? Number(read(a)) - Number(read(b))

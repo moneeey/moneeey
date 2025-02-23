@@ -18,6 +18,7 @@ export type FieldRenderFn<TEntity> = (
 export type FieldDefHelper<TEntity> = {
 	render: FieldRenderFn<TEntity>;
 	sorter(a: TEntity, b: TEntity, asc: boolean): number;
+	groupBy(row: TEntity): string;
 };
 
 export type FieldDef<TEntity> = {

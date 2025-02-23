@@ -47,7 +47,7 @@ const TransactionTable = observer(
 				schema={compact([
 					{
 						title: Messages.util.date,
-						width: 100,
+						width: 72,
 						defaultSortOrder: "ascend",
 						validate: () => ({ valid: true }),
 						...DateField<ITransaction>({
@@ -57,7 +57,7 @@ const TransactionTable = observer(
 					},
 					{
 						title: Messages.transactions.from_account,
-						width: 140,
+						width: 90,
 						validate: () => ({ valid: true }),
 						...AccountField<ITransaction>({
 							read: ({ from_account }) => from_account,
@@ -68,7 +68,7 @@ const TransactionTable = observer(
 					},
 					{
 						title: Messages.transactions.to_account,
-						width: 140,
+						width: 90,
 						validate: () => ({ valid: true }),
 						...AccountField<ITransaction>({
 							read: ({ to_account }) => to_account,
@@ -123,7 +123,7 @@ const TransactionTable = observer(
 					},
 					{
 						title: Messages.transactions.memo,
-						width: 400,
+						width: 160,
 						validate: () => ({ valid: true }),
 						...MemoField<ITransaction>({
 							read: ({ memo }) => memo,
