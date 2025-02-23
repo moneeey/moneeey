@@ -81,7 +81,7 @@ function ImportProcessResultTable({
 			schema={[
 				{
 					title: Messages.util.date,
-					width: 100,
+					width: 70,
 					defaultSortOrder: "ascend",
 					readOnly: true,
 					validate: () => ({ valid: true }),
@@ -93,7 +93,7 @@ function ImportProcessResultTable({
 				},
 				{
 					title: Messages.transactions.from_account,
-					width: 140,
+					width: 90,
 					validate: () => ({ valid: true }),
 					customClass: classAlreadyExistAccount(
 						transactions,
@@ -110,7 +110,7 @@ function ImportProcessResultTable({
 				},
 				{
 					title: Messages.transactions.to_account,
-					width: 140,
+					width: 90,
 					validate: () => ({ valid: true }),
 					customClass: classAlreadyExistAccount(
 						transactions,
