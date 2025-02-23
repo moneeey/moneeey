@@ -40,15 +40,22 @@ const BudgetPeriods = observer(
 		const [progress, setProgress] = useState(0);
 		const { budget } = useMoneeeyStore();
 		const budgetIds = budget.ids.join("_");
+		const budgetArchives = budget.all.map(({ archived }) => String(archived)).join('_')
+    const budgetAmount = budget.ids.length
+    const height = budgetAmount < 4 ? 'h-[10em]' :
+      budgetAmount < 8 ? 'h-[16em]' :
+      budgetAmount < 12 ? 'h-[22em]' :
+      'h-[28em]'
+    ;
 
 		return (
 			<div className="flex flex-row flex-wrap gap-4">
 				{map(range(0, viewMonths), (offset) => (
 					<div
-						className="grow w-[26em] lg:w-[36em] xl:w-[40em] h-80 pb-4"
+						className={`grow w-[26em] ${height} pb-4`}
 						key={`budgetPeriod_${viewArchived}_${viewMonths}_${formatDate(
 							startOfMonthOffset(startingDate, offset),
-						)}_${budgetIds}`}
+						)}_${budgetIds}_${budgetArchives}`}
 					>
 						<Loading
 							loading={progress !== 0 && progress !== 100}
