@@ -10,7 +10,6 @@ import { formatDateMonth, startOfMonthOffset } from "../../utils/Date";
 import useMessages, { type TMessages } from "../../utils/Messages";
 
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
-import _ from "lodash";
 import BudgetEditor from "./BudgetEditor";
 import BudgetPeriods from "./BudgetPeriod";
 

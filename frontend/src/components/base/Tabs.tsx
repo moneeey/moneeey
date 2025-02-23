@@ -30,7 +30,7 @@ export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
 	const { current, update } = useSelectedIndex(props);
 	return (
 		<nav data-testid={props.testId}>
-			<Space className="no-scrollbar flex-wrap m-2 max-w-max">
+			<Space className="overflow-auto m-1 max-w-max">
 				{props.items.map((item, idx) => (
 					<LinkButton
 						key={item.key}
@@ -53,7 +53,7 @@ export const TabsContent = observer((props: TabsProps & WithDataTestId) => {
 
 const Tabs = (props: TabsProps & WithDataTestId) => {
 	return (
-		<section key={`Tabs_${props.testId}`} className="flex grow flex-col p-2">
+		<section key={`Tabs_${props.testId}`} className="flex grow flex-col p-0.5">
 			<TabsHeader {...props} />
 			<TabsContent {...props} />
 		</section>

@@ -30,24 +30,25 @@ interface PeriodProps {
 	viewArchived: boolean;
 }
 
-const SHOW_MONTHS = 6
+const SHOW_MONTHS = 6;
 
 const BudgetPeriods = observer(
-	({
-		startingDate,
-		setEditing,
-		viewArchived,
-	}: PeriodProps) => {
+	({ startingDate, setEditing, viewArchived }: PeriodProps) => {
 		const [progress, setProgress] = useState(0);
 		const { budget } = useMoneeeyStore();
 		const budgetIds = budget.ids.join("_");
-		const budgetArchives = budget.all.map(({ archived }) => String(archived)).join('_')
-    const budgetAmount = budget.ids.length
-    const height = budgetAmount < 4 ? 'h-[10em]' :
-      budgetAmount < 8 ? 'h-[16em]' :
-      budgetAmount < 12 ? 'h-[22em]' :
-      'h-[28em]'
-    ;
+		const budgetArchives = budget.all
+			.map(({ archived }) => String(archived))
+			.join("_");
+		const budgetAmount = budget.ids.length;
+		const height =
+			budgetAmount < 4
+				? "h-[10em]"
+				: budgetAmount < 8
+					? "h-[16em]"
+					: budgetAmount < 12
+						? "h-[22em]"
+						: "h-[28em]";
 
 		return (
 			<div className="flex flex-row flex-wrap gap-4">

@@ -28,7 +28,7 @@ export default function <TEntity>({
 				containerArea,
 			}: FieldRenderProps<TEntity>) => {
 				const { amount, currency } = read(entity);
-        const defaultCurrency = currencies.byUuid(config.main.default_currency)
+				const defaultCurrency = currencies.byUuid(config.main.default_currency);
 
 				return (
 					<InputNumber

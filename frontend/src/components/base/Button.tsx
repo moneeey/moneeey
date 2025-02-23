@@ -37,7 +37,7 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind) =>
 				{...omit(props, ["testId"])}
 				data-testid={props.testId || base.testId}
 				disabled={props.disabled}
-				className={`flex whitespace-nowrap rounded p-2 ${styles[kind]} ${
+				className={`flex whitespace-nowrap rounded p-1 ${styles[kind]} ${
 					props.className || ""
 				} ${props.disabled ? "opacity-20 hover:opacity-25" : ""}`}
 			>
