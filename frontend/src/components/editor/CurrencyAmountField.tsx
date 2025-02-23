@@ -28,6 +28,7 @@ export default function <TEntity>({
 				containerArea,
 			}: FieldRenderProps<TEntity>) => {
 				const { amount, currency } = read(entity);
+        const defaultCurrency = currencies.byUuid(config.main.default_currency)
 
 				return (
 					<InputNumber
@@ -42,8 +43,8 @@ export default function <TEntity>({
 						thousandSeparator={config.main.thousand_separator}
 						decimalSeparator={config.main.decimal_separator}
 						decimalScale={currency?.decimals || 2}
-						prefix={currency?.prefix}
-						suffix={currency?.suffix}
+						prefix={currency?.prefix ?? defaultCurrency?.prefix}
+						suffix={currency?.suffix ?? defaultCurrency?.suffix}
 						containerArea={containerArea}
 					/>
 				);
