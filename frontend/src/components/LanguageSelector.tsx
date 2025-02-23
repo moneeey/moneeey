@@ -48,7 +48,7 @@ export default function LanguageSelector({ onSelect }: LanguageSelectorProps) {
 			<div className="flex flex-row justify-end gap-4">
 				<LangSelect icon={<IconUSA />} language="en" />
 				<LangSelect icon={<IconChina />} language="cn" />
-				<LangSelect icon={<IconIndia />} language="in" />
+				<LangSelect icon={<IconIndia />} language="hi" />
 				<LangSelect icon={<IconSpain />} language="es" />
 				<LangSelect icon={<IconBrazil />} language="pt" />
 			</div>
