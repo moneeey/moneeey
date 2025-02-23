@@ -200,7 +200,7 @@ export default {
 			],
 		},
 	},
-	loghi: {
+	login: {
 		completed: {
 			en: "Welcome, please wait...",
 			pt: "Bem-vindo, por favor aguarde...",
@@ -516,13 +516,13 @@ export default {
 			hi: "आवश्यक",
 			cn: "必填",
 		},
-    empty: {
-      en: "Empty",
-      pt: "Vazio",
-      es: "Vacío",
-      hi: "खाली",
-      cn: "空的"
-    }
+		empty: {
+			en: "Empty",
+			pt: "Vazio",
+			es: "Vacío",
+			hi: "खाली",
+			cn: "空的",
+		},
 	},
 	settings: {
 		locale: {
@@ -726,13 +726,18 @@ export default {
 			hi: "शेष",
 			cn: "剩余",
 		},
-    format_example: {
-      en: (fromAccount: string, toAccount: string, amount: string) => `${fromAccount} -> ${toAccount}: ${amount}`,
-      pt: (fromAccount: string, toAccount: string, amount: string) => `${fromAccount} -> ${toAccount}: ${amount}`,
-      es: (fromAccount: string, toAccount: string, amount: string) => `${fromAccount} -> ${toAccount}: ${amount}`,
-      hi: (fromAccount: string, toAccount: string, amount: string) => `${fromAccount} -> ${toAccount}: ${amount}`,
-      cn: (fromAccount: string, toAccount: string, amount: string) => `${fromAccount} -> ${toAccount}: ${amount}`,
-    }
+		format_example: {
+			en: (fromAccount: string, toAccount: string, amount: string) =>
+				`${fromAccount} -> ${toAccount}: ${amount}`,
+			pt: (fromAccount: string, toAccount: string, amount: string) =>
+				`${fromAccount} -> ${toAccount}: ${amount}`,
+			es: (fromAccount: string, toAccount: string, amount: string) =>
+				`${fromAccount} -> ${toAccount}: ${amount}`,
+			hi: (fromAccount: string, toAccount: string, amount: string) =>
+				`${fromAccount} -> ${toAccount}: ${amount}`,
+			cn: (fromAccount: string, toAccount: string, amount: string) =>
+				`${fromAccount} -> ${toAccount}: ${amount}`,
+		},
 	},
 	account: {
 		add_account: {
