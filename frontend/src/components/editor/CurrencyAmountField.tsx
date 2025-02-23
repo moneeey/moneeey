@@ -16,7 +16,7 @@ export default function <TEntity>({
 	read,
 	delta,
 }: FieldAcessor<TEntity, CurrencyAmount>): FieldDefHelper<TEntity> {
-	const { config } = useMoneeeyStore();
+	const { config, currencies } = useMoneeeyStore();
 
 	return {
 		render: observer(

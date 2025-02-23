@@ -207,3 +207,4 @@ export const IconIndia = () => (
 		</g>
 	</svg>
 );
+

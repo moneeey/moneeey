@@ -10,10 +10,10 @@
 .mn-select__indicator-separator {
   @apply m-0 border-0 bg-transparent p-0;
 
-  line-height: 18px !important;
-  height: 18px !important;
-  min-height: 18px !important;
-  max-height: 18px !important;
+  line-height: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
 }
 
 .mn-select__indicator {

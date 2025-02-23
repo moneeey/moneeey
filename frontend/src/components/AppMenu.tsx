@@ -296,7 +296,7 @@ const Content = ({
 }) => (
 	<section className="flex grow flex-row">
 		<Menu setExpanded={setExpanded} expanded={expanded} />
-		<section className="flex max-h-[calc(100vh-3em)] grow flex-col p-4">
+		<section className="flex max-h-[calc(100vh-3em)] grow flex-col p-2 md:p-4">
 			{children}
 		</section>
 	</section>

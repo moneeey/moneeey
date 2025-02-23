@@ -77,7 +77,7 @@ export const BaseReport = ({
 	}, [moneeeyStore, processFn, period, selectedAccounts]);
 
 	return (
-		<section className="grow bg-background-800 p-4">
+		<section className="grow bg-background-800 p-2 md:p-4">
 			<h2>{title}</h2>
 			<Loading loading={progress !== 0} progress={progress}>
 				<section>{chartFn(data, period)}</section>
