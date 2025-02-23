@@ -34,6 +34,7 @@ export default function <TEntity>({
 				/>
 			),
 		),
+		groupBy: (row: TEntity): string => read(row).join(", "),
 		sorter: (): number => 0,
 	};
 }

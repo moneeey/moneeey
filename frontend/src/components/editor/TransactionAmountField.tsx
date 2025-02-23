@@ -82,6 +82,10 @@ export default function <TEntity>({
 				);
 			},
 		),
+		groupBy: (row: TEntity): string =>
+			String(
+				Math.floor(Math.log10(read(row).from.amount || read(row).to.amount)),
+			),
 		sorter: (a: TEntity, b: TEntity, asc: boolean): number =>
 			asc
 				? read(a).from.amount - read(b).from.amount

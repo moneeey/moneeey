@@ -824,9 +824,9 @@ export default {
 	},
 	currencies: {
 		short: {
-			en: "Short name",
-			pt: "Nome curto",
-			es: "Nombre corto",
+			en: "Short",
+			pt: "Nome",
+			es: "Nombre",
 			in: "संक्षिप्त नाम",
 			cn: "简称",
 		},
