@@ -30,13 +30,14 @@ interface PeriodProps {
 	viewArchived: boolean;
 }
 
+const SHOW_MONTHS = 6
+
 const BudgetPeriods = observer(
 	({
 		startingDate,
 		setEditing,
 		viewArchived,
-		viewMonths,
-	}: PeriodProps & { viewMonths: number }) => {
+	}: PeriodProps) => {
 		const [progress, setProgress] = useState(0);
 		const { budget } = useMoneeeyStore();
 		const budgetIds = budget.ids.join("_");
@@ -50,10 +51,10 @@ const BudgetPeriods = observer(
 
 		return (
 			<div className="flex flex-row flex-wrap gap-4">
-				{map(range(0, viewMonths), (offset) => (
+				{map(range(0, SHOW_MONTHS), (offset) => (
 					<div
 						className={`grow w-[26em] ${height} pb-4`}
-						key={`budgetPeriod_${viewArchived}_${viewMonths}_${formatDate(
+						key={`budgetPeriod_${viewArchived}_${formatDate(
 							startOfMonthOffset(startingDate, offset),
 						)}_${budgetIds}_${budgetArchives}`}
 					>
