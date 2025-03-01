@@ -2986,13 +2986,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-virtualized@npm:9.21.30":
-  version: 9.21.30
-  resolution: "@types/react-virtualized@npm:9.21.30"
+"@types/react-virtualized@npm:9.22.2":
+  version: 9.22.2
+  resolution: "@types/react-virtualized@npm:9.22.2"
   dependencies:
     "@types/prop-types": "npm:*"
     "@types/react": "npm:*"
-  checksum: 10c0/267fd00de3fe1f93ba535e1b98b1106d61c9172a6741d8a65aa4f16720177edb359bf997518f3deb2c078b4b275e512bccd3ee941ae4019b5c7836aa16b8ed8e
+  checksum: 10c0/e46ae29ef3187d15c1a6693694e2612da0b6a7f259b12f86b58d150df02e5ca8bb4776cbe6059af5e0e6e48584e5fa10465e951662a3f74e47663a742f4d4d5d
   languageName: node
   linkType: hard
 
@@ -7051,7 +7051,7 @@ __metadata:
     "@types/react-datepicker": "npm:4.8.0"
     "@types/react-dom": "npm:18.3.0"
     "@types/react-router-dom": "npm:5.3.3"
-    "@types/react-virtualized": "npm:9.21.30"
+    "@types/react-virtualized": "npm:9.22.2"
     "@vitejs/plugin-react": "npm:4.3.4"
     autoprefixer: "npm:10.4.20"
     classnames: "npm:2.5.1"
@@ -7076,7 +7076,7 @@ __metadata:
     react-number-format: "npm:5.4.0"
     react-router-dom: "npm:6.27.0"
     react-select: "npm:5.8.0"
-    react-virtualized: "npm:9.22.5"
+    react-virtualized: "npm:9.22.6"
     recharts: "npm:2.12.2"
     tailwindcss: "npm:3.4.1"
     ts-jest: "npm:29.1.2"
@@ -7995,9 +7995,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-virtualized@npm:9.22.5":
-  version: 9.22.5
-  resolution: "react-virtualized@npm:9.22.5"
+"react-virtualized@npm:9.22.6":
+  version: 9.22.6
+  resolution: "react-virtualized@npm:9.22.6"
   dependencies:
     "@babel/runtime": "npm:^7.7.2"
     clsx: "npm:^1.0.4"
@@ -8006,9 +8006,9 @@ __metadata:
     prop-types: "npm:^15.7.2"
     react-lifecycles-compat: "npm:^3.0.4"
   peerDependencies:
-    react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0
-    react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0
-  checksum: 10c0/b0444b472f317dce61119c07426c5e9ebfe5125d049996678da922717715a1aa83df755aa36877f4b1718aa2e181d22f15ebb807ee356418c56f922f865628c1
+    react: ^16.3.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^16.3.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/0c4fbe86e0c121adcdb7a3f322601eee4661afe65e31ef767c6d876016b1e7043fdad7998b4fa0252eaf73ffb6c14effcf0f729d154cd15304a8b15ad42b7b06
   languageName: node
   linkType: hard
 
