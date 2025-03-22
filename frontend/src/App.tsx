@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 
 import { observer } from "mobx-react";
 
-import { HashRouter } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 
 import AppMenu from "./components/AppMenu";
 import Navigator from "./components/Navigator";
@@ -17,6 +17,7 @@ import Modals from "./components/modal/Modals";
 import MoneeeyTourProvider from "./components/tour/Tour";
 
 import { isEmpty } from "lodash";
+import LandingPage from "./components/LandingPage";
 import MinimalBasicScreen from "./components/base/MinimalBaseScreen";
 import InitialCurrencySelector, {
 	showInitialCurrencySelector,
@@ -80,7 +81,16 @@ const AppContent = observer(() => {
 	if (!loaded) {
 		return <AppLoading />;
 	}
-	return <AppLoaded />;
+	return (
+		<MoneeeyTourProvider>
+			<TagsHighlightProvider>
+				<AppLoaded />
+				<Navigator />
+				<Modals />
+				<Notifications />
+			</TagsHighlightProvider>
+		</MoneeeyTourProvider>
+	);
 });
 
 export const App = () => {
@@ -97,14 +107,10 @@ export const App = () => {
 		<HashRouter>
 			<MessagesProvider>
 				<MoneeeyStoreProvider value={moneeeyStore}>
-					<MoneeeyTourProvider>
-						<TagsHighlightProvider>
-							<AppContent />
-							<Navigator />
-							<Modals />
-							<Notifications />
-						</TagsHighlightProvider>
-					</MoneeeyTourProvider>
+					<Routes>
+						<Route path="/" element={<LandingPage />} />
+						<Route path="*" element={<AppContent />} />
+					</Routes>
 				</MoneeeyStoreProvider>
 			</MessagesProvider>
 		</HashRouter>

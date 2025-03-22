@@ -8,6 +8,7 @@ import {
 	Cog6ToothIcon,
 	CurrencyDollarIcon,
 	EnvelopeIcon,
+	HomeIcon,
 	PlayCircleIcon,
 	QuestionMarkCircleIcon,
 	StopCircleIcon,
@@ -46,6 +47,7 @@ import RouteRenderer, {
 
 import useMessages from "../utils/Messages";
 
+import DashboardRoute from "../routes/DashboardRouter";
 import SyncRoute from "../routes/SyncRoute";
 import LanguageSelector from "./LanguageSelector";
 import Icon, { FavIcon } from "./base/Icon";
@@ -124,7 +126,7 @@ const Menu = observer(
 						label: Messages.menu.dashboard,
 						icon: <ClipboardDocumentIcon />,
 						visible: activeAccounts.length > 0,
-						...routeLink(HomeRoute.url()),
+						...routeLink(DashboardRoute.url()),
 					},
 					{
 						key: "budget",
@@ -224,12 +226,6 @@ const Menu = observer(
 						],
 					},
 					{
-						key: "settings_landing",
-						label: Messages.menu.start_tour,
-						icon: <QuestionMarkCircleIcon />,
-						...modalLink(NavigationModal.LANDING),
-					},
-					{
 						key: "sync",
 						label: `${Messages.modal.sync} ${
 							Messages.menu[`sync_${persistence.status}`]
@@ -241,6 +237,18 @@ const Menu = observer(
 								<StopCircleIcon color="red" />
 							),
 						...routeLink(SyncRoute.url()),
+					},
+					{
+						key: "settings_landing",
+						label: Messages.menu.landing,
+						icon: <HomeIcon />,
+						...routeLink(HomeRoute.url()),
+					},
+					{
+						key: "settings_tour",
+						label: Messages.menu.start_tour,
+						icon: <QuestionMarkCircleIcon />,
+						...modalLink(NavigationModal.LANDING),
 					},
 				]}
 			/>

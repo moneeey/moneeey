@@ -26,5 +26,7 @@ yarn-error.log*
 
 # PouchDB
 undefined
+
 playwright/Import.webm
 playwright/Tour.webm
+docker/volume

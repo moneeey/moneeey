@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-import favicon from "../../favicon.svg";
 import useMessages from "../../utils/Messages";
 
 import type { WithDataTestId } from "./Common";
@@ -31,7 +30,7 @@ export const FavIcon = () => {
 	const Messages = useMessages();
 	return (
 		<Icon className="h-6 w-6">
-			<img src={favicon} alt={Messages.menu.title} />
+			<img src="/favicon.svg?url" alt={Messages.menu.title} />
 		</Icon>
 	);
 };

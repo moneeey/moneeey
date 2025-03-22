@@ -1,5 +1,5 @@
-import * as PDFJS from "pdfjs-dist";
-import "pdfjs-dist/build/pdf.worker.entry.js";
+import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
+import "pdfjs-dist/build/pdf.worker.min.mjs";
 
 import type MoneeeyStore from "../MoneeeyStore";
 
@@ -11,7 +11,7 @@ import type {
 } from "./ImportContent";
 import { txtImportFromLines } from "./TxtImporter";
 
-PDFJS.GlobalWorkerOptions.workerSrc = "pdfjs-dist/build/pdf.worker.js";
+GlobalWorkerOptions.workerSrc = "pdfjs-dist/build/pdf.worker.js";
 
 const pdfImport =
 	(): ProcessContentFn =>
@@ -31,7 +31,7 @@ const pdfImport =
 		step();
 		const arr = new Uint8Array(buff);
 		step();
-		const pdf = await PDFJS.getDocument(arr).promise;
+		const pdf = await getDocument(arr).promise;
 		step();
 		const pdfTxtPages = await Promise.all(
 			Array.from({ length: pdf.numPages }, async (_, i) => {
