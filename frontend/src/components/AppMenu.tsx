@@ -8,7 +8,7 @@ import {
 	Cog6ToothIcon,
 	CurrencyDollarIcon,
 	EnvelopeIcon,
-	HomeModernIcon,
+	HomeIcon,
 	PlayCircleIcon,
 	QuestionMarkCircleIcon,
 	StopCircleIcon,
@@ -239,16 +239,16 @@ const Menu = observer(
 						...routeLink(SyncRoute.url()),
 					},
 					{
+						key: "settings_landing",
+						label: Messages.menu.landing,
+						icon: <HomeIcon />,
+						...routeLink(HomeRoute.url()),
+					},
+					{
 						key: "settings_tour",
 						label: Messages.menu.start_tour,
 						icon: <QuestionMarkCircleIcon />,
 						...modalLink(NavigationModal.LANDING),
-					},
-					{
-						key: "settings_landing",
-						label: Messages.menu.landing,
-						icon: <HomeModernIcon />,
-						...routeLink(HomeRoute.url()),
 					},
 				]}
 			/>

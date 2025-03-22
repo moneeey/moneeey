@@ -164,6 +164,13 @@ export default {
 			hi: "मनी की शुरुआत",
 			cn: "介绍Moneeey",
 		},
+		go_to_moneeey: {
+			en: "Go to Moneeey",
+			pt: "Ir para Moneeey",
+			es: "Ir a Moneeey",
+			hi: "मनी पर जाएं",
+			cn: "进入Moneeey",
+		},
 		encryption_title: {
 			en: "End-to-End Encryption",
 			pt: "Criptografia de Ponta a Ponta",

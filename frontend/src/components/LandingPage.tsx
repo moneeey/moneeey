@@ -1,5 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import useMessages from "../utils/Messages";
+import { PrimaryButton } from "./base/Button";
+import LanguageSelector from "./LanguageSelector";
+import { Routes, Route } from "react-router-dom";
+import { FavIcon } from "./base/Icon";
+import MinimalBaseScreen from "./base/MinimalBaseScreen";
 
 interface FeatureBalloonProps {
 	title: string;
@@ -38,7 +43,7 @@ const FeatureBalloon = ({ title, description, delay }: FeatureBalloonProps) => {
 	);
 };
 
-export default function LandingPage() {
+const renderLandingContent = () => {
 	const Messages = useMessages();
 	const landing = Messages.landing as LandingMessages;
 	const navigate = useNavigate();
@@ -71,18 +76,19 @@ export default function LandingPage() {
 	];
 
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-background-600 via-background-700 to-background-800">
-			<div className="container mx-auto px-4 py-16">
-				<div className="text-center mb-16 animate-fade-in">
-					<h1 className="text-4xl font-bold text-primary-300 mb-4">
-						{landing.title}
-					</h1>
+		<MinimalBaseScreen>
+			<div className="container mx-auto px-4 py-8">
+				<div className="text-center mb-8 animate-fade-in">
 					<p className="text-xl text-gray-300 max-w-2xl mx-auto">
 						{landing.messages[0]}
 					</p>
 				</div>
 
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+				<div className="flex justify-center mb-8">
+					<LanguageSelector />
+				</div>
+
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
 					{featureList.map((feature) => (
 						<FeatureBalloon
 							key={feature.key}
@@ -93,18 +99,23 @@ export default function LandingPage() {
 					))}
 				</div>
 
-				<div
-					className="text-center animate-fade-in"
-					style={{ animationDelay: "0.7s" }}
-				>
-					<button
+				<div className="flex  justify-center  animate-fade-in space-y-8" style={{ animationDelay: "0.7s" }}>
+					<PrimaryButton
 						onClick={() => navigate("/dashboard")}
-						className="bg-primary-500 hover:bg-primary-600 text-white font-bold py-4 px-8 rounded-lg text-xl transform transition-all duration-300 hover:scale-105 hover:shadow-lg"
-					>
-						Go to Moneeey
-					</button>
+						className="text-xl py-4 px-8"
+						title={landing.go_to_moneeey as string}
+					/>
 				</div>
 			</div>
-		</div>
+		</MinimalBaseScreen>
+	);
+};
+
+export default function LandingPage() {
+	return (
+		<Routes>
+			<Route path="/" element={renderLandingContent()} />
+			<Route path="*" element={<div>404 - Page Not Found</div>} />
+		</Routes>
 	);
 }
