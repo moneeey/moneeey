@@ -1,0 +1,21 @@
+version: "3.3"
+
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/javascript-node:22
+    command: ["sleep", "infinity"] 
+    volumes:
+      - type: bind
+        source: .
+        target: /workspace
+        consistency: cached
+    working_dir: /workspace
+    environment:
+      - NODE_UID=${UID:-1000}
+      - NODE_GID=${GID:-1000}
+    networks:
+      - moneeey-network
+    tty: true
+    stdin_open: true
+    security_opt:
+      - label=disable
