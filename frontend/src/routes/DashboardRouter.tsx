@@ -15,4 +15,4 @@ class DashboardRouter extends Route<IRouteParameters> {
 }
 
 const DashboardRoute = new DashboardRouter();
-export default DashboardRoute; 
+export default DashboardRoute;

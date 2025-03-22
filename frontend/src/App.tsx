@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 
 import { observer } from "mobx-react";
 
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 
 import AppMenu from "./components/AppMenu";
 import Navigator from "./components/Navigator";
@@ -17,6 +17,7 @@ import Modals from "./components/modal/Modals";
 import MoneeeyTourProvider from "./components/tour/Tour";
 
 import { isEmpty } from "lodash";
+import LandingPage from "./components/LandingPage";
 import MinimalBasicScreen from "./components/base/MinimalBaseScreen";
 import InitialCurrencySelector, {
 	showInitialCurrencySelector,
@@ -31,7 +32,6 @@ import useMessages, {
 	useLanguageSwitcher,
 } from "./utils/Messages";
 import { StorageKind, getStorage, setStorage } from "./utils/Utils";
-import LandingPage from "./components/LandingPage";
 
 const AppLoading = () => {
 	const Messages = useMessages();

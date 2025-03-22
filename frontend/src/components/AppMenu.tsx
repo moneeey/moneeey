@@ -47,12 +47,12 @@ import RouteRenderer, {
 
 import useMessages from "../utils/Messages";
 
+import DashboardRoute from "../routes/DashboardRouter";
 import SyncRoute from "../routes/SyncRoute";
 import LanguageSelector from "./LanguageSelector";
 import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
-import DashboardRoute from "../routes/DashboardRouter";
 
 const Menu = observer(
 	({

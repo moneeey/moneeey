@@ -32,8 +32,8 @@
 		"GID": "${localEnv:GID:-1000}"
 	},
 	"postCreateCommand": {
-		    "fixVolumePerms": "sudo chown -R $(whoami): /workspace",
-			"gitSafeWorkspace": "git config --global --add safe.directory /workspace"
+		"fixVolumePerms": "sudo chown -R $(whoami): /workspace",
+		"gitSafeWorkspace": "git config --global --add safe.directory /workspace"
 	},
 	"overrideCommand": false,
 	"updateRemoteUserUID": true,
