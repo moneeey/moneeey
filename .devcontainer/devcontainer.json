@@ -31,8 +31,10 @@
 		"UID": "${localEnv:UID:-1000}",
 		"GID": "${localEnv:GID:-1000}"
 	},
-	"initializeCommand": "mkdir -p ${localWorkspaceFolder}/.devcontainer/init && touch ${localWorkspaceFolder}/.devcontainer/init/.initialized",
-	"postCreateCommand": "sudo chown -R node:node /workspace && git config --global --add safe.directory /workspace",
+	"postCreateCommand": {
+		    "fixVolumePerms": "sudo chown -R $(whoami): /workspace",
+			"gitSafeWorkspace": "git config --global --add safe.directory /workspace"
+	},
 	"overrideCommand": false,
 	"updateRemoteUserUID": true,
 	"mounts": [

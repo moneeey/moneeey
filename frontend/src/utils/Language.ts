@@ -1,6 +1,13 @@
 export default {
 	menu: {
 		title: { en: "Moneeey", pt: "Moneeey", es: "Moneeey", hi: "मनी", cn: "钱" },
+		landing: {
+			en: "Home",
+			pt: "Início",
+			es: "Inicio",
+			hi: "होम",
+			cn: "首页",
+		},
 		search: {
 			en: "Search",
 			pt: "Pesquisar",
@@ -156,6 +163,90 @@ export default {
 			es: "Presentando Moneeey",
 			hi: "मनी की शुरुआत",
 			cn: "介绍Moneeey",
+		},
+		encryption_title: {
+			en: "End-to-End Encryption",
+			pt: "Criptografia de Ponta a Ponta",
+			es: "Cifrado de Extremo a Extremo",
+			hi: "एंड-टू-एंड एन्क्रिप्शन",
+			cn: "端到端加密",
+		},
+		encryption_description: {
+			en: "Your financial data is protected with state-of-the-art encryption",
+			pt: "Seus dados financeiros são protegidos com criptografia de última geração",
+			es: "Sus datos financieros están protegidos con cifrado de última generación",
+			hi: "आपका वित्तीय डेटा अत्याधुनिक एन्क्रिप्शन के साथ सुरक्षित है",
+			cn: "您的财务数据受到最先进的加密保护",
+		},
+		privacy_title: {
+			en: "Privacy First",
+			pt: "Privacidade em Primeiro Lugar",
+			es: "Privacidad Primero",
+			hi: "प्राइवेसी फर्स्ट",
+			cn: "隐私至上",
+		},
+		privacy_description: {
+			en: "Your data stays on your devices, you have full control",
+			pt: "Seus dados permanecem em seus dispositivos, você tem controle total",
+			es: "Sus datos permanecen en sus dispositivos, usted tiene control total",
+			hi: "आपका डेटा आपके उपकरणों पर रहता है, आपका पूर्ण नियंत्रण है",
+			cn: "您的数据保存在您的设备上，您完全掌控",
+		},
+		local_data_title: {
+			en: "Local Data Storage",
+			pt: "Armazenamento Local de Dados",
+			es: "Almacenamiento Local de Datos",
+			hi: "लोकल डेटा स्टोरेज",
+			cn: "本地数据存储",
+		},
+		local_data_description: {
+			en: "Access your financial information even without internet",
+			pt: "Acesse suas informações financeiras mesmo sem internet",
+			es: "Acceda a su información financiera incluso sin internet",
+			hi: "इंटरनेट के बिना भी अपनी वित्तीय जानकारी तक पहुंचें",
+			cn: "即使没有互联网也能访问您的财务信息",
+		},
+		online_sync_title: {
+			en: "Real-Time Sync",
+			pt: "Sincronização em Tempo Real",
+			es: "Sincronización en Tiempo Real",
+			hi: "रीयल-टाइम सिंक",
+			cn: "实时同步",
+		},
+		online_sync_description: {
+			en: "Keep your data in sync across all your devices",
+			pt: "Mantenha seus dados sincronizados em todos os seus dispositivos",
+			es: "Mantenga sus datos sincronizados en todos sus dispositivos",
+			hi: "सभी उपकरणों पर अपने डेटा को सिंक में रखें",
+			cn: "在所有设备上保持数据同步",
+		},
+		open_source_title: {
+			en: "Open Source",
+			pt: "Código Aberto",
+			es: "Código Abierto",
+			hi: "ओपन सोर्स",
+			cn: "开源",
+		},
+		open_source_description: {
+			en: "Transparent, auditable, and community-driven development",
+			pt: "Desenvolvimento transparente, auditável e impulsionado pela comunidade",
+			es: "Desarrollo transparente, auditable e impulsado por la comunidad",
+			hi: "पारदर्शी, ऑडिट करने योग्य और समुदाय-संचालित विकास",
+			cn: "透明、可审计、社区驱动的开发",
+		},
+		letter_budgeting_title: {
+			en: "Letter Budgeting",
+			pt: "Orçamento por Letras",
+			es: "Presupuesto por Letras",
+			hi: "लेटर बजटिंग",
+			cn: "字母预算",
+		},
+		letter_budgeting_description: {
+			en: "Simple and effective budgeting method using letter categories",
+			pt: "Método simples e eficaz de orçamento usando categorias por letras",
+			es: "Método simple y efectivo de presupuesto usando categorías por letras",
+			hi: "अक्षर श्रेणियों का उपयोग करके सरल और प्रभावी बजटिंग विधि",
+			cn: "使用字母类别的简单有效的预算方法",
 		},
 		messages: {
 			en: [
@@ -617,7 +708,7 @@ export default {
 			pt: "Cole seus dados de restauração aqui e clique em 'Restaurar dados' novamente",
 			es: "Pegue sus datos de restauración aquí y haga clic en 'Restaurar datos' nuevamente",
 			hi: "यहाँ अपने पुनर्स्थापना डेटा को पेस्ट करें और 'डेटा पुनर्स्थापित करें' पर फिर से क्लिक करें",
-			cn: "在此粘贴您的恢复数据，然后再次点击‘恢复数据’",
+			cn: "在此粘贴您的恢复数据，然后再次点击'恢复数据'",
 		},
 		clear_data_token: {
 			en: "DELETE EVERYTHING",
@@ -631,7 +722,7 @@ export default {
 			pt: "Digite 'EXCLUIR TUDO' nesta área de texto e pressione 'Limpar dados' novamente para excluir tudo e começar do zero.",
 			es: "Escriba 'ELIMINAR TODO' en esta área de texto y presione 'Borrar datos' nuevamente para eliminar todo y comenzar desde cero.",
 			hi: "इस टेक्स्ट क्षेत्र में 'सब कुछ हटा दें' टाइप करें और फिर 'डेटा साफ़ करें' दबाएँ ताकि सब कुछ हट जाए और शुरुआत से शुरू किया जा सके।",
-			cn: "在此文本框中输入‘删除所有内容’，然后再次点击‘清除数据’以删除所有数据并从零开始。",
+			cn: "在此文本框中输入'删除所有内容'，然后再次点击'清除数据'以删除所有数据并从零开始。",
 		},
 		create_entity: {
 			en: (entity: string) => `Create ${entity}`,
@@ -1195,7 +1286,7 @@ export default {
 			pt: "O Moneeey gera relatórios e insights com base nas suas transações. Adicione novos beneficiários facilmente digitando um nome e selecionando 'Criar'.",
 			es: "Moneeey genera informes y análisis basados en sus transacciones. Agregue nuevos beneficiarios fácilmente escribiendo un nombre y seleccionando 'Crear'.",
 			hi: "मनी आपके लेन-देन के आधार पर रिपोर्ट और अंतर्दृष्टि उत्पन्न करता है। नाम टाइप करके और 'बनाएँ' चुनकर आसानी से नए प्राप्तकर्ता जोड़ें।",
-			cn: "Moneeey 根据您的交易生成报告和见解。输入名称并选择‘创建’即可轻松添加新的收款人。",
+			cn: "Moneeey 根据您的交易生成报告和见解。输入名称并选择'创建'即可轻松添加新的收款人。",
 		},
 		budgets: {
 			en: "Time to budget your Moneeey! Allocate parts of your income to budgets and track your financial goals.",
@@ -1216,7 +1307,7 @@ export default {
 			pt: "Antes de continuar, clique em 'Novo Orçamento' e crie um orçamento.",
 			es: "Antes de continuar, haga clic en 'Nuevo Presupuesto' y cree un presupuesto.",
 			hi: "जारी रखने से पहले, 'नया बजट' पर क्लिक करें और एक बजट बनाएं।",
-			cn: "在继续之前，请点击‘新预算’并创建预算。",
+			cn: "在继续之前，请点击'新预算'并创建预算。",
 		},
 		please_create_account: {
 			en: "Before continuing, create an account by entering details below.",

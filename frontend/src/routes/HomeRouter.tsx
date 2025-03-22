@@ -1,6 +1,5 @@
-import Dashboard from "../pages/Dashboard";
-
 import Route, { type IRouteParameters } from "./Route";
+import LandingPage from "../components/LandingPage";
 
 class HomeRouter extends Route<IRouteParameters> {
 	constructor() {
@@ -8,7 +7,7 @@ class HomeRouter extends Route<IRouteParameters> {
 	}
 
 	render() {
-		return <Dashboard />;
+		return <LandingPage />;
 	}
 }
 
