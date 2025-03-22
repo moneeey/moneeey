@@ -192,9 +192,9 @@ async function completeLandingWizard(page: Page) {
 	expect(page.getByTestId("languageSelector_es")).toBeDefined();
 	expect(page.getByTestId("languageSelector_en")).toBeDefined();
 	await page.getByTestId("languageSelector_es").click();
-	await expect(page.getByTestId("ok-button")).toContainText("Continuar");
+	await expect(page.getByTestId("ok-button")).toContainText("Ir a Moneeey");
 	await page.getByTestId("languageSelector_en").click();
-	await expect(page.getByTestId("ok-button")).toContainText("Continue");
+	await expect(page.getByTestId("ok-button")).toContainText("Go to Moneeey");
 
 	// Select default currency
 	await page.getByTestId("ok-button").click();

@@ -4,10 +4,11 @@
 	"main": "index.js",
 	"license": "MIT",
 	"devDependencies": {
-		"@playwright/test": "^1.36.1"
+		"@playwright/test": "^1.51.1"
 	},
 	"scripts": {
-		"setup": "playwright install",
+		"godocker": "docker run -it --rm --ipc=host -e CI=true -v ..:/workspace mcr.microsoft.com/playwright:v1.51.1-noble bash",
+		"setup": "playwright install --with-deps",
 		"ui": "playwright test --ui --fully-parallel",
 		"headed": "playwright test --headed",
 		"test": "playwright test",

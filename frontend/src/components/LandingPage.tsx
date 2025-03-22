@@ -1,9 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import useMessages from "../utils/Messages";
-import { PrimaryButton } from "./base/Button";
+import { OkButton } from "./base/Button";
 import LanguageSelector from "./LanguageSelector";
-import { Routes, Route } from "react-router-dom";
-import { FavIcon } from "./base/Icon";
 import MinimalBaseScreen from "./base/MinimalBaseScreen";
 
 interface FeatureBalloonProps {
@@ -43,7 +41,7 @@ const FeatureBalloon = ({ title, description, delay }: FeatureBalloonProps) => {
 	);
 };
 
-const renderLandingContent = () => {
+export default function LandingPage() {
 	const Messages = useMessages();
 	const landing = Messages.landing as LandingMessages;
 	const navigate = useNavigate();
@@ -100,7 +98,7 @@ const renderLandingContent = () => {
 				</div>
 
 				<div className="flex  justify-center  animate-fade-in space-y-8" style={{ animationDelay: "0.7s" }}>
-					<PrimaryButton
+					<OkButton
 						onClick={() => navigate("/dashboard")}
 						className="text-xl py-4 px-8"
 						title={landing.go_to_moneeey as string}
@@ -110,12 +108,3 @@ const renderLandingContent = () => {
 		</MinimalBaseScreen>
 	);
 };
-
-export default function LandingPage() {
-	return (
-		<Routes>
-			<Route path="/" element={renderLandingContent()} />
-			<Route path="*" element={<div>404 - Page Not Found</div>} />
-		</Routes>
-	);
-}
