@@ -30,7 +30,7 @@
 		"react-datepicker": "4.25.0",
 		"react-dom": "18.3.1",
 		"react-dropzone": "14.3.8",
-		"react-number-format": "5.4.0",
+		"react-number-format": "5.4.3",
 		"react-router-dom": "6.27.0",
 		"react-select": "5.8.0",
 		"react-virtualized": "9.22.6",
