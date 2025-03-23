@@ -47,7 +47,7 @@ export const InputContainer = ({
 			className={`${baseClassname || BaseInputClzz} flex ${
 				isError ? "border border-red-400" : ""
 			}
-      ${readOnly ? "text-slate-300" : "text-slate-100"}
+      ${readOnly ? "opacity-85" : ""}
       ${containerArea ? "!bg-background-800 rounded-md p-2" : ""}
 `}
 		>

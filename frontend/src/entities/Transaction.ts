@@ -75,6 +75,10 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 		item: ITransaction,
 		options: { setUpdated: boolean } = { setUpdated: true },
 	) {
+		if (item.from_value < 0 || item.to_value < 0) {
+			throw new Error("Transaction amounts must be positive numbers");
+		}
+		
 		super.merge(item, options);
 		if (!isEmpty(item.date)) {
 			const dt = parseDate(item.date);
