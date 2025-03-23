@@ -475,13 +475,13 @@ test.describe("Moneeey", () => {
 		];
 		const today = formatDate(new Date());
 		expect(await retrieveRowsData(page, referenceAccountColumns)).toEqual([
-			`date: ${today} (bg---800) | account: Banco Moneeey (bg---800) | amount: 3000 (bg---800 text-green-200) | running: 3000 (bg---800 text-green-200) | memo: (bg---800)`,
-			`date: ${today} (bg---600) | account: Bakery123 (bg---600) | amount: -60 (bg---600 text-green-200) | running: 2940 (bg---600 text-green-200) | memo: (bg---600)`,
-			`date: ${today} (bg---800) | account: Ristorant88 (bg---800) | amount: -128 (bg---800 text-red-200) | running: 2812 (bg---800 text-green-200) | memo: (bg---800)`,
-			`date: ${today} (bg---600) | account: Playxbox421 (bg---600) | amount: -7213 (bg---600 text-red-200) | running: 2812 (bg---600 text-green-200) | memo: (bg---600)`,
-			`date: ${today} (bg---800) | account: Cashbazk (bg---800) | amount: 69 (bg---800 text-red-200) | running: 2883 (bg---800 text-red-200) | memo: (bg---800)`,
-			`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 2940 (bg---600 text-green-200) | running: 2940 (bg---600 text-red-200) | memo: (bg---600)`,
-			`date: ${today} (bg---800) | account: (bg---800) | amount: (bg---800) | running: (bg---800) | memo: (bg---800)`,
+			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2.000 (bg---800 text-green-200) | running: 2.000 (bg---800 text-green-200) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 3.000 (bg---600 text-green-200) | running: 5.000 (bg---600 text-green-200) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800 text-red-200) | running: 4.940 (bg---800 text-green-200) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | account: Ristorant88 (bg---600) | amount: -128 (bg---600 text-red-200) | running: 4.812 (bg---600 text-green-200) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Playxbox421 (bg---800) | amount: -7.213,21 (bg---800 text-red-200) | running: -2.401,21 (bg---800 text-red-200) | memo: game platform (bg---800)`,
+			`date: ${today} (bg---600) | account: Cashbazk (bg---600) | amount: 69,42 (bg---600 text-green-200) | running: -2.331,79 (bg---600 text-red-200) | memo: cashback (bg---600)`,
+			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
 		]);
 		// Go to All transactions and assert
 		await OpenMenuItem(page, "All transactions");
@@ -493,21 +493,23 @@ test.describe("Moneeey", () => {
 			"editorMemo",
 		];
 		expect(await retrieveRowsData(page, allTransactionsColumns)).toEqual([
-			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 2000 (bg---800) | memo: 2024-04-01;MoneeeyCard;2000 (bg---800)`,
-			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: Banco Moneeey (bg---600) | amount: 3000 (bg---600) | memo: 2024-04-02;Banco Moneeey;3000 (bg---600)`,
-			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo: 2024-04-03;Bitcoinss;0,12345678 (bg---800)`,
-			`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: Playxbox421 (bg---600) | amount: -7213,21 (bg---600) | memo: 2024-04-04;Playxbox421;-7213,21 (bg---600)`,
-			`date: ${today} (bg---800) | from: Cashbazk (bg---800) | to: Playxbox421 (bg---800) | amount: 69,42 (bg---800) | memo: 2024-04-05;Cashbazk;69,42 (bg---800)`,
-			`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: Cashbazk (bg---600) | amount: -2940 (bg---600) | memo: 2024-04-06;Banco Moneeey;-2940 (bg---600)`,
-			`date: ${today} (bg---800) | from: Banco Moneeey (bg---800) | to: Ristorant88 (bg---800) | amount: -128 (bg---800) | memo: 2024-04-07;Ristorant88;-128 (bg---800)`,
+			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: MoneeeyCard (bg---600) | amount: 3.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Bakery123 (bg---800) | amount: 60 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: MoneeeyCard (bg---600) | to: Ristorant88 (bg---600) | amount: 128 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Playxbox421 (bg---800) | amount: 7.213,21 (bg---800) | memo: game platform (bg---800)`,
+			`date: ${today} (bg---600) | from: Cashbazk (bg---600) | to: MoneeeyCard (bg---600) | amount: 69,42 (bg---600) | memo: cashback (bg---600)`,
+			`date: ${today} (bg---800) | from: From (bg---800) | to: To (bg---800) | amount: 0 (bg---800) | memo:  (bg---800)`,
 		]);
 
 		// Go to Banco Moneeey account and assert
 		await OpenMenuItem(page, "BRL Banco Moneeey");
 		expect(await retrieveRowsData(page, referenceAccountColumns)).toEqual([
-			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2000 (bg---800) | running: 2000 (bg---800) | memo: 2024-04-01;MoneeeyCard;2000 (bg---800)`,
-			`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 3000 (bg---600) | running: 5000 (bg---600) | memo: 2024-04-02;Banco Moneeey;3000 (bg---600)`,
-			`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800) | running: 4940 (bg---800) | memo: 2024-04-03;Bakery123;-60 (bg---800)`,
+			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-green-200) | running: 1.234,56 (bg---800 text-green-200) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: -3.000 (bg---600 text-red-200) | running: -1.765,44 (bg---600 text-red-200) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
 		]);
 	});
 
