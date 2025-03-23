@@ -158,7 +158,7 @@ const BudgetPeriod = observer(
 							width: 50,
 							readOnly: true,
 							customClass: ({ remaining }) =>
-								remaining < 0 ? "bg-red-800" : "",
+								remaining < 0 ? "opacity-80 text-red-200" : "opacity-80 ",
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
 								read: ({ remaining, budget: { currency_uuid } }) => ({

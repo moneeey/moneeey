@@ -315,14 +315,14 @@ test.describe("Moneeey", () => {
 		await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue(
 			"-24,80",
 		);
-		expect(await editorRemainingClass(0)).toEqual("bg---800 bg-red-800");
+		expect(await editorRemainingClass(0)).toEqual("bg---800 opacity-80 text-red-200");
 
 		await Input(page, "editorAllocated", undefined, 1).change("5435,25");
 		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("1.234,56");
 		await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
 			"4.200,69",
 		);
-		expect(await editorRemainingClass(1)).toEqual("bg---600");
+		expect(await editorRemainingClass(1)).toEqual("bg---600 opacity-80");
 
 		// Go to Import
 		await tourNext(page);

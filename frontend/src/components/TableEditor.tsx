@@ -53,7 +53,7 @@ export default observer(
 								dateDistanceInSecs(
 									parseDateTime(row.updated),
 									parseDateTime(currentDateTime()),
-								) < 20;
+								) < 10;
 							const isNewEntityId = store.getUuid(row) === newEntityId;
 
 							return isSchemaFiltered || isRecent || isNewEntityId;
