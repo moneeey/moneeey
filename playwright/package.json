@@ -7,13 +7,14 @@
 		"@playwright/test": "^1.51.1"
 	},
 	"scripts": {
-		"godocker": "docker run -it --rm --ipc=host -e CI=true -v ..:/workspace mcr.microsoft.com/playwright:v1.51.1-noble bash",
-		"setup": "playwright install --with-deps",
+		"godocker": "docker run -it --rm --ipc=host -e CI=true -w /workspace/playwright -v ..:/workspace mcr.microsoft.com/playwright:v1.51.1-noble bash",
+		"setup-with-deps": "playwright install --with-deps",
+		"setup-no-deps": "playwright install",
 		"ui": "playwright test --ui --fully-parallel",
 		"headed": "playwright test --headed",
 		"test": "playwright test",
-		"test-ff": "playwright test --project firefox",
-		"test-cr": "playwright test --project chromium",
+		"test-ff": "playwright test --project firefox --reporter null",
+		"test-cr": "playwright test --project chromium --reporter null",
 		"debug-ff": "playwright test --headed --timeout 0 --project firefox",
 		"debug-cr": "playwright test --headed --timeout 0 --project chromium"
 	}

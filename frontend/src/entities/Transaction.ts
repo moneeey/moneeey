@@ -63,8 +63,13 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 			sorted: computed,
 			oldest_dt: observable,
 			newest_dt: observable,
+			runningBalanceVersion: computed,
 		});
 		this.runningBalance = new RunningBalance(this.moneeeyStore.logger);
+	}
+
+	get runningBalanceVersion() {
+		return this.runningBalance.version;
 	}
 
 	updateRunningBalance = debounce(() => {
@@ -75,6 +80,10 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 		item: ITransaction,
 		options: { setUpdated: boolean } = { setUpdated: true },
 	) {
+		if (item.from_value < 0 || item.to_value < 0) {
+			throw new Error("Transaction amounts must be positive numbers");
+		}
+
 		super.merge(item, options);
 		if (!isEmpty(item.date)) {
 			const dt = parseDate(item.date);

@@ -4,11 +4,6 @@ import { useCallback, useMemo, useState } from "react";
 
 import type { IBaseEntity } from "../shared/Entity";
 import type MappedStore from "../shared/MappedStore";
-import {
-	currentDateTime,
-	dateDistanceInSecs,
-	parseDateTime,
-} from "../utils/Date";
 
 import VirtualTable, { type Row, type ColumnDef } from "./VirtualTableEditor";
 
@@ -21,7 +16,6 @@ interface TableEditorProps<T extends IBaseEntity> extends WithDataTestId {
 	schemaFilter?: (row: T) => boolean;
 	factory: (id?: string) => T;
 	creatable?: boolean;
-	showRecentEntries?: boolean;
 }
 
 export default observer(
@@ -31,7 +25,6 @@ export default observer(
 		store,
 		factory,
 		creatable,
-		showRecentEntries,
 		testId,
 	}: TableEditorProps<T>) => {
 		const [newEntityId, setNewEntityId] = useState(() =>
@@ -47,16 +40,9 @@ export default observer(
 						.map((id) => store.byUuid(id) as T)
 						.filter((row) => {
 							const isSchemaFiltered = !schemaFilter || schemaFilter(row);
-							const isRecent =
-								showRecentEntries !== false &&
-								row.updated &&
-								dateDistanceInSecs(
-									parseDateTime(row.updated),
-									parseDateTime(currentDateTime()),
-								) < 60;
 							const isNewEntityId = store.getUuid(row) === newEntityId;
 
-							return isSchemaFiltered || isRecent || isNewEntityId;
+							return isSchemaFiltered || isNewEntityId;
 						})
 						.map((row) => store.getUuid(row))
 						.map((entityId) => {
@@ -68,15 +54,7 @@ export default observer(
 						})
 						.concat(creatable === false ? [] : [newEntityId]),
 				).map((entityId) => ({ entityId })),
-			[
-				creatable,
-				storeIds,
-				store,
-				schemaFilter,
-				newEntityId,
-				showRecentEntries,
-				factory,
-			],
+			[creatable, storeIds, store, schemaFilter, newEntityId, factory],
 		);
 
 		const columns = useMemo((): ColumnDef[] => {

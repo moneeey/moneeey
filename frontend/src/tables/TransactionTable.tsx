@@ -1,4 +1,4 @@
-import { compact, isEmpty } from "lodash";
+import { isEmpty } from "lodash";
 import { observer } from "mobx-react-lite";
 
 import AccountField from "../components/editor/AccountField";
@@ -9,6 +9,7 @@ import TransactionAmountField from "../components/editor/TransactionAmountField"
 
 import TableEditor from "../components/TableEditor";
 import type { TAccountUUID } from "../entities/Account";
+import type { ICurrency } from "../entities/Currency";
 import type TransactionStore from "../entities/Transaction";
 import type { ITransaction } from "../entities/Transaction";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
@@ -22,7 +23,7 @@ interface TransactionSettingsProps {
 	tableId: string;
 }
 
-const TransactionTable = observer(
+export default observer(
 	({
 		creatable,
 		transactions,
@@ -31,10 +32,59 @@ const TransactionTable = observer(
 		tableId,
 	}: TransactionSettingsProps) => {
 		const Messages = useMessages();
-		const { accounts, currencies } = useMoneeeyStore();
+		const { accounts, currencies, config } = useMoneeeyStore();
 
-		const currencyForAccount = (account_uuid: TAccountUUID) =>
-			currencies.byUuid(accounts.byUuid(account_uuid)?.currency_uuid);
+		const currencyForAccount = (
+			account_uuid: TAccountUUID,
+		): ICurrency | undefined =>
+			currencies.byUuid(accounts.byUuid(account_uuid)?.currency_uuid) ??
+			currencies.byUuid(config.main.default_currency);
+
+		const getOther = <T,>({
+			from,
+			to,
+			from_account,
+			to_account,
+		}: {
+			from: T;
+			to: T;
+			from_account: TAccountUUID | null;
+			to_account: TAccountUUID | null;
+		}): T => {
+			if (referenceAccount === to_account) return from;
+			return referenceAccount === from_account ? to : from;
+		};
+
+		const getOtherAccount = ({
+			to_account,
+			from_account,
+		}: {
+			to_account: TAccountUUID | null;
+			from_account: TAccountUUID | null;
+		}): TAccountUUID => {
+			return getOther({
+				from: from_account ?? "",
+				to: to_account ?? "",
+				from_account,
+				to_account,
+			});
+		};
+
+		const getReferenceBalance = (
+			transaction_uuid: string,
+			{
+				from_account,
+				to_account,
+			}: { from_account: TAccountUUID | null; to_account: TAccountUUID | null },
+		) => {
+			const balance =
+				transactions.runningBalance.transactionRunningBalance.get(
+					transaction_uuid,
+				);
+			if (referenceAccount === to_account) return balance?.to_balance ?? 0;
+			if (referenceAccount === from_account) return balance?.from_balance ?? 0;
+			return 0;
+		};
 
 		return (
 			<TableEditor
@@ -42,85 +92,155 @@ const TransactionTable = observer(
 				creatable={creatable}
 				testId={"transactionTable"}
 				store={transactions}
-				schemaFilter={(row: ITransaction) => schemaFilter(row)}
+				schemaFilter={schemaFilter}
 				factory={transactions.factory}
-				schema={compact([
+				schema={[
 					{
 						title: Messages.util.date,
 						width: 72,
-						defaultSortOrder: "ascend",
+						defaultSortOrder: "ascend" as const,
 						validate: () => ({ valid: true }),
 						...DateField<ITransaction>({
 							read: ({ date }) => date,
 							delta: (date) => ({ date }),
 						}),
 					},
-					{
-						title: Messages.transactions.from_account,
-						width: 90,
-						validate: () => ({ valid: true }),
-						...AccountField<ITransaction>({
-							read: ({ from_account }) => from_account,
-							delta: (from_account) => ({ from_account }),
-							clearable: true,
-							readOptions: () => accounts.allActive,
-						}),
-					},
-					{
-						title: Messages.transactions.to_account,
-						width: 90,
-						validate: () => ({ valid: true }),
-						...AccountField<ITransaction>({
-							read: ({ to_account }) => to_account,
-							delta: (to_account) => ({ to_account }),
-							clearable: true,
-							readOptions: () => accounts.allActive,
-						}),
-					},
+					...(!isEmpty(referenceAccount)
+						? [
+								{
+									title: Messages.transactions.account,
+									width: 160,
+									validate: () => ({ valid: true }),
+									...AccountField<ITransaction>({
+										read: getOtherAccount,
+										delta: (new_account, transaction) => {
+											const { field } = getOther({
+												from: { field: "from_account" as const },
+												to: { field: "to_account" as const },
+												from_account: transaction.from_account,
+												to_account: transaction.to_account,
+											});
+											return {
+												[field]: new_account,
+												[field === "from_account"
+													? "to_account"
+													: "from_account"]: referenceAccount,
+											};
+										},
+										clearable: true,
+										readOptions: () => accounts.allActive,
+									}),
+								},
+							]
+						: [
+								{
+									title: Messages.transactions.from_account,
+									width: 90,
+									validate: () => ({ valid: true }),
+									...AccountField<ITransaction>({
+										read: ({ from_account }) => from_account,
+										delta: (from_account) => ({ from_account }),
+										clearable: true,
+										readOptions: () => accounts.allActive,
+									}),
+								},
+								{
+									title: Messages.transactions.to_account,
+									width: 90,
+									validate: () => ({ valid: true }),
+									...AccountField<ITransaction>({
+										read: ({ to_account }) => to_account,
+										delta: (to_account) => ({ to_account }),
+										clearable: true,
+										readOptions: () => accounts.allActive,
+									}),
+								},
+							]),
 					{
 						title: Messages.transactions.amount,
 						width: 140,
+						customClass: ({
+							from_account,
+							to_account,
+						}: {
+							from_account: TAccountUUID | null;
+							to_account: TAccountUUID | null;
+						}) => {
+							if (!referenceAccount) return "";
+							return referenceAccount === from_account
+								? "text-red-200"
+								: referenceAccount === to_account
+									? "text-green-200"
+									: "";
+						},
 						validate: () => ({ valid: true }),
 						...TransactionAmountField<ITransaction>({
 							read: ({ from_account, from_value, to_account, to_value }) => ({
 								from: {
 									currency: currencyForAccount(from_account),
-									amount: from_value,
+									amount:
+										referenceAccount === from_account
+											? -from_value
+											: from_value,
 								},
 								to: {
 									currency: currencyForAccount(to_account),
 									amount: to_value,
 								},
 							}),
-							delta: ({ from, to }) => ({
-								from_value: from.amount,
-								to_value: to.amount,
-							}),
-						}),
-					},
-					!isEmpty(referenceAccount) && {
-						title: Messages.transactions.running_balance,
-						width: 140,
-						validate: () => ({ valid: true }),
-						...CurrencyAmountField<ITransaction>({
-							read: ({ transaction_uuid, from_account }) => {
-								const balance =
-									transactions.runningBalance.transactionRunningBalance.get(
-										transaction_uuid,
-									);
-								const amount =
-									(from_account === referenceAccount
-										? balance?.from_balance
-										: balance?.to_balance) || 0;
-
+							delta: ({ from, to }, { from_account, to_account }) => {
+								if (
+									(referenceAccount === to_account && to.amount < 0) ||
+									(referenceAccount === from_account && from.amount > 0)
+								) {
+									return {
+										from_account: to_account,
+										to_account: from_account,
+										from_value: Math.abs(to.amount),
+										to_value: Math.abs(from.amount),
+									};
+								}
 								return {
-									currency: currencyForAccount(referenceAccount),
-									amount,
+									from_value: Math.abs(from.amount),
+									to_value: Math.abs(to.amount),
 								};
 							},
-							delta: () => ({}),
 						}),
 					},
+					...(!isEmpty(referenceAccount)
+						? [
+								{
+									title: Messages.transactions.running_balance,
+									width: 120,
+									customClass: ({
+										transaction_uuid,
+										from_account,
+										to_account,
+									}: {
+										transaction_uuid: string;
+										from_account: TAccountUUID | null;
+										to_account: TAccountUUID | null;
+									}) => {
+										const amount = getReferenceBalance(transaction_uuid, {
+											from_account,
+											to_account,
+										});
+										return amount < 0 ? "text-red-200" : "text-green-200";
+									},
+									validate: () => ({ valid: true }),
+									...CurrencyAmountField<ITransaction>({
+										read: ({ transaction_uuid, from_account, to_account }) => ({
+											currency: currencyForAccount(referenceAccount),
+											amount: getReferenceBalance(transaction_uuid, {
+												from_account,
+												to_account,
+											}),
+										}),
+										delta: () => ({}),
+									}),
+								},
+							]
+						: []),
 					{
 						title: Messages.transactions.memo,
 						width: 160,
@@ -130,10 +250,8 @@ const TransactionTable = observer(
 							delta: (memo) => ({ memo }),
 						}),
 					},
-				])}
+				]}
 			/>
 		);
 	},
 );
-
-export default TransactionTable;

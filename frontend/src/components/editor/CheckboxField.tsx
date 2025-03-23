@@ -22,7 +22,9 @@ export default function <TEntity>({
 					placeholder={field.title}
 					isError={isError}
 					value={read(entity)}
-					onChange={(value: boolean) => commit({ ...entity, ...delta(value) })}
+					onChange={(value: boolean) =>
+						commit({ ...entity, ...delta(value, entity) })
+					}
 				>
 					{field.title}
 				</Checkbox>

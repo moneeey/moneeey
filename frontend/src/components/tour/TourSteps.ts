@@ -50,11 +50,7 @@ export default function TourSteps(
 		},
 		{
 			content: Messages.tour.transactions,
-			action: navigateTo(
-				firstNonPayee
-					? AccountRoute.accountUrlForName(firstNonPayee.name)
-					: AccountRoute.accountUrlForAll(),
-			),
+			action: navigateTo(AccountRoute.accountUrlForAll()),
 			blinkers: [".transactionTable-body", ".mn-active-navbar"],
 		},
 		{

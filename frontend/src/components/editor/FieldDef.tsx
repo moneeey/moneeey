@@ -1,6 +1,6 @@
 export type FieldAcessor<TEntity, TValue> = {
 	read(entity: TEntity): TValue;
-	delta(value: TValue): Partial<TEntity>;
+	delta(value: TValue, entity: TEntity): Partial<TEntity>;
 };
 
 export type FieldRenderProps<TEntity> = {

@@ -65,7 +65,9 @@ export default function <TEntity>({
 							"value",
 						)}
 						suffix={<Tags tags={tags} />}
-						onChange={(value: string) => commit({ ...entity, ...delta(value) })}
+						onChange={(value: string) =>
+							commit({ ...entity, ...delta(value, entity) })
+						}
 						onCreate={(name: string) => {
 							const account = {
 								...accounts.factory(),
@@ -86,7 +88,7 @@ export default function <TEntity>({
 									)[0] || config.main.default_currency;
 							}
 							accounts.merge(account);
-							commit({ ...entity, ...delta(account.account_uuid) });
+							commit({ ...entity, ...delta(account.account_uuid, entity) });
 						}}
 					/>
 				);

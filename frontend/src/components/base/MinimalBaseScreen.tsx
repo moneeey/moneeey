@@ -7,15 +7,17 @@ export default function MinimalBasicScreen({
 }: { children: ReactNode }) {
 	const Messages = useMessages();
 	return (
-		<div className="flex justify-center items-center min-h-screen bg-background-600 ">
-			<div className="flex flex-col items-center gap-4">
-				<h1
-					className="flex flex-row gap-2 scale-150 pb-4"
-					data-testid="minimalScreenTitle"
-				>
-					<FavIcon /> {Messages.tour.welcome}
-				</h1>
-				{children}
+		<div className="fixed inset-0 bg-background-600 overflow-y-auto">
+			<div className="min-h-full flex flex-col items-center justify-center py-8">
+				<div className="flex flex-col items-center gap-4 w-full max-w-2xl px-4">
+					<h1
+						className="flex flex-row scale-125"
+						data-testid="minimalScreenTitle"
+					>
+						<FavIcon /> <span className="ml-2">{Messages.tour.welcome}</span>
+					</h1>
+					{children}
+				</div>
 			</div>
 		</div>
 	);
