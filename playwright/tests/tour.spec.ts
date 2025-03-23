@@ -258,6 +258,13 @@ const classForTestIdTDs =
 					.trim(),
 			);
 
+async function waitLoading(page: Page) {
+	return await page.waitForFunction(
+		(selector) => !document.querySelector(selector),
+		"[data-testid=loadingProgress]",
+	);
+}
+
 test.beforeEach(async ({ page }) => {
 	await page.goto("/");
 	await page.evaluate(() => {
@@ -343,13 +350,6 @@ test.describe("Moneeey", () => {
 		}
 		expect(page.getByTestId("nm-modal-title")).toBeHidden();
 	});
-
-	async function waitLoading(page: Page) {
-		return await page.waitForFunction(
-			(selector) => !document.querySelector(selector),
-			"[data-testid=loadingProgress]",
-		);
-	}
 
 	test("Import", async ({ page }) => {
 		await completeLandingWizard(page);
