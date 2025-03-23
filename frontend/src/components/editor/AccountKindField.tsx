@@ -37,7 +37,7 @@ export default function <TEntity>({
 						value: accountType,
 					}))}
 					onChange={(value: string) =>
-						commit({ ...entity, ...delta(value as AccountKind) })
+						commit({ ...entity, ...delta(value as AccountKind, entity) })
 					}
 					containerArea={containerArea}
 				/>

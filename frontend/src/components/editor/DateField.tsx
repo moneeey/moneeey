@@ -33,7 +33,7 @@ export default function <TEntity>({
 					dateFormat={config.main.date_format}
 					value={parseDateOrTime(read(entity))}
 					onChange={(value) =>
-						commit({ ...entity, ...delta(formatDate(value)) })
+						commit({ ...entity, ...delta(formatDate(value), entity) })
 					}
 				/>
 			),

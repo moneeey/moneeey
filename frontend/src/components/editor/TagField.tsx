@@ -26,10 +26,10 @@ export default function <TEntity>({
 					isError={isError}
 					value={read(entity)}
 					options={tags.all.map((tag) => ({ label: tag, value: tag }))}
-					onChange={(value: string[]) => commit({ ...entity, ...delta(value) })}
+					onChange={(value: string[]) => commit({ ...entity, ...delta(value, entity) })}
 					onCreate={(value: string) => {
 						tags.register(value);
-						commit({ ...entity, ...delta([...read(entity), value]) });
+						commit({ ...entity, ...delta([...read(entity), value], entity) });
 					}}
 				/>
 			),

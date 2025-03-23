@@ -54,7 +54,7 @@ const AccountTransactions = observer(
 
 		return (
 			<TransactionTable
-				tableId={`accountTransactions${account_uuid}__${globalSearchTags.join("_")}`}
+				tableId={`accountTransactions${account_uuid}_${account_name}__${globalSearchTags.join("_")}`}
 				{...{
 					transactions,
 					accounts,

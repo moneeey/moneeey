@@ -977,6 +977,13 @@ export default {
 			hi: "राशि",
 			cn: "金额",
 		},
+		account: {
+			en: "Account",
+			pt: "Conta",
+			es: "Cuenta",
+			hi: "खाता",
+			cn: "账户",
+		},
 		memo: {
 			en: "Memo",
 			pt: "Memo",

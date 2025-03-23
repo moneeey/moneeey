@@ -29,7 +29,7 @@ export default function <TEntity>({
 					placeholder={field.title}
 					isError={isError}
 					value={read(entity)}
-					onChange={(value: string) => commit({ ...entity, ...delta(value) })}
+					onChange={(value: string) => commit({ ...entity, ...delta(value, entity) })}
 					suffix={<TagsMemo tags={tagsForText(read(entity))} />}
 				/>
 			),

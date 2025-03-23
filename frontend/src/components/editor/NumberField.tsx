@@ -40,7 +40,7 @@ export default function <TEntity>({
 					value={read(entity)}
 					prefix={prefix}
 					suffix={suffix}
-					onChange={(value) => commit({ ...entity, ...delta(value) })}
+					onChange={(value) => commit({ ...entity, ...delta(value, entity) })}
 				/>
 			),
 		),

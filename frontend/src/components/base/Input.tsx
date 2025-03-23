@@ -5,7 +5,7 @@ import type { ClassNameType } from "../../utils/Utils";
 
 import type { WithDataTestId } from "./Common";
 
-export const BaseInputClzz: ClassNameType = "w-full color-white bg-transparent";
+export const BaseInputClzz: ClassNameType = "w-full color-inherit bg-transparent";
 
 export type InputProps<T> = WithDataTestId & {
 	className?: string;

@@ -42,7 +42,7 @@ export default function <TEntity>({
 						),
 						value: currency.currency_uuid,
 					}))}
-					onChange={(value: string) => commit({ ...entity, ...delta(value) })}
+					onChange={(value: string) => commit({ ...entity, ...delta(value, entity) })}
 					containerArea={containerArea}
 				/>
 			),
