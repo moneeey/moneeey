@@ -55,6 +55,31 @@ const mostUsedCurrencies = [
 	"RSD Serbian Dinar",
 ];
 
+// Column definitions for different views
+const ALL_TRANSACTIONS_COLUMNS = [
+	"editorDate",
+	"editorFrom",
+	"editorTo",
+	"editorAmount",
+	"editorMemo",
+];
+
+const REFERENCE_ACCOUNT_COLUMNS = [
+	"editorDate",
+	"editorAccount",
+	"editorAmount",
+	"editorRunning",
+	"editorMemo",
+];
+
+const IMPORT_COLUMNS = [
+	"editorDate",
+	"editorFrom",
+	"editorTo",
+	"editorAmount",
+	"editorMemo",
+];
+
 // Utility functions
 const classForTestIdTDs =
 	(page: Page, testId: string) => async (index: number) =>
@@ -177,7 +202,7 @@ async function dismissNotification(page: Page, text: string) {
 }
 
 // Transaction helpers
-async function insertTransactionOnAllTransactions(
+async function updateOnAllTransactions(
 	page: Page,
 	index: number,
 	fromAccountName: string,
@@ -193,7 +218,7 @@ async function insertTransactionOnAllTransactions(
 	await Input(page, "editorAmount", undefined, index).change(amount);
 }
 
-async function insertTransactionOnReferenceAccount(
+async function updateOnAccountTransactions(
 	page: Page,
 	index: number,
 	accountName: string,
@@ -350,27 +375,15 @@ test.describe("Moneeey", () => {
 		// Progress Tour to Transactions
 		expect(page.getByText("start inserting transactions")).toBeDefined();
 
-		await insertTransactionOnAllTransactions(
+		await updateOnAllTransactions(
 			page,
 			2,
 			"Banco Moneeey",
 			"Gas Station",
 			"1234,56",
 		);
-		await insertTransactionOnAllTransactions(
-			page,
-			3,
-			"Banco Moneeey",
-			"Bakery",
-			"78,69",
-		);
-		await insertTransactionOnAllTransactions(
-			page,
-			4,
-			"Banco Moneeey",
-			"Bakery",
-			"11,11",
-		);
+		await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "78,69");
+		await updateOnAllTransactions(page, 4, "Banco Moneeey", "Bakery", "11,11");
 
 		// Progress Tour to Transactions
 		await tourNext(page);
@@ -434,81 +447,110 @@ test.describe("Moneeey", () => {
 		await page.getByText("BRL MoneeeyCard").click();
 
 		// Add three transactions
-		await insertTransactionOnReferenceAccount(
-			page,
-			1,
-			"Banco Moneeey",
-			"3000,00",
-		);
-		await insertTransactionOnReferenceAccount(page, 2, "Bakery123", "-60,00");
-		await insertTransactionOnReferenceAccount(
-			page,
-			3,
-			"Ristorant88",
-			"-128,00",
-		);
-		await insertTransactionOnReferenceAccount(
-			page,
-			4,
-			"Playxbox421",
-			"-7213,21",
-			"game platform",
-		);
-		await insertTransactionOnReferenceAccount(
-			page,
-			5,
-			"Cashbazk",
-			"69,42",
-			"cashback",
-		);
+		await updateOnAccountTransactions(page, 1, "Banco Moneeey", "3000,00");
+		await updateOnAccountTransactions(page, 2, "Bakery123", "-60,00", "pao");
+		await updateOnAccountTransactions(page, 3, "Ristorant88", "-128,00");
+		await updateOnAccountTransactions(page, 4, "Playxbox421", "-7213,21");
+		await updateOnAccountTransactions(page, 5, "Cashbazk", "69,42", "cashback");
 
 		// Wait running balance to be updated
 		await Input(page, "editorRunning", undefined, 5).toHaveValue("-2.331,79");
 
 		// Assert classes for the table
-		const referenceAccountColumns = [
-			"editorDate",
-			"editorAccount",
-			"editorAmount",
-			"editorRunning",
-			"editorMemo",
-		];
 		const today = formatDate(new Date());
-		expect(await retrieveRowsData(page, referenceAccountColumns)).toEqual([
+		expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS)).toEqual([
 			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2.000 (bg---800 text-green-200) | running: 2.000 (bg---800 text-green-200) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 3.000 (bg---600 text-green-200) | running: 5.000 (bg---600 text-green-200) | memo:  (bg---600)`,
-			`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800 text-red-200) | running: 4.940 (bg---800 text-green-200) | memo:  (bg---800)`,
+			`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800 text-red-200) | running: 4.940 (bg---800 text-green-200) | memo: pao (bg---800)`,
 			`date: ${today} (bg---600) | account: Ristorant88 (bg---600) | amount: -128 (bg---600 text-red-200) | running: 4.812 (bg---600 text-green-200) | memo:  (bg---600)`,
-			`date: ${today} (bg---800) | account: Playxbox421 (bg---800) | amount: -7.213,21 (bg---800 text-red-200) | running: -2.401,21 (bg---800 text-red-200) | memo: game platform (bg---800)`,
+			`date: ${today} (bg---800) | account: Playxbox421 (bg---800) | amount: -7.213,21 (bg---800 text-red-200) | running: -2.401,21 (bg---800 text-red-200) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | account: Cashbazk (bg---600) | amount: 69,42 (bg---600 text-green-200) | running: -2.331,79 (bg---600 text-red-200) | memo: cashback (bg---600)`,
 			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
 		]);
 		// Go to All transactions and assert
 		await OpenMenuItem(page, "All transactions");
-		const allTransactionsColumns = [
-			"editorDate",
-			"editorFrom",
-			"editorTo",
-			"editorAmount",
-			"editorMemo",
-		];
-		expect(await retrieveRowsData(page, allTransactionsColumns)).toEqual([
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS)).toEqual([
 			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
 			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: MoneeeyCard (bg---600) | amount: 3.000 (bg---600) | memo:  (bg---600)`,
-			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Bakery123 (bg---800) | amount: 60 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Bakery123 (bg---800) | amount: 60 (bg---800) | memo: pao (bg---800)`,
 			`date: ${today} (bg---600) | from: MoneeeyCard (bg---600) | to: Ristorant88 (bg---600) | amount: 128 (bg---600) | memo:  (bg---600)`,
-			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Playxbox421 (bg---800) | amount: 7.213,21 (bg---800) | memo: game platform (bg---800)`,
+			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Playxbox421 (bg---800) | amount: 7.213,21 (bg---800) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | from: Cashbazk (bg---600) | to: MoneeeyCard (bg---600) | amount: 69,42 (bg---600) | memo: cashback (bg---600)`,
 			`date: ${today} (bg---800) | from: From (bg---800) | to: To (bg---800) | amount: 0 (bg---800) | memo:  (bg---800)`,
 		]);
 
 		// Go to Banco Moneeey account and assert
 		await OpenMenuItem(page, "BRL Banco Moneeey");
-		expect(await retrieveRowsData(page, referenceAccountColumns)).toEqual([
+		expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS)).toEqual([
 			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-green-200) | running: 1.234,56 (bg---800 text-green-200) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: -3.000 (bg---600 text-red-200) | running: -1.765,44 (bg---600 text-red-200) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
+		]);
+	});
+
+	test("Swap Transaction Directions", async ({ page }) => {
+		await completeLandingWizard(page);
+
+		// Click on MoneeeyCard account
+		await page.getByText("BRL MoneeeyCard").click();
+
+		// Add initial transactions
+		await updateOnAccountTransactions(page, 1, "Banco Moneeey", "3000", "Salary");
+		await updateOnAccountTransactions(page, 2, "Bakery123", "-60", "pao");
+		await updateOnAccountTransactions(page, 3, "Ristorant88", "-128,12", "Dinner");
+
+		// Wait for running balance to be updated
+		await Input(page, "editorRunning", undefined, 3).toHaveValue("4.811,88");
+
+		// Test swapping from positive to negative (Salary)
+		await Input(page, "editorAmount", undefined, 1).change("-3000,00");
+		await Input(page, "editorMemo", undefined, 1).change("Salary (swapped)");
+		
+		// Verify running balance is updated
+		await Input(page, "editorRunning", undefined, 3).toHaveValue("-1.188,12");
+
+		// Go to All transactions and verify the swap
+		await OpenMenuItem(page, "All transactions");
+		const today = formatDate(new Date());
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS)).toEqual([
+			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: MoneeeyCard (bg---600) | to: Banco Moneeey (bg---600) | amount: 3.000 (bg---600) | memo: Salary (swapped) (bg---600)`,
+			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Bakery123 (bg---800) | amount: 60 (bg---800) | memo: pao (bg---800)`,
+			`date: ${today} (bg---600) | from: MoneeeyCard (bg---600) | to: Ristorant88 (bg---600) | amount: 128,12 (bg---600) | memo: Dinner (bg---600)`,
+			`date: ${today} (bg---800) | from: From (bg---800) | to: To (bg---800) | amount: 0 (bg---800) | memo:  (bg---800)`,
+		]);
+
+		// Go back to MoneeeyCard account
+		await OpenMenuItem(page, "BRL MoneeeyCard");
+
+		// Test swapping from negative to positive (Dinner)
+		await Input(page, "editorAmount", undefined, 3).change("128,00");
+		await Input(page, "editorMemo", undefined, 3).change("Dinner (swapped)");
+
+		// Verify running balance is updated
+		await Input(page, "editorRunning", undefined, 3).toHaveValue("-932");
+
+		// Go to All transactions and verify the swap
+		await OpenMenuItem(page, "All transactions");
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS)).toEqual([
+			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: MoneeeyCard (bg---600) | to: Banco Moneeey (bg---600) | amount: 3.000 (bg---600) | memo: Salary (swapped) (bg---600)`,
+			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Bakery123 (bg---800) | amount: 60 (bg---800) | memo: pao (bg---800)`,
+			`date: ${today} (bg---600) | from: Ristorant88 (bg---600) | to: MoneeeyCard (bg---600) | amount: 128 (bg---600) | memo: Dinner (swapped) (bg---600)`,
+			`date: ${today} (bg---800) | from: From (bg---800) | to: To (bg---800) | amount: 0 (bg---800) | memo:  (bg---800)`,
+		]);
+
+		// Verify Banco Moneeey account transactions
+		await OpenMenuItem(page, "BRL Banco Moneeey");
+		expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS)).toEqual([
+			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-green-200) | running: 1.234,56 (bg---800 text-green-200) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: 3.000 (bg---600 text-green-200) | running: 4.234,56 (bg---600 text-green-200) | memo: Salary (swapped) (bg---600)`,
 			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
 		]);
 	});
@@ -545,17 +587,9 @@ test.describe("Moneeey", () => {
 			}
 		};
 
-		const importColumns = [
-			"editorDate",
-			"editorFrom",
-			"editorTo",
-			"editorAmount",
-			"editorMemo",
-		];
-
 		await importFile("bank_statement_a.csv");
 		await waitLoading(page);
-		expect(await retrieveRowsData(page, importColumns)).toEqual([
+		expect(await retrieveRowsData(page, IMPORT_COLUMNS)).toEqual([
 			"date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
 			"date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
 			"date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
@@ -563,7 +597,7 @@ test.describe("Moneeey", () => {
 			"date: 2015-02-06 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 57,52 (bg---800) | memo: 2015-02-06;Gas Station;-57.52 (bg---800)",
 			"date: 2015-02-07 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 50,5 (bg---600) | memo: 2015-02-07;Transfer;-50.50 (bg---600)",
 		]);
-
+ 
 		await updateEditorTos([
 			"Gas",
 			"Bakery",
@@ -593,7 +627,7 @@ test.describe("Moneeey", () => {
 		await importFile("bank_statement_b.ofx");
 		await waitLoading(page);
 
-		expect(await retrieveRowsData(page, importColumns)).toEqual([
+		expect(await retrieveRowsData(page, IMPORT_COLUMNS)).toEqual([
 			"date: 2015-02-07 (bg---800 bg-cyan-900) | from: Banco Moneeey (bg---800 bg-cyan-900) | to: MoneeeyCard (bg---800 bg-cyan-900) | amount: 50,5 (bg---800 bg-cyan-900) | memo: 2015-02-07;Transfer;-50.50;50.50  FromMyOtherAccount Transfer from savings  2015-02-07 (bg---800 bg-fuchsia-900)",
 			"date: 2015-02-10 (bg---600) | from: MoneeeyCard (bg---600) | to: To (bg---600 bg-green-950) | amount: 60,6 (bg---600) | memo: -60.60  Drogaria Drogas 420 Pharmacy purchase  2015-02-10 (bg---600)",
 			"date: 2015-02-10 (bg---800) | from: MoneeeyCard (bg---800) | to: Restaurant (bg---800) | amount: 70,7 (bg---800) | memo: -70.70  Restaurante Monteiro Dining out  2015-02-10 (bg---800)",
@@ -612,15 +646,8 @@ test.describe("Moneeey", () => {
 		await page.getByTestId("primary-button").click();
 
 		await OpenMenuItem(page, "All transactions");
-		const allTransactionsColumns = [
-			"editorDate",
-			"editorFrom",
-			"editorTo",
-			"editorAmount",
-			"editorMemo",
-		];
 		const today = formatDate(new Date());
-		expect(await retrieveRowsData(page, allTransactionsColumns)).toEqual([
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS)).toEqual([
 			"date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: Gas (bg---800) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
 			"date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: Bakery (bg---600) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
 			"date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: Restaurant (bg---800) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
