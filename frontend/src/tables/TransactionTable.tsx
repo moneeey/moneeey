@@ -123,22 +123,38 @@ export default observer(
 						{
 							title: Messages.transactions.amount,
 							width: 140,
+							customClass: ({ from_account, to_account }: { from_account: TAccountUUID | null, to_account: TAccountUUID | null }) => {
+								if (!referenceAccount) return "";
+								return referenceAccount === from_account ? "text-red-200" :
+									referenceAccount === to_account ? "text-green-200" :
+									"";
+							},
 							validate: () => ({ valid: true }),
 							...TransactionAmountField<ITransaction>({
 								read: ({ from_account, from_value, to_account, to_value }) => ({
 									from: {
 										currency: currencyForAccount(from_account),
-										amount: from_value,
+										amount: referenceAccount === from_account ? -from_value : from_value,
 									},
 									to: {
 										currency: currencyForAccount(to_account),
 										amount: to_value,
 									},
 								}),
-								delta: ({ from, to }) => ({
-									from_value: from.amount,
-									to_value: to.amount,
-								}),
+								delta: ({ from, to }, { from_account, to_account }) => {
+									if ((referenceAccount === to_account && to.amount < 0) || (referenceAccount === from_account && from.amount > 0)) {
+										return {
+											from_account: to_account,
+											to_account: from_account,
+											from_value: Math.abs(to.amount),
+											to_value: Math.abs(from.amount),
+										};
+									}
+									return {
+										from_value: Math.abs(from.amount),
+										to_value: Math.abs(to.amount),
+									};
+								},
 							}),
 						},
 					...(!isEmpty(referenceAccount) ? [
@@ -147,7 +163,7 @@ export default observer(
 							width: 120,
 							customClass: ({ transaction_uuid, from_account, to_account }: { transaction_uuid: string, from_account: TAccountUUID | null, to_account: TAccountUUID | null }) => {
 								const amount = getReferenceBalance(transaction_uuid, { from_account, to_account });
-								return amount < 0 ? "opacity-75" : "";
+								return amount < 0 ? "text-red-200" : "text-green-200";
 							},
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<ITransaction>({
