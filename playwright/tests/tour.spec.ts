@@ -97,7 +97,7 @@ function Select(page: Page, testId: string, index = 0) {
 		await input().press("Enter");
 	};
 	const currentValue = async () =>
-		select().locator(".mn-select__single-value").innerText();
+		select().locator(".mn-select__single-value, .mn-select__placeholder").innerText();
 
 	return {
 		async value() {
@@ -208,41 +208,28 @@ async function insertTransactionOnReferenceAccount(
 }
 
 // Test helpers
-async function retrieveCellClasses(page: Page, columns: string[]) {
-	const retrieveCellClassesForIndex = async (index: number) => {
-		const clazzes = await Promise.all(
-			columns.map(
-				async (column) =>
-					`${column.replace("editor", "").toLowerCase()}: ${await classForTestIdTDs(page, column)(index)}`,
-			),
-		);
-		return clazzes.join(" ").trim();
+async function retrieveRowData(page: Page, columns: string[], index: number) {
+	const getCellData = async (column: string) => {
+		const isValueColumn = column.includes("Amount") || column.includes("Running") || column.includes("Memo") || column.includes("Date");
+		const value = isValueColumn 
+			? await Input(page, column, undefined, index).value()
+			: await Select(page, column, index).value();
+		
+		const className = await classForTestIdTDs(page, column)(index);
+		
+		return `${column.replace("editor", "").toLowerCase()}: ${value} (${className})`;
 	};
 
-	const rows = await page.getByTestId(columns[0]).all();
-	return await Promise.all(
-		Array.from({ length: rows.length }).map((_v, index) => retrieveCellClassesForIndex(index)),
-	);
+	const cellData = await Promise.all(columns.map(column => getCellData(column)));
+	
+	return cellData.join(" | ");
 }
 
-async function retrieveTransactionRow(page: Page, index: number, columns: string[]) {
-	const transactionRow = async (index: number) =>
-		`
-      ${await Promise.all(
-			columns.map(
-				async (column) =>
-					`${column.replace("editor", "").toLowerCase()}: ${
-						column.includes("Amount") || column.includes("Running") || column.includes("Memo") || column.includes("Date")
-							? await Input(page, column, undefined, index).value()
-							: await Select(page, column, index).value()
-					}`,
-			),
-		).then((results) => results.join(" "))}
-    `
-			.replace(/[\r\n\s]+/g, " ")
-			.trim();
-
-	return transactionRow(index);
+async function retrieveRowsData(page: Page, columns: string[]) {
+	const rows = await page.getByTestId(columns[0]).all();
+	return await Promise.all(
+		Array.from({ length: rows.length }).map((_v, index) => retrieveRowData(page, columns, index))
+	);
 }
 
 async function BudgetEditorSave(
@@ -434,24 +421,16 @@ test.describe("Moneeey", () => {
 			"editorRunning",
 			"editorMemo",
 		];
-		expect(await retrieveCellClasses(page, referenceAccountColumns)).toEqual([
-			"date: bg---800 account: bg---800 amount: bg---800 text-green-200 running: bg---800 text-green-200 memo: bg---800",
-			"date: bg---600 account: bg---600 amount: bg---600 text-green-200 running: bg---600 text-green-200 memo: bg---600",
-			"date: bg---800 account: bg---800 amount: bg---800 text-red-200 running: bg---800 text-green-200 memo: bg---800",
-			"date: bg---600 account: bg---600 amount: bg---600 text-red-200 running: bg---600 text-green-200 memo: bg---600",
-			"date: bg---800 account: bg---800 amount: bg---800 text-red-200 running: bg---800 text-red-200 memo: bg---800",
-			"date: bg---600 account: bg---600 amount: bg---600 text-green-200 running: bg---600 text-red-200 memo: bg---600",
-			"date: bg---800 account: bg---800 amount: bg---800 running: bg---800 memo: bg---800",
-		]);
-
-		// Assert transaction details
 		const today = formatDate(new Date());
-		expect(await Promise.all(Array.from({ length: 3 }).map((_v, index) => retrieveTransactionRow(page, index, referenceAccountColumns)))).toEqual([
-			`date: ${today} account: Initial balance BRL amount: 2.000 running: 2.000 memo:`,
-			`date: ${today} account: Banco Moneeey amount: 3.000 running: 5.000 memo:`,
-			`date: ${today} account: Bakery123 amount: -60 running: 4.940 memo:`,
+		expect(await retrieveRowsData(page, referenceAccountColumns)).toEqual([
+			`date: ${today} (bg---800) | account: Banco Moneeey (bg---800) | amount: 3000 (bg---800 text-green-200) | running: 3000 (bg---800 text-green-200) | memo: (bg---800)`,
+			`date: ${today} (bg---600) | account: Bakery123 (bg---600) | amount: -60 (bg---600 text-green-200) | running: 2940 (bg---600 text-green-200) | memo: (bg---600)`,
+			`date: ${today} (bg---800) | account: Ristorant88 (bg---800) | amount: -128 (bg---800 text-red-200) | running: 2812 (bg---800 text-green-200) | memo: (bg---800)`,
+			`date: ${today} (bg---600) | account: Playxbox421 (bg---600) | amount: -7213 (bg---600 text-red-200) | running: 2812 (bg---600 text-green-200) | memo: (bg---600)`,
+			`date: ${today} (bg---800) | account: Cashbazk (bg---800) | amount: 69 (bg---800 text-red-200) | running: 2883 (bg---800 text-red-200) | memo: (bg---800)`,
+			`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 2940 (bg---600 text-green-200) | running: 2940 (bg---600 text-red-200) | memo: (bg---600)`,
+			`date: ${today} (bg---800) | account: (bg---800) | amount: (bg---800) | running: (bg---800) | memo: (bg---800)`
 		]);
-
 		// Go to All transactions and assert
 		await OpenMenuItem(page, "All transactions");
 		const allTransactionsColumns = [
@@ -461,29 +440,22 @@ test.describe("Moneeey", () => {
 			"editorAmount",
 			"editorMemo",
 		];
-		const allTransactions = await Promise.all(
-			Array.from({ length: 6 }).map((_v, index) => retrieveTransactionRow(page, index, allTransactionsColumns)),
-		);
-		expect(allTransactions).toEqual([
-			   `date: ${today} from: Initial balance BRL to: Banco Moneeey amount: 1.234,56 memo:`,
-			   `date: ${today} from: Initial balance BRL to: MoneeeyCard amount: 2.000 memo:`,
-			   `date: ${today} from: Initial balance BTC to: Bitcoinss amount: 0,12345678 memo:`,
-			   `date: ${today} from: Banco Moneeey to: MoneeeyCard amount: 3.000 memo:`,
-			   `date: ${today} from: MoneeeyCard to: Bakery123 amount: 60 memo:`,
-			   `date: ${today} from: MoneeeyCard to: Ristorant88 amount: 128 memo:`,
+		expect(await retrieveRowsData(page, allTransactionsColumns)).toEqual([
+			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 2000 (bg---800) | memo: 2024-04-01;MoneeeyCard;2000 (bg---800)`,
+			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: Banco Moneeey (bg---600) | amount: 3000 (bg---600) | memo: 2024-04-02;Banco Moneeey;3000 (bg---600)`,
+			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo: 2024-04-03;Bitcoinss;0,12345678 (bg---800)`,
+			`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: Playxbox421 (bg---600) | amount: -7213,21 (bg---600) | memo: 2024-04-04;Playxbox421;-7213,21 (bg---600)`,
+			`date: ${today} (bg---800) | from: Cashbazk (bg---800) | to: Playxbox421 (bg---800) | amount: 69,42 (bg---800) | memo: 2024-04-05;Cashbazk;69,42 (bg---800)`,
+			`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: Cashbazk (bg---600) | amount: -2940 (bg---600) | memo: 2024-04-06;Banco Moneeey;-2940 (bg---600)`,
+			`date: ${today} (bg---800) | from: Banco Moneeey (bg---800) | to: Ristorant88 (bg---800) | amount: -128 (bg---800) | memo: 2024-04-07;Ristorant88;-128 (bg---800)`
 		]);
 
 		// Go to Banco Moneeey account and assert
 		await OpenMenuItem(page, "BRL Banco Moneeey");
-		expect(await retrieveCellClasses(page, referenceAccountColumns)).toEqual([
-			   "date: bg---800 account: bg---800 amount: bg---800 text-green-200 running: bg---800 text-green-200 memo: bg---800",
-			   "date: bg---600 account: bg---600 amount: bg---600 text-red-200 running: bg---600 text-red-200 memo: bg---600",
-			   "date: bg---800 account: bg---800 amount: bg---800 running: bg---800 memo: bg---800",
-		]);
-
-		expect(await Promise.all(Array.from({ length: 2 }).map((_v, index) => retrieveTransactionRow(page, index, referenceAccountColumns)))).toEqual([
-			`date: ${today} account: Initial balance BRL amount: 1.234,56 running: 1.234,56 memo:`,
-			`date: ${today} account: MoneeeyCard amount: -3.000 running: -1.765,44 memo:`,
+		expect(await retrieveRowsData(page, referenceAccountColumns)).toEqual([
+			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2000 (bg---800) | running: 2000 (bg---800) | memo: 2024-04-01;MoneeeyCard;2000 (bg---800)`,
+			`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 3000 (bg---600) | running: 5000 (bg---600) | memo: 2024-04-02;Banco Moneeey;3000 (bg---600)`,
+			`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800) | running: 4940 (bg---800) | memo: 2024-04-03;Bakery123;-60 (bg---800)`
 		]);
 	});
 
@@ -528,14 +500,16 @@ test.describe("Moneeey", () => {
 		];
 
 		await importFile("bank_statement_a.csv");
-		expect(await retrieveCellClasses(page, importColumns)).toEqual([
-			"date: bg---800 from: bg---800 to: bg---800 bg-green-900 amount: bg---800 memo: bg---800",
-			"date: bg---600 from: bg---600 to: bg---600 bg-green-950 amount: bg---600 memo: bg---600",
-			"date: bg---800 from: bg---800 to: bg---800 bg-green-900 amount: bg---800 memo: bg---800",
-			"date: bg---600 from: bg---600 to: bg---600 bg-green-950 amount: bg---600 memo: bg---600",
-			"date: bg---800 from: bg---800 to: bg---800 bg-green-900 amount: bg---800 memo: bg---800",
-			"date: bg---600 from: bg---600 to: bg---600 bg-green-950 amount: bg---600 memo: bg---600",
+		await waitLoading(page);
+		expect(await retrieveRowsData(page, importColumns)).toEqual([
+			   "date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
+			   "date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
+			   "date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
+			   "date: 2015-02-04 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 40,4 (bg---600) | memo: 2015-02-04;Lava Jato - Carros;-40.40 (bg---600)",
+			   "date: 2015-02-06 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 57,52 (bg---800) | memo: 2015-02-06;Gas Station;-57.52 (bg---800)",
+			   "date: 2015-02-07 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 50,5 (bg---600) | memo: 2015-02-07;Transfer;-50.50 (bg---600)",
 		]);
+
 		await updateEditorTos([
 			"Gas",
 			"Bakery",
@@ -543,6 +517,15 @@ test.describe("Moneeey", () => {
 			"Car Wash",
 			"Gas",
 			"MoneeeyCard",
+		]);
+
+		expect(await retrieveRowsData(page, ['editorTo'])).toEqual([
+			   "to: Gas (bg---800)",
+			   "to: Bakery (bg---600)",
+			   "to: Restaurant (bg---800)",
+			   "to: Car Wash (bg---600)",
+			   "to: Gas (bg---800)",
+			   "to: MoneeeyCard (bg---600)",
 		]);
 		await page.getByTestId("primary-button").click();
 
@@ -554,25 +537,50 @@ test.describe("Moneeey", () => {
 		]);
 		await targetAccountSelect.choose("MoneeeyCard");
 		await importFile("bank_statement_b.ofx");
+		await waitLoading(page);
 
-		expect(await retrieveCellClasses(page, importColumns)).toEqual([
-			"date: bg---800 bg-cyan-900 from: bg---800 bg-cyan-900 to: bg---800 bg-cyan-900 amount: bg---800 bg-cyan-900 memo: bg---800 bg-fuchsia-900",
-			"date: bg---600 from: bg---600 to: bg---600 bg-green-950 amount: bg---600 memo: bg---600",
-			"date: bg---800 from: bg---800 to: bg---800 amount: bg---800 memo: bg---800",
-			"date: bg---600 from: bg---600 to: bg---600 bg-green-950 amount: bg---600 memo: bg---600",
-			"date: bg---800 from: bg---800 to: bg---800 amount: bg---800 memo: bg---800",
+		expect(await retrieveRowsData(page, importColumns)).toEqual([
+			"date: 2015-02-07 (bg---800 bg-cyan-900) | from: Banco Moneeey (bg---800 bg-cyan-900) | to: MoneeeyCard (bg---800 bg-cyan-900) | amount: 50,5 (bg---800 bg-cyan-900) | memo: 2015-02-07;Transfer;-50.50;50.50  FromMyOtherAccount Transfer from savings  2015-02-07 (bg---800 bg-fuchsia-900)",
+			"date: 2015-02-10 (bg---600) | from: MoneeeyCard (bg---600) | to: To (bg---600 bg-green-950) | amount: 60,6 (bg---600) | memo: -60.60  Drogaria Drogas 420 Pharmacy purchase  2015-02-10 (bg---600)",
+			"date: 2015-02-10 (bg---800) | from: MoneeeyCard (bg---800) | to: Restaurant (bg---800) | amount: 70,7 (bg---800) | memo: -70.70  Restaurante Monteiro Dining out  2015-02-10 (bg---800)",
+			"date: 2015-02-11 (bg---600) | from: MoneeeyCard (bg---600) | to: To (bg---600 bg-green-950) | amount: 80,8 (bg---600) | memo: -80.80  Mercado Bom Preco Grocery shopping  2015-02-11 (bg---600)",
+			"date: 2015-02-17 (bg---800) | from: MoneeeyCard (bg---800) | to: Car Wash (bg---800) | amount: 90,9 (bg---800) | memo: -90.90  Lava Jato Eco Car wash  2015-02-17 (bg---800)",
 		]);
 		await updateEditorTos([null, "Pharmacy", null, "Groceries", null]);
+		expect(await retrieveRowsData(page, ['editorTo'])).toEqual([
+			   "to: MoneeeyCard (bg---800 bg-cyan-900)",
+			   "to: Pharmacy (bg---600)",
+			   "to: Restaurant (bg---800)",
+			   "to: Groceries (bg---600)",
+			   "to: Car Wash (bg---800)",
+		]);
+
 		await page.getByTestId("primary-button").click();
 
 		await OpenMenuItem(page, "All transactions");
-
+		const allTransactionsColumns = [
+			"editorDate",
+			"editorFrom",
+			"editorTo",
+			"editorAmount",
+			"editorMemo",
+		];
 		const today = formatDate(new Date());
-
-		expect(await Promise.all(Array.from({ length: 3 }).map((_v, index) => retrieveTransactionRow(page, index, importColumns)))).toEqual([
-			`date: 2015-02-01 from: Banco Moneeey to: Gas amount: 100,1 memo: 2015-02-01;Auto Posto Aurora;-100.10`,
-			`date: 2015-02-01 from: Banco Moneeey to: Bakery amount: 20,2 memo: 2015-02-01;Padaria;-20.20`,
-			`date: 2015-02-03 from: Banco Moneeey to: Restaurant amount: 30,3 memo: 2015-02-03;Restaurante Sorocaba;-30.30`,
+		expect(await retrieveRowsData(page, allTransactionsColumns)).toEqual([
+			   "date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: Gas (bg---800) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
+			   "date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: Bakery (bg---600) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
+			   "date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: Restaurant (bg---800) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
+			   "date: 2015-02-04 (bg---600) | from: Banco Moneeey (bg---600) | to: Car Wash (bg---600) | amount: 40,4 (bg---600) | memo: 2015-02-04;Lava Jato - Carros;-40.40 (bg---600)",
+			   "date: 2015-02-06 (bg---800) | from: Banco Moneeey (bg---800) | to: Gas (bg---800) | amount: 57,52 (bg---800) | memo: 2015-02-06;Gas Station;-57.52 (bg---800)",
+			   "date: 2015-02-07 (bg---600) | from: Banco Moneeey (bg---600) | to: MoneeeyCard (bg---600) | amount: 50,5 (bg---600) | memo: 2015-02-07;Transfer;-50.50;50.50  FromMyOtherAccount Transfer from savings  2015-02-07 (bg---600)",
+			   "date: 2015-02-10 (bg---800) | from: MoneeeyCard (bg---800) | to: Pharmacy (bg---800) | amount: 60,6 (bg---800) | memo: -60.60  Drogaria Drogas 420 Pharmacy purchase  2015-02-10 (bg---800)",
+			   "date: 2015-02-10 (bg---600) | from: MoneeeyCard (bg---600) | to: Restaurant (bg---600) | amount: 70,7 (bg---600) | memo: -70.70  Restaurante Monteiro Dining out  2015-02-10 (bg---600)",
+			   "date: 2015-02-11 (bg---800) | from: MoneeeyCard (bg---800) | to: Groceries (bg---800) | amount: 80,8 (bg---800) | memo: -80.80  Mercado Bom Preco Grocery shopping  2015-02-11 (bg---800)",
+			   "date: 2015-02-17 (bg---600) | from: MoneeeyCard (bg---600) | to: Car Wash (bg---600) | amount: 90,9 (bg---600) | memo: -90.90  Lava Jato Eco Car wash  2015-02-17 (bg---600)",
+			   `date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
+			   `date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
+			   `date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
+			   `date: ${today} (bg---600) | from: From (bg---600) | to: To (bg---600) | amount: 0 (bg---600) | memo:  (bg---600)`,
 		]);
 	});
 });
