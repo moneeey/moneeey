@@ -47,16 +47,9 @@ export default observer(
 						.map((id) => store.byUuid(id) as T)
 						.filter((row) => {
 							const isSchemaFiltered = !schemaFilter || schemaFilter(row);
-							const isRecent =
-								showRecentEntries !== false &&
-								row.updated &&
-								dateDistanceInSecs(
-									parseDateTime(row.updated),
-									parseDateTime(currentDateTime()),
-								) < 10;
 							const isNewEntityId = store.getUuid(row) === newEntityId;
 
-							return isSchemaFiltered || isRecent || isNewEntityId;
+							return isSchemaFiltered || isNewEntityId;
 						})
 						.map((row) => store.getUuid(row))
 						.map((entityId) => {

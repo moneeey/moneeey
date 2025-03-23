@@ -63,8 +63,13 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 			sorted: computed,
 			oldest_dt: observable,
 			newest_dt: observable,
+			runningBalanceVersion: computed,
 		});
 		this.runningBalance = new RunningBalance(this.moneeeyStore.logger);
+	}
+
+	get runningBalanceVersion() {
+		return this.runningBalance.version;
 	}
 
 	updateRunningBalance = debounce(() => {
