@@ -7,7 +7,7 @@
 		"@playwright/test": "^1.51.1"
 	},
 	"scripts": {
-		"godocker": "docker run -it --rm --ipc=host -e CI=true -v ..:/workspace mcr.microsoft.com/playwright:v1.51.1-noble bash",
+		"godocker": "docker run -it --rm --ipc=host -e CI=true -w /workspace/playwright -v ..:/workspace mcr.microsoft.com/playwright:v1.51.1-noble bash",
 		"setup": "playwright install --with-deps",
 		"ui": "playwright test --ui --fully-parallel",
 		"headed": "playwright test --headed",
