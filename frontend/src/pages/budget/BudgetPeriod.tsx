@@ -115,7 +115,6 @@ const BudgetPeriod = observer(
 					schemaFilter={(b) =>
 						b.starting === starting && (!b.budget.archived || viewArchived)
 					}
-					showRecentEntries={false}
 					schema={[
 						{
 							title: Messages.budget.budget,

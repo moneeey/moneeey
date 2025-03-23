@@ -97,7 +97,9 @@ function Select(page: Page, testId: string, index = 0) {
 		await input().press("Enter");
 	};
 	const currentValue = async () =>
-		select().locator(".mn-select__single-value, .mn-select__placeholder").innerText();
+		select()
+			.locator(".mn-select__single-value, .mn-select__placeholder")
+			.innerText();
 
 	return {
 		async value() {
@@ -210,25 +212,33 @@ async function insertTransactionOnReferenceAccount(
 // Test helpers
 async function retrieveRowData(page: Page, columns: string[], index: number) {
 	const getCellData = async (column: string) => {
-		const isValueColumn = column.includes("Amount") || column.includes("Running") || column.includes("Memo") || column.includes("Date");
-		const value = isValueColumn 
+		const isValueColumn =
+			column.includes("Amount") ||
+			column.includes("Running") ||
+			column.includes("Memo") ||
+			column.includes("Date");
+		const value = isValueColumn
 			? await Input(page, column, undefined, index).value()
 			: await Select(page, column, index).value();
-		
+
 		const className = await classForTestIdTDs(page, column)(index);
-		
+
 		return `${column.replace("editor", "").toLowerCase()}: ${value} (${className})`;
 	};
 
-	const cellData = await Promise.all(columns.map(column => getCellData(column)));
-	
+	const cellData = await Promise.all(
+		columns.map((column) => getCellData(column)),
+	);
+
 	return cellData.join(" | ");
 }
 
 async function retrieveRowsData(page: Page, columns: string[]) {
 	const rows = await page.getByTestId(columns[0]).all();
 	return await Promise.all(
-		Array.from({ length: rows.length }).map((_v, index) => retrieveRowData(page, columns, index))
+		Array.from({ length: rows.length }).map((_v, index) =>
+			retrieveRowData(page, columns, index),
+		),
 	);
 }
 
@@ -340,9 +350,27 @@ test.describe("Moneeey", () => {
 		// Progress Tour to Transactions
 		expect(page.getByText("start inserting transactions")).toBeDefined();
 
-		await insertTransactionOnAllTransactions(page, 2, "Banco Moneeey", "Gas Station", "1234,56");
-		await insertTransactionOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "78,69");
-		await insertTransactionOnAllTransactions(page, 4, "Banco Moneeey", "Bakery", "11,11");
+		await insertTransactionOnAllTransactions(
+			page,
+			2,
+			"Banco Moneeey",
+			"Gas Station",
+			"1234,56",
+		);
+		await insertTransactionOnAllTransactions(
+			page,
+			3,
+			"Banco Moneeey",
+			"Bakery",
+			"78,69",
+		);
+		await insertTransactionOnAllTransactions(
+			page,
+			4,
+			"Banco Moneeey",
+			"Bakery",
+			"11,11",
+		);
 
 		// Progress Tour to Transactions
 		await tourNext(page);
@@ -368,7 +396,9 @@ test.describe("Moneeey", () => {
 		await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue(
 			"-24,80",
 		);
-		expect(await editorRemainingClass(0)).toEqual("bg---800 opacity-80 text-red-200");
+		expect(await editorRemainingClass(0)).toEqual(
+			"bg---800 opacity-80 text-red-200",
+		);
 
 		await Input(page, "editorAllocated", undefined, 1).change("5435,25");
 		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("1.234,56");
@@ -404,14 +434,36 @@ test.describe("Moneeey", () => {
 		await page.getByText("BRL MoneeeyCard").click();
 
 		// Add three transactions
-		await insertTransactionOnReferenceAccount(page, 1, "Banco Moneeey", "3000,00");
+		await insertTransactionOnReferenceAccount(
+			page,
+			1,
+			"Banco Moneeey",
+			"3000,00",
+		);
 		await insertTransactionOnReferenceAccount(page, 2, "Bakery123", "-60,00");
-		await insertTransactionOnReferenceAccount(page, 3, "Ristorant88", "-128,00");
-		await insertTransactionOnReferenceAccount(page, 4, "Playxbox421", "-7213,21", "game platform");
-		await insertTransactionOnReferenceAccount(page, 5, "Cashbazk", "69,42", "cashback");
+		await insertTransactionOnReferenceAccount(
+			page,
+			3,
+			"Ristorant88",
+			"-128,00",
+		);
+		await insertTransactionOnReferenceAccount(
+			page,
+			4,
+			"Playxbox421",
+			"-7213,21",
+			"game platform",
+		);
+		await insertTransactionOnReferenceAccount(
+			page,
+			5,
+			"Cashbazk",
+			"69,42",
+			"cashback",
+		);
 
 		// Wait running balance to be updated
-		await Input(page, 'editorRunning', undefined, 5).toHaveValue("-2.331,79");
+		await Input(page, "editorRunning", undefined, 5).toHaveValue("-2.331,79");
 
 		// Assert classes for the table
 		const referenceAccountColumns = [
@@ -429,7 +481,7 @@ test.describe("Moneeey", () => {
 			`date: ${today} (bg---600) | account: Playxbox421 (bg---600) | amount: -7213 (bg---600 text-red-200) | running: 2812 (bg---600 text-green-200) | memo: (bg---600)`,
 			`date: ${today} (bg---800) | account: Cashbazk (bg---800) | amount: 69 (bg---800 text-red-200) | running: 2883 (bg---800 text-red-200) | memo: (bg---800)`,
 			`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 2940 (bg---600 text-green-200) | running: 2940 (bg---600 text-red-200) | memo: (bg---600)`,
-			`date: ${today} (bg---800) | account: (bg---800) | amount: (bg---800) | running: (bg---800) | memo: (bg---800)`
+			`date: ${today} (bg---800) | account: (bg---800) | amount: (bg---800) | running: (bg---800) | memo: (bg---800)`,
 		]);
 		// Go to All transactions and assert
 		await OpenMenuItem(page, "All transactions");
@@ -447,7 +499,7 @@ test.describe("Moneeey", () => {
 			`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: Playxbox421 (bg---600) | amount: -7213,21 (bg---600) | memo: 2024-04-04;Playxbox421;-7213,21 (bg---600)`,
 			`date: ${today} (bg---800) | from: Cashbazk (bg---800) | to: Playxbox421 (bg---800) | amount: 69,42 (bg---800) | memo: 2024-04-05;Cashbazk;69,42 (bg---800)`,
 			`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: Cashbazk (bg---600) | amount: -2940 (bg---600) | memo: 2024-04-06;Banco Moneeey;-2940 (bg---600)`,
-			`date: ${today} (bg---800) | from: Banco Moneeey (bg---800) | to: Ristorant88 (bg---800) | amount: -128 (bg---800) | memo: 2024-04-07;Ristorant88;-128 (bg---800)`
+			`date: ${today} (bg---800) | from: Banco Moneeey (bg---800) | to: Ristorant88 (bg---800) | amount: -128 (bg---800) | memo: 2024-04-07;Ristorant88;-128 (bg---800)`,
 		]);
 
 		// Go to Banco Moneeey account and assert
@@ -455,7 +507,7 @@ test.describe("Moneeey", () => {
 		expect(await retrieveRowsData(page, referenceAccountColumns)).toEqual([
 			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2000 (bg---800) | running: 2000 (bg---800) | memo: 2024-04-01;MoneeeyCard;2000 (bg---800)`,
 			`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 3000 (bg---600) | running: 5000 (bg---600) | memo: 2024-04-02;Banco Moneeey;3000 (bg---600)`,
-			`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800) | running: 4940 (bg---800) | memo: 2024-04-03;Bakery123;-60 (bg---800)`
+			`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800) | running: 4940 (bg---800) | memo: 2024-04-03;Bakery123;-60 (bg---800)`,
 		]);
 	});
 
@@ -502,12 +554,12 @@ test.describe("Moneeey", () => {
 		await importFile("bank_statement_a.csv");
 		await waitLoading(page);
 		expect(await retrieveRowsData(page, importColumns)).toEqual([
-			   "date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
-			   "date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
-			   "date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
-			   "date: 2015-02-04 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 40,4 (bg---600) | memo: 2015-02-04;Lava Jato - Carros;-40.40 (bg---600)",
-			   "date: 2015-02-06 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 57,52 (bg---800) | memo: 2015-02-06;Gas Station;-57.52 (bg---800)",
-			   "date: 2015-02-07 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 50,5 (bg---600) | memo: 2015-02-07;Transfer;-50.50 (bg---600)",
+			"date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
+			"date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
+			"date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
+			"date: 2015-02-04 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 40,4 (bg---600) | memo: 2015-02-04;Lava Jato - Carros;-40.40 (bg---600)",
+			"date: 2015-02-06 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 57,52 (bg---800) | memo: 2015-02-06;Gas Station;-57.52 (bg---800)",
+			"date: 2015-02-07 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 50,5 (bg---600) | memo: 2015-02-07;Transfer;-50.50 (bg---600)",
 		]);
 
 		await updateEditorTos([
@@ -519,13 +571,13 @@ test.describe("Moneeey", () => {
 			"MoneeeyCard",
 		]);
 
-		expect(await retrieveRowsData(page, ['editorTo'])).toEqual([
-			   "to: Gas (bg---800)",
-			   "to: Bakery (bg---600)",
-			   "to: Restaurant (bg---800)",
-			   "to: Car Wash (bg---600)",
-			   "to: Gas (bg---800)",
-			   "to: MoneeeyCard (bg---600)",
+		expect(await retrieveRowsData(page, ["editorTo"])).toEqual([
+			"to: Gas (bg---800)",
+			"to: Bakery (bg---600)",
+			"to: Restaurant (bg---800)",
+			"to: Car Wash (bg---600)",
+			"to: Gas (bg---800)",
+			"to: MoneeeyCard (bg---600)",
 		]);
 		await page.getByTestId("primary-button").click();
 
@@ -547,12 +599,12 @@ test.describe("Moneeey", () => {
 			"date: 2015-02-17 (bg---800) | from: MoneeeyCard (bg---800) | to: Car Wash (bg---800) | amount: 90,9 (bg---800) | memo: -90.90  Lava Jato Eco Car wash  2015-02-17 (bg---800)",
 		]);
 		await updateEditorTos([null, "Pharmacy", null, "Groceries", null]);
-		expect(await retrieveRowsData(page, ['editorTo'])).toEqual([
-			   "to: MoneeeyCard (bg---800 bg-cyan-900)",
-			   "to: Pharmacy (bg---600)",
-			   "to: Restaurant (bg---800)",
-			   "to: Groceries (bg---600)",
-			   "to: Car Wash (bg---800)",
+		expect(await retrieveRowsData(page, ["editorTo"])).toEqual([
+			"to: MoneeeyCard (bg---800 bg-cyan-900)",
+			"to: Pharmacy (bg---600)",
+			"to: Restaurant (bg---800)",
+			"to: Groceries (bg---600)",
+			"to: Car Wash (bg---800)",
 		]);
 
 		await page.getByTestId("primary-button").click();
@@ -567,20 +619,20 @@ test.describe("Moneeey", () => {
 		];
 		const today = formatDate(new Date());
 		expect(await retrieveRowsData(page, allTransactionsColumns)).toEqual([
-			   "date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: Gas (bg---800) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
-			   "date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: Bakery (bg---600) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
-			   "date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: Restaurant (bg---800) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
-			   "date: 2015-02-04 (bg---600) | from: Banco Moneeey (bg---600) | to: Car Wash (bg---600) | amount: 40,4 (bg---600) | memo: 2015-02-04;Lava Jato - Carros;-40.40 (bg---600)",
-			   "date: 2015-02-06 (bg---800) | from: Banco Moneeey (bg---800) | to: Gas (bg---800) | amount: 57,52 (bg---800) | memo: 2015-02-06;Gas Station;-57.52 (bg---800)",
-			   "date: 2015-02-07 (bg---600) | from: Banco Moneeey (bg---600) | to: MoneeeyCard (bg---600) | amount: 50,5 (bg---600) | memo: 2015-02-07;Transfer;-50.50;50.50  FromMyOtherAccount Transfer from savings  2015-02-07 (bg---600)",
-			   "date: 2015-02-10 (bg---800) | from: MoneeeyCard (bg---800) | to: Pharmacy (bg---800) | amount: 60,6 (bg---800) | memo: -60.60  Drogaria Drogas 420 Pharmacy purchase  2015-02-10 (bg---800)",
-			   "date: 2015-02-10 (bg---600) | from: MoneeeyCard (bg---600) | to: Restaurant (bg---600) | amount: 70,7 (bg---600) | memo: -70.70  Restaurante Monteiro Dining out  2015-02-10 (bg---600)",
-			   "date: 2015-02-11 (bg---800) | from: MoneeeyCard (bg---800) | to: Groceries (bg---800) | amount: 80,8 (bg---800) | memo: -80.80  Mercado Bom Preco Grocery shopping  2015-02-11 (bg---800)",
-			   "date: 2015-02-17 (bg---600) | from: MoneeeyCard (bg---600) | to: Car Wash (bg---600) | amount: 90,9 (bg---600) | memo: -90.90  Lava Jato Eco Car wash  2015-02-17 (bg---600)",
-			   `date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
-			   `date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
-			   `date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
-			   `date: ${today} (bg---600) | from: From (bg---600) | to: To (bg---600) | amount: 0 (bg---600) | memo:  (bg---600)`,
+			"date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: Gas (bg---800) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
+			"date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: Bakery (bg---600) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
+			"date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: Restaurant (bg---800) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
+			"date: 2015-02-04 (bg---600) | from: Banco Moneeey (bg---600) | to: Car Wash (bg---600) | amount: 40,4 (bg---600) | memo: 2015-02-04;Lava Jato - Carros;-40.40 (bg---600)",
+			"date: 2015-02-06 (bg---800) | from: Banco Moneeey (bg---800) | to: Gas (bg---800) | amount: 57,52 (bg---800) | memo: 2015-02-06;Gas Station;-57.52 (bg---800)",
+			"date: 2015-02-07 (bg---600) | from: Banco Moneeey (bg---600) | to: MoneeeyCard (bg---600) | amount: 50,5 (bg---600) | memo: 2015-02-07;Transfer;-50.50;50.50  FromMyOtherAccount Transfer from savings  2015-02-07 (bg---600)",
+			"date: 2015-02-10 (bg---800) | from: MoneeeyCard (bg---800) | to: Pharmacy (bg---800) | amount: 60,6 (bg---800) | memo: -60.60  Drogaria Drogas 420 Pharmacy purchase  2015-02-10 (bg---800)",
+			"date: 2015-02-10 (bg---600) | from: MoneeeyCard (bg---600) | to: Restaurant (bg---600) | amount: 70,7 (bg---600) | memo: -70.70  Restaurante Monteiro Dining out  2015-02-10 (bg---600)",
+			"date: 2015-02-11 (bg---800) | from: MoneeeyCard (bg---800) | to: Groceries (bg---800) | amount: 80,8 (bg---800) | memo: -80.80  Mercado Bom Preco Grocery shopping  2015-02-11 (bg---800)",
+			"date: 2015-02-17 (bg---600) | from: MoneeeyCard (bg---600) | to: Car Wash (bg---600) | amount: 90,9 (bg---600) | memo: -90.90  Lava Jato Eco Car wash  2015-02-17 (bg---600)",
+			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: From (bg---600) | to: To (bg---600) | amount: 0 (bg---600) | memo:  (bg---600)`,
 		]);
 	});
 });

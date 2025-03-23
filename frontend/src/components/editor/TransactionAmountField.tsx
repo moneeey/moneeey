@@ -43,7 +43,10 @@ export default function <TEntity>({
 							field={renderField}
 							isError={isError}
 							commit={(amount: CurrencyAmount) =>
-								commit({ ...entity, ...delta({ to: amount, from: amount }, entity) })
+								commit({
+									...entity,
+									...delta({ to: amount, from: amount }, entity),
+								})
 							}
 						/>
 					);

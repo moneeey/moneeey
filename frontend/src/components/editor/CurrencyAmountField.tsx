@@ -38,7 +38,10 @@ export default function <TEntity>({
 						isError={isError}
 						value={amount}
 						onChange={(newAmount) =>
-							commit({ ...entity, ...delta({ currency, amount: newAmount }, entity) })
+							commit({
+								...entity,
+								...delta({ currency, amount: newAmount }, entity),
+							})
 						}
 						thousandSeparator={config.main.thousand_separator}
 						decimalSeparator={config.main.decimal_separator}

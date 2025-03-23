@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import useMessages from "../utils/Messages";
-import { OkButton } from "./base/Button";
 import LanguageSelector from "./LanguageSelector";
+import { OkButton } from "./base/Button";
 import MinimalBaseScreen from "./base/MinimalBaseScreen";
 
 interface FeatureBalloonProps {
@@ -97,7 +97,10 @@ export default function LandingPage() {
 					))}
 				</div>
 
-				<div className="flex  justify-center  animate-fade-in space-y-8" style={{ animationDelay: "0.7s" }}>
+				<div
+					className="flex  justify-center  animate-fade-in space-y-8"
+					style={{ animationDelay: "0.7s" }}
+				>
 					<OkButton
 						onClick={() => navigate("/dashboard")}
 						className="text-xl py-4 px-8"
@@ -107,4 +110,4 @@ export default function LandingPage() {
 			</div>
 		</MinimalBaseScreen>
 	);
-};
+}

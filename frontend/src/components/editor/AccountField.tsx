@@ -65,7 +65,9 @@ export default function <TEntity>({
 							"value",
 						)}
 						suffix={<Tags tags={tags} />}
-						onChange={(value: string) => commit({ ...entity, ...delta(value, entity) })}
+						onChange={(value: string) =>
+							commit({ ...entity, ...delta(value, entity) })
+						}
 						onCreate={(name: string) => {
 							const account = {
 								...accounts.factory(),

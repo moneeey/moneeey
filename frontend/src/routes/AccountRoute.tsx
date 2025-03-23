@@ -53,7 +53,10 @@ const AccountTransactions = observer(
 		};
 		const referenceAccount = account_uuid;
 
-		console.log("AccountTransactions render runningBalanceVersion", runningBalanceVersion);
+		console.log(
+			"AccountTransactions render runningBalanceVersion",
+			runningBalanceVersion,
+		);
 
 		return (
 			<TransactionTable

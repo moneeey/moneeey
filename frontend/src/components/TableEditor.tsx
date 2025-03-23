@@ -4,11 +4,6 @@ import { useCallback, useMemo, useState } from "react";
 
 import type { IBaseEntity } from "../shared/Entity";
 import type MappedStore from "../shared/MappedStore";
-import {
-	currentDateTime,
-	dateDistanceInSecs,
-	parseDateTime,
-} from "../utils/Date";
 
 import VirtualTable, { type Row, type ColumnDef } from "./VirtualTableEditor";
 
@@ -21,7 +16,6 @@ interface TableEditorProps<T extends IBaseEntity> extends WithDataTestId {
 	schemaFilter?: (row: T) => boolean;
 	factory: (id?: string) => T;
 	creatable?: boolean;
-	showRecentEntries?: boolean;
 }
 
 export default observer(
@@ -31,7 +25,6 @@ export default observer(
 		store,
 		factory,
 		creatable,
-		showRecentEntries,
 		testId,
 	}: TableEditorProps<T>) => {
 		const [newEntityId, setNewEntityId] = useState(() =>
@@ -61,15 +54,7 @@ export default observer(
 						})
 						.concat(creatable === false ? [] : [newEntityId]),
 				).map((entityId) => ({ entityId })),
-			[
-				creatable,
-				storeIds,
-				store,
-				schemaFilter,
-				newEntityId,
-				showRecentEntries,
-				factory,
-			],
+			[creatable, storeIds, store, schemaFilter, newEntityId, factory],
 		);
 
 		const columns = useMemo((): ColumnDef[] => {

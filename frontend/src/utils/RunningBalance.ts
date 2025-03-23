@@ -1,6 +1,6 @@
 import { action, makeObservable, observable } from "mobx";
 
-import type { AccountStore, TAccountUUID } from "../entities/Account";
+import type { TAccountUUID } from "../entities/Account";
 import type { ITransaction, TTransactionUUID } from "../entities/Transaction";
 import Logger from "../shared/Logger";
 
@@ -71,7 +71,7 @@ export default class RunningBalance {
 						item.to_value,
 					);
 					this.logger.log(
-						`calculateTransactionRunningBalances transaction=${item.transaction_uuid}: from=${item.from_account}, to=${item.to_account}, from_balance=${from_balance}, to_balance=${to_balance}`
+						`calculateTransactionRunningBalances transaction=${item.transaction_uuid}: from=${item.from_account}, to=${item.to_account}, from_balance=${from_balance}, to_balance=${to_balance}`,
 					);
 					state.transactionBalance.set(item.transaction_uuid, {
 						from_balance,
@@ -118,7 +118,10 @@ export default class RunningBalance {
 
 		const calc = await this.calculateTransactionRunningBalances(transactions);
 		if (!calc.aborted) {
-			this.logger.log("calculateTransactionRunningBalances done, applying", calc);
+			this.logger.log(
+				"calculateTransactionRunningBalances done, applying",
+				calc,
+			);
 			this.updateTransactions(
 				Array.from(calc.transactionBalance.entries()).map(
 					([transaction_uuid, balances]) => ({
