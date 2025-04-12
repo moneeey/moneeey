@@ -11,7 +11,6 @@ import type {
 	ProcessProgressFn,
 } from "../../shared/import/ImportContent";
 import ofxImport from "../../shared/import/OfxImporter";
-import pdfImport from "../../shared/import/PdfImporter";
 import txtImport from "../../shared/import/TxtImporter";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
@@ -29,7 +28,6 @@ export const ContentProcessor: Record<FileUploaderMode, ProcessContentFn> = {
 	): Promise<ImportResult> {
 		return ContentProcessor.txt(moneeeyStore, data, onProgress);
 	},
-	pdf: pdfImport(),
 	ofx: ofxImport(),
 };
 
