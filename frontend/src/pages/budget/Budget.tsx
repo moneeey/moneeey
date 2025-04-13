@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
-import { LinkButton, PrimaryButton, SecondaryButton } from "../../components/base/Button";
+import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import { Checkbox } from "../../components/base/Input";
 import Space, { VerticalSpace } from "../../components/base/Space";
 import type { IBudget } from "../../entities/Budget";

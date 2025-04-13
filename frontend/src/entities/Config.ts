@@ -4,7 +4,7 @@ import { action, computed, makeObservable } from "mobx";
 import { EntityType, type IBaseEntity } from "../shared/Entity";
 import MappedStore from "../shared/MappedStore";
 import type MoneeeyStore from "../shared/MoneeeyStore";
-import { TDateFormat, currentDateTime, setLocale } from "../utils/Date";
+import { TDateFormat, currentDateTime } from "../utils/Date";
 
 import type { TCurrencyUUID } from "./Currency";
 
