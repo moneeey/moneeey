@@ -2,8 +2,10 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import {
 	type ComponentType,
 	type Dispatch,
+	Ref,
 	type SetStateAction,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -83,6 +85,7 @@ type ScrollData = {
 };
 
 const VirtualGrid = ({
+	outerRef,
 	className,
 	gridHeight,
 	width,
@@ -90,17 +93,16 @@ const VirtualGrid = ({
 	columns,
 	sort,
 	setSort,
-	scroll,
 	setScroll,
 	RenderCell,
 }: {
+	outerRef?: Ref<HTMLDivElement>;
 	className: string;
 	gridHeight: number;
 	width: number;
 	rows: Row[];
 	columns: ColumnDef[];
-	setScroll: Dispatch<SetStateAction<ScrollData>>;
-	scroll: ScrollData;
+	setScroll?: (scrollData: ScrollData) => void;
 	setSort: Dispatch<SetStateAction<SortColumn>>;
 	sort: SortColumn;
 	RenderCell: (props: GridRenderCell) => JSX.Element;
@@ -113,10 +115,9 @@ const VirtualGrid = ({
 		columnCount={columns.length}
 		rowHeight={() => ROW_HEIGHT}
 		columnWidth={(index: number) => columns[index].width}
-		initialScrollLeft={scroll.scrollLeft}
-		initialScrollTop={scroll.scrollTop}
+		outerRef={outerRef}
 		onScroll={({ scrollLeft, scrollTop }) =>
-			setScroll({ scrollLeft, scrollTop })
+			setScroll?.({ scrollLeft, scrollTop })
 		}
 		itemKey={({ columnIndex, rowIndex }) => `${rowIndex}-${columnIndex}`}
 	>
@@ -194,10 +195,7 @@ const VirtualTableGrid = ({
 	setSort: Dispatch<SetStateAction<SortColumn>>;
 	sort: SortColumn;
 } & WithDataTestId) => {
-	const [scroll, setScroll] = useState({
-		scrollTop: 0,
-		scrollLeft: 0,
-	} as ScrollData);
+	const headerRef = useRef<HTMLDivElement>(null);
 	const calculatedColumns = useMemo(() => {
 		const totalWidth = columns.reduce((total, cur) => total + cur.width, 0);
 
@@ -210,8 +208,6 @@ const VirtualTableGrid = ({
 	}, [columns, width]);
 
 	const common = {
-		scroll,
-		setScroll,
 		sort,
 		setSort,
 		width,
@@ -223,11 +219,8 @@ const VirtualTableGrid = ({
 			<VirtualGrid
 				className={`!overflow-hidden bg-background-700 px-2 ${testId}-header`}
 				gridHeight={ROW_HEIGHT}
+				outerRef={headerRef}
 				{...common}
-				scroll={{ scrollTop: 0, scrollLeft: scroll.scrollLeft }}
-				setScroll={() => {
-					// Do nothing
-				}}
 				rows={[{ entityId: "Header" }]}
 				RenderCell={HeaderCell}
 			/>
@@ -235,6 +228,9 @@ const VirtualTableGrid = ({
 				className={`bg-background-800 px-2 pb-2 ${testId}-body`}
 				gridHeight={height - ROW_HEIGHT}
 				{...common}
+				setScroll={({ scrollLeft }) => {
+					headerRef?.current?.scrollTo(scrollLeft, 0);
+				}}
 				rows={rows}
 				RenderCell={ContentCell}
 			/>
