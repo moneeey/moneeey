@@ -12,6 +12,7 @@ import {
 } from "date-fns";
 import * as dateFnsLocale from "date-fns/locale";
 import { keys } from "lodash";
+import type { LanguageCode } from "./Messages";
 
 export type TDate = string;
 export type TDateTime = string;
@@ -25,6 +26,23 @@ export function setLocale(localeKey: string) {
 		localeKey
 	];
 	setDefaultOptions({ locale: locale || dateFnsLocale.enUS });
+}
+
+export function localeForLanguage(language: LanguageCode) {
+	switch (language) {
+		case "en":
+			return "enUS";
+		case "pt":
+			return "ptBR";
+		case "es":
+			return "es";
+		case "hi":
+			return "hi";
+		case "cn":
+			return "zhCN";
+		default:
+			return "en";
+	}
 }
 
 export const TDateFormat = "yyyy-MM-dd";

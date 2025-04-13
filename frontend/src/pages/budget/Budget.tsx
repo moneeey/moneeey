@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
-import { LinkButton, SecondaryButton } from "../../components/base/Button";
+import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import { Checkbox } from "../../components/base/Input";
 import Space, { VerticalSpace } from "../../components/base/Space";
 import type { IBudget } from "../../entities/Budget";
@@ -40,21 +40,21 @@ export const BudgetHeader = observer(() => {
 	const onNewBudget = () => navigation.updateEditingBudget(budget.factory());
 	return (
 		<Space>
-			<LinkButton
+			<PrimaryButton
 				testId="addNewBudget"
 				onClick={onNewBudget}
-				className="text-sm"
+				className="text-sm mr-2"
 			>
 				<PlusCircleIcon
 					style={{
-						color: "lightgreen",
-						width: "1.2em",
-						height: "1.2em",
-						marginRight: "0.5em",
+						color: "darkgreen",
+						width: "1.4em",
+						height: "1.4em",
+						marginRight: "0.1em",
 					}}
 				/>
 				{Messages.budget.new}
-			</LinkButton>
+			</PrimaryButton>
 		</Space>
 	);
 });

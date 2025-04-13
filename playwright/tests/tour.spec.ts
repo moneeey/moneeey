@@ -497,9 +497,21 @@ test.describe("Moneeey", () => {
 		await page.getByText("BRL MoneeeyCard").click();
 
 		// Add initial transactions
-		await updateOnAccountTransactions(page, 1, "Banco Moneeey", "3000", "Salary");
+		await updateOnAccountTransactions(
+			page,
+			1,
+			"Banco Moneeey",
+			"3000",
+			"Salary",
+		);
 		await updateOnAccountTransactions(page, 2, "Bakery123", "-60", "pao");
-		await updateOnAccountTransactions(page, 3, "Ristorant88", "-128,12", "Dinner");
+		await updateOnAccountTransactions(
+			page,
+			3,
+			"Ristorant88",
+			"-128,12",
+			"Dinner",
+		);
 
 		// Wait for running balance to be updated
 		await Input(page, "editorRunning", undefined, 3).toHaveValue("4.811,88");
@@ -507,7 +519,7 @@ test.describe("Moneeey", () => {
 		// Test swapping from positive to negative (Salary)
 		await Input(page, "editorAmount", undefined, 1).change("-3000,00");
 		await Input(page, "editorMemo", undefined, 1).change("Salary (swapped)");
-		
+
 		// Verify running balance is updated
 		await Input(page, "editorRunning", undefined, 3).toHaveValue("-1.188,12");
 
@@ -597,7 +609,7 @@ test.describe("Moneeey", () => {
 			"date: 2015-02-06 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 57,52 (bg---800) | memo: 2015-02-06;Gas Station;-57.52 (bg---800)",
 			"date: 2015-02-07 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 50,5 (bg---600) | memo: 2015-02-07;Transfer;-50.50 (bg---600)",
 		]);
- 
+
 		await updateEditorTos([
 			"Gas",
 			"Bakery",

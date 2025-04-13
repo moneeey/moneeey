@@ -1,5 +1,6 @@
-import React, { type ReactNode } from "react";
+import React, { useEffect, type ReactNode } from "react";
 
+import { localeForLanguage, setLocale } from "./Date";
 import Language from "./Language";
 import { StorageKind, getStorage, identity, setStorage } from "./Utils";
 
@@ -50,6 +51,11 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 	) as LanguageCode;
 	const [currentLanguage, selectLanguage] = React.useState(
 		storedLanguage ?? LanguageUnset,
+	);
+
+	useEffect(
+		() => setLocale(localeForLanguage(currentLanguage)),
+		[currentLanguage],
 	);
 
 	return (

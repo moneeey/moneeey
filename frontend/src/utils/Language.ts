@@ -391,11 +391,11 @@ export default {
 			cn: "拖放文件到这里，或点击选择文件",
 		},
 		supported_formats: {
-			en: "Supported formats: TXT, CSV, OFX, PDF",
-			pt: "Formatos suportados: TXT, CSV, OFX, PDF",
-			es: "Formatos compatibles: TXT, CSV, OFX, PDF",
-			hi: "समर्थित प्रारूप: TXT, CSV, OFX, PDF",
-			cn: "支持的格式：TXT、CSV、OFX、PDF",
+			en: "Supported formats: TXT, CSV, OFX",
+			pt: "Formatos suportados: TXT, CSV, OFX",
+			es: "Formatos compatibles: TXT, CSV, OFX",
+			hi: "समर्थित प्रारूप: TXT, CSV, OFX",
+			cn: "支持的格式：TXT、CSV、OFX",
 		},
 		unknown_mode: {
 			en: (mode: string) => `Unknown mode ${mode}`,

@@ -18,7 +18,7 @@ import type MoneeeyStore from "../MoneeeyStore";
 import type TransactionStore from "../../entities/Transaction";
 import type Importer from "./Importer";
 
-export type FileUploaderMode = "txt" | "csv" | "ofx" | "pdf";
+export type FileUploaderMode = "txt" | "csv" | "ofx";
 
 export interface ImportInput {
 	name: string;

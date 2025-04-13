@@ -1,11 +1,25 @@
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
-import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
-import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
-import VirtualizedGrid from "react-virtualized/dist/commonjs/Grid";
+import {
+	type ComponentType,
+	type Dispatch,
+	type Ref,
+	type SetStateAction,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import AutoSizer from "react-virtualized-auto-sizer";
+import {
+	VariableSizeGrid as GenericVirtualizedGrid,
+	type VariableSizeGridProps,
+} from "react-window";
 
 import { observer } from "mobx-react-lite";
 import type { WithDataTestId } from "./base/Common";
 import Icon from "./base/Icon";
+
+const VirtualizedGrid =
+	GenericVirtualizedGrid as unknown as ComponentType<VariableSizeGridProps>;
 
 const SCROLLBAR_WIDTH = 24;
 const ROW_HEIGHT = 20;
@@ -71,6 +85,7 @@ type ScrollData = {
 };
 
 const VirtualGrid = ({
+	outerRef,
 	className,
 	gridHeight,
 	width,
@@ -78,17 +93,16 @@ const VirtualGrid = ({
 	columns,
 	sort,
 	setSort,
-	scroll,
 	setScroll,
 	RenderCell,
 }: {
+	outerRef?: Ref<HTMLDivElement>;
 	className: string;
 	gridHeight: number;
 	width: number;
 	rows: Row[];
 	columns: ColumnDef[];
-	setScroll: Dispatch<SetStateAction<ScrollData>>;
-	scroll: ScrollData;
+	setScroll?: (scrollData: ScrollData) => void;
 	setSort: Dispatch<SetStateAction<SortColumn>>;
 	sort: SortColumn;
 	RenderCell: (props: GridRenderCell) => JSX.Element;
@@ -98,17 +112,17 @@ const VirtualGrid = ({
 		height={gridHeight}
 		width={width}
 		rowCount={rows.length}
-		rowHeight={ROW_HEIGHT}
-		columnWidth={({ index }) => columns[index].width}
 		columnCount={columns.length}
+		rowHeight={() => ROW_HEIGHT}
+		columnWidth={(index: number) => columns[index].width}
+		outerRef={outerRef}
 		onScroll={({ scrollLeft, scrollTop }) =>
-			setScroll({ scrollLeft, scrollTop })
+			setScroll?.({ scrollLeft, scrollTop })
 		}
-		scrollLeft={scroll.scrollLeft}
-		scrollTop={scroll.scrollTop}
-		cellRenderer={({ columnIndex, rowIndex, style, key }) => (
+		itemKey={({ columnIndex, rowIndex }) => `${rowIndex}-${columnIndex}`}
+	>
+		{({ columnIndex, rowIndex, style }) => (
 			<RenderCell
-				key={key}
 				style={style}
 				column={columns[columnIndex]}
 				rowIndex={rowIndex}
@@ -117,7 +131,7 @@ const VirtualGrid = ({
 				setSort={setSort}
 			/>
 		)}
-	/>
+	</VirtualizedGrid>
 );
 
 const HeaderCell = ({ column, style, sort, setSort }: GridRenderCell) => {
@@ -181,10 +195,7 @@ const VirtualTableGrid = ({
 	setSort: Dispatch<SetStateAction<SortColumn>>;
 	sort: SortColumn;
 } & WithDataTestId) => {
-	const [scroll, setScroll] = useState({
-		scrollTop: 0,
-		scrollLeft: 0,
-	} as ScrollData);
+	const headerRef = useRef<HTMLDivElement>(null);
 	const calculatedColumns = useMemo(() => {
 		const totalWidth = columns.reduce((total, cur) => total + cur.width, 0);
 
@@ -197,8 +208,6 @@ const VirtualTableGrid = ({
 	}, [columns, width]);
 
 	const common = {
-		scroll,
-		setScroll,
 		sort,
 		setSort,
 		width,
@@ -210,11 +219,8 @@ const VirtualTableGrid = ({
 			<VirtualGrid
 				className={`!overflow-hidden bg-background-700 px-2 ${testId}-header`}
 				gridHeight={ROW_HEIGHT}
+				outerRef={headerRef}
 				{...common}
-				scroll={{ scrollTop: 0, scrollLeft: scroll.scrollLeft }}
-				setScroll={() => {
-					// Do nothing
-				}}
 				rows={[{ entityId: "Header" }]}
 				RenderCell={HeaderCell}
 			/>
@@ -222,6 +228,9 @@ const VirtualTableGrid = ({
 				className={`bg-background-800 px-2 pb-2 ${testId}-body`}
 				gridHeight={height - ROW_HEIGHT}
 				{...common}
+				setScroll={({ scrollLeft }) => {
+					headerRef?.current?.scrollTo(scrollLeft, 0);
+				}}
 				rows={rows}
 				RenderCell={ContentCell}
 			/>
@@ -262,6 +271,7 @@ const VirtualTable = function VirtualTableRenderer({
 		<AutoSizer>
 			{({ width, height }: { width: number; height: number }) => (
 				<VirtualTableGrid
+					key={`${width}_${height}`}
 					testId={testId}
 					width={width}
 					height={height}

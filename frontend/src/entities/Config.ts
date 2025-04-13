@@ -4,7 +4,7 @@ import { action, computed, makeObservable } from "mobx";
 import { EntityType, type IBaseEntity } from "../shared/Entity";
 import MappedStore from "../shared/MappedStore";
 import type MoneeeyStore from "../shared/MoneeeyStore";
-import { TDateFormat, currentDateTime, setLocale } from "../utils/Date";
+import { TDateFormat, currentDateTime } from "../utils/Date";
 
 import type { TCurrencyUUID } from "./Currency";
 
@@ -16,7 +16,6 @@ export type SyncConfig = {
 };
 
 export interface IConfig extends IBaseEntity {
-	locale: string;
 	date_format: string;
 	decimal_separator: string;
 	thousand_separator: string;
@@ -32,7 +31,6 @@ export class ConfigStore extends MappedStore<IConfig> {
 			factory: () =>
 				({
 					entity_type: EntityType.CONFIG,
-					locale: "en",
 					date_format: TDateFormat,
 					decimal_separator: ",",
 					thousand_separator: ".",
@@ -53,11 +51,6 @@ export class ConfigStore extends MappedStore<IConfig> {
 			main: computed,
 			init: action,
 		});
-	}
-
-	merge(item: IConfig, options?: { setUpdated: boolean }): void {
-		setLocale(item.locale);
-		super.merge(item, options);
 	}
 
 	get main(): IConfig {
