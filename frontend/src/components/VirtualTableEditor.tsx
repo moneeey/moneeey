@@ -1,7 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
-import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
-import VirtualizedGrid from "react-virtualized/dist/commonjs/Grid";
+import { AutoSizer, Grid as VirtualizedGrid } from "react-virtualized";
 
 import { observer } from "mobx-react-lite";
 import type { WithDataTestId } from "./base/Common";

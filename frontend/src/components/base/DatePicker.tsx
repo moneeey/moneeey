@@ -2,7 +2,6 @@ import ReactDatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { forwardRef } from "react";
-import type { ReactNode } from "react-datepicker/node_modules/@types/react/index"; // incompatible with our project's
 import type { WithDataTestId } from "./Common";
 import { BaseInputClzz, InputContainer, type InputProps } from "./Input";
 
@@ -72,13 +71,11 @@ const DatePicker = ({
 				readOnly={readOnly}
 				disabled={disabled === true || readOnly === true}
 				customInput={
-					(
-						<CustomDateInput
-							testId={testId}
-							disabled={disabled === true || readOnly === true}
-							readOnly={readOnly}
-						/>
-					) as unknown as ReactNode
+					<CustomDateInput
+						testId={testId}
+						disabled={disabled === true || readOnly === true}
+						readOnly={readOnly}
+					/>
 				}
 			/>
 		),

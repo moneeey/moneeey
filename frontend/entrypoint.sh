@@ -1,5 +1,5 @@
 #!/bin/sh
 
 cd /app || exit
-yarn install
+yarn install --immutable
 yarn dev
