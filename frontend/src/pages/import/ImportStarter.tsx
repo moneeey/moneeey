@@ -47,7 +47,6 @@ const FileUploader = ({ onFile, error }: FileUploaderProps) => {
 		accept: {
 			"text/plain": [".txt", ".csv"],
 			"application/x-ofx": [".ofx"],
-			"application/x-pdf": [".pdf"],
 		},
 	});
 
