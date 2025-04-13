@@ -1,43 +1,10 @@
-import ReactDatePicker from "react-datepicker";
-
-import "react-datepicker/dist/react-datepicker.css";
-import { forwardRef } from "react";
+import { useEffect, useState } from "react";
+import { formatDateFmt, parseDateFmt } from "../../utils/Date";
 import type { WithDataTestId } from "./Common";
 import { BaseInputClzz, InputContainer, type InputProps } from "./Input";
 
 type DatePickerProps = { dateFormat: string } & InputProps<Date> &
 	WithDataTestId;
-
-type CustomDateInputProps = Partial<{
-	className: string;
-	value: string;
-	disabled?: boolean;
-	readOnly?: boolean;
-	onChange: (value: string) => void;
-	onClick: () => void;
-}> &
-	WithDataTestId;
-
-const CustomDateInput = forwardRef<HTMLInputElement, CustomDateInputProps>(
-	(
-		{ className, value, onClick, onChange, testId, disabled, readOnly },
-		ref,
-	) => {
-		return (
-			<input
-				ref={ref}
-				data-testid={testId}
-				className={className}
-				type="text"
-				value={value}
-				onChange={(e) => onChange?.(e.target.value)}
-				onClick={onClick}
-				disabled={disabled}
-				readOnly={readOnly}
-			/>
-		);
-	},
-);
 
 const DatePicker = ({
 	className,
@@ -52,31 +19,45 @@ const DatePicker = ({
 	containerArea,
 	dateFormat,
 }: DatePickerProps) => {
-	const clazzName = `${BaseInputClzz || ""} z-50 ${className || ""}`;
+	const [currentValue, setCurrentValue] = useState(
+		formatDateFmt(value, dateFormat),
+	);
+
+	useEffect(
+		() => setCurrentValue(formatDateFmt(value, dateFormat)),
+		[value, dateFormat],
+	);
+
 	return InputContainer({
 		prefix,
 		suffix,
-		isError,
+		isError:
+			isError || Number.isNaN(parseDateFmt(currentValue, dateFormat).getTime()),
 		readOnly,
 		testId,
 		containerArea,
 		input: (
-			<ReactDatePicker
-				withPortal
-				fixedHeight
-				className={clazzName}
-				dateFormat={dateFormat}
-				selected={value}
-				onChange={(newValue: Date) => newValue && onChange(newValue)}
-				readOnly={readOnly}
-				disabled={disabled === true || readOnly === true}
-				customInput={
-					<CustomDateInput
-						testId={testId}
-						disabled={disabled === true || readOnly === true}
-						readOnly={readOnly}
-					/>
+			<input
+				data-testid={testId}
+				className={`${BaseInputClzz} z-50 ${className || ""}`}
+				type="text"
+				placeholder={dateFormat}
+				value={currentValue}
+				onChange={({ target: { value: newValue } }) =>
+					setCurrentValue(newValue)
 				}
+				onBlur={() => {
+					if (!onChange || currentValue === formatDateFmt(value, dateFormat))
+						return;
+					try {
+						const parsed = parseDateFmt(currentValue, dateFormat);
+						if (!Number.isNaN(parsed.getTime())) {
+							onChange(parsed);
+						}
+					} catch (e) {}
+				}}
+				disabled={disabled}
+				readOnly={readOnly}
 			/>
 		),
 	});

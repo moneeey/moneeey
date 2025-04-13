@@ -2,7 +2,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import {
 	type ComponentType,
 	type Dispatch,
-	Ref,
+	type Ref,
 	type SetStateAction,
 	useMemo,
 	useRef,

@@ -97,7 +97,7 @@ export default observer(
 				schema={[
 					{
 						title: Messages.util.date,
-						width: 72,
+						width: 60,
 						defaultSortOrder: "ascend" as const,
 						validate: () => ({ valid: true }),
 						...DateField<ITransaction>({
