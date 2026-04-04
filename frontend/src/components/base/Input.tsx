@@ -143,16 +143,22 @@ const InputNumber = ({
 				data-testid={testId}
 				className={`${BaseInputClzz} font-mono ${className || ""}`}
 				value={currentFloatValue}
-				onValueChange={({ floatValue, formattedValue }) => {
-					if (floatValue && floatValue !== value) {
+				onValueChange={({ floatValue }) => {
+					// Use explicit nullish check — `floatValue === 0` is a valid
+					// input that must not be filtered by a truthy `&&`.
+					if (floatValue !== undefined && floatValue !== value) {
 						setCurrentFloatValue(floatValue);
 					}
 				}}
-				onBlur={() =>
-					currentFloatValue &&
-					currentFloatValue !== value &&
-					onChange(currentFloatValue)
-				}
+				onBlur={() => {
+					// Same rationale: 0 is falsy but must still commit.
+					if (
+						currentFloatValue !== undefined &&
+						currentFloatValue !== value
+					) {
+						onChange(currentFloatValue);
+					}
+				}}
 				placeholder={placeholder}
 				thousandsGroupStyle="thousand"
 				thousandSeparator={thousandSeparator}
