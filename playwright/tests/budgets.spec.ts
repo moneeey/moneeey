@@ -136,6 +136,10 @@ test("Archived budgets have a visual indicator when shown", async ({
 	await completeLandingWizard(page);
 	await closeTourModal(page);
 
+	// Create a transaction so that "Bakery" becomes a known tag for budgets.
+	await OpenMenuItem(page, "All transactions");
+	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "50");
+
 	await OpenMenuItem(page, "Budget");
 	await budgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
 	await expect(page.getByText("R$").first()).toBeVisible();
@@ -159,16 +163,18 @@ test("Archived budgets have a visual indicator when shown", async ({
 	// The archived row now shows with the `(archived)` suffix on the name
 	await expect(page.getByText("Food (archived)").first()).toBeVisible();
 
-	// And the cell wraps carry the `archived-row` class token so the
-	// dimmed/italic indicator styling is applied consistently across columns.
-	const archivedNameCell = page
-		.getByTestId("inputContainereditorBudget")
-		.first();
-	const parentClass =
-		(await archivedNameCell
+	// And the numeric cells (allocated, used, remaining) carry the
+	// `archived-row` class token so the dimmed/italic indicator styling is
+	// applied consistently across the row. We probe the allocated cell: its
+	// InputContainer wraps the input and its parent <span> (the virtual
+	// ContentCell) is where TableEditor applies the column's customClass.
+	const allocatedCellParentClass =
+		(await page
+			.getByTestId("inputContainereditorAllocated")
+			.first()
 			.locator("..")
 			.getAttribute("class")) ?? "";
-	expect(parentClass).toContain("archived-row");
+	expect(allocatedCellParentClass).toContain("archived-row");
 });
 
 test("Budget usage recalculates when tags change", async ({ page }) => {
