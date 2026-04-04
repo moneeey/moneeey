@@ -142,6 +142,7 @@ function Select(page: Page, testId: string, index = 0) {
 			await open();
 			await createNew(optionName);
 			await waitForClosed();
+			await expect(select()).toContainText(optionName, { timeout: 5000 });
 		},
 		async choose(optionName: string, exact = true, retries = 3) {
 			try {
@@ -167,6 +168,7 @@ function Select(page: Page, testId: string, index = 0) {
 				await createNew(optionName);
 			}
 			await waitForClosed();
+			await expect(select()).toContainText(optionName, { timeout: 5000 });
 		},
 	};
 }
@@ -181,10 +183,11 @@ function Input(page: Page, testId: string, container?: Locator, index = 0) {
 		async toHaveValue(value: string, timeout = 10000) {
 			await expect(input).toHaveValue(value, { timeout });
 		},
-		async change(value: string) {
+		async change(value: string, expectedValue = value) {
 			await input.click();
 			await input.fill(value);
 			await input.blur();
+			await expect(input).toHaveValue(expectedValue, { timeout: 5000 });
 		},
 	};
 }
@@ -212,6 +215,7 @@ async function updateOnAllTransactions(
 	fromAccountName: string,
 	toAccountName: string,
 	amount: string,
+	expectedAmount?: string,
 ) {
 	const editorFrom = Select(page, "editorFrom", index);
 	await editorFrom.chooseOrCreate(fromAccountName);
@@ -219,7 +223,10 @@ async function updateOnAllTransactions(
 	const editorTo = Select(page, "editorTo", index);
 	await editorTo.chooseOrCreate(toAccountName);
 
-	await Input(page, "editorAmount", undefined, index).change(amount);
+	await Input(page, "editorAmount", undefined, index).change(
+		amount,
+		expectedAmount ?? amount,
+	);
 }
 
 async function updateOnAccountTransactions(
@@ -228,11 +235,15 @@ async function updateOnAccountTransactions(
 	accountName: string,
 	amount: string,
 	memo?: string,
+	expectedAmount?: string,
 ) {
 	const editorAccount = Select(page, "editorAccount", index);
 	await editorAccount.chooseOrCreate(accountName);
 
-	await Input(page, "editorAmount", undefined, index).change(amount);
+	await Input(page, "editorAmount", undefined, index).change(
+		amount,
+		expectedAmount ?? amount,
+	);
 	if (memo) {
 		await Input(page, "editorMemo", undefined, index).change(memo);
 	}
@@ -340,19 +351,19 @@ async function completeLandingWizard(page: Page) {
 	expect(await Select(page, "editorCurrency").value()).toEqual(
 		"BRL Brazilian Real",
 	);
-	await Input(page, "editorInitial_balance").change("1234,56");
+	await Input(page, "editorInitial_balance").change("1234,56", "1.234,56");
 	await page.getByTestId("save-and-add-another").click();
 
 	await Input(page, "name").change("MoneeeyCard");
 	expect(await Select(page, "editorCurrency").value()).toEqual(
 		"BRL Brazilian Real",
 	);
-	await Input(page, "editorInitial_balance").change("2000,00");
+	await Input(page, "editorInitial_balance").change("2000,00", "2.000");
 	await page.getByTestId("save-and-add-another").click();
 
 	await Input(page, "name").change("Bitcoinss");
 	await Select(page, "editorCurrency").choose("BTC Bitcoin");
-	await Input(page, "editorInitial_balance").change("0,123456789");
+	await Input(page, "editorInitial_balance").change("0,123456789", "0,12345678");
 	expect(await Select(page, "editorCurrency").value()).toEqual("BTC Bitcoin");
 	await page.getByTestId("save-and-close").click();
 
@@ -394,6 +405,7 @@ test.describe("Moneeey", () => {
 			"Banco Moneeey",
 			"Gas Station",
 			"1234,56",
+			"1.234,56",
 		);
 		await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "78,69");
 		await updateOnAllTransactions(page, 4, "Banco Moneeey", "Bakery", "11,11");
@@ -417,7 +429,7 @@ test.describe("Moneeey", () => {
 
 		// Allocate on budget and wait for calculated used/remaining
 		await expect(page.getByText("R$").first()).toBeVisible();
-		await Input(page, "editorAllocated", undefined, 0).change("65,00");
+		await Input(page, "editorAllocated", undefined, 0).change("65,00", "65");
 		await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("89,8", {
 			timeout: 15000,
 		});
@@ -429,7 +441,7 @@ test.describe("Moneeey", () => {
 			"bg---800 opacity-80 text-red-200",
 		);
 
-		await Input(page, "editorAllocated", undefined, 1).change("5435,25");
+		await Input(page, "editorAllocated", undefined, 1).change("5435,25", "5.435,25");
 		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("1.234,56");
 		await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
 			"4.200,69",
@@ -458,15 +470,14 @@ test.describe("Moneeey", () => {
 		await page.getByText("BRL MoneeeyCard").click();
 
 		// Add three transactions
-		await updateOnAccountTransactions(page, 1, "Banco Moneeey", "3000,00");
-		await updateOnAccountTransactions(page, 2, "Bakery123", "-60,00", "pao");
-		await updateOnAccountTransactions(page, 3, "Ristorant88", "-128,00");
-		await updateOnAccountTransactions(page, 4, "Playxbox421", "-7213,21");
+		await updateOnAccountTransactions(page, 1, "Banco Moneeey", "3000,00", undefined, "3.000");
+		await updateOnAccountTransactions(page, 2, "Bakery123", "-60,00", "pao", "-60");
+		await updateOnAccountTransactions(page, 3, "Ristorant88", "-128,00", undefined, "-128");
+		await updateOnAccountTransactions(page, 4, "Playxbox421", "-7213,21", undefined, "-7.213,21");
 		await updateOnAccountTransactions(page, 5, "Cashbazk", "69,42", "cashback");
 
-		// Wait running balance and memo values to be committed
+		// Wait running balance to be updated
 		await Input(page, "editorRunning", undefined, 5).toHaveValue("-2.331,79");
-		await Input(page, "editorMemo", undefined, 2).toHaveValue("pao");
 
 		// Assert classes for the table
 		const today = formatDate(new Date());
@@ -519,6 +530,7 @@ test.describe("Moneeey", () => {
 			"Banco Moneeey",
 			"3000",
 			"Salary",
+			"3.000",
 		);
 		await updateOnAccountTransactions(page, 2, "Bakery123", "-60", "pao");
 		await updateOnAccountTransactions(
@@ -529,17 +541,16 @@ test.describe("Moneeey", () => {
 			"Dinner",
 		);
 
-		// Wait for running balance and memo values to be committed
+		// Wait for running balance to be updated
 		await Input(page, "editorRunning", undefined, 3).toHaveValue("4.811,88");
 		await Input(page, "editorMemo", undefined, 2).toHaveValue("pao");
 
 		// Test swapping from positive to negative (Salary)
-		await Input(page, "editorAmount", undefined, 1).change("-3000,00");
+		await Input(page, "editorAmount", undefined, 1).change("-3000,00", "-3.000");
 		await Input(page, "editorMemo", undefined, 1).change("Salary (swapped)");
 
-		// Verify running balance and memo are committed
+		// Verify running balance is updated
 		await Input(page, "editorRunning", undefined, 3).toHaveValue("-1.188,12");
-		await Input(page, "editorMemo", undefined, 1).toHaveValue("Salary (swapped)");
 
 		// Go to All transactions and verify the swap
 		await OpenMenuItem(page, "All transactions");
@@ -560,12 +571,11 @@ test.describe("Moneeey", () => {
 		await OpenMenuItem(page, "BRL MoneeeyCard");
 
 		// Test swapping from negative to positive (Dinner)
-		await Input(page, "editorAmount", undefined, 3).change("128,00");
+		await Input(page, "editorAmount", undefined, 3).change("128,00", "128");
 		await Input(page, "editorMemo", undefined, 3).change("Dinner (swapped)");
 
-		// Verify running balance and memo are committed
+		// Verify running balance is updated
 		await Input(page, "editorRunning", undefined, 3).toHaveValue("-932");
-		await Input(page, "editorMemo", undefined, 3).toHaveValue("Dinner (swapped)");
 
 		// Go to All transactions and verify the swap
 		await OpenMenuItem(page, "All transactions");
