@@ -1,5 +1,11 @@
 import { MostCommonDateFormats, formatDateFmt } from "../../utils/Date";
-import { findMostCommonDateFormat, retrieveLineColumns } from "./ImportContent";
+import {
+	extractValueAndOther,
+	findMostCommonDateFormat,
+	importTransaction,
+	retrieveLineColumns,
+} from "./ImportContent";
+import type Importer from "./Importer";
 
 describe("ImportContent", () => {
 	it("MostCommonDateFormats", () =>
@@ -291,4 +297,114 @@ Date
 			"51 Coffee 42 Shop 68",
 			"7.25 | 2024-08-10 | 51 Coffee 42 Shop 68",
 		]));
+
+	it("extractValueAndOther returns null when no numbers found", () => {
+		expect(extractValueAndOther("just words here")).toBeNull();
+	});
+
+	it("retrieveLineColumns returns null when no date found", () => {
+		expect(retrieveLineColumns("no date here 5.75", "yyyy-MM-dd")).toBeNull();
+	});
+
+	it("retrieveLineColumns returns null when date found but no value", () => {
+		expect(
+			retrieveLineColumns("2024-08-10 nothing", "yyyy-MM-dd"),
+		).toBeNull();
+	});
+
+	describe("importTransaction", () => {
+		const mockImporter = {
+			importIds: () => ["import-id-1"],
+			findForImportId: () => undefined,
+		} as unknown as Importer;
+
+		it("creates a new transaction for negative value", () => {
+			const { transaction, existing } = importTransaction({
+				date: "2024-01-15",
+				line: "Coffee Shop -5.75",
+				value: -5.75,
+				referenceAccount: "bank",
+				other_account: "grocery",
+				importer: mockImporter,
+			});
+
+			expect(transaction.from_account).toBe("bank");
+			expect(transaction.to_account).toBe("grocery");
+			expect(transaction.from_value).toBe(5.75);
+			expect(transaction.to_value).toBe(5.75);
+			expect(transaction.date).toBe("2024-01-15");
+			expect(transaction.memo).toBe("Coffee Shop -5.75");
+			expect(existing).toBeUndefined();
+		});
+
+		it("creates a new transaction for positive value", () => {
+			const { transaction } = importTransaction({
+				date: "2024-01-15",
+				line: "Salary +1000",
+				value: 1000,
+				referenceAccount: "bank",
+				other_account: "employer",
+				importer: mockImporter,
+			});
+
+			expect(transaction.from_account).toBe("employer");
+			expect(transaction.to_account).toBe("bank");
+		});
+
+		it("merges with existing transaction when found", () => {
+			const existingTx = {
+				transaction_uuid: "existing-uuid",
+				memo: "Old memo",
+				tags: ["tag1"],
+				from_account: "bank",
+				to_account: "grocery",
+				_rev: "1-abc",
+			};
+			const importerWithExisting = {
+				importIds: () => ["import-id-1"],
+				findForImportId: () => existingTx,
+			} as unknown as Importer;
+
+			const { transaction, existing } = importTransaction({
+				date: "2024-01-15",
+				line: "New line data",
+				value: -10,
+				referenceAccount: "bank",
+				other_account: "grocery",
+				importer: importerWithExisting,
+			});
+
+			expect(transaction.transaction_uuid).toBe("existing-uuid");
+			expect(transaction.memo).toBe("Old memo;New line data");
+			expect(transaction.tags).toEqual(["tag1"]);
+			expect(transaction._rev).toBe("1-abc");
+			expect(existing).toBe(existingTx);
+		});
+
+		it("does not append line to memo if already present", () => {
+			const existingTx = {
+				transaction_uuid: "existing-uuid",
+				memo: "Same line data",
+				tags: [],
+				from_account: "bank",
+				to_account: "grocery",
+				_rev: "1-abc",
+			};
+			const importerWithExisting = {
+				importIds: () => ["import-id-1"],
+				findForImportId: () => existingTx,
+			} as unknown as Importer;
+
+			const { transaction } = importTransaction({
+				date: "2024-01-15",
+				line: "Same line data",
+				value: -10,
+				referenceAccount: "bank",
+				other_account: "grocery",
+				importer: importerWithExisting,
+			});
+
+			expect(transaction.memo).toBe("Same line data");
+		});
+	});
 });

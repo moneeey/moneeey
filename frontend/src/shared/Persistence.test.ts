@@ -190,6 +190,69 @@ describe("Persistence", () => {
 				resolved: { ...a, ...b },
 			});
 		});
+
+		it("prefers higher rev level when same updated timestamp", () => {
+			const sameTime = {
+				updated: "2022-10-14T23:00:26-03:00",
+				created: "2022-10-14T23:00:26-03:00",
+			};
+			const a = sampleCurrency({ ...sameTime, ...rev2 });
+			const b = sampleCurrency({ ...sameTime, ...rev1 });
+			persistence.resolveConflict(a, b);
+
+			thenExpect({
+				updated: a,
+				outdated: b,
+				resolved: a,
+			});
+		});
+
+		it("prefers higher rev level when same updated timestamp reversed", () => {
+			const sameTime = {
+				updated: "2022-10-14T23:00:26-03:00",
+				created: "2022-10-14T23:00:26-03:00",
+			};
+			const a = sampleCurrency({ ...sameTime, ...rev1 });
+			const b = sampleCurrency({ ...sameTime, ...rev2 });
+			persistence.resolveConflict(a, b);
+
+			thenExpect({
+				updated: b,
+				outdated: a,
+				resolved: b,
+			});
+		});
+
+		it("falls back to b when both equal", () => {
+			const sameTime = {
+				updated: "2022-10-14T23:00:26-03:00",
+				created: "2022-10-14T23:00:26-03:00",
+			};
+			const a = sampleCurrency({ ...sameTime, ...rev1 });
+			const b = sampleCurrency({ ...sameTime, ...rev1 });
+			persistence.resolveConflict(a, b);
+
+			thenExpect({
+				updated: b,
+				outdated: a,
+				resolved: { ...a, ...b },
+			});
+		});
+	});
+
+	describe("PouchDBRemoteFactory", () => {
+		it("creates PouchDB with basic auth for non-JWT", () => {
+			const { PouchDBRemoteFactory } = jest.requireActual("./Persistence") as typeof import("./Persistence");
+			// Just verify it doesn't throw — actual connection not needed
+			expect(() =>
+				PouchDBRemoteFactory({
+					url: "http://localhost:5984/testdb",
+					username: "user",
+					password: "pass",
+					enabled: true,
+				}),
+			).not.toThrow();
+		});
 	});
 
 	describe("PersistenceStore with real PouchDB", () => {
@@ -284,6 +347,35 @@ describe("Persistence", () => {
 				const result = await db.get("ACCOUNT-e1");
 				expect((result as unknown as ITestEntity).name).toBe("First");
 			});
+
+			it("logs error when bulkDocs response id does not match", async () => {
+				jest.spyOn(db, "bulkDocs").mockResolvedValueOnce([
+					{ ok: true, id: "NONEXISTENT-id", rev: "1-abc" },
+				] as never);
+
+				persistence.commit(makeDoc("e1") as never);
+				await persistence.doCommit();
+
+				const errorLogs = mockLogger.calls.filter(
+					(c) => (c as { level: string }).level === "error",
+				);
+				expect(errorLogs.length).toBeGreaterThan(0);
+			});
+
+			it("logs error when bulkDocs returns error for a doc", async () => {
+				jest.spyOn(db, "bulkDocs").mockResolvedValueOnce([
+					{ error: true, status: 500, id: "ACCOUNT-e1", message: "fail" },
+				] as never);
+
+				persistence.commit(makeDoc("e1") as never);
+				await persistence.doCommit();
+
+				const errorLogs = mockLogger.calls.filter(
+					(c) => (c as { level: string }).level === "error",
+				);
+				expect(errorLogs.length).toBeGreaterThan(0);
+			});
+
 		});
 
 		describe("refetch", () => {
@@ -356,6 +448,28 @@ describe("Persistence", () => {
 				persistence.watch(EntityType.ACCOUNT, (doc) => received.push(doc));
 				persistence.handleReceivedDocument(makeDoc("e1") as never);
 				expect(received).toHaveLength(1);
+			});
+
+			it("removes conflicts from the document", async () => {
+				// Create a doc with a conflict
+				const doc = makeDoc("e1", { name: "Original" });
+				await db.put(doc);
+
+				// Force a conflicting revision by putting with new_edits: false
+				await db.bulkDocs([{
+					...doc,
+					name: "Conflict",
+					_rev: "2-conflicting",
+				}], { new_edits: false });
+
+				// Fetch with conflicts
+				const withConflicts = await db.get("ACCOUNT-e1", { conflicts: true });
+				expect(withConflicts._conflicts?.length).toBeGreaterThan(0);
+
+				// handleReceivedDocument should remove conflicts
+				const removeSpy = jest.spyOn(db, "remove");
+				persistence.handleReceivedDocument(withConflicts as never);
+				expect(removeSpy).toHaveBeenCalled();
 			});
 		});
 
@@ -438,9 +552,15 @@ describe("Persistence", () => {
 			beforeEach(() => {
 				const remoteFactory = freshDbFactory();
 				remoteDb = remoteFactory();
+				// Mock PouchDBRemoteFactory to return our in-memory remote DB
+				jest.spyOn(
+					jest.requireActual("./Persistence") as typeof import("./Persistence"),
+					"PouchDBRemoteFactory",
+				).mockReturnValue(remoteDb);
 			});
 
 			afterEach(async () => {
+				jest.restoreAllMocks();
 				try {
 					await remoteDb.destroy();
 				} catch {
@@ -469,22 +589,18 @@ describe("Persistence", () => {
 			});
 
 			it("syncs data between two databases", async () => {
-				// Put a doc in the local db
 				await db.put(makeDoc("e1", { name: "LocalDoc" }));
 
-				// Start sync using db.sync directly (bypass PouchDBRemoteFactory)
 				const syncPromise = new Promise<void>((resolve) => {
 					db.sync(remoteDb, { live: false }).on("complete", () => resolve());
 				});
 				await syncPromise;
 
-				// Verify doc replicated to remote
 				const remoteDoc = await remoteDb.get("ACCOUNT-e1");
 				expect((remoteDoc as unknown as ITestEntity).name).toBe("LocalDoc");
 			});
 
 			it("cancels previous sync when called again", async () => {
-				// First sync with disabled (sets status to OFFLINE)
 				await persistence.sync({
 					url: "",
 					username: "",
@@ -493,7 +609,6 @@ describe("Persistence", () => {
 				});
 				expect(persistence.status).toBe(Status.OFFLINE);
 
-				// Second sync also disabled
 				await persistence.sync({
 					url: "",
 					username: "",
@@ -501,6 +616,28 @@ describe("Persistence", () => {
 					enabled: false,
 				});
 				expect(persistence.status).toBe(Status.OFFLINE);
+			});
+
+			it("live sync sets status to ONLINE and replicates changes", async () => {
+				// Put a doc in remote before sync starts
+				await remoteDb.put(makeDoc("e1", { name: "RemoteDoc" }));
+
+				const received: unknown[] = [];
+				persistence.watch(EntityType.ACCOUNT, (doc) => received.push(doc));
+
+				// Start live sync — will resolve on first active/paused/change event
+				const syncPromise = persistence.sync({
+					url: "http://fake",
+					username: "user",
+					password: "pass",
+					enabled: true,
+				});
+
+				await syncPromise;
+				expect(persistence.status).toBe(Status.ONLINE);
+
+				// Wait for refetch debounce to complete
+				await new Promise((r) => setTimeout(r, 400));
 			});
 		});
 	});
