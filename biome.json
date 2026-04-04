@@ -6,7 +6,8 @@
 			"**/src/polyfills.ts",
 			"./docker/*",
 			"**/playwright-report/*",
-			"**/sw.bundle.js"
+			"**/sw.bundle.js",
+			"**/coverage/*"
 		]
 	},
 	"organizeImports": {

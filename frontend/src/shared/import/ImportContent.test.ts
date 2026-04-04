@@ -307,9 +307,7 @@ Date
 	});
 
 	it("retrieveLineColumns returns null when date found but no value", () => {
-		expect(
-			retrieveLineColumns("2024-08-10 nothing", "yyyy-MM-dd"),
-		).toBeNull();
+		expect(retrieveLineColumns("2024-08-10 nothing", "yyyy-MM-dd")).toBeNull();
 	});
 
 	describe("importTransaction", () => {

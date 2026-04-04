@@ -1,13 +1,13 @@
+import { EntityType } from "../shared/Entity";
+import Logger from "../shared/Logger";
+import type MoneeeyStore from "../shared/MoneeeyStore";
+import TagsStore from "../shared/Tags";
+import { AccountStore } from "./Account";
 import TransactionStore, {
 	type ITransaction,
 	isTransaction,
 	mockTransaction,
 } from "./Transaction";
-import { AccountStore } from "./Account";
-import { EntityType } from "../shared/Entity";
-import Logger from "../shared/Logger";
-import TagsStore from "../shared/Tags";
-import type MoneeeyStore from "../shared/MoneeeyStore";
 
 const mockMoneeeyStore = () => {
 	const logger = new Logger("test");
@@ -33,6 +33,7 @@ const makeTx = (
 	const base = store.factory();
 	const tx = { ...base, ...overrides };
 	store.merge(tx, { setUpdated: false });
+	// biome-ignore lint/style/noNonNullAssertion: test helper, entity was just merged
 	return store.byUuid(store.getUuid(tx))!;
 };
 
@@ -87,8 +88,9 @@ describe("TransactionStore", () => {
 		moneeeyStore = mockMoneeeyStore();
 		store = new TransactionStore(moneeeyStore);
 		// Wire up accounts on the mock so viewAllNonPayees works
-		(moneeeyStore as unknown as { transactions: TransactionStore }).transactions =
-			store;
+		(
+			moneeeyStore as unknown as { transactions: TransactionStore }
+		).transactions = store;
 	});
 
 	describe("factory", () => {
@@ -112,7 +114,7 @@ describe("TransactionStore", () => {
 		it("adds a transaction to the store", () => {
 			makeTx(store, { transaction_uuid: "t1", from_value: 50, to_value: 50 });
 			expect(store.byUuid("t1")).toBeDefined();
-			expect(store.byUuid("t1")!.from_value).toBe(50);
+			expect(store.byUuid("t1")?.from_value).toBe(50);
 		});
 
 		it("throws on negative from_value", () => {
@@ -342,12 +344,12 @@ describe("TransactionStore", () => {
 
 			store.replaceAccount("old", "new");
 
-			expect(store.byUuid("t1")!.from_account).toBe("new");
-			expect(store.byUuid("t1")!.to_account).toBe("other");
-			expect(store.byUuid("t2")!.from_account).toBe("other");
-			expect(store.byUuid("t2")!.to_account).toBe("new");
-			expect(store.byUuid("t3")!.from_account).toBe("other");
-			expect(store.byUuid("t3")!.to_account).toBe("another");
+			expect(store.byUuid("t1")?.from_account).toBe("new");
+			expect(store.byUuid("t1")?.to_account).toBe("other");
+			expect(store.byUuid("t2")?.from_account).toBe("other");
+			expect(store.byUuid("t2")?.to_account).toBe("new");
+			expect(store.byUuid("t3")?.from_account).toBe("other");
+			expect(store.byUuid("t3")?.to_account).toBe("another");
 		});
 	});
 });

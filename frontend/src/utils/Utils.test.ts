@@ -1,4 +1,5 @@
 import {
+	StorageKind,
 	asyncProcess,
 	asyncSleep,
 	asyncTimeout,
@@ -9,7 +10,6 @@ import {
 	noop,
 	setStorage,
 	slugify,
-	StorageKind,
 	tokenize,
 	uuid,
 } from "./Utils";
@@ -180,9 +180,7 @@ describe("Utils", () => {
 
 		it("reads from localStorage for PERMANENT", () => {
 			mockLocalStorage.getItem.mockReturnValueOnce("saved");
-			expect(getStorage("key", "default", StorageKind.PERMANENT)).toBe(
-				"saved",
-			);
+			expect(getStorage("key", "default", StorageKind.PERMANENT)).toBe("saved");
 		});
 
 		it("reads from sessionStorage for SESSION", () => {

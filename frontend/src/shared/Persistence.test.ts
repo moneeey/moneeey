@@ -5,18 +5,19 @@ import type { ICurrency } from "../entities/Currency";
 
 import { EntityType, type IBaseEntity } from "./Entity";
 import { MockLogger } from "./Logger";
-import MappedStore from "./MappedStore";
-import PersistenceStore, { PersistenceMonitor, Status } from "./Persistence";
-import type MoneeeyStore from "./MoneeeyStore";
-import TagsStore from "./Tags";
 import Logger from "./Logger";
+import MappedStore from "./MappedStore";
+import type MoneeeyStore from "./MoneeeyStore";
+import PersistenceStore, { PersistenceMonitor, Status } from "./Persistence";
+import TagsStore from "./Tags";
 
 (PouchDB as unknown as { plugin: (p: unknown) => void }).plugin(memoryAdapter);
 
 let dbCounter = 0;
 const freshDbFactory = () => {
 	dbCounter += 1;
-	return () => new PouchDB(`test-${dbCounter}-${Date.now()}`, { adapter: "memory" });
+	return () =>
+		new PouchDB(`test-${dbCounter}-${Date.now()}`, { adapter: "memory" });
 };
 
 interface ITestEntity extends IBaseEntity {
@@ -99,7 +100,8 @@ describe("Persistence", () => {
 		}: { updated: object; outdated: object; resolved: object }) => {
 			const state = {
 				log: mockLogger.calls,
-				commit: (persistence.commit as jest.Mock<unknown, unknown[]>).mock.calls,
+				commit: (persistence.commit as jest.Mock<unknown, unknown[]>).mock
+					.calls,
 			};
 			expect(state).toEqual({
 				log: [
@@ -242,7 +244,9 @@ describe("Persistence", () => {
 
 	describe("PouchDBRemoteFactory", () => {
 		it("creates PouchDB with basic auth for non-JWT", () => {
-			const { PouchDBRemoteFactory } = jest.requireActual("./Persistence") as typeof import("./Persistence");
+			const { PouchDBRemoteFactory } = jest.requireActual(
+				"./Persistence",
+			) as typeof import("./Persistence");
 			// Just verify it doesn't throw — actual connection not needed
 			expect(() =>
 				PouchDBRemoteFactory({
@@ -349,9 +353,11 @@ describe("Persistence", () => {
 			});
 
 			it("logs error when bulkDocs response id does not match", async () => {
-				jest.spyOn(db, "bulkDocs").mockResolvedValueOnce([
-					{ ok: true, id: "NONEXISTENT-id", rev: "1-abc" },
-				] as never);
+				jest
+					.spyOn(db, "bulkDocs")
+					.mockResolvedValueOnce([
+						{ ok: true, id: "NONEXISTENT-id", rev: "1-abc" },
+					] as never);
 
 				persistence.commit(makeDoc("e1") as never);
 				await persistence.doCommit();
@@ -363,9 +369,11 @@ describe("Persistence", () => {
 			});
 
 			it("logs error when bulkDocs returns error for a doc", async () => {
-				jest.spyOn(db, "bulkDocs").mockResolvedValueOnce([
-					{ error: true, status: 500, id: "ACCOUNT-e1", message: "fail" },
-				] as never);
+				jest
+					.spyOn(db, "bulkDocs")
+					.mockResolvedValueOnce([
+						{ error: true, status: 500, id: "ACCOUNT-e1", message: "fail" },
+					] as never);
 
 				persistence.commit(makeDoc("e1") as never);
 				await persistence.doCommit();
@@ -375,7 +383,6 @@ describe("Persistence", () => {
 				);
 				expect(errorLogs.length).toBeGreaterThan(0);
 			});
-
 		});
 
 		describe("refetch", () => {
@@ -411,9 +418,7 @@ describe("Persistence", () => {
 				const accountDocs: unknown[] = [];
 				const currencyDocs: unknown[] = [];
 				persistence.watch(EntityType.ACCOUNT, (doc) => accountDocs.push(doc));
-				persistence.watch(EntityType.CURRENCY, (doc) =>
-					currencyDocs.push(doc),
-				);
+				persistence.watch(EntityType.CURRENCY, (doc) => currencyDocs.push(doc));
 
 				persistence.notifyDocument(makeDoc("e1") as never);
 				persistence.notifyDocument({
@@ -456,11 +461,16 @@ describe("Persistence", () => {
 				await db.put(doc);
 
 				// Force a conflicting revision by putting with new_edits: false
-				await db.bulkDocs([{
-					...doc,
-					name: "Conflict",
-					_rev: "2-conflicting",
-				}], { new_edits: false });
+				await db.bulkDocs(
+					[
+						{
+							...doc,
+							name: "Conflict",
+							_rev: "2-conflicting",
+						},
+					],
+					{ new_edits: false },
+				);
 
 				// Fetch with conflicts
 				const withConflicts = await db.get("ACCOUNT-e1", { conflicts: true });
@@ -535,9 +545,7 @@ describe("Persistence", () => {
 
 				const restored = await persistence2.fetchAllDocs();
 				expect(restored).toHaveLength(2);
-				const names = restored.map(
-					(d: unknown) => (d as ITestEntity).name,
-				);
+				const names = restored.map((d: unknown) => (d as ITestEntity).name);
 				expect(names.sort()).toEqual(["RoundTrip1", "RoundTrip2"]);
 
 				// Wait for pending debounced refetch before destroying
@@ -553,10 +561,14 @@ describe("Persistence", () => {
 				const remoteFactory = freshDbFactory();
 				remoteDb = remoteFactory();
 				// Mock PouchDBRemoteFactory to return our in-memory remote DB
-				jest.spyOn(
-					jest.requireActual("./Persistence") as typeof import("./Persistence"),
-					"PouchDBRemoteFactory",
-				).mockReturnValue(remoteDb);
+				jest
+					.spyOn(
+						jest.requireActual(
+							"./Persistence",
+						) as typeof import("./Persistence"),
+						"PouchDBRemoteFactory",
+					)
+					.mockReturnValue(remoteDb);
 			});
 
 			afterEach(async () => {
@@ -695,7 +707,7 @@ describe("Persistence", () => {
 
 			const entity = store.byUuid("e1");
 			expect(entity).toBeDefined();
-			expect(entity!.name).toBe("FromDB");
+			expect(entity?.name).toBe("FromDB");
 		});
 
 		it("update to existing entity triggers persist", async () => {

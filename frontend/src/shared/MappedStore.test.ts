@@ -1,8 +1,8 @@
 import { EntityType, type IBaseEntity } from "./Entity";
-import MappedStore from "./MappedStore";
 import Logger from "./Logger";
-import TagsStore from "./Tags";
+import MappedStore from "./MappedStore";
 import type MoneeeyStore from "./MoneeeyStore";
+import TagsStore from "./Tags";
 
 interface ITestEntity extends IBaseEntity {
 	test_uuid: string;
@@ -36,6 +36,7 @@ const mergeEntity = (
 	const base = store.factory();
 	const entity = { ...base, ...overrides };
 	store.merge(entity, { setUpdated: false });
+	// biome-ignore lint/style/noNonNullAssertion: test helper, entity was just merged
 	return store.byUuid(store.getUuid(entity))!;
 };
 

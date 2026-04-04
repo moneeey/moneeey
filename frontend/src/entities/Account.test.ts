@@ -1,8 +1,8 @@
-import { AccountKind, AccountStore, type IAccount } from "./Account";
 import { EntityType } from "../shared/Entity";
 import Logger from "../shared/Logger";
-import TagsStore from "../shared/Tags";
 import type MoneeeyStore from "../shared/MoneeeyStore";
+import TagsStore from "../shared/Tags";
+import { AccountKind, AccountStore, type IAccount } from "./Account";
 
 const mockMoneeeyStore = () => {
 	const logger = new Logger("test");
@@ -27,6 +27,7 @@ const makeAccount = (
 	const base = store.factory();
 	const account = { ...base, ...overrides };
 	store.merge(account, { setUpdated: false });
+	// biome-ignore lint/style/noNonNullAssertion: test helper, entity was just merged
 	return store.byUuid(store.getUuid(account))!;
 };
 
