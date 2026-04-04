@@ -853,11 +853,14 @@ test.describe("Moneeey", () => {
 		// Navigate to All transactions and verify all transactions reference MoneeeyCard
 		await OpenMenuItem(page, "All transactions");
 		const today = formatDate(new Date());
-		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 4)).toEqual([
+		// 3 initial balances (BRL→MoneeeyCard merged, BRL→MoneeeyCard, BTC→archived) + merged transaction + empty row
+		// Note: Bitcoinss is archived so its name doesn't resolve in selects — shows placeholder "To"
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 5)).toEqual([
 			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: MoneeeyCard (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
-			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: MoneeeyCard (bg---800) | amount: 500 (bg---800) | memo:  (bg---800)`,
-			`date: ${today} (bg---600) | from: From (bg---600) | to: To (bg---600) | amount: 0 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: To (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: MoneeeyCard (bg---600) | to: MoneeeyCard (bg---600) | amount: 500 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: From (bg---800) | to: To (bg---800) | amount: 0 (bg---800) | memo:  (bg---800)`,
 		]);
 	});
 
@@ -867,56 +870,62 @@ test.describe("Moneeey", () => {
 		// Close tour modal
 		await page.getByTestId("nm-modal-card").getByTestId("close").click();
 
-		// === Direction 1: BRL → BTC (from Banco Moneeey view) ===
-		await OpenMenuItem(page, "BRL Banco Moneeey");
+		// === Direction 1: BRL → BTC (via All transactions) ===
+		await OpenMenuItem(page, "All transactions");
 
-		// Set counterpart account to Bitcoinss (BTC) on the new row (index 1)
-		const editorAccount1 = Select(page, "editorAccount", 1);
-		await editorAccount1.chooseOrCreate("Bitcoinss");
+		// Set From=Banco Moneeey (BRL), To=Bitcoinss (BTC) on the new row (index 3)
+		const editorFrom1 = Select(page, "editorFrom", 3);
+		await editorFrom1.chooseOrCreate("Banco Moneeey");
+		const editorTo1 = Select(page, "editorTo", 3);
+		await editorTo1.chooseOrCreate("Bitcoinss");
 
-		// Two editorAmount fields should now appear for this row (BRL and BTC)
-		// Index 0 = initial balance amount, Index 1 = BRL (from), Index 2 = BTC (to)
-		await Input(page, "editorAmount", undefined, 1).change("-100,00", "-100");
-		await Input(page, "editorAmount", undefined, 2).change(
+		// Two editorAmount fields should now appear for this row (BRL from, BTC to)
+		// Indices 0,1,2 = initial balance amounts (single), index 3 = BRL from, index 4 = BTC to
+		await Input(page, "editorAmount", undefined, 3).change("100");
+		await Input(page, "editorAmount", undefined, 4).change(
 			"0,01000000",
 			"0,01",
 		);
 
 		// Verify running balance on Banco Moneeey: 1.234,56 - 100 = 1.134,56
+		await OpenMenuItem(page, "BRL Banco Moneeey");
 		await Input(page, "editorRunning", undefined, 1).toHaveValue("1.134,56");
 
-		// Navigate to Bitcoinss and verify running balance: 0,12345678 + 0,01 = 0,13345678
+		// Verify running balance on Bitcoinss: 0,12345678 + 0,01 = 0,13345678
 		await OpenMenuItem(page, "BTC Bitcoinss");
 		await Input(page, "editorRunning", undefined, 1).toHaveValue("0,13345678");
 
-		// === Direction 2: BTC → BRL (from Bitcoinss view) ===
-		// Add transaction from Bitcoinss to MoneeeyCard
-		const editorAccount2 = Select(page, "editorAccount", 2);
-		await editorAccount2.chooseOrCreate("MoneeeyCard");
+		// === Direction 2: BTC → BRL (via All transactions) ===
+		await OpenMenuItem(page, "All transactions");
 
-		// Two editorAmount fields: first is BTC (from), second is BRL (to)
-		// Previous rows: initial balance (index 0), BRL→BTC transaction (indices 1,2)
-		// New row BTC side: index 3, BRL side: index 4
-		await Input(page, "editorAmount", undefined, 3).change(
-			"-0,05000000",
-			"-0,05",
+		// Set From=Bitcoinss (BTC), To=MoneeeyCard (BRL) on the new row (index 4)
+		const editorFrom2 = Select(page, "editorFrom", 4);
+		await editorFrom2.chooseOrCreate("Bitcoinss");
+		const editorTo2 = Select(page, "editorTo", 4);
+		await editorTo2.chooseOrCreate("MoneeeyCard");
+
+		// Two editorAmount fields for row 4: BTC from (index 5), BRL to (index 6)
+		// Note: row 3 has 2 amounts (indices 3,4), so row 4 starts at index 5
+		await Input(page, "editorAmount", undefined, 5).change(
+			"0,05000000",
+			"0,05",
 		);
-		await Input(page, "editorAmount", undefined, 4).change("500,00", "500");
+		await Input(page, "editorAmount", undefined, 6).change("500");
 
-		// Verify running balance on Bitcoinss: 0,13345678 - 0,05 = 0,08345678
+		// Verify Bitcoinss balance: 0,13345678 - 0,05 = 0,08345678
+		await OpenMenuItem(page, "BTC Bitcoinss");
 		await Input(page, "editorRunning", undefined, 2).toHaveValue("0,08345678");
 
-		// Verify MoneeeyCard received the BRL amount
+		// Verify MoneeeyCard balance: 2.000 + 500 = 2.500
 		await OpenMenuItem(page, "BRL MoneeeyCard");
-		// MoneeeyCard: initial 2.000 + 500 from BTC exchange
 		await Input(page, "editorRunning", undefined, 1).toHaveValue("2.500");
 
 		// === Budget with multi-currency transactions ===
-		// Add a BRL expense from Banco Moneeey to test budgets
+		// Add a BRL expense for budget testing
 		await OpenMenuItem(page, "All transactions");
 		await updateOnAllTransactions(
 			page,
-			3,
+			5,
 			"Banco Moneeey",
 			"Gas Station",
 			"200",
@@ -944,7 +953,7 @@ test.describe("Moneeey", () => {
 			{ timeout: 15000 },
 		);
 
-		// Create a budget for Bitcoinss-related expenses tagged with Banco Moneeey
+		// Create a budget for Banco Moneeey-tagged expenses (includes the BRL→BTC transaction)
 		await BudgetEditorSave(
 			page,
 			"Crypto Expenses",
@@ -952,7 +961,7 @@ test.describe("Moneeey", () => {
 			"Banco Moneeey",
 		);
 
-		// Allocate and verify: the BRL side (from_value=100) of the BRL→BTC transaction should show as used
+		// Allocate and verify: the BRL from_value (100) of the BRL→BTC transaction shows as used
 		await Input(page, "editorAllocated", undefined, 1).change("500", "500");
 		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("100", {
 			timeout: 15000,
