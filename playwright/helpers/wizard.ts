@@ -30,18 +30,26 @@ export async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("ok-button")).toContainText("Continue");
 	await page.getByTestId("ok-button").click();
 
-	// Create three initial accounts
+	// Create three initial accounts.
+	//
+	// The default currency shows the CONFIG default via a react-select that
+	// re-mounts each time the "save-and-add-another" button re-opens the form.
+	// Reading `.innerText` synchronously right after the name field settles
+	// can catch the placeholder before the react-select rehydrates. Using
+	// `expect(locator).toHaveText(...)` makes Playwright auto-retry until the
+	// value lands, which is the robust way to assert on react-select state.
+	const currencyValueText = () =>
+		page
+			.getByTestId("editorCurrency")
+			.locator(".mn-select__single-value, .mn-select__placeholder");
+
 	await Input(page, "name").change("Banco Moneeey");
-	expect(await Select(page, "editorCurrency").value()).toEqual(
-		"BRL Brazilian Real",
-	);
+	await expect(currencyValueText()).toHaveText("BRL Brazilian Real");
 	await Input(page, "editorInitial_balance").change("1234,56", "1.234,56");
 	await page.getByTestId("save-and-add-another").click();
 
 	await Input(page, "name").change("MoneeeyCard");
-	expect(await Select(page, "editorCurrency").value()).toEqual(
-		"BRL Brazilian Real",
-	);
+	await expect(currencyValueText()).toHaveText("BRL Brazilian Real");
 	await Input(page, "editorInitial_balance").change("2000,00", "2.000");
 	await page.getByTestId("save-and-add-another").click();
 
@@ -51,7 +59,7 @@ export async function completeLandingWizard(page: Page) {
 		"0,123456789",
 		"0,12345678",
 	);
-	expect(await Select(page, "editorCurrency").value()).toEqual("BTC Bitcoin");
+	await expect(currencyValueText()).toHaveText("BTC Bitcoin");
 	await page.getByTestId("save-and-close").click();
 
 	await expect(page.getByText("Dashboard")).toBeVisible();

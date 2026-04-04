@@ -7,16 +7,22 @@ import { completeLandingWizard } from "./wizard";
 /**
  * Custom Playwright fixtures that remove per-test setup boilerplate.
  *
- * - `seededPage`: fresh app at `/` with localStorage/IndexedDB wiped.
- *                 Use this when the test itself exercises the landing wizard
- *                 or otherwise needs to see the pristine first-run state.
- * - `wizardPage`: same as seededPage, but walks through the landing wizard
- *                 and dismisses the tour modal so the test starts on the
- *                 post-onboarding Dashboard. Use this for the ~11 tests that
- *                 just want the three default accounts set up.
+ * - `seededPage`: fresh app at `/` with localStorage + PouchDB wiped. Use
+ *                 when the test itself exercises the landing wizard
+ *                 (tour.spec.ts).
+ * - `wizardPage`: post-wizard Dashboard — reset + complete landing wizard +
+ *                 close tour modal. Use for the ~11 tests that just want the
+ *                 three default accounts set up.
  *
  * Both fixtures wrap their setup in `step()` so the timings show up in the
  * HTML report and in the `PERF_LOG=1` CLI output.
+ *
+ * Historical note: an earlier attempt skipped the wizard by snapshotting
+ * `storageState({ indexedDB: true })` in a global setup project. That
+ * approach is blocked because the app configures PouchDB with
+ * `pouchdb-adapter-memory` — all entity data lives in RAM, so there is no
+ * IndexedDB for Playwright to snapshot. Re-enabling the optimization would
+ * require the app to use a persistent adapter (e.g. idb) under an e2e flag.
  */
 type MoneeeyFixtures = {
 	seededPage: Page;
