@@ -5,7 +5,6 @@ import {
 	makeObservable,
 	observable,
 	reaction,
-	runInAction,
 } from "mobx";
 
 import { EntityType, type IBaseEntity, type TMonetary } from "../shared/Entity";
@@ -103,7 +102,14 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 				}) as BudgetEnvelope,
 		});
 
+		// `merge` is already annotated as an action by the parent
+		// `MappedStore.makeObservable`; re-annotating here would make MobX
+		// throw. Our override is picked up via the prototype chain at the
+		// moment the parent's `makeObservable` runs, so it's already wrapped.
+		// Every other method that mutates the observable map or envelope
+		// fields needs its own action annotation.
 		makeObservable(this, {
+			getEnvelope: action,
 			updateVirtualEnvelopeUsage: action,
 			updateVirtualEnvelopeRemainings: action,
 		});
@@ -136,22 +142,6 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 		});
 	}
 
-	/**
-	 * Stores a BudgetEnvelope in the observable map while preserving the class
-	 * instance. The base `MappedStore.merge` uses object spread, which copies
-	 * own data properties but drops accessor properties defined on the
-	 * prototype — including our `budget` and `name` getters. Since envelopes
-	 * are VIRTUAL (never persisted) we can safely bypass that and keep the
-	 * instance as-is. Wrapped in `runInAction` because the mutation happens
-	 * outside MobX's standard action flow.
-	 */
-	private storeInstance(item: BudgetEnvelope) {
-		runInAction(() => {
-			this.moneeeyStore.tags.registerAll(item.tags);
-			this.itemsByUuid.set(this.getUuid(item), item);
-		});
-	}
-
 	getEnvelope(entity: IBudget, starting: TDate) {
 		const key = BudgetEnvelopeKey(entity, starting);
 		if (this.hasKey(key)) {
@@ -166,7 +156,7 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 			starting,
 			allocated,
 		);
-		this.storeInstance(envelope);
+		this.itemsByUuid.set(key, envelope);
 
 		return envelope;
 	}
@@ -181,16 +171,18 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 		// mutable field updates there. Identity (envelope_uuid / budget_uuid
 		// / currency_uuid / starting) is immutable for an envelope and
 		// intentionally not copied.
+		//
+		// We deliberately don't call `super.merge` for envelopes — they are
+		// VIRTUAL (never persisted) and its object spread would drop the
+		// prototype accessors.
 		const uuid = this.getUuid(item);
 		const existing = this.byUuid(uuid) as BudgetEnvelope | undefined;
 		const target = existing ?? item;
 		if (existing) {
-			runInAction(() => {
-				existing.allocated = item.allocated;
-				existing.used = item.used;
-				existing.remaining = item.remaining;
-				existing._rev = item._rev;
-			});
+			existing.allocated = item.allocated;
+			existing.used = item.used;
+			existing.remaining = item.remaining;
+			existing._rev = item._rev;
 		}
 
 		const parentBudget = target.budget;
@@ -202,7 +194,7 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 			);
 		}
 		this.updateRemainings();
-		this.storeInstance(target);
+		this.itemsByUuid.set(uuid, target);
 	}
 
 	getRemaining(envelope: BudgetEnvelope): number {
@@ -238,14 +230,14 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 	updateVirtualEnvelopeUsage(envelope: BudgetEnvelope, usage: number) {
 		envelope.used = usage;
 		envelope._rev = this.nextEnvelopeRev();
-		this.storeInstance(envelope);
+		this.itemsByUuid.set(this.getUuid(envelope), envelope);
 	}
 
 	updateVirtualEnvelopeRemainings() {
 		for (const envelope of this.all) {
 			envelope.remaining = this.getRemaining(envelope);
 			envelope._rev = this.nextEnvelopeRev();
-			this.storeInstance(envelope);
+			this.itemsByUuid.set(this.getUuid(envelope), envelope);
 		}
 	}
 
