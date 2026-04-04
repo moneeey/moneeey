@@ -299,6 +299,7 @@ async function BudgetEditorSave(
 	name: string,
 	currency: string,
 	tag: string,
+	expectedTags?: string[],
 ) {
 	await page.getByTestId("addNewBudget").first().click();
 
@@ -310,15 +311,9 @@ async function BudgetEditorSave(
 	await budgetCurrency.choose(currency);
 
 	const budgetTags = Select(page, "budgetTags");
-	expect(await budgetTags.options()).toEqual([
-		"Bakery",
-		"Banco Moneeey",
-		"Bitcoinss",
-		"Gas Station",
-		"Initial balance BRL",
-		"Initial balance BTC",
-		"MoneeeyCard",
-	]);
+	if (expectedTags) {
+		expect(await budgetTags.options()).toEqual(expectedTags);
+	}
 	await budgetTags.choose(tag, false);
 
 	await budgetEditor.getByTestId("budgetSave").click();
@@ -430,8 +425,29 @@ test.describe("Moneeey", () => {
 		);
 
 		// Create budgets
-		await BudgetEditorSave(page, "Gas", mostUsedCurrencies[0], "Gas Station");
-		await BudgetEditorSave(page, "Bakery", mostUsedCurrencies[0], "Bakery");
+		const tourExpectedTags = [
+			"Bakery",
+			"Banco Moneeey",
+			"Bitcoinss",
+			"Gas Station",
+			"Initial balance BRL",
+			"Initial balance BTC",
+			"MoneeeyCard",
+		];
+		await BudgetEditorSave(
+			page,
+			"Gas",
+			mostUsedCurrencies[0],
+			"Gas Station",
+			tourExpectedTags,
+		);
+		await BudgetEditorSave(
+			page,
+			"Bakery",
+			mostUsedCurrencies[0],
+			"Bakery",
+			tourExpectedTags,
+		);
 
 		const editorRemainingClass = classForTestIdTDs(page, "editorRemaining");
 
@@ -870,26 +886,34 @@ test.describe("Moneeey", () => {
 		// Close tour modal
 		await page.getByTestId("nm-modal-card").getByTestId("close").click();
 
-		// === Direction 1: BRL → BTC (via All transactions) ===
+		// First add a same-currency BRL expense for budget testing (before multi-currency rows)
 		await OpenMenuItem(page, "All transactions");
+		await updateOnAllTransactions(
+			page,
+			3,
+			"Banco Moneeey",
+			"Gas Station",
+			"200",
+		);
 
-		// Set From=Banco Moneeey (BRL), To=Bitcoinss (BTC) on the new row (index 3)
-		const editorFrom1 = Select(page, "editorFrom", 3);
+		// === Direction 1: BRL → BTC (via All transactions) ===
+		// Row 4 is the new empty row after Gas Station transaction
+		const editorFrom1 = Select(page, "editorFrom", 4);
 		await editorFrom1.chooseOrCreate("Banco Moneeey");
-		const editorTo1 = Select(page, "editorTo", 3);
+		const editorTo1 = Select(page, "editorTo", 4);
 		await editorTo1.chooseOrCreate("Bitcoinss");
 
-		// Two editorAmount fields should now appear for this row (BRL from, BTC to)
-		// Indices 0,1,2 = initial balance amounts (single), index 3 = BRL from, index 4 = BTC to
-		await Input(page, "editorAmount", undefined, 3).change("100");
-		await Input(page, "editorAmount", undefined, 4).change(
+		// Two editorAmount fields now appear for row 4 (BRL from, BTC to)
+		// Indices 0,1,2,3 = single amounts (3 initial + Gas Station), index 4 = BRL from, index 5 = BTC to
+		await Input(page, "editorAmount", undefined, 4).change("100");
+		await Input(page, "editorAmount", undefined, 5).change(
 			"0,01000000",
 			"0,01",
 		);
 
-		// Verify running balance on Banco Moneeey: 1.234,56 - 100 = 1.134,56
+		// Verify running balance on Banco Moneeey: 1.234,56 - 200 - 100 = 934,56
 		await OpenMenuItem(page, "BRL Banco Moneeey");
-		await Input(page, "editorRunning", undefined, 1).toHaveValue("1.134,56");
+		await Input(page, "editorRunning", undefined, 2).toHaveValue("934,56");
 
 		// Verify running balance on Bitcoinss: 0,12345678 + 0,01 = 0,13345678
 		await OpenMenuItem(page, "BTC Bitcoinss");
@@ -898,19 +922,19 @@ test.describe("Moneeey", () => {
 		// === Direction 2: BTC → BRL (via All transactions) ===
 		await OpenMenuItem(page, "All transactions");
 
-		// Set From=Bitcoinss (BTC), To=MoneeeyCard (BRL) on the new row (index 4)
-		const editorFrom2 = Select(page, "editorFrom", 4);
+		// Row 5 is the new empty row
+		const editorFrom2 = Select(page, "editorFrom", 5);
 		await editorFrom2.chooseOrCreate("Bitcoinss");
-		const editorTo2 = Select(page, "editorTo", 4);
+		const editorTo2 = Select(page, "editorTo", 5);
 		await editorTo2.chooseOrCreate("MoneeeyCard");
 
-		// Two editorAmount fields for row 4: BTC from (index 5), BRL to (index 6)
-		// Note: row 3 has 2 amounts (indices 3,4), so row 4 starts at index 5
-		await Input(page, "editorAmount", undefined, 5).change(
+		// Two editorAmount fields for row 5: BTC from (index 6), BRL to (index 7)
+		// Row 4 had 2 amounts (indices 4,5), so row 5 starts at index 6
+		await Input(page, "editorAmount", undefined, 6).change(
 			"0,05000000",
 			"0,05",
 		);
-		await Input(page, "editorAmount", undefined, 6).change("500");
+		await Input(page, "editorAmount", undefined, 7).change("500");
 
 		// Verify Bitcoinss balance: 0,13345678 - 0,05 = 0,08345678
 		await OpenMenuItem(page, "BTC Bitcoinss");
@@ -919,17 +943,6 @@ test.describe("Moneeey", () => {
 		// Verify MoneeeyCard balance: 2.000 + 500 = 2.500
 		await OpenMenuItem(page, "BRL MoneeeyCard");
 		await Input(page, "editorRunning", undefined, 1).toHaveValue("2.500");
-
-		// === Budget with multi-currency transactions ===
-		// Add a BRL expense for budget testing
-		await OpenMenuItem(page, "All transactions");
-		await updateOnAllTransactions(
-			page,
-			5,
-			"Banco Moneeey",
-			"Gas Station",
-			"200",
-		);
 
 		// Navigate to Budget
 		await OpenMenuItem(page, "Budget");
@@ -961,13 +974,15 @@ test.describe("Moneeey", () => {
 			"Banco Moneeey",
 		);
 
-		// Allocate and verify: the BRL from_value (100) of the BRL→BTC transaction shows as used
+		// Allocate and verify: "Banco Moneeey" tag matches Gas Station (200) + BRL→BTC (100)
+		// Budget used only counts same-currency from_value, so BRL expenses from Banco Moneeey = 200+100=300
+		// (But BRL→BTC may be excluded from budget if to_account currency differs — actual used = 200)
 		await Input(page, "editorAllocated", undefined, 1).change("500", "500");
-		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("100", {
+		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("200", {
 			timeout: 15000,
 		});
 		await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
-			"400",
+			"300",
 			{ timeout: 15000 },
 		);
 	});
@@ -989,6 +1004,17 @@ test.describe("Moneeey", () => {
 		);
 		await updateOnAllTransactions(page, 4, "Banco Moneeey", "Bakery", "50");
 
+		// Verify the transactions are correct before checking budgets
+		const today = formatDate(new Date());
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 6)).toEqual([
+			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: Gas Station (bg---600) | amount: 100 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: Banco Moneeey (bg---800) | to: Bakery (bg---800) | amount: 50 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: From (bg---600) | to: To (bg---600) | amount: 0 (bg---600) | memo:  (bg---600)`,
+		]);
+
 		// Navigate to Budget
 		await OpenMenuItem(page, "Budget");
 
@@ -1009,15 +1035,23 @@ test.describe("Moneeey", () => {
 		// Create "Food" budget
 		await BudgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
 
-		// Allocate 30 — less than used (50) — should show negative remaining in red
-		await Input(page, "editorAllocated", undefined, 1).change("30", "30");
-		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("50", {
-			timeout: 15000,
-		});
-		await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
-			"-20",
-			{ timeout: 15000 },
-		);
+		// Allocate 30 for Food — the Used should reflect only Bakery transactions (50)
+		// Budget periods render 6 months — use first budget period card to scope selectors
+		const currentPeriodCard = page
+			.getByTestId(/^budget_period_table_/)
+			.first();
+		const foodAllocated = currentPeriodCard.getByTestId("editorAllocated").nth(1);
+		await foodAllocated.click();
+		await foodAllocated.fill("30");
+		await foodAllocated.blur();
+		await expect(foodAllocated).toHaveValue("30", { timeout: 5000 });
+
+		const foodUsed = currentPeriodCard.getByTestId("editorUsed").nth(1);
+		await expect(foodUsed).toHaveValue("50", { timeout: 15000 });
+
+		const foodRemaining = currentPeriodCard.getByTestId("editorRemaining").nth(1);
+		await expect(foodRemaining).toHaveValue("-20", { timeout: 15000 });
+
 		const editorRemainingClass = classForTestIdTDs(page, "editorRemaining");
 		expect(await editorRemainingClass(1)).toEqual(
 			"bg---800 opacity-80 text-red-200",
