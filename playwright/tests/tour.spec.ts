@@ -82,17 +82,19 @@ const IMPORT_COLUMNS = [
 
 // Utility functions
 const classForTestIdTDs =
-	(page: Page, testId: string) => async (index: number) =>
-		await page
-			.getByTestId(`inputContainer${testId}`)
-			.nth(index)
-			.evaluate((el) =>
-				String(el?.parentElement?.className)
-					.replace(/\s+/g, " ")
-					.replace(/bg-background-/g, "bg---")
-					.replace(/[\r\n\s]+/g, " ")
-					.trim(),
-			);
+	(page: Page, testId: string) => async (index: number) => {
+		const className =
+			(await page
+				.getByTestId(`inputContainer${testId}`)
+				.nth(index)
+				.locator("..")
+				.getAttribute("class")) ?? "";
+		return className
+			.replace(/\s+/g, " ")
+			.replace(/bg-background-/g, "bg---")
+			.replace(/[\r\n\s]+/g, " ")
+			.trim();
+	};
 
 async function waitLoading(page: Page) {
 	return await page.waitForFunction(
@@ -260,7 +262,16 @@ async function retrieveRowData(page: Page, columns: string[], index: number) {
 	return cellData.join(" | ");
 }
 
-async function retrieveRowsData(page: Page, columns: string[]) {
+async function retrieveRowsData(
+	page: Page,
+	columns: string[],
+	expectedCount?: number,
+) {
+	if (expectedCount) {
+		await expect(page.getByTestId(columns[0])).toHaveCount(expectedCount, {
+			timeout: 10000,
+		});
+	}
 	const rows = await page.getByTestId(columns[0]).all();
 	return await Promise.all(
 		Array.from({ length: rows.length }).map((_v, index) =>
@@ -407,9 +418,12 @@ test.describe("Moneeey", () => {
 		// Allocate on budget and wait for calculated used/remaining
 		await expect(page.getByText("R$").first()).toBeVisible();
 		await Input(page, "editorAllocated", undefined, 0).change("65,00");
-		await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("89,8");
+		await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("89,8", {
+			timeout: 15000,
+		});
 		await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue(
 			"-24,80",
+			{ timeout: 15000 },
 		);
 		expect(await editorRemainingClass(0)).toEqual(
 			"bg---800 opacity-80 text-red-200",
@@ -450,12 +464,15 @@ test.describe("Moneeey", () => {
 		await updateOnAccountTransactions(page, 4, "Playxbox421", "-7213,21");
 		await updateOnAccountTransactions(page, 5, "Cashbazk", "69,42", "cashback");
 
-		// Wait running balance to be updated
+		// Wait running balance and memo values to be committed
 		await Input(page, "editorRunning", undefined, 5).toHaveValue("-2.331,79");
+		await Input(page, "editorMemo", undefined, 2).toHaveValue("pao");
 
 		// Assert classes for the table
 		const today = formatDate(new Date());
-		expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS)).toEqual([
+		expect(
+			await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 7),
+		).toEqual([
 			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2.000 (bg---800 text-green-200) | running: 2.000 (bg---800 text-green-200) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 3.000 (bg---600 text-green-200) | running: 5.000 (bg---600 text-green-200) | memo:  (bg---600)`,
 			`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800 text-red-200) | running: 4.940 (bg---800 text-green-200) | memo: pao (bg---800)`,
@@ -466,7 +483,7 @@ test.describe("Moneeey", () => {
 		]);
 		// Go to All transactions and assert
 		await OpenMenuItem(page, "All transactions");
-		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS)).toEqual([
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 9)).toEqual([
 			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
 			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
@@ -480,7 +497,9 @@ test.describe("Moneeey", () => {
 
 		// Go to Banco Moneeey account and assert
 		await OpenMenuItem(page, "BRL Banco Moneeey");
-		expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS)).toEqual([
+		expect(
+			await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 3),
+		).toEqual([
 			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-green-200) | running: 1.234,56 (bg---800 text-green-200) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: -3.000 (bg---600 text-red-200) | running: -1.765,44 (bg---600 text-red-200) | memo:  (bg---600)`,
 			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
@@ -510,20 +529,24 @@ test.describe("Moneeey", () => {
 			"Dinner",
 		);
 
-		// Wait for running balance to be updated
+		// Wait for running balance and memo values to be committed
 		await Input(page, "editorRunning", undefined, 3).toHaveValue("4.811,88");
+		await Input(page, "editorMemo", undefined, 2).toHaveValue("pao");
 
 		// Test swapping from positive to negative (Salary)
 		await Input(page, "editorAmount", undefined, 1).change("-3000,00");
 		await Input(page, "editorMemo", undefined, 1).change("Salary (swapped)");
 
-		// Verify running balance is updated
+		// Verify running balance and memo are committed
 		await Input(page, "editorRunning", undefined, 3).toHaveValue("-1.188,12");
+		await Input(page, "editorMemo", undefined, 1).toHaveValue("Salary (swapped)");
 
 		// Go to All transactions and verify the swap
 		await OpenMenuItem(page, "All transactions");
 		const today = formatDate(new Date());
-		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS)).toEqual([
+		expect(
+			await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 7),
+		).toEqual([
 			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
 			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
@@ -540,12 +563,15 @@ test.describe("Moneeey", () => {
 		await Input(page, "editorAmount", undefined, 3).change("128,00");
 		await Input(page, "editorMemo", undefined, 3).change("Dinner (swapped)");
 
-		// Verify running balance is updated
+		// Verify running balance and memo are committed
 		await Input(page, "editorRunning", undefined, 3).toHaveValue("-932");
+		await Input(page, "editorMemo", undefined, 3).toHaveValue("Dinner (swapped)");
 
 		// Go to All transactions and verify the swap
 		await OpenMenuItem(page, "All transactions");
-		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS)).toEqual([
+		expect(
+			await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 7),
+		).toEqual([
 			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
 			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
@@ -557,7 +583,9 @@ test.describe("Moneeey", () => {
 
 		// Verify Banco Moneeey account transactions
 		await OpenMenuItem(page, "BRL Banco Moneeey");
-		expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS)).toEqual([
+		expect(
+			await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 3),
+		).toEqual([
 			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-green-200) | running: 1.234,56 (bg---800 text-green-200) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: 3.000 (bg---600 text-green-200) | running: 4.234,56 (bg---600 text-green-200) | memo: Salary (swapped) (bg---600)`,
 			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
@@ -598,7 +626,7 @@ test.describe("Moneeey", () => {
 
 		await importFile("bank_statement_a.csv");
 		await waitLoading(page);
-		expect(await retrieveRowsData(page, IMPORT_COLUMNS)).toEqual([
+		expect(await retrieveRowsData(page, IMPORT_COLUMNS, 6)).toEqual([
 			"date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
 			"date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
 			"date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
@@ -616,7 +644,7 @@ test.describe("Moneeey", () => {
 			"MoneeeyCard",
 		]);
 
-		expect(await retrieveRowsData(page, ["editorTo"])).toEqual([
+		expect(await retrieveRowsData(page, ["editorTo"], 6)).toEqual([
 			"to: Gas (bg---800)",
 			"to: Bakery (bg---600)",
 			"to: Restaurant (bg---800)",
@@ -636,7 +664,7 @@ test.describe("Moneeey", () => {
 		await importFile("bank_statement_b.ofx");
 		await waitLoading(page);
 
-		expect(await retrieveRowsData(page, IMPORT_COLUMNS)).toEqual([
+		expect(await retrieveRowsData(page, IMPORT_COLUMNS, 5)).toEqual([
 			"date: 2015-02-07 (bg---800 bg-cyan-900) | from: Banco Moneeey (bg---800 bg-cyan-900) | to: MoneeeyCard (bg---800 bg-cyan-900) | amount: 50,5 (bg---800 bg-cyan-900) | memo: 2015-02-07;Transfer;-50.50;50.50  FromMyOtherAccount Transfer from savings  2015-02-07 (bg---800 bg-fuchsia-900)",
 			"date: 2015-02-10 (bg---600) | from: MoneeeyCard (bg---600) | to: To (bg---600 bg-green-950) | amount: 60,6 (bg---600) | memo: -60.60  Drogaria Drogas 420 Pharmacy purchase  2015-02-10 (bg---600)",
 			"date: 2015-02-10 (bg---800) | from: MoneeeyCard (bg---800) | to: Restaurant (bg---800) | amount: 70,7 (bg---800) | memo: -70.70  Restaurante Monteiro Dining out  2015-02-10 (bg---800)",
@@ -644,7 +672,7 @@ test.describe("Moneeey", () => {
 			"date: 2015-02-17 (bg---800) | from: MoneeeyCard (bg---800) | to: Car Wash (bg---800) | amount: 90,9 (bg---800) | memo: -90.90  Lava Jato Eco Car wash  2015-02-17 (bg---800)",
 		]);
 		await updateEditorTos([null, "Pharmacy", null, "Groceries", null]);
-		expect(await retrieveRowsData(page, ["editorTo"])).toEqual([
+		expect(await retrieveRowsData(page, ["editorTo"], 5)).toEqual([
 			"to: MoneeeyCard (bg---800 bg-cyan-900)",
 			"to: Pharmacy (bg---600)",
 			"to: Restaurant (bg---800)",
@@ -656,7 +684,9 @@ test.describe("Moneeey", () => {
 
 		await OpenMenuItem(page, "All transactions");
 		const today = formatDate(new Date());
-		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS)).toEqual([
+		expect(
+			await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 14),
+		).toEqual([
 			"date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: Gas (bg---800) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
 			"date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: Bakery (bg---600) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
 			"date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: Restaurant (bg---800) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
