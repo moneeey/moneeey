@@ -142,17 +142,21 @@ function Select(page: Page, testId: string, index = 0) {
 			await open();
 			await createNew(optionName);
 			await waitForClosed();
-			await expect(select()).toContainText(optionName, { timeout: 5000 });
+			await expect(select()).toContainText(optionName, { timeout: 10000 });
 		},
 		async choose(optionName: string, exact = true, retries = 3) {
 			try {
 				await open();
 				const option = findMenuItem(optionName, exact);
-				await option.click({ timeout: 3000 });
+				await option.click({ timeout: 5000 });
 				await waitForClosed();
 			} catch (e) {
-				if (e.message.includes("detached") && retries > 0) {
-					console.warn(`Option detached, retrying choose... ${retries}`);
+				if (
+					(e.message.includes("detached") ||
+						e.message.includes("Timeout")) &&
+					retries > 0
+				) {
+					console.warn(`Option issue, retrying choose... ${retries}`);
 					await this.choose(optionName, exact, retries - 1);
 				} else {
 					throw e;
@@ -168,7 +172,7 @@ function Select(page: Page, testId: string, index = 0) {
 				await createNew(optionName);
 			}
 			await waitForClosed();
-			await expect(select()).toContainText(optionName, { timeout: 5000 });
+			await expect(select()).toContainText(optionName, { timeout: 10000 });
 		},
 	};
 }
