@@ -152,8 +152,7 @@ function Select(page: Page, testId: string, index = 0) {
 				await waitForClosed();
 			} catch (e) {
 				if (
-					(e.message.includes("detached") ||
-						e.message.includes("Timeout")) &&
+					(e.message.includes("detached") || e.message.includes("Timeout")) &&
 					retries > 0
 				) {
 					console.warn(`Option issue, retrying choose... ${retries}`);
@@ -742,6 +741,467 @@ test.describe("Moneeey", () => {
 			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
 			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
 			`date: ${today} (bg---600) | from: From (bg---600) | to: To (bg---600) | amount: 0 (bg---600) | memo:  (bg---600)`,
+		]);
+	});
+
+	test("Dashboard", async ({ page }) => {
+		await completeLandingWizard(page);
+
+		// Close tour modal
+		await page.getByTestId("nm-modal-card").getByTestId("close").click();
+
+		// Dashboard should be visible
+		await expect(page.getByText("Recent transactions")).toBeVisible();
+
+		// Verify recent transactions show the 3 initial balance transactions
+		const today = formatDate(new Date());
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 3)).toEqual([
+			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
+		]);
+
+		// Navigate to MoneeeyCard account, add a transaction
+		await OpenMenuItem(page, "BRL MoneeeyCard");
+		await updateOnAccountTransactions(page, 1, "Bakery123", "-50", "bread");
+
+		// Return to Dashboard
+		await OpenMenuItem(page, "Dashboard");
+		await expect(page.getByText("Recent transactions")).toBeVisible();
+
+		// Verify the new transaction appears in recent transactions
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 4)).toEqual([
+			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: MoneeeyCard (bg---600) | to: Bakery123 (bg---600) | amount: 50 (bg---600) | memo: bread (bg---600)`,
+		]);
+	});
+
+	test("Account Settings", async ({ page }) => {
+		await completeLandingWizard(page);
+
+		// Close tour modal
+		await page.getByTestId("nm-modal-card").getByTestId("close").click();
+
+		// Navigate to Settings > Accounts via testId (avoids ambiguity with "Include accounts:" text)
+		const toggle = page.getByTestId("toggleMenu");
+		if ((await toggle.getAttribute("data-expanded")) === "false") {
+			await toggle.click();
+		}
+		await page
+			.getByTestId("appMenu_subitems_settings_settings_accounts")
+			.click();
+
+		// Verify 3 accounts are displayed (sorted: Banco Moneeey, Bitcoinss, MoneeeyCard)
+		await expect(page.getByTestId("editorName").nth(0)).toHaveValue(
+			"Banco Moneeey",
+		);
+		await expect(page.getByTestId("editorName").nth(1)).toHaveValue(
+			"Bitcoinss",
+		);
+		await expect(page.getByTestId("editorName").nth(2)).toHaveValue(
+			"MoneeeyCard",
+		);
+
+		// Rename "Banco Moneeey" to "Banco Principal"
+		await Input(page, "editorName", undefined, 0).change("Banco Principal");
+
+		// Expand sidebar to verify the rename
+		const menuToggle = page.getByTestId("toggleMenu");
+		if ((await menuToggle.getAttribute("data-expanded")) === "false") {
+			await menuToggle.click();
+		}
+		await expect(page.getByText("BRL Banco Principal")).toBeVisible();
+		await expect(page.getByText("BRL Banco Moneeey")).not.toBeVisible();
+
+		// Archive "Bitcoinss" by toggling the Archived checkbox (index 1)
+		await page.getByTestId("editorArchived").nth(1).click();
+
+		// Verify Bitcoinss no longer appears in the sidebar
+		await expect(page.getByText("BTC Bitcoinss")).not.toBeVisible();
+
+		// Navigate to Banco Principal and add a transaction to MoneeeyCard
+		await OpenMenuItem(page, "BRL Banco Principal");
+		await updateOnAccountTransactions(page, 1, "MoneeeyCard", "-500");
+
+		// Navigate to Settings > Accounts for merge
+		const toggle2 = page.getByTestId("toggleMenu");
+		if ((await toggle2.getAttribute("data-expanded")) === "false") {
+			await toggle2.click();
+		}
+		await page
+			.getByTestId("appMenu_subitems_settings_settings_accounts")
+			.click();
+
+		// Click "Merge accounts" button
+		await page.getByText("Merge accounts").click();
+
+		// Select source and target accounts in the merge modal
+		const sourceAccount = Select(page, "source_account");
+		await sourceAccount.choose("Banco Principal");
+
+		const targetAccount = Select(page, "target_account");
+		await targetAccount.choose("MoneeeyCard");
+
+		// Click Merge button
+		await page.getByTestId("merge-accounts").click();
+
+		// Verify Banco Principal is gone from sidebar
+		await expect(page.getByText("BRL Banco Principal")).not.toBeVisible();
+
+		// Navigate to All transactions and verify all transactions reference MoneeeyCard
+		await OpenMenuItem(page, "All transactions");
+		const today = formatDate(new Date());
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 4)).toEqual([
+			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: MoneeeyCard (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: MoneeeyCard (bg---800) | amount: 500 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: From (bg---600) | to: To (bg---600) | amount: 0 (bg---600) | memo:  (bg---600)`,
+		]);
+	});
+
+	test("Multi-Currency Transactions", async ({ page }) => {
+		await completeLandingWizard(page);
+
+		// Close tour modal
+		await page.getByTestId("nm-modal-card").getByTestId("close").click();
+
+		// === Direction 1: BRL → BTC (from Banco Moneeey view) ===
+		await OpenMenuItem(page, "BRL Banco Moneeey");
+
+		// Set counterpart account to Bitcoinss (BTC) on the new row (index 1)
+		const editorAccount1 = Select(page, "editorAccount", 1);
+		await editorAccount1.chooseOrCreate("Bitcoinss");
+
+		// Two editorAmount fields should now appear for this row (BRL and BTC)
+		// Index 0 = initial balance amount, Index 1 = BRL (from), Index 2 = BTC (to)
+		await Input(page, "editorAmount", undefined, 1).change("-100,00", "-100");
+		await Input(page, "editorAmount", undefined, 2).change(
+			"0,01000000",
+			"0,01",
+		);
+
+		// Verify running balance on Banco Moneeey: 1.234,56 - 100 = 1.134,56
+		await Input(page, "editorRunning", undefined, 1).toHaveValue("1.134,56");
+
+		// Navigate to Bitcoinss and verify running balance: 0,12345678 + 0,01 = 0,13345678
+		await OpenMenuItem(page, "BTC Bitcoinss");
+		await Input(page, "editorRunning", undefined, 1).toHaveValue("0,13345678");
+
+		// === Direction 2: BTC → BRL (from Bitcoinss view) ===
+		// Add transaction from Bitcoinss to MoneeeyCard
+		const editorAccount2 = Select(page, "editorAccount", 2);
+		await editorAccount2.chooseOrCreate("MoneeeyCard");
+
+		// Two editorAmount fields: first is BTC (from), second is BRL (to)
+		// Previous rows: initial balance (index 0), BRL→BTC transaction (indices 1,2)
+		// New row BTC side: index 3, BRL side: index 4
+		await Input(page, "editorAmount", undefined, 3).change(
+			"-0,05000000",
+			"-0,05",
+		);
+		await Input(page, "editorAmount", undefined, 4).change("500,00", "500");
+
+		// Verify running balance on Bitcoinss: 0,13345678 - 0,05 = 0,08345678
+		await Input(page, "editorRunning", undefined, 2).toHaveValue("0,08345678");
+
+		// Verify MoneeeyCard received the BRL amount
+		await OpenMenuItem(page, "BRL MoneeeyCard");
+		// MoneeeyCard: initial 2.000 + 500 from BTC exchange
+		await Input(page, "editorRunning", undefined, 1).toHaveValue("2.500");
+
+		// === Budget with multi-currency transactions ===
+		// Add a BRL expense from Banco Moneeey to test budgets
+		await OpenMenuItem(page, "All transactions");
+		await updateOnAllTransactions(
+			page,
+			3,
+			"Banco Moneeey",
+			"Gas Station",
+			"200",
+		);
+
+		// Navigate to Budget
+		await OpenMenuItem(page, "Budget");
+
+		// Create a budget for Gas Station expenses
+		await BudgetEditorSave(
+			page,
+			"Gas Budget",
+			mostUsedCurrencies[0],
+			"Gas Station",
+		);
+
+		// Allocate budget and verify used amount
+		await expect(page.getByText("R$").first()).toBeVisible();
+		await Input(page, "editorAllocated", undefined, 0).change("300", "300");
+		await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("200", {
+			timeout: 15000,
+		});
+		await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue(
+			"100",
+			{ timeout: 15000 },
+		);
+
+		// Create a budget for Bitcoinss-related expenses tagged with Banco Moneeey
+		await BudgetEditorSave(
+			page,
+			"Crypto Expenses",
+			mostUsedCurrencies[0],
+			"Banco Moneeey",
+		);
+
+		// Allocate and verify: the BRL side (from_value=100) of the BRL→BTC transaction should show as used
+		await Input(page, "editorAllocated", undefined, 1).change("500", "500");
+		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("100", {
+			timeout: 15000,
+		});
+		await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
+			"400",
+			{ timeout: 15000 },
+		);
+	});
+
+	test("Budget Lifecycle", async ({ page }) => {
+		await completeLandingWizard(page);
+
+		// Close tour modal
+		await page.getByTestId("nm-modal-card").getByTestId("close").click();
+
+		// Add transactions for budget testing
+		await OpenMenuItem(page, "All transactions");
+		await updateOnAllTransactions(
+			page,
+			3,
+			"Banco Moneeey",
+			"Gas Station",
+			"100",
+		);
+		await updateOnAllTransactions(page, 4, "Banco Moneeey", "Bakery", "50");
+
+		// Navigate to Budget
+		await OpenMenuItem(page, "Budget");
+
+		// Create "Fuel" budget
+		await BudgetEditorSave(page, "Fuel", mostUsedCurrencies[0], "Gas Station");
+
+		// Allocate 200 for current month
+		await expect(page.getByText("R$").first()).toBeVisible();
+		await Input(page, "editorAllocated", undefined, 0).change("200", "200");
+		await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("100", {
+			timeout: 15000,
+		});
+		await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue(
+			"100",
+			{ timeout: 15000 },
+		);
+
+		// Create "Food" budget
+		await BudgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
+
+		// Allocate 30 — less than used (50) — should show negative remaining in red
+		await Input(page, "editorAllocated", undefined, 1).change("30", "30");
+		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("50", {
+			timeout: 15000,
+		});
+		await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
+			"-20",
+			{ timeout: 15000 },
+		);
+		const editorRemainingClass = classForTestIdTDs(page, "editorRemaining");
+		expect(await editorRemainingClass(1)).toEqual(
+			"bg---800 opacity-80 text-red-200",
+		);
+
+		// === Edit budget: rename "Fuel" to "Gasoline" ===
+		// Click on the "Fuel" budget name link to open editor
+		await page.getByTestId("editorBudget").nth(0).click();
+		await expect(page.getByTestId("budgetEditorDrawer")).toBeVisible();
+
+		// Rename
+		await Input(
+			page,
+			"budgetName",
+			page.getByTestId("budgetEditorDrawer"),
+		).change("Gasoline");
+		await page.getByTestId("budgetSave").click();
+
+		// Verify the budget name is updated in the period table
+		await expect(page.getByTestId("editorBudget").nth(0)).toContainText(
+			"Gasoline",
+		);
+
+		// === Archive budget: archive "Food" ===
+		await page.getByTestId("editorBudget").nth(1).click();
+		await expect(page.getByTestId("budgetEditorDrawer")).toBeVisible();
+
+		// Toggle archived checkbox
+		await page.getByTestId("budgetIsArchived").click();
+		await page.getByTestId("budgetSave").click();
+
+		// Verify "Food" disappears from the budget list
+		await expect(page.getByTestId("editorBudget")).toHaveCount(1);
+		await expect(page.getByTestId("editorBudget").nth(0)).toContainText(
+			"Gasoline",
+		);
+
+		// Toggle "Show archived budgets" checkbox
+		await page.getByTestId("checkboxViewArchived").click();
+
+		// "Food" should reappear
+		await expect(page.getByTestId("editorBudget")).toHaveCount(2);
+
+		// Uncheck to hide again
+		await page.getByTestId("checkboxViewArchived").click();
+		await expect(page.getByTestId("editorBudget")).toHaveCount(1);
+	});
+
+	test("Data Export and Import", async ({ page }) => {
+		await completeLandingWizard(page);
+
+		// Close tour modal
+		await page.getByTestId("nm-modal-card").getByTestId("close").click();
+
+		// Add a transaction so we have data beyond initial balances
+		await OpenMenuItem(page, "All transactions");
+		await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "42,50");
+
+		// Navigate to Settings > Preferences
+		await OpenMenuItem(page, "Preferences");
+
+		// === Export Data ===
+		await page.getByText("Export data").click();
+		await expect(page.getByTestId("accountSettings")).toBeVisible();
+
+		// Wait for export to complete (the textarea will contain JSON data)
+		await expect(page.getByTestId("importExportOutput")).not.toHaveValue("", {
+			timeout: 30000,
+		});
+		const exportedData = await page
+			.getByTestId("importExportOutput")
+			.inputValue();
+		expect(exportedData.length).toBeGreaterThan(100);
+
+		// Close the export drawer
+		await page.getByText("Close").click();
+		await expect(page.getByTestId("accountSettings")).not.toBeVisible();
+
+		// === Clear All Data ===
+		await page.getByText("Clear all data").click();
+		await expect(page.getByTestId("accountSettings")).toBeVisible();
+
+		// Type the safety token
+		await page.getByTestId("importExportOutput").fill("DELETE EVERYTHING");
+		// Click the submit button (Clear all data)
+		await page
+			.getByTestId("accountSettings")
+			.getByTestId("primary-button")
+			.click();
+
+		// Verify app shows reload message
+		await expect(page.getByTestId("importExportOutput")).toHaveValue(
+			"Reload your page",
+		);
+
+		// Reload page to start fresh
+		await page.reload();
+
+		// Verify app resets to landing wizard
+		await expect(page.getByText("Select language")).toBeVisible();
+
+		// Complete the landing wizard again
+		await completeLandingWizard(page);
+
+		// Close tour modal
+		await page.getByTestId("nm-modal-card").getByTestId("close").click();
+
+		// === Import Data ===
+		await OpenMenuItem(page, "Preferences");
+		await page.getByText("Import data").click();
+		await expect(page.getByTestId("accountSettings")).toBeVisible();
+
+		// Paste the exported data
+		await page.getByTestId("importExportOutput").fill(exportedData);
+
+		// Click Import data submit button
+		await page
+			.getByTestId("accountSettings")
+			.getByTestId("primary-button")
+			.click();
+
+		// Wait for import to complete
+		await expect(page.getByTestId("importExportOutput")).toHaveValue(
+			"Reload your page",
+			{ timeout: 30000 },
+		);
+
+		// Reload to apply imported data
+		await page.reload();
+
+		// Verify the app loads with restored data (no landing wizard)
+		await expect(page.getByText("Recent transactions")).toBeVisible();
+
+		// Navigate to All transactions and verify the Bakery transaction is restored
+		await OpenMenuItem(page, "All transactions");
+
+		// Should have the original transactions: 3 initial balances + 1 Bakery + empty row
+		// Note: after import + new wizard accounts, there may be duplicates from the re-run wizard
+		// The key assertion is that the Bakery transaction from the export is present
+		await expect(page.getByText("Bakery")).toBeVisible();
+		await expect(page.getByText("42,5")).toBeVisible();
+	});
+
+	test("Transaction Date Editing and Ordering", async ({ page }) => {
+		await completeLandingWizard(page);
+
+		// Close tour modal
+		await page.getByTestId("nm-modal-card").getByTestId("close").click();
+
+		// Navigate to MoneeeyCard account
+		await page.getByText("BRL MoneeeyCard").click();
+
+		const today = formatDate(new Date());
+		const yesterday = formatDate(
+			new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
+		);
+		const twoDaysAgo = formatDate(
+			new Date(new Date().getTime() - 2 * 24 * 60 * 60 * 1000),
+		);
+
+		// Add 3 transactions (all default to today)
+		await updateOnAccountTransactions(page, 1, "Bakery123", "-100");
+		await updateOnAccountTransactions(page, 2, "Ristorant88", "-200");
+		await updateOnAccountTransactions(page, 3, "Gas Station", "-50");
+
+		// Verify running balances with today's ordering
+		await Input(page, "editorRunning", undefined, 1).toHaveValue("1.900");
+		await Input(page, "editorRunning", undefined, 2).toHaveValue("1.700");
+		await Input(page, "editorRunning", undefined, 3).toHaveValue("1.650");
+
+		// Change Gas Station transaction date to yesterday
+		await Input(page, "editorDate", undefined, 3).change(yesterday);
+
+		// Gas Station should now sort before Bakery123 and Ristorant88
+		// New order: initial balance, Gas Station (yesterday), Bakery123 (today), Ristorant88 (today)
+		expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 5)).toEqual([
+			`date: ${yesterday} (bg---800) | account: Gas Station (bg---800) | amount: -50 (bg---800 text-red-200) | running: 1.950 (bg---800 text-green-200) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | account: Initial balance BRL (bg---600) | amount: 2.000 (bg---600 text-green-200) | running: 2.000 (bg---600 text-green-200) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -100 (bg---800 text-red-200) | running: 1.850 (bg---800 text-green-200) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | account: Ristorant88 (bg---600) | amount: -200 (bg---600 text-red-200) | running: 1.650 (bg---600 text-green-200) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
+		]);
+
+		// Change Bakery123 date to 2 days ago
+		await Input(page, "editorDate", undefined, 2).change(twoDaysAgo);
+
+		// New order: Bakery123 (2 days ago), Gas Station (yesterday), initial balance (today), Ristorant88 (today)
+		expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 5)).toEqual([
+			`date: ${twoDaysAgo} (bg---800) | account: Bakery123 (bg---800) | amount: -100 (bg---800 text-red-200) | running: 1.900 (bg---800 text-green-200) | memo:  (bg---800)`,
+			`date: ${yesterday} (bg---600) | account: Gas Station (bg---600) | amount: -50 (bg---600 text-red-200) | running: 1.850 (bg---600 text-green-200) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2.000 (bg---800 text-green-200) | running: 2.000 (bg---800 text-green-200) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | account: Ristorant88 (bg---600) | amount: -200 (bg---600 text-red-200) | running: 1.650 (bg---600 text-red-200) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
 		]);
 	});
 });
