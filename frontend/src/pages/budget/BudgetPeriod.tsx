@@ -112,9 +112,12 @@ const BudgetPeriod = observer(
 					store={budget.envelopes}
 					factory={budget.envelopes.factory}
 					creatable={false}
-					schemaFilter={(b) =>
-						b.starting === starting && (!b.budget.archived || viewArchived)
-					}
+					schemaFilter={(b) => {
+						if (b.starting !== starting) return false;
+						// Orphaned envelopes (parent budget deleted) are hidden.
+						if (!b.budget) return false;
+						return !b.budget.archived || viewArchived;
+					}}
 					schema={[
 						{
 							title: Messages.budget.budget,
@@ -123,7 +126,8 @@ const BudgetPeriod = observer(
 							...LinkField<BudgetEnvelope>({
 								read: ({ name }) => name,
 								delta: () => ({}),
-								onClick: (entity) => setEditing(entity.budget),
+								onClick: (entity) =>
+									entity.budget && setEditing(entity.budget),
 							}),
 						},
 						{
@@ -131,7 +135,7 @@ const BudgetPeriod = observer(
 							width: 60,
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
-								read: ({ allocated, budget: { currency_uuid } }) => ({
+								read: ({ allocated, currency_uuid }) => ({
 									amount: allocated,
 									currency: currencies.byUuid(currency_uuid),
 								}),
@@ -145,7 +149,7 @@ const BudgetPeriod = observer(
 							customClass: () => "text-gray-400",
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
-								read: ({ used, budget: { currency_uuid } }) => ({
+								read: ({ used, currency_uuid }) => ({
 									amount: used,
 									currency: currencies.byUuid(currency_uuid),
 								}),
@@ -160,7 +164,7 @@ const BudgetPeriod = observer(
 								remaining < 0 ? "opacity-80 text-red-200" : "opacity-80 ",
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
-								read: ({ remaining, budget: { currency_uuid } }) => ({
+								read: ({ remaining, currency_uuid }) => ({
 									amount: remaining,
 									currency: currencies.byUuid(currency_uuid),
 								}),

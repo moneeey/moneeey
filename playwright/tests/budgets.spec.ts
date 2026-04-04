@@ -4,6 +4,7 @@ import {
 	ALL_TRANSACTIONS_COLUMNS,
 	Input,
 	OpenMenuItem,
+	Select,
 	budgetEditorSave,
 	classForTestIdTDs,
 	closeTourModal,
@@ -86,4 +87,38 @@ test("Budget lifecycle — create, allocate, open editor, view archived toggle",
 	await expect(page.getByTestId("checkboxViewArchived")).toBeChecked();
 	await page.getByTestId("checkboxViewArchived").click();
 	await expect(page.getByTestId("checkboxViewArchived")).not.toBeChecked();
+});
+
+test("Budget usage recalculates when tags change", async ({ page }) => {
+	// When a budget's tags are swapped, envelopes must be recomputed from
+	// scratch so the old tag's transactions no longer contribute to `used`
+	// and the new tag's transactions do.
+	await completeLandingWizard(page);
+	await closeTourModal(page);
+
+	await OpenMenuItem(page, "All transactions");
+	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "100");
+	await updateOnAllTransactions(page, 4, "Banco Moneeey", "Gas Station", "42");
+
+	// Create a budget tracking "Bakery" → used should settle at 100
+	await OpenMenuItem(page, "Budget");
+	await budgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
+	await expect(page.getByTestId("editorUsed").first()).toHaveValue("100", {
+		timeout: 15000,
+	});
+
+	// Open the budget and swap its tag from "Bakery" to "Gas Station"
+	await page.getByTestId("editorBudget").first().click();
+	const drawer = page.getByTestId("budgetEditorDrawer");
+	await expect(drawer).toBeVisible();
+	await drawer.locator(".mn-select__multi-value__remove").first().click();
+	await Select(page, "budgetTags").choose("Gas Station", false);
+	await drawer.getByTestId("budgetSave").click();
+	await expect(drawer).not.toBeVisible();
+
+	// `used` must drop to the Gas Station transaction amount (42), not stay
+	// at 100 (the old Bakery match) — this is the regression guard.
+	await expect(page.getByTestId("editorUsed").first()).toHaveValue("42", {
+		timeout: 15000,
+	});
 });

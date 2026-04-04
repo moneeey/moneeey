@@ -1,5 +1,12 @@
 import { debounce, values } from "lodash";
-import { action, makeObservable, observable } from "mobx";
+import {
+	action,
+	computed,
+	makeObservable,
+	observable,
+	reaction,
+	runInAction,
+} from "mobx";
 
 import { EntityType, type IBaseEntity, type TMonetary } from "../shared/Entity";
 import MappedStore from "../shared/MappedStore";
@@ -12,11 +19,21 @@ import {
 } from "../utils/Date";
 import { asyncProcess } from "../utils/Utils";
 
-import type { IBudget } from "./Budget";
+import type { IBudget, TBudgetUUID } from "./Budget";
+import type { TCurrencyUUID } from "./Currency";
 
 const BudgetEnvelopeKey = (budget: IBudget, starting: TDate) =>
 	`${starting}_${budget.budget_uuid}_${budget.currency_uuid}`;
 
+/**
+ * Virtual (non-persisted) view of a budget for a specific month.
+ *
+ * Holds ONLY the identifiers of its parent budget; `budget` and `name` are
+ * computed getters that look up the current budget from the store on every
+ * read. This guarantees a single source of truth — if the parent budget is
+ * renamed, archived, or otherwise updated, every envelope referring to it
+ * reflects the change immediately via MobX reactivity.
+ */
 export class BudgetEnvelope implements IBaseEntity {
 	[k: string]: unknown;
 
@@ -26,9 +43,11 @@ export class BudgetEnvelope implements IBaseEntity {
 
 	tags = [];
 
-	name: string;
-
 	envelope_uuid: string;
+
+	budget_uuid: TBudgetUUID;
+
+	currency_uuid: TCurrencyUUID;
 
 	starting: TDate;
 
@@ -38,23 +57,39 @@ export class BudgetEnvelope implements IBaseEntity {
 
 	used: TMonetary;
 
-	budget: IBudget;
+	moneeeyStore: MoneeeyStore;
 
-	constructor(budget: IBudget, starting: TDate, allocated: number) {
+	constructor(
+		moneeeyStore: MoneeeyStore,
+		budget: IBudget,
+		starting: TDate,
+		allocated: number,
+	) {
 		makeObservable(this, {
 			allocated: observable,
 			remaining: observable,
 			used: observable,
+			budget: computed,
+			name: computed,
 		});
 
-		this.budget = budget;
+		this.moneeeyStore = moneeeyStore;
+		this.budget_uuid = budget.budget_uuid;
+		this.currency_uuid = budget.currency_uuid;
 		this.envelope_uuid = BudgetEnvelopeKey(budget, starting);
 		this.starting = starting;
 		this.allocated = allocated;
 		this.remaining = 0;
 		this.used = 0;
-		this.name = budget.name;
-		this._rev = this.budget._rev || "";
+		this._rev = budget._rev || "";
+	}
+
+	get budget(): IBudget | undefined {
+		return this.moneeeyStore.budget.byUuid(this.budget_uuid);
+	}
+
+	get name(): string {
+		return this.budget?.name ?? "";
 	}
 }
 
@@ -72,6 +107,49 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 			updateVirtualEnvelopeUsage: action,
 			updateVirtualEnvelopeRemainings: action,
 		});
+
+		// Whenever the budget set or any budget's tags change, usage must be
+		// recomputed from scratch — transactions that used to match a budget
+		// may no longer match, and vice versa. We build a stable fingerprint
+		// of (budget_uuid, sorted tags) for all budgets; MobX fires the
+		// reaction only when it changes.
+		//
+		// We defer the reaction setup to a microtask because this constructor
+		// runs from inside BudgetStore's constructor — at that moment
+		// `moneeeyStore.budget` is still undefined (BudgetStore hasn't been
+		// assigned to MoneeeyStore yet), and MobX would silently fail to
+		// track its observables.
+		queueMicrotask(() => {
+			reaction(
+				() =>
+					moneeeyStore.budget.all
+						.map(
+							(b) =>
+								`${b.budget_uuid}:${[...(b.tags || [])].sort().join(",")}`,
+						)
+						.sort()
+						.join("|"),
+				() => {
+					this.calculateRemaining(() => {});
+				},
+			);
+		});
+	}
+
+	/**
+	 * Stores a BudgetEnvelope in the observable map while preserving the class
+	 * instance. The base `MappedStore.merge` uses object spread, which copies
+	 * own data properties but drops accessor properties defined on the
+	 * prototype — including our `budget` and `name` getters. Since envelopes
+	 * are VIRTUAL (never persisted) we can safely bypass that and keep the
+	 * instance as-is. Wrapped in `runInAction` because the mutation happens
+	 * outside MobX's standard action flow.
+	 */
+	private storeInstance(item: BudgetEnvelope) {
+		runInAction(() => {
+			this.moneeeyStore.tags.registerAll(item.tags);
+			this.itemsByUuid.set(this.getUuid(item), item);
+		});
 	}
 
 	getEnvelope(entity: IBudget, starting: TDate) {
@@ -82,20 +160,49 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 		const allocated =
 			entity.envelopes.find((envelop) => envelop.starting === starting)
 				?.allocated || 0;
-		const envelope = new BudgetEnvelope(entity, starting, allocated);
-		super.merge(envelope);
+		const envelope = new BudgetEnvelope(
+			this.moneeeyStore,
+			entity,
+			starting,
+			allocated,
+		);
+		this.storeInstance(envelope);
 
 		return envelope;
 	}
 
-	merge(item: BudgetEnvelope, options?: { setUpdated: boolean }): void {
-		this.moneeeyStore.budget.setAllocation(
-			item.budget,
-			item.starting,
-			item.allocated,
-		);
+	merge(item: BudgetEnvelope, _options?: { setUpdated: boolean }): void {
+		// `item` may arrive as a PLAIN OBJECT rather than a BudgetEnvelope
+		// instance — the editor commit flow in CurrencyAmountField does
+		// `commit({ ...entity, ...delta(...) })`, and object spread only
+		// copies own data properties, dropping our `budget` and `name`
+		// prototype getters. To preserve the single source of truth, always
+		// resolve to the existing class instance in the store and apply the
+		// mutable field updates there. Identity (envelope_uuid / budget_uuid
+		// / currency_uuid / starting) is immutable for an envelope and
+		// intentionally not copied.
+		const uuid = this.getUuid(item);
+		const existing = this.byUuid(uuid) as BudgetEnvelope | undefined;
+		const target = existing ?? item;
+		if (existing) {
+			runInAction(() => {
+				existing.allocated = item.allocated;
+				existing.used = item.used;
+				existing.remaining = item.remaining;
+				existing._rev = item._rev;
+			});
+		}
+
+		const parentBudget = target.budget;
+		if (parentBudget) {
+			this.moneeeyStore.budget.setAllocation(
+				parentBudget,
+				target.starting,
+				target.allocated,
+			);
+		}
 		this.updateRemainings();
-		super.merge(item, options);
+		this.storeInstance(target);
 	}
 
 	getRemaining(envelope: BudgetEnvelope): number {
@@ -110,9 +217,11 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 				-1,
 			).getTime() < previousEnvelopeStarting.getTime();
 
+		const parentBudget = envelope.budget;
 		const previousEnvelope =
-			hasPreviousTransaction &&
-			this.getEnvelope(envelope.budget, formatDate(previousEnvelopeStarting));
+			hasPreviousTransaction && parentBudget
+				? this.getEnvelope(parentBudget, formatDate(previousEnvelopeStarting))
+				: undefined;
 
 		const previousValue = previousEnvelope
 			? this.getRemaining(previousEnvelope)
@@ -129,14 +238,14 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 	updateVirtualEnvelopeUsage(envelope: BudgetEnvelope, usage: number) {
 		envelope.used = usage;
 		envelope._rev = this.nextEnvelopeRev();
-		super.merge(envelope);
+		this.storeInstance(envelope);
 	}
 
 	updateVirtualEnvelopeRemainings() {
 		for (const envelope of this.all) {
 			envelope.remaining = this.getRemaining(envelope);
 			envelope._rev = this.nextEnvelopeRev();
-			super.merge(envelope);
+			this.storeInstance(envelope);
 		}
 	}
 
@@ -186,6 +295,17 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 					chunkThrottle: 20,
 				},
 			);
+			// Apply the freshly-computed usages. Any envelope NOT in `usages`
+			// had no matching transactions this pass (e.g. because its parent
+			// budget's tags changed and no longer match anything), so its
+			// `used` is reset to zero. This is what makes a tag change cause
+			// a full recalculation rather than leaving stale numbers.
+			const matchedUuids = new Set(Object.keys(usages));
+			for (const envelope of this.all) {
+				if (!matchedUuids.has(envelope.envelope_uuid)) {
+					this.updateVirtualEnvelopeUsage(envelope, 0);
+				}
+			}
 			values(usages).map(({ envelope, usage }) =>
 				this.updateVirtualEnvelopeUsage(envelope, usage),
 			);
