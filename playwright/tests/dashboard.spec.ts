@@ -1,25 +1,16 @@
-import { expect, test } from "@playwright/test";
 import { formatDate } from "../../frontend/src/utils/Date";
 import {
 	ALL_TRANSACTIONS_COLUMNS,
 	OpenMenuItem,
-	closeTourModal,
-	completeLandingWizard,
-	resetAppState,
+	expect,
 	retrieveRowsData,
+	test,
 	updateOnAccountTransactions,
 } from "../helpers";
 
-test.beforeEach(async ({ page }) => {
-	await resetAppState(page);
-});
-
 test("Dashboard shows recent transactions and updates after new entries", async ({
-	page,
+	wizardPage: page,
 }) => {
-	await completeLandingWizard(page);
-	await closeTourModal(page);
-
 	// Dashboard is the landing page after wizard — "Recent transactions" heading is visible
 	await expect(page.getByText("Recent transactions")).toBeVisible();
 

@@ -1,26 +1,17 @@
-import { expect, test } from "@playwright/test";
 import {
+	BudgetRow,
 	Input,
 	OpenMenuItem,
 	Select,
 	budgetEditorSave,
-	closeTourModal,
-	completeLandingWizard,
 	mostUsedCurrencies,
-	resetAppState,
+	test,
 	updateOnAllTransactions,
 } from "../helpers";
 
-test.beforeEach(async ({ page }) => {
-	await resetAppState(page);
-});
-
 test("Multi-currency transactions in both directions with budget tracking", async ({
-	page,
+	wizardPage: page,
 }) => {
-	await completeLandingWizard(page);
-	await closeTourModal(page);
-
 	// Start with a same-currency BRL expense before adding multi-currency rows,
 	// so the editorAmount indices for multi-currency rows are easier to reason about.
 	await OpenMenuItem(page, "All transactions");
@@ -73,14 +64,10 @@ test("Multi-currency transactions in both directions with budget tracking", asyn
 		mostUsedCurrencies[0],
 		"Gas Station",
 	);
-	await expect(page.getByText("R$").first()).toBeVisible();
-	await Input(page, "editorAllocated", undefined, 0).change("300", "300");
-	await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("200", {
-		timeout: 15000,
-	});
-	await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue("100", {
-		timeout: 15000,
-	});
+	const gas = BudgetRow(page, 0);
+	await gas.allocate("300");
+	await gas.expectUsed("200");
+	await gas.expectRemaining("100");
 
 	// Banco Moneeey-tagged budget — matches Gas Station (200) only
 	// (The multi-currency BRL→BTC transaction's from_value is NOT counted here
@@ -91,11 +78,8 @@ test("Multi-currency transactions in both directions with budget tracking", asyn
 		mostUsedCurrencies[0],
 		"Banco Moneeey",
 	);
-	await Input(page, "editorAllocated", undefined, 1).change("500", "500");
-	await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("200", {
-		timeout: 15000,
-	});
-	await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue("300", {
-		timeout: 15000,
-	});
+	const crypto = BudgetRow(page, 1);
+	await crypto.allocate("500");
+	await crypto.expectUsed("200");
+	await crypto.expectRemaining("300");
 });

@@ -1,27 +1,18 @@
-import { expect, test } from "@playwright/test";
 import { formatDate } from "../../frontend/src/utils/Date";
 import {
 	ALL_TRANSACTIONS_COLUMNS,
 	IMPORT_COLUMNS,
 	OpenMenuItem,
 	Select,
-	closeTourModal,
-	completeLandingWizard,
-	resetAppState,
+	expect,
 	retrieveRowsData,
+	test,
 	waitLoading,
 } from "../helpers";
 
-test.beforeEach(async ({ page }) => {
-	await resetAppState(page);
-});
-
 test("Import CSV and OFX, map accounts, merge with existing data", async ({
-	page,
+	wizardPage: page,
 }) => {
-	await completeLandingWizard(page);
-	await closeTourModal(page);
-
 	await OpenMenuItem(page, "Import");
 
 	const importFile = async (fileName: string) => {

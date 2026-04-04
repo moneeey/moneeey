@@ -1,4 +1,3 @@
-import { expect, test } from "@playwright/test";
 import { formatDate } from "../../frontend/src/utils/Date";
 import {
 	ALL_TRANSACTIONS_COLUMNS,
@@ -6,23 +5,17 @@ import {
 	OpenMenuItem,
 	Select,
 	clickMenuByTestId,
-	closeTourModal,
-	completeLandingWizard,
-	resetAppState,
+	expect,
 	retrieveRowsData,
+	test,
 	updateOnAccountTransactions,
 } from "../helpers";
 
 const ACCOUNTS_MENU_TESTID = "appMenu_subitems_settings_settings_accounts";
 
-test.beforeEach(async ({ page }) => {
-	await resetAppState(page);
-});
-
-test("Account settings — rename, archive, merge", async ({ page }) => {
-	await completeLandingWizard(page);
-	await closeTourModal(page);
-
+test("Account settings — rename, archive, merge", async ({
+	wizardPage: page,
+}) => {
 	// Navigate to Settings > Accounts (by testId to avoid "Include accounts:" text clash)
 	await clickMenuByTestId(page, ACCOUNTS_MENU_TESTID);
 

@@ -1,26 +1,19 @@
-import { expect, test } from "@playwright/test";
 import { formatDate } from "../../frontend/src/utils/Date";
 import {
 	ALL_TRANSACTIONS_COLUMNS,
 	Input,
 	OpenMenuItem,
 	REFERENCE_ACCOUNT_COLUMNS,
-	closeTourModal,
-	completeLandingWizard,
-	resetAppState,
+	expect,
 	retrieveRowsData,
+	setDateField,
+	test,
 	updateOnAccountTransactions,
 } from "../helpers";
 
-test.beforeEach(async ({ page }) => {
-	await resetAppState(page);
-});
-
 test("Transactions — create on MoneeeyCard and verify across views", async ({
-	page,
+	wizardPage: page,
 }) => {
-	await completeLandingWizard(page);
-
 	await page.getByText("BRL MoneeeyCard").click();
 
 	// Add 5 transactions with mix of positive/negative amounts
@@ -97,10 +90,8 @@ test("Transactions — create on MoneeeyCard and verify across views", async ({
 });
 
 test("Transactions — swapping direction flips from/to accounts", async ({
-	page,
+	wizardPage: page,
 }) => {
-	await completeLandingWizard(page);
-
 	await page.getByText("BRL MoneeeyCard").click();
 
 	// Add initial transactions
@@ -172,10 +163,9 @@ test("Transactions — swapping direction flips from/to accounts", async ({
 	]);
 });
 
-test("Transactions — date can be edited on a transaction", async ({ page }) => {
-	await completeLandingWizard(page);
-	await closeTourModal(page);
-
+test("Transactions — date can be edited on a transaction", async ({
+	wizardPage: page,
+}) => {
 	await page.getByText("BRL MoneeeyCard").click();
 
 	const yesterday = formatDate(
@@ -189,18 +179,9 @@ test("Transactions — date can be edited on a transaction", async ({ page }) =>
 	await updateOnAccountTransactions(page, 1, "Bakery123", "-100");
 	await Input(page, "editorRunning", undefined, 1).toHaveValue("1.900");
 
-	// Change the date — use Tab to trigger DatePicker's onBlur handler
-	const dateInput = page.getByTestId("editorDate").nth(1);
-	await dateInput.click();
-	await dateInput.fill(yesterday);
-	await dateInput.press("Tab");
-	await expect(dateInput).toHaveValue(yesterday);
-
-	// Change again
-	await dateInput.click();
-	await dateInput.fill(twoDaysAgo);
-	await dateInput.press("Tab");
-	await expect(dateInput).toHaveValue(twoDaysAgo);
+	// Change the date — `setDateField` handles the DatePicker onBlur (Tab) quirk.
+	await setDateField(page, "editorDate", 1, yesterday);
+	await setDateField(page, "editorDate", 1, twoDaysAgo);
 
 	// Note: deeper persistence (after navigation) appears to hit an app-level bug
 	// where DatePicker's onBlur doesn't reliably commit to PouchDB.
