@@ -72,11 +72,11 @@ export const parseDateTime = (date: TDateTime) =>
 	parseDateFmt(date, TDateTimeFormat);
 export const parseDateOrTime = (date: string) => {
 	if (date) {
+		if (date.includes("T")) {
+			return parseDateTime(date);
+		}
 		if (date.length === TDateFormat.length) {
 			return parseDate(date);
-		}
-		if (date.length === TDateTimeFormat.length) {
-			return parseDateTime(date);
 		}
 	}
 
