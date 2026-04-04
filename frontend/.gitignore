@@ -32,3 +32,4 @@ dev-dist
 !.yarn/sdks
 !.yarn/versions
 coverage
+test-results

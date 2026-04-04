@@ -14,14 +14,54 @@ import {
 	isFirstDayOfMonth,
 	isLastDayOfMonth,
 	isValidDate,
+	knownLocales,
+	localeForLanguage,
 	parseDate,
 	parseDateFmt,
 	parseDateTime,
 	parseDateOrTime,
+	setLocale,
 	startOfMonthOffset,
 } from "./Date";
 
 describe("Date", () => {
+	describe("knownLocales", () => {
+		it("returns an array of locale keys", () => {
+			const locales = knownLocales();
+			expect(Array.isArray(locales)).toBe(true);
+			expect(locales.length).toBeGreaterThan(0);
+		});
+	});
+
+	describe("setLocale", () => {
+		afterEach(() => setLocale("enUS"));
+
+		it("sets a valid locale without throwing", () => {
+			const locales = knownLocales();
+			expect(() => setLocale(locales[0])).not.toThrow();
+		});
+
+		it("falls back to enUS for unknown locale", () => {
+			expect(() => setLocale("nonexistent")).not.toThrow();
+		});
+	});
+
+	describe("localeForLanguage", () => {
+		it("maps each supported language to a locale key", () => {
+			const languages = ["en", "pt", "es", "hi", "cn"] as const;
+			for (const lang of languages) {
+				const locale = localeForLanguage(lang);
+				expect(knownLocales()).toContain(locale);
+			}
+		});
+
+		it("returns a fallback for unknown language", () => {
+			const result = localeForLanguage("xx" as never);
+			expect(typeof result).toBe("string");
+			expect(result.length).toBeGreaterThan(0);
+		});
+	});
+
 	describe("parseDateFmt", () => {
 		it("parses a date string with the given format", () => {
 			const result = parseDateFmt("2024-03-15", "yyyy-MM-dd");
