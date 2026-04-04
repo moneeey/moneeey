@@ -222,4 +222,37 @@ describe("RunningBalance", () => {
 			]),
 		);
 	});
+
+	it("aborts calculation when version changes mid-process", async () => {
+		jest.useFakeTimers();
+
+		const r = new RunningBalance();
+		const transactions = Array.from({ length: 200 }, (_, i) =>
+			mockTransaction({
+				date: dateOffset(-i),
+				transaction_uuid: `t-abort-${i}`,
+				from_account: "a",
+				to_account: "b",
+				from_value: 10,
+			}),
+		);
+
+		// Start processing
+		r.incrementVersion();
+		const calcPromise = r.calculateTransactionRunningBalances(transactions);
+
+		// Increment version to trigger abort
+		r.incrementVersion();
+
+		// Advance timers to let asyncProcess chunks run
+		for (let i = 0; i < 20; i++) {
+			jest.advanceTimersByTime(50);
+			await Promise.resolve();
+		}
+
+		const result = await calcPromise;
+		expect(result.aborted).toBe(true);
+
+		jest.useRealTimers();
+	});
 });
