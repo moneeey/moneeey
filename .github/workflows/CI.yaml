@@ -29,19 +29,19 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/playwright-cache
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('playwright/yarn.lock') }}
           restore-keys: |
             playwright-${{ runner.os }}-
 
       - name: Playwright
         uses: addnab/docker-run-action@v3
         with:
-          image: mcr.microsoft.com/playwright:v1.50.1-jammy
+          image: mcr.microsoft.com/playwright:v1.51.1-noble
           options: --rm -v ${{ github.workspace }}:/workspace -v ${{ github.workspace }}/playwright-cache:/root/.cache/ms-playwright
           run: |
             cd /workspace/playwright
             yarn install --immutable
-            yarn playwright install --with-deps
+            yarn playwright install
             export CI=true
             yarn test --reporter=html,json
 
