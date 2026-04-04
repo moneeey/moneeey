@@ -30,6 +30,13 @@ interface PeriodProps {
 	viewArchived: boolean;
 }
 
+/**
+ * Returns CSS classes to visually mark an archived envelope's row.
+ * The `archived-row` token is also there so tests can assert the state.
+ */
+const archivedRowClass = (envelope: BudgetEnvelope): string =>
+	envelope.budget?.archived ? "archived-row opacity-50 italic" : "";
+
 const SHOW_MONTHS = 6;
 
 const BudgetPeriods = observer(
@@ -123,8 +130,15 @@ const BudgetPeriod = observer(
 							title: Messages.budget.budget,
 							width: 45,
 							validate: () => ({ valid: true }),
+							// When the "view archived" toggle is on, archived rows
+							// are dimmed and italicised so they're visually distinct
+							// from active budgets.
+							customClass: (b) => archivedRowClass(b),
 							...LinkField<BudgetEnvelope>({
-								read: ({ name }) => name,
+								// Suffix archived budgets so the state is textually
+								// clear even without color cues (accessibility).
+								read: ({ name, budget: parent }) =>
+									parent?.archived ? `${name} (archived)` : name,
 								delta: () => ({}),
 								onClick: (entity) =>
 									entity.budget && setEditing(entity.budget),
@@ -134,6 +148,7 @@ const BudgetPeriod = observer(
 							title: Messages.budget.allocated,
 							width: 60,
 							validate: () => ({ valid: true }),
+							customClass: (b) => archivedRowClass(b),
 							...CurrencyAmountField<BudgetEnvelope>({
 								read: ({ allocated, currency_uuid }) => ({
 									amount: allocated,
@@ -146,7 +161,8 @@ const BudgetPeriod = observer(
 							title: Messages.budget.used,
 							width: 60,
 							readOnly: true,
-							customClass: () => "text-gray-400",
+							customClass: (b) =>
+								`text-gray-400 ${archivedRowClass(b)}`.trim(),
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
 								read: ({ used, currency_uuid }) => ({
@@ -160,8 +176,12 @@ const BudgetPeriod = observer(
 							title: Messages.budget.remaining,
 							width: 50,
 							readOnly: true,
-							customClass: ({ remaining }) =>
-								remaining < 0 ? "opacity-80 text-red-200" : "opacity-80 ",
+							customClass: (b) =>
+								`${
+									b.remaining < 0
+										? "opacity-80 text-red-200"
+										: "opacity-80"
+								} ${archivedRowClass(b)}`.trim(),
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
 								read: ({ remaining, currency_uuid }) => ({

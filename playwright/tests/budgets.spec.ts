@@ -89,6 +89,88 @@ test("Budget lifecycle — create, allocate, open editor, view archived toggle",
 	await expect(page.getByTestId("checkboxViewArchived")).not.toBeChecked();
 });
 
+test("Budget allocation can be set to zero", async ({ page }) => {
+	// Regression: InputNumber previously used truthy `&&` checks that
+	// treated `0` as falsy, so typing 0 in the allocation field was silently
+	// dropped — neither local state nor onChange fired. This verifies that
+	// setting an allocation to zero both applies immediately and persists
+	// across navigation.
+	await completeLandingWizard(page);
+	await closeTourModal(page);
+
+	await OpenMenuItem(page, "All transactions");
+	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "50");
+
+	await OpenMenuItem(page, "Budget");
+	await budgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
+	await expect(page.getByText("R$").first()).toBeVisible();
+
+	// Start with a non-zero allocation so we can verify the transition to 0
+	await Input(page, "editorAllocated", undefined, 0).change("100", "100");
+	await expect(page.getByTestId("editorAllocated").first()).toHaveValue(
+		"100",
+		{ timeout: 15000 },
+	);
+
+	// Set allocation to 0 — this used to silently no-op
+	await Input(page, "editorAllocated", undefined, 0).change("0", "0");
+	await expect(page.getByTestId("editorAllocated").first()).toHaveValue("0", {
+		timeout: 15000,
+	});
+
+	// And it must persist: leave the page and come back
+	await OpenMenuItem(page, "All transactions");
+	await OpenMenuItem(page, "Budget");
+	await expect(page.getByTestId("editorAllocated").first()).toHaveValue("0", {
+		timeout: 15000,
+	});
+});
+
+test("Archived budgets have a visual indicator when shown", async ({
+	page,
+}) => {
+	// When the user flips "view archived" on, archived rows must be visually
+	// distinguishable from active ones — same table, same columns, but
+	// dimmed/italicised with an `(archived)` suffix on the name and an
+	// `archived-row` class token (the hook the indicator styling attaches to).
+	await completeLandingWizard(page);
+	await closeTourModal(page);
+
+	await OpenMenuItem(page, "Budget");
+	await budgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
+	await expect(page.getByText("R$").first()).toBeVisible();
+
+	// Archive the budget via its editor
+	await page.getByTestId("editorBudget").first().click();
+	const drawer = page.getByTestId("budgetEditorDrawer");
+	await expect(drawer).toBeVisible();
+	await drawer.getByTestId("budgetIsArchived").click();
+	await expect(drawer.getByTestId("budgetIsArchived")).toBeChecked();
+	await drawer.getByTestId("budgetSave").click();
+	await expect(drawer).not.toBeVisible();
+
+	// Archived budget is hidden by default
+	await expect(page.getByText("Food (archived)")).toHaveCount(0);
+
+	// Flip the "view archived" toggle on
+	await page.getByTestId("checkboxViewArchived").click();
+	await expect(page.getByTestId("checkboxViewArchived")).toBeChecked();
+
+	// The archived row now shows with the `(archived)` suffix on the name
+	await expect(page.getByText("Food (archived)").first()).toBeVisible();
+
+	// And the cell wraps carry the `archived-row` class token so the
+	// dimmed/italic indicator styling is applied consistently across columns.
+	const archivedNameCell = page
+		.getByTestId("inputContainereditorBudget")
+		.first();
+	const parentClass =
+		(await archivedNameCell
+			.locator("..")
+			.getAttribute("class")) ?? "";
+	expect(parentClass).toContain("archived-row");
+});
+
 test("Budget usage recalculates when tags change", async ({ page }) => {
 	// When a budget's tags are swapped, envelopes must be recomputed from
 	// scratch so the old tag's transactions no longer contribute to `used`
