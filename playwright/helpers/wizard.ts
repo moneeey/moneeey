@@ -1,4 +1,4 @@
-import { type Page, expect } from "@playwright/test";
+import { type Locator, type Page, expect } from "@playwright/test";
 import { mostUsedCurrencies } from "./fixtures";
 import { Input, Select } from "./page-objects";
 
@@ -91,4 +91,25 @@ export async function budgetEditorSave(
  */
 export function tourNext(page: Page) {
 	return page.getByTestId("nm-modal-card").getByTestId("next").click();
+}
+
+/**
+ * Opens the budget editor drawer for the row at `index`, runs the caller's
+ * interaction, and closes the drawer if the callback didn't already close it
+ * (e.g. by saving). Collapses the "click editorBudget → expect drawer → ... →
+ * close → expect drawer hidden" pattern repeated across budget tests.
+ */
+export async function withBudgetEditor(
+	page: Page,
+	index: number,
+	fn: (drawer: Locator) => Promise<void>,
+) {
+	await page.getByTestId("editorBudget").nth(index).click();
+	const drawer = page.getByTestId("budgetEditorDrawer");
+	await expect(drawer).toBeVisible();
+	await fn(drawer);
+	if (await drawer.isVisible()) {
+		await drawer.getByText("Close").click();
+		await expect(drawer).not.toBeVisible();
+	}
 }

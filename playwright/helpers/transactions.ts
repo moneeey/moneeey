@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import { type Page, expect } from "@playwright/test";
 import { Input, Select } from "./page-objects";
 
 /**
@@ -47,4 +47,22 @@ export async function updateOnAccountTransactions(
 	if (memo) {
 		await Input(page, "editorMemo", undefined, index).change(memo);
 	}
+}
+
+/**
+ * Sets a transaction date field. The app's DatePicker only commits its value
+ * on blur, so we click → fill → press Tab to trigger blur, then assert the
+ * value stuck. Encapsulates a quirk callers shouldn't have to remember.
+ */
+export async function setDateField(
+	page: Page,
+	testId: string,
+	index: number,
+	value: string,
+) {
+	const input = page.getByTestId(testId).nth(index);
+	await input.click();
+	await input.fill(value);
+	await input.press("Tab");
+	await expect(input).toHaveValue(value);
 }

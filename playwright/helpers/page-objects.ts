@@ -1,4 +1,5 @@
 import { type Locator, type Page, expect } from "@playwright/test";
+import { TIMEOUTS } from "./perf";
 
 /**
  * Wraps a React-Select dropdown by testId. Supports choose, create, and chooseOrCreate.
@@ -139,13 +140,14 @@ export async function dismissNotification(page: Page, text: string) {
 }
 
 /**
- * Waits for the loading progress indicator to disappear.
+ * Waits for the loading progress indicator to disappear. Uses the native
+ * locator wait (mutation-observer based) rather than `waitForFunction` so
+ * it piggybacks on Playwright's auto-waiting loop instead of a 100ms JS poll.
  */
 export async function waitLoading(page: Page) {
-	return await page.waitForFunction(
-		(selector) => !document.querySelector(selector),
-		"[data-testid=loadingProgress]",
-	);
+	await page
+		.getByTestId("loadingProgress")
+		.waitFor({ state: "hidden", timeout: TIMEOUTS.query });
 }
 
 /**
