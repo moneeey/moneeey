@@ -1,11 +1,5 @@
 import { debounce, values } from "lodash";
-import {
-	action,
-	computed,
-	makeObservable,
-	observable,
-	reaction,
-} from "mobx";
+import { action, computed, makeObservable, observable, reaction } from "mobx";
 
 import { EntityType, type IBaseEntity, type TMonetary } from "../shared/Entity";
 import MappedStore from "../shared/MappedStore";
@@ -130,8 +124,7 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 				() =>
 					moneeeyStore.budget.all
 						.map(
-							(b) =>
-								`${b.budget_uuid}:${[...(b.tags || [])].sort().join(",")}`,
+							(b) => `${b.budget_uuid}:${[...(b.tags || [])].sort().join(",")}`,
 						)
 						.sort()
 						.join("|"),

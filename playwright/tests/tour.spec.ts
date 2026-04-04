@@ -1,21 +1,19 @@
-import { expect, test } from "@playwright/test";
 import {
-	Input,
+	BudgetRow,
 	budgetEditorSave,
-	classForTestIdTDs,
 	completeLandingWizard,
 	dismissNotification,
+	expect,
 	mostUsedCurrencies,
-	resetAppState,
+	test,
 	tourNext,
 	updateOnAllTransactions,
 } from "../helpers";
 
-test.beforeEach(async ({ page }) => {
-	await resetAppState(page);
-});
-
-test("Tour walkthrough", async ({ page }) => {
+test("Tour walkthrough", async ({ seededPage: page }) => {
+	// The tour test deliberately uses `seededPage` (not `wizardPage`) because
+	// it exercises the landing wizard → tour flow as its subject, and needs
+	// to leave the tour modal open instead of dismissing it.
 	await completeLandingWizard(page);
 
 	await page.getByTestId("start-tour").click();
@@ -75,31 +73,17 @@ test("Tour walkthrough", async ({ page }) => {
 		tourExpectedTags,
 	);
 
-	const editorRemainingClass = classForTestIdTDs(page, "editorRemaining");
-
 	// Allocate on budget and wait for calculated used/remaining
 	await expect(page.getByText("R$").first()).toBeVisible();
-	await Input(page, "editorAllocated", undefined, 0).change("65,00", "65");
-	await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("89,8", {
-		timeout: 15000,
-	});
-	await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue(
-		"-24,80",
-		{ timeout: 15000 },
-	);
-	expect(await editorRemainingClass(0)).toEqual(
-		"bg---800 opacity-80 text-red-200",
-	);
+	const bakery = BudgetRow(page, 0);
+	await bakery.allocate("65,00", "65");
+	await bakery.expectUsed("89,8");
+	await bakery.expectRemaining("-24,80", "bg---800 opacity-80 text-red-200");
 
-	await Input(page, "editorAllocated", undefined, 1).change(
-		"5435,25",
-		"5.435,25",
-	);
-	await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("1.234,56");
-	await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
-		"4.200,69",
-	);
-	expect(await editorRemainingClass(1)).toEqual("bg---600 opacity-80");
+	const gas = BudgetRow(page, 1);
+	await gas.allocate("5435,25", "5.435,25");
+	await gas.expectUsed("1.234,56");
+	await gas.expectRemaining("4.200,69", "bg---600 opacity-80");
 
 	// Import step
 	await tourNext(page);

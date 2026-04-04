@@ -140,8 +140,7 @@ const BudgetPeriod = observer(
 								read: ({ name, budget: parent }) =>
 									parent?.archived ? `${name} (archived)` : name,
 								delta: () => ({}),
-								onClick: (entity) =>
-									entity.budget && setEditing(entity.budget),
+								onClick: (entity) => entity.budget && setEditing(entity.budget),
 							}),
 						},
 						{
@@ -161,8 +160,7 @@ const BudgetPeriod = observer(
 							title: Messages.budget.used,
 							width: 60,
 							readOnly: true,
-							customClass: (b) =>
-								`text-gray-400 ${archivedRowClass(b)}`.trim(),
+							customClass: (b) => `text-gray-400 ${archivedRowClass(b)}`.trim(),
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
 								read: ({ used, currency_uuid }) => ({
@@ -178,9 +176,7 @@ const BudgetPeriod = observer(
 							readOnly: true,
 							customClass: (b) =>
 								`${
-									b.remaining < 0
-										? "opacity-80 text-red-200"
-										: "opacity-80"
+									b.remaining < 0 ? "opacity-80 text-red-200" : "opacity-80"
 								} ${archivedRowClass(b)}`.trim(),
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({

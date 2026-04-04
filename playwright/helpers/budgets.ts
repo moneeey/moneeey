@@ -24,9 +24,10 @@ export function BudgetRow(page: Page, index: number) {
 			);
 		},
 		async expectAllocated(value: string) {
-			await expect(
-				page.getByTestId("editorAllocated").nth(index),
-			).toHaveValue(value, { timeout: TIMEOUTS.compute });
+			await expect(page.getByTestId("editorAllocated").nth(index)).toHaveValue(
+				value,
+				{ timeout: TIMEOUTS.compute },
+			);
 		},
 		async expectUsed(value: string) {
 			await expect(page.getByTestId("editorUsed").nth(index)).toHaveValue(
@@ -35,9 +36,10 @@ export function BudgetRow(page: Page, index: number) {
 			);
 		},
 		async expectRemaining(value: string, className?: string) {
-			await expect(
-				page.getByTestId("editorRemaining").nth(index),
-			).toHaveValue(value, { timeout: TIMEOUTS.compute });
+			await expect(page.getByTestId("editorRemaining").nth(index)).toHaveValue(
+				value,
+				{ timeout: TIMEOUTS.compute },
+			);
 			if (className !== undefined) {
 				const cls = classForTestIdTDs(page, "editorRemaining");
 				expect(await cls(index)).toEqual(className);

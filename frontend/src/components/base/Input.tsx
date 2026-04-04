@@ -152,10 +152,7 @@ const InputNumber = ({
 				}}
 				onBlur={() => {
 					// Same rationale: 0 is falsy but must still commit.
-					if (
-						currentFloatValue !== undefined &&
-						currentFloatValue !== value
-					) {
+					if (currentFloatValue !== undefined && currentFloatValue !== value) {
 						onChange(currentFloatValue);
 					}
 				}}
