@@ -43,7 +43,7 @@ jobs:
             yarn install --immutable
             yarn playwright install
             export CI=true
-            yarn test --reporter=html,json
+            yarn test --reporter=line
 
       - uses: actions/upload-artifact@v4
         with:
