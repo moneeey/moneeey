@@ -1018,48 +1018,40 @@ test.describe("Moneeey", () => {
 		// Navigate to Budget
 		await OpenMenuItem(page, "Budget");
 
-		// Create "Fuel" budget
+		// Create "Fuel" budget (tagged Gas Station) and "Food" budget (tagged Bakery)
 		await BudgetEditorSave(page, "Fuel", mostUsedCurrencies[0], "Gas Station");
+		await BudgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
 
-		// Allocate 200 for current month
+		// Budgets are sorted alphabetically: Food (index 0), Fuel (index 1)
 		await expect(page.getByText("R$").first()).toBeVisible();
-		await Input(page, "editorAllocated", undefined, 0).change("200", "200");
-		await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("100", {
+
+		// Index 0 = Food (Bakery): allocate 30, used=50, remaining=-20
+		await Input(page, "editorAllocated", undefined, 0).change("30", "30");
+		await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("50", {
 			timeout: 15000,
 		});
 		await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue(
+			"-20",
+			{ timeout: 15000 },
+		);
+		const editorRemainingClass = classForTestIdTDs(page, "editorRemaining");
+		expect(await editorRemainingClass(0)).toEqual(
+			"bg---600 opacity-80 text-red-200",
+		);
+
+		// Index 1 = Fuel (Gas Station): allocate 200, used=100, remaining=100
+		await Input(page, "editorAllocated", undefined, 1).change("200", "200");
+		await expect(page.getByTestId("editorUsed").nth(1)).toHaveValue("100", {
+			timeout: 15000,
+		});
+		await expect(page.getByTestId("editorRemaining").nth(1)).toHaveValue(
 			"100",
 			{ timeout: 15000 },
 		);
 
-		// Create "Food" budget
-		await BudgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
-
-		// Allocate 30 for Food — the Used should reflect only Bakery transactions (50)
-		// Budget periods render 6 months — use first budget period card to scope selectors
-		const currentPeriodCard = page
-			.getByTestId(/^budget_period_table_/)
-			.first();
-		const foodAllocated = currentPeriodCard.getByTestId("editorAllocated").nth(1);
-		await foodAllocated.click();
-		await foodAllocated.fill("30");
-		await foodAllocated.blur();
-		await expect(foodAllocated).toHaveValue("30", { timeout: 5000 });
-
-		const foodUsed = currentPeriodCard.getByTestId("editorUsed").nth(1);
-		await expect(foodUsed).toHaveValue("50", { timeout: 15000 });
-
-		const foodRemaining = currentPeriodCard.getByTestId("editorRemaining").nth(1);
-		await expect(foodRemaining).toHaveValue("-20", { timeout: 15000 });
-
-		const editorRemainingClass = classForTestIdTDs(page, "editorRemaining");
-		expect(await editorRemainingClass(1)).toEqual(
-			"bg---800 opacity-80 text-red-200",
-		);
-
 		// === Edit budget: rename "Fuel" to "Gasoline" ===
-		// Click on the "Fuel" budget name link to open editor
-		await page.getByTestId("editorBudget").nth(0).click();
+		// Budgets sorted: Food (0), Fuel (1) — click Fuel at index 1
+		await page.getByTestId("editorBudget").nth(1).click();
 		await expect(page.getByTestId("budgetEditorDrawer")).toBeVisible();
 
 		// Rename
@@ -1070,21 +1062,24 @@ test.describe("Moneeey", () => {
 		).change("Gasoline");
 		await page.getByTestId("budgetSave").click();
 
-		// Verify the budget name is updated in the period table
-		await expect(page.getByTestId("editorBudget").nth(0)).toContainText(
+		// Verify the budget name is updated — now sorted: Food (0), Gasoline (1)
+		await expect(page.getByTestId("editorBudget").nth(1)).toContainText(
 			"Gasoline",
 		);
 
 		// === Archive budget: archive "Food" ===
-		await page.getByTestId("editorBudget").nth(1).click();
+		// Food is at index 0
+		await page.getByTestId("editorBudget").nth(0).click();
 		await expect(page.getByTestId("budgetEditorDrawer")).toBeVisible();
 
 		// Toggle archived checkbox
 		await page.getByTestId("budgetIsArchived").click();
 		await page.getByTestId("budgetSave").click();
 
-		// Verify "Food" disappears from the budget list
-		await expect(page.getByTestId("editorBudget")).toHaveCount(1);
+		// Verify "Food" disappears — 6 months × 1 budget (Gasoline) = 6 editorBudget links
+		await expect(page.getByTestId("editorBudget")).toHaveCount(6, {
+			timeout: 10000,
+		});
 		await expect(page.getByTestId("editorBudget").nth(0)).toContainText(
 			"Gasoline",
 		);
@@ -1092,12 +1087,16 @@ test.describe("Moneeey", () => {
 		// Toggle "Show archived budgets" checkbox
 		await page.getByTestId("checkboxViewArchived").click();
 
-		// "Food" should reappear
-		await expect(page.getByTestId("editorBudget")).toHaveCount(2);
+		// "Food" should reappear — 6 months × 2 budgets = 12
+		await expect(page.getByTestId("editorBudget")).toHaveCount(12, {
+			timeout: 10000,
+		});
 
 		// Uncheck to hide again
 		await page.getByTestId("checkboxViewArchived").click();
-		await expect(page.getByTestId("editorBudget")).toHaveCount(1);
+		await expect(page.getByTestId("editorBudget")).toHaveCount(6, {
+			timeout: 10000,
+		});
 	});
 
 	test("Data Export and Import", async ({ page }) => {
