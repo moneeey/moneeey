@@ -86,9 +86,9 @@ export const parseDateOrTime = (date: string) => {
 export const currentDate = () => formatDate(new Date());
 export const currentDateTime = () => formatISO(new Date());
 
-export const isLastDayOfMonth = (date: TDate) =>
-	_isFirstDayOfMonth(parseDate(date));
 export const isFirstDayOfMonth = (date: TDate) =>
+	_isFirstDayOfMonth(parseDate(date));
+export const isLastDayOfMonth = (date: TDate) =>
 	_isLastDayOfMonth(parseDate(date));
 
 export const formatDateFmt = (date: Date, pattern: string) =>

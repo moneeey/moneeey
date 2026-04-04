@@ -134,15 +134,13 @@ describe("Date", () => {
 	});
 
 	describe("isFirstDayOfMonth / isLastDayOfMonth", () => {
-		// NOTE: The source has these swapped — isLastDayOfMonth calls _isFirstDayOfMonth
-		// and vice versa. Tests document actual behavior.
-		it("isFirstDayOfMonth returns true for last day of month (swapped impl)", () => {
-			expect(isFirstDayOfMonth("2024-01-31")).toBe(true);
+		it("isFirstDayOfMonth returns true for first day of month", () => {
+			expect(isFirstDayOfMonth("2024-01-01")).toBe(true);
 			expect(isFirstDayOfMonth("2024-01-15")).toBe(false);
 		});
 
-		it("isLastDayOfMonth returns true for first day of month (swapped impl)", () => {
-			expect(isLastDayOfMonth("2024-01-01")).toBe(true);
+		it("isLastDayOfMonth returns true for last day of month", () => {
+			expect(isLastDayOfMonth("2024-01-31")).toBe(true);
 			expect(isLastDayOfMonth("2024-01-15")).toBe(false);
 		});
 	});
