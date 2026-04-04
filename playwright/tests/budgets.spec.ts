@@ -67,11 +67,8 @@ test("Budget lifecycle — create, allocate, open editor, view archived toggle",
 });
 
 test("Budget allocation can be set to zero", async ({ wizardPage: page }) => {
-	// Regression: InputNumber previously used truthy `&&` checks that
-	// treated `0` as falsy, so typing 0 in the allocation field was silently
-	// dropped — neither local state nor onChange fired. This verifies that
-	// setting an allocation to zero both applies immediately and persists
-	// across navigation.
+	// Regression: `&&` truthy checks in InputNumber treated 0 as falsy and
+	// dropped the change. Allocation must apply immediately and persist.
 	await OpenMenuItem(page, "All transactions");
 	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "50");
 
@@ -98,11 +95,6 @@ test("Budget allocation can be set to zero", async ({ wizardPage: page }) => {
 test("Archived budgets have a visual indicator when shown", async ({
 	wizardPage: page,
 }) => {
-	// When the user flips "view archived" on, archived rows must be visually
-	// distinguishable from active ones — same table, same columns, but
-	// dimmed/italicised with an `(archived)` suffix on the name and an
-	// `archived-row` class token (the hook the indicator styling attaches to).
-
 	// Create a transaction so that "Bakery" becomes a known tag for budgets.
 	await OpenMenuItem(page, "All transactions");
 	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "50");
@@ -129,11 +121,7 @@ test("Archived budgets have a visual indicator when shown", async ({
 	// The archived row now shows with the `(archived)` suffix on the name
 	await expect(page.getByText("Food (archived)").first()).toBeVisible();
 
-	// And the numeric cells (allocated, used, remaining) carry the
-	// `archived-row` class token so the dimmed/italic indicator styling is
-	// applied consistently across the row. We probe the allocated cell: its
-	// InputContainer wraps the input and its parent <span> (the virtual
-	// ContentCell) is where TableEditor applies the column's customClass.
+	// The allocated cell's parent <span> carries the `archived-row` class.
 	const allocatedCellParentClass =
 		(await page
 			.getByTestId("inputContainereditorAllocated")
@@ -146,9 +134,6 @@ test("Archived budgets have a visual indicator when shown", async ({
 test("Budget usage recalculates when tags change", async ({
 	wizardPage: page,
 }) => {
-	// When a budget's tags are swapped, envelopes must be recomputed from
-	// scratch so the old tag's transactions no longer contribute to `used`
-	// and the new tag's transactions do.
 	await OpenMenuItem(page, "All transactions");
 	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "100");
 	await updateOnAllTransactions(page, 4, "Banco Moneeey", "Gas Station", "42");
@@ -167,7 +152,6 @@ test("Budget usage recalculates when tags change", async ({
 		await expect(drawer).not.toBeVisible();
 	});
 
-	// `used` must drop to the Gas Station transaction amount (42), not stay
-	// at 100 (the old Bakery match) — this is the regression guard.
+	// `used` drops from 100 (Bakery) to 42 (Gas Station) — regression guard.
 	await food.expectUsed("42");
 });

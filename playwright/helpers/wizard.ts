@@ -3,15 +3,12 @@ import { mostUsedCurrencies } from "./fixtures";
 import { Input, Select } from "./page-objects";
 
 /**
- * Walks through the full landing wizard: language selection, default currency,
- * and creates three initial accounts (Banco Moneeey BRL, MoneeeyCard BRL,
- * Bitcoinss BTC). Leaves the tour modal open at the end — call closeTourModal
- * to dismiss it.
+ * Walks through the landing wizard: language → default currency → 3 initial
+ * accounts. Leaves the tour modal open (call closeTourModal to dismiss).
  */
 export async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("minimalScreenTitle")).toContainText("Moneeey");
 
-	// Language selection
 	await expect(page.getByText("Select language")).toBeVisible();
 	await expect(page.getByTestId("languageSelector_pt")).toBeVisible();
 	await expect(page.getByTestId("languageSelector_es")).toBeVisible();
@@ -21,7 +18,6 @@ export async function completeLandingWizard(page: Page) {
 	await page.getByTestId("languageSelector_en").click();
 	await expect(page.getByTestId("ok-button")).toContainText("Go to Moneeey");
 
-	// Default currency selection
 	await page.getByTestId("ok-button").click();
 	await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible();
 	const defaultCurrencySelector = Select(page, "defaultCurrencySelector");
@@ -30,14 +26,9 @@ export async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("ok-button")).toContainText("Continue");
 	await page.getByTestId("ok-button").click();
 
-	// Create three initial accounts.
-	//
-	// The default currency shows the CONFIG default via a react-select that
-	// re-mounts each time the "save-and-add-another" button re-opens the form.
-	// Reading `.innerText` synchronously right after the name field settles
-	// can catch the placeholder before the react-select rehydrates. Using
-	// `expect(locator).toHaveText(...)` makes Playwright auto-retry until the
-	// value lands, which is the robust way to assert on react-select state.
+	// The currency picker on account forms uses `expect().toHaveText()` so
+	// Playwright auto-retries until the react-select finishes rehydrating
+	// the CONFIG default after each `save-and-add-another` re-mounts it.
 	const currencyValueText = () =>
 		page
 			.getByTestId("editorCurrency")
@@ -65,10 +56,7 @@ export async function completeLandingWizard(page: Page) {
 	await expect(page.getByText("Dashboard")).toBeVisible();
 }
 
-/**
- * Opens the budget editor, fills in name/currency/tag, and saves.
- * Optionally asserts the available tag options.
- */
+/** Opens budget editor, fills name/currency/tag, saves. */
 export async function budgetEditorSave(
 	page: Page,
 	name: string,
@@ -94,19 +82,11 @@ export async function budgetEditorSave(
 	await budgetEditor.getByTestId("budgetSave").click();
 }
 
-/**
- * Clicks the "next" button in the guided tour modal.
- */
 export function tourNext(page: Page) {
 	return page.getByTestId("nm-modal-card").getByTestId("next").click();
 }
 
-/**
- * Opens the budget editor drawer for the row at `index`, runs the caller's
- * interaction, and closes the drawer if the callback didn't already close it
- * (e.g. by saving). Collapses the "click editorBudget → expect drawer → ... →
- * close → expect drawer hidden" pattern repeated across budget tests.
- */
+/** Opens the budget editor at `index`, runs `fn`, auto-closes if still open. */
 export async function withBudgetEditor(
 	page: Page,
 	index: number,

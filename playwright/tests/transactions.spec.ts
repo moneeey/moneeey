@@ -179,10 +179,6 @@ test("Transactions — date can be edited on a transaction", async ({
 	await updateOnAccountTransactions(page, 1, "Bakery123", "-100");
 	await Input(page, "editorRunning", undefined, 1).toHaveValue("1.900");
 
-	// Change the date — `setDateField` handles the DatePicker onBlur (Tab) quirk.
 	await setDateField(page, "editorDate", 1, yesterday);
 	await setDateField(page, "editorDate", 1, twoDaysAgo);
-
-	// Note: deeper persistence (after navigation) appears to hit an app-level bug
-	// where DatePicker's onBlur doesn't reliably commit to PouchDB.
 });

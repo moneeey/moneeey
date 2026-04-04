@@ -1,10 +1,7 @@
 import { type Page, expect } from "@playwright/test";
 import { Input, Select } from "./page-objects";
 
-/**
- * Fills in a row in the "All transactions" view by choosing from/to accounts
- * and entering an amount. Creates accounts if they don't exist.
- */
+/** Fills a row in the "All transactions" view. Creates accounts if missing. */
 export async function updateOnAllTransactions(
 	page: Page,
 	index: number,
@@ -13,22 +10,15 @@ export async function updateOnAllTransactions(
 	amount: string,
 	expectedAmount?: string,
 ) {
-	const editorFrom = Select(page, "editorFrom", index);
-	await editorFrom.chooseOrCreate(fromAccountName);
-
-	const editorTo = Select(page, "editorTo", index);
-	await editorTo.chooseOrCreate(toAccountName);
-
+	await Select(page, "editorFrom", index).chooseOrCreate(fromAccountName);
+	await Select(page, "editorTo", index).chooseOrCreate(toAccountName);
 	await Input(page, "editorAmount", undefined, index).change(
 		amount,
 		expectedAmount ?? amount,
 	);
 }
 
-/**
- * Fills in a row in a reference-account view (e.g. "BRL Banco Moneeey") by
- * choosing the counterpart account and entering the amount. Optionally sets a memo.
- */
+/** Fills a row in a reference-account view (counterpart + amount + optional memo). */
 export async function updateOnAccountTransactions(
 	page: Page,
 	index: number,
@@ -37,9 +27,7 @@ export async function updateOnAccountTransactions(
 	memo?: string,
 	expectedAmount?: string,
 ) {
-	const editorAccount = Select(page, "editorAccount", index);
-	await editorAccount.chooseOrCreate(accountName);
-
+	await Select(page, "editorAccount", index).chooseOrCreate(accountName);
 	await Input(page, "editorAmount", undefined, index).change(
 		amount,
 		expectedAmount ?? amount,
@@ -49,11 +37,7 @@ export async function updateOnAccountTransactions(
 	}
 }
 
-/**
- * Sets a transaction date field. The app's DatePicker only commits its value
- * on blur, so we click → fill → press Tab to trigger blur, then assert the
- * value stuck. Encapsulates a quirk callers shouldn't have to remember.
- */
+/** Sets a date field. DatePicker commits on blur, so we fill then press Tab. */
 export async function setDateField(
 	page: Page,
 	testId: string,

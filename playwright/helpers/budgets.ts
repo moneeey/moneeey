@@ -3,18 +3,7 @@ import { Input } from "./page-objects";
 import { TIMEOUTS } from "./perf";
 import { classForTestIdTDs } from "./table";
 
-/**
- * Fluent wrapper around a single row in the budget table. Collapses the
- * repeated `allocate → assert used → assert remaining` triplet (with its
- * magic-number 15000ms timeout) that showed up in budgets.spec.ts,
- * tour.spec.ts and multi-currency.spec.ts.
- *
- * Usage:
- *   const food = BudgetRow(page, 0);
- *   await food.allocate("30");
- *   await food.expectUsed("50");
- *   await food.expectRemaining("-20", "bg---800 opacity-80 text-red-200");
- */
+/** Fluent wrapper around a budget table row (allocate + used/remaining asserts). */
 export function BudgetRow(page: Page, index: number) {
 	return {
 		async allocate(value: string, expectedValue = value) {

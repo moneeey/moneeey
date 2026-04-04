@@ -11,9 +11,7 @@ import {
 } from "../helpers";
 
 test("Tour walkthrough", async ({ seededPage: page }) => {
-	// The tour test deliberately uses `seededPage` (not `wizardPage`) because
-	// it exercises the landing wizard → tour flow as its subject, and needs
-	// to leave the tour modal open instead of dismissing it.
+	// Uses seededPage (not wizardPage) because this test exercises the wizard.
 	await completeLandingWizard(page);
 
 	await page.getByTestId("start-tour").click();

@@ -1,15 +1,6 @@
 import type { Page } from "@playwright/test";
 
-/**
- * Clears localStorage and the PouchDB IndexedDB database before each test.
- * Use this in a `test.beforeEach` hook (or via the `seededPage`/`wizardPage`
- * fixtures) to ensure each test starts clean.
- *
- * Note: the app currently runs PouchDB with `pouchdb-adapter-memory` so
- * there's no IndexedDB to wipe in practice — the `deleteDatabase` call is
- * a no-op today and is kept as a safety net for when the app eventually
- * migrates to a persistent adapter.
- */
+/** Navigates to `/` and clears localStorage + PouchDB IndexedDB. */
 export async function resetAppState(page: Page) {
 	await page.goto("/");
 	await page.evaluate(() => {

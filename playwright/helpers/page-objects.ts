@@ -1,9 +1,7 @@
 import { type Locator, type Page, expect } from "@playwright/test";
 import { TIMEOUTS } from "./perf";
 
-/**
- * Wraps a React-Select dropdown by testId. Supports choose, create, and chooseOrCreate.
- */
+/** Wraps a React-Select dropdown by testId. */
 export function Select(page: Page, testId: string, index = 0) {
 	const select = () => page.getByTestId(testId).nth(index);
 	const input = () => select().locator(".mn-select__input");
@@ -64,22 +62,24 @@ export function Select(page: Page, testId: string, index = 0) {
 			}
 		},
 		async chooseOrCreate(optionName: string) {
-			await open();
-			const option = () => findMenuItem(optionName, false);
-			if ((await option().count()) > 0) {
-				await this.choose(optionName, false);
-			} else {
-				await createNew(optionName);
-			}
-			await waitForClosed();
-			await expect(select()).toContainText(optionName, { timeout: 10000 });
+			// Retry the whole pick-or-create loop — the react-select's display
+			// value can lag behind the MobX store during persistence re-renders.
+			await expect(async () => {
+				await open();
+				const option = () => findMenuItem(optionName, false);
+				if ((await option().count()) > 0) {
+					await this.choose(optionName, false);
+				} else {
+					await createNew(optionName);
+				}
+				await waitForClosed();
+				await expect(select()).toContainText(optionName, { timeout: 5000 });
+			}).toPass({ timeout: 20_000, intervals: [500, 1000, 2000] });
 		},
 	};
 }
 
-/**
- * Wraps a text input by testId with change/read/assert helpers.
- */
+/** Wraps a text input by testId with change/read/assert helpers. */
 export function Input(
 	page: Page,
 	testId: string,
@@ -96,18 +96,19 @@ export function Input(
 			await expect(input).toHaveValue(value, { timeout });
 		},
 		async change(value: string, expectedValue = value) {
-			await input.click();
-			await input.fill(value);
-			await input.blur();
-			await expect(input).toHaveValue(expectedValue, { timeout: 5000 });
+			// Retry the click/fill/blur cycle — controlled InputNumber components
+			// occasionally reset to 0 if the blur handler races with React state.
+			await expect(async () => {
+				await input.click();
+				await input.fill(value);
+				await input.blur();
+				await expect(input).toHaveValue(expectedValue, { timeout: 2000 });
+			}).toPass({ timeout: 15_000, intervals: [200, 500, 1000] });
 		},
 	};
 }
 
-/**
- * Expands the sidebar menu (if collapsed) and clicks a menu item by visible text.
- * For ambiguous labels (e.g. "Accounts"), use clickMenuByTestId instead.
- */
+/** Expands sidebar (if collapsed) and clicks a menu item by visible text. */
 export async function OpenMenuItem(page: Page, title: string) {
 	const toggle = page.getByTestId("toggleMenu");
 	if ((await toggle.getAttribute("data-expanded")) === "false") {
@@ -116,10 +117,7 @@ export async function OpenMenuItem(page: Page, title: string) {
 	return await page.getByText(title).click();
 }
 
-/**
- * Navigates via sidebar menu item by its testId (avoids ambiguous text matching).
- * Use this for items like "Accounts" that may appear as labels on other pages.
- */
+/** Like OpenMenuItem but uses a testId — avoids ambiguous text matches. */
 export async function clickMenuByTestId(page: Page, testId: string) {
 	const toggle = page.getByTestId("toggleMenu");
 	if ((await toggle.getAttribute("data-expanded")) === "false") {
@@ -128,9 +126,7 @@ export async function clickMenuByTestId(page: Page, testId: string) {
 	await page.getByTestId(testId).click();
 }
 
-/**
- * Asserts and dismisses a warning notification containing the given text.
- */
+/** Asserts a warning notification contains `text` and dismisses it. */
 export async function dismissNotification(page: Page, text: string) {
 	await expect(page.getByTestId("mn-status-warning")).toContainText(text);
 	const dismissIcon = () => page.getByTestId("mn-dismiss-status");
@@ -139,20 +135,13 @@ export async function dismissNotification(page: Page, text: string) {
 	await expect(dismissIcon()).not.toBeVisible();
 }
 
-/**
- * Waits for the loading progress indicator to disappear. Uses the native
- * locator wait (mutation-observer based) rather than `waitForFunction` so
- * it piggybacks on Playwright's auto-waiting loop instead of a 100ms JS poll.
- */
+/** Waits for the loading progress indicator to disappear. */
 export async function waitLoading(page: Page) {
 	await page
 		.getByTestId("loadingProgress")
 		.waitFor({ state: "hidden", timeout: TIMEOUTS.query });
 }
 
-/**
- * Closes the tour modal if it's open (used after completeLandingWizard).
- */
 export async function closeTourModal(page: Page) {
 	await page.getByTestId("nm-modal-card").getByTestId("close").click();
 }
