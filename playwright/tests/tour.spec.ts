@@ -106,9 +106,10 @@ function Select(page: Page, testId: string, index = 0) {
 	const input = () => select().locator(".mn-select__input");
 	const menuList = () => page.locator(".mn-select__menu-list");
 
-	const isClosed = async () => await menuList().isHidden();
+	const waitForClosed = async () =>
+		await expect(menuList()).toBeHidden({ timeout: 5000 });
 	const open = async () => {
-		if (await isClosed()) {
+		if (await menuList().isHidden()) {
 			await select().click();
 		}
 	};
@@ -120,6 +121,7 @@ function Select(page: Page, testId: string, index = 0) {
 	const createNew = async (optionName: string) => {
 		await input().fill(optionName);
 		await input().press("Enter");
+		await waitForClosed();
 	};
 	const currentValue = async () =>
 		select()
@@ -137,14 +139,14 @@ function Select(page: Page, testId: string, index = 0) {
 		async create(optionName: string) {
 			await open();
 			await createNew(optionName);
-			await isClosed();
+			await waitForClosed();
 		},
 		async choose(optionName: string, exact = true, retries = 3) {
 			try {
 				await open();
 				const option = findMenuItem(optionName, exact);
-				await option.click({ timeout: 1000 });
-				await isClosed();
+				await option.click({ timeout: 3000 });
+				await waitForClosed();
 			} catch (e) {
 				if (e.message.includes("detached") && retries > 0) {
 					console.warn(`Option detached, retrying choose... ${retries}`);
@@ -162,7 +164,7 @@ function Select(page: Page, testId: string, index = 0) {
 			} else {
 				await createNew(optionName);
 			}
-			await isClosed();
+			await waitForClosed();
 		},
 	};
 }
@@ -174,8 +176,8 @@ function Input(page: Page, testId: string, container?: Locator, index = 0) {
 		async value() {
 			return input.getAttribute("value");
 		},
-		async toHaveValue(value: string) {
-			await expect(input).toHaveValue(value);
+		async toHaveValue(value: string, timeout = 10000) {
+			await expect(input).toHaveValue(value, { timeout });
 		},
 		async change(value: string) {
 			await input.click();
@@ -196,9 +198,9 @@ async function OpenMenuItem(page: Page, title: string) {
 async function dismissNotification(page: Page, text: string) {
 	await expect(page.getByTestId("mn-status-warning")).toContainText(text);
 	const dismissIcon = () => page.getByTestId("mn-dismiss-status");
-	expect(dismissIcon()).toBeVisible();
+	await expect(dismissIcon()).toBeVisible();
 	await dismissIcon().click();
-	expect(dismissIcon()).not.toBeVisible();
+	await expect(dismissIcon()).not.toBeVisible();
 }
 
 // Transaction helpers
@@ -304,10 +306,10 @@ function tourNext(page: Page) {
 async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("minimalScreenTitle")).toContainText("Moneeey");
 	// Select language
-	expect(page.getByText("Select language")).toBeDefined();
-	expect(page.getByTestId("languageSelector_pt")).toBeDefined();
-	expect(page.getByTestId("languageSelector_es")).toBeDefined();
-	expect(page.getByTestId("languageSelector_en")).toBeDefined();
+	await expect(page.getByText("Select language")).toBeVisible();
+	await expect(page.getByTestId("languageSelector_pt")).toBeVisible();
+	await expect(page.getByTestId("languageSelector_es")).toBeVisible();
+	await expect(page.getByTestId("languageSelector_en")).toBeVisible();
 	await page.getByTestId("languageSelector_es").click();
 	await expect(page.getByTestId("ok-button")).toContainText("Ir a Moneeey");
 	await page.getByTestId("languageSelector_en").click();
@@ -315,7 +317,7 @@ async function completeLandingWizard(page: Page) {
 
 	// Select default currency
 	await page.getByTestId("ok-button").click();
-	expect(page.getByTestId("defaultCurrencySelector")).toBeDefined();
+	await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible();
 	const defaultCurrencySelector = Select(page, "defaultCurrencySelector");
 	expect(await defaultCurrencySelector.options()).toEqual(mostUsedCurrencies);
 	await defaultCurrencySelector.choose(mostUsedCurrencies[0]);
@@ -365,15 +367,15 @@ test.describe("Moneeey", () => {
 
 		await page.getByTestId("start-tour").click(); // Start Tour
 
-		expect(page.getByText("please edit the currencies")).toBeDefined();
+		await expect(page.getByText("multi-currency")).toBeVisible();
 		await tourNext(page); // Next after Edit Currencies
 
 		// Accounts page
-		expect(page.getByText("Now that we know the currencies")).toBeDefined();
+		await expect(page.getByText("Manage your accounts")).toBeVisible();
 		await tourNext(page); // Next on Edit accounts
 
 		// Progress Tour to Transactions
-		expect(page.getByText("start inserting transactions")).toBeDefined();
+		await expect(page.getByText("generates reports and insights")).toBeVisible();
 
 		await updateOnAllTransactions(
 			page,
@@ -387,7 +389,7 @@ test.describe("Moneeey", () => {
 
 		// Progress Tour to Transactions
 		await tourNext(page);
-		expect(page.getByText("time to budget")).toBeDefined();
+		await expect(page.getByText("Time to budget")).toBeVisible();
 
 		// Cant progress because must create budget
 		await tourNext(page);
@@ -403,7 +405,7 @@ test.describe("Moneeey", () => {
 		const editorRemainingClass = classForTestIdTDs(page, "editorRemaining");
 
 		// Allocate on budget and wait for calculated used/remaining
-		expect(page.getByText("R$").first()).toBeDefined();
+		await expect(page.getByText("R$").first()).toBeVisible();
 		await Input(page, "editorAllocated", undefined, 0).change("65,00");
 		await expect(page.getByTestId("editorUsed").nth(0)).toHaveValue("89,8");
 		await expect(page.getByTestId("editorRemaining").nth(0)).toHaveValue(
@@ -422,22 +424,17 @@ test.describe("Moneeey", () => {
 
 		// Go to Import
 		await tourNext(page);
-		expect(page.getByText("New import")).toBeDefined();
+		await expect(page.getByText("import transactions")).toBeVisible();
 
 		// Finish on Transactions
 		await tourNext(page);
-		expect(page.getByText("Gas Station")).toBeDefined();
+		await expect(page.getByText("Gas Station")).toBeVisible();
 
 		// Close Tour
 		await tourNext(page);
 
 		// Tour is closed
-		for (let i = 0; i < 3; i++) {
-			if ((await page.getByTestId("nm-modal-title").count()) === 0) {
-				return;
-			}
-		}
-		expect(page.getByTestId("nm-modal-title")).toBeHidden();
+		await expect(page.getByTestId("nm-modal-title")).toBeHidden();
 	});
 
 	test("Transactions", async ({ page }) => {
@@ -579,9 +576,9 @@ test.describe("Moneeey", () => {
 				.getByTestId("importFile")
 				.setInputFiles(`./fixture/${fileName}`);
 
-			expect(
-				page.getByText(fileName.substring(fileName.lastIndexOf("/"))),
-			).toBeDefined();
+			await expect(
+				page.getByText(fileName.substring(fileName.lastIndexOf("/"))).first(),
+			).toBeVisible();
 
 			await waitLoading(page);
 		};
