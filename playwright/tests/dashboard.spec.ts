@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 import { formatDate } from "../../frontend/src/utils/Date";
 import {
 	ALL_TRANSACTIONS_COLUMNS,
+	OpenMenuItem,
 	closeTourModal,
 	completeLandingWizard,
-	OpenMenuItem,
 	resetAppState,
 	retrieveRowsData,
 	updateOnAccountTransactions,

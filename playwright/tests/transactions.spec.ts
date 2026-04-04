@@ -2,11 +2,11 @@ import { expect, test } from "@playwright/test";
 import { formatDate } from "../../frontend/src/utils/Date";
 import {
 	ALL_TRANSACTIONS_COLUMNS,
-	closeTourModal,
-	completeLandingWizard,
 	Input,
 	OpenMenuItem,
 	REFERENCE_ACCOUNT_COLUMNS,
+	closeTourModal,
+	completeLandingWizard,
 	resetAppState,
 	retrieveRowsData,
 	updateOnAccountTransactions,

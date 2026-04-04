@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 import {
+	Input,
 	budgetEditorSave,
 	classForTestIdTDs,
 	completeLandingWizard,
 	dismissNotification,
-	Input,
 	mostUsedCurrencies,
 	resetAppState,
 	tourNext,

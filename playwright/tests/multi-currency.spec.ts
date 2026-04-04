@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 import {
+	Input,
+	OpenMenuItem,
+	Select,
 	budgetEditorSave,
 	closeTourModal,
 	completeLandingWizard,
-	Input,
 	mostUsedCurrencies,
-	OpenMenuItem,
 	resetAppState,
-	Select,
 	updateOnAllTransactions,
 } from "../helpers";
 
