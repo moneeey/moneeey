@@ -171,4 +171,86 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 		// log after the test teardown.
 		store.transactions.updateRunningBalance.flush();
 	});
+
+	it("fills forward currency rows across all seeded months for a budget", async () => {
+		const store = makeTestStore();
+
+		makeAccount(store.accounts, {
+			account_uuid: "acc-brl",
+			name: "BRL Checking",
+			currency_uuid: "cur-brl",
+			kind: AccountKind.CHECKING,
+		});
+		makeAccount(store.accounts, {
+			account_uuid: "acc-btc",
+			name: "BTC Wallet",
+			currency_uuid: "cur-btc",
+			kind: AccountKind.CHECKING,
+		});
+		makeAccount(store.accounts, {
+			account_uuid: "acc-payee",
+			name: "Restaurant",
+			currency_uuid: "cur-brl",
+			kind: AccountKind.PAYEE,
+		});
+
+		makeBudget(store.budget, {
+			budget_uuid: "b1",
+			name: "Food",
+			tags: ["food"],
+		});
+
+		// BRL transaction in January only.
+		makeTransaction(store.transactions, {
+			transaction_uuid: "t1",
+			date: "2024-01-15",
+			from_account: "acc-brl",
+			to_account: "acc-payee",
+			from_value: 100,
+			to_value: 100,
+			memo: "groceries #food",
+		});
+		// BTC transaction in February only.
+		makeTransaction(store.transactions, {
+			transaction_uuid: "t2",
+			date: "2024-02-10",
+			from_account: "acc-btc",
+			to_account: "acc-payee",
+			from_value: 0.5,
+			to_value: 0.5,
+			memo: "lunch #food",
+		});
+
+		// Seed both months as the UI does.
+		store.budget.makeEnvelopes("2024-01-01", () => {});
+		store.budget.makeEnvelopes("2024-02-01", () => {});
+		await store.budget.envelopes.calculateRemaining.flush();
+
+		const envelopesByMonth = (starting: string) =>
+			store.budget.envelopes.all.filter(
+				(env) => env.budget_uuid === "b1" && env.starting === starting,
+			);
+
+		// Both months should show BOTH currencies, even though each month only
+		// has a transaction in one of them.
+		const jan = envelopesByMonth("2024-01-01");
+		const feb = envelopesByMonth("2024-02-01");
+		expect(jan.map((e) => e.currency_uuid).sort()).toEqual([
+			"cur-brl",
+			"cur-btc",
+		]);
+		expect(feb.map((e) => e.currency_uuid).sort()).toEqual([
+			"cur-brl",
+			"cur-btc",
+		]);
+
+		// Usage should only apply in the month where the transaction actually
+		// happened — the filled-forward rows stay at 0.
+		expect(jan.find((e) => e.currency_uuid === "cur-brl")?.used).toBe(100);
+		expect(jan.find((e) => e.currency_uuid === "cur-btc")?.used).toBe(0);
+		expect(feb.find((e) => e.currency_uuid === "cur-brl")?.used).toBe(0);
+		expect(feb.find((e) => e.currency_uuid === "cur-btc")?.used).toBe(0.5);
+
+		store.transactions.updateRunningBalance.flush();
+	});
 });

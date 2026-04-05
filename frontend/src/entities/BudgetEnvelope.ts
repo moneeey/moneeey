@@ -292,6 +292,38 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 			values(usages).map(({ envelope, usage }) =>
 				this.updateVirtualEnvelopeUsage(envelope, usage),
 			);
+
+			// Fill forward multi-currency budgets: for every month already seeded
+			// for a budget, make sure there is one envelope per currency the
+			// budget actually uses — even if that currency had no transaction in
+			// that particular month. Otherwise a budget with BRL txs in Jan and
+			// BTC txs in Feb would only show one row per month instead of two.
+			const currenciesByBudget = new Map<TBudgetUUID, Set<TCurrencyUUID>>();
+			for (const { envelope } of values(usages)) {
+				const set =
+					currenciesByBudget.get(envelope.budget_uuid) ??
+					new Set<TCurrencyUUID>();
+				set.add(envelope.currency_uuid);
+				currenciesByBudget.set(envelope.budget_uuid, set);
+			}
+			const startingsByBudget = new Map<TBudgetUUID, Set<TDate>>();
+			for (const envelope of this.all) {
+				const set =
+					startingsByBudget.get(envelope.budget_uuid) ?? new Set<TDate>();
+				set.add(envelope.starting);
+				startingsByBudget.set(envelope.budget_uuid, set);
+			}
+			for (const budget of this.moneeeyStore.budget.all) {
+				const currencies = currenciesByBudget.get(budget.budget_uuid);
+				const startings = startingsByBudget.get(budget.budget_uuid);
+				if (!currencies || !startings) continue;
+				for (const starting of startings) {
+					for (const currency_uuid of currencies) {
+						this.getEnvelope(budget, starting, currency_uuid);
+					}
+				}
+			}
+
 			this.updateRemainings();
 		},
 		500,
