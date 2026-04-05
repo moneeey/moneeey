@@ -87,6 +87,8 @@ export class BudgetEnvelope implements IBaseEntity {
 }
 
 export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
+	private reactionDisposer?: () => void;
+
 	constructor(moneeeyStore: MoneeeyStore) {
 		super(moneeeyStore, {
 			getUuid: (b) => b.envelope_uuid,
@@ -107,32 +109,34 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 			updateVirtualEnvelopeUsage: action,
 			updateVirtualEnvelopeRemainings: action,
 		});
+	}
 
-		// Whenever the budget set or any budget's tags change, usage must be
-		// recomputed from scratch — transactions that used to match a budget
-		// may no longer match, and vice versa. We build a stable fingerprint
-		// of (budget_uuid, sorted tags) for all budgets; MobX fires the
-		// reaction only when it changes.
-		//
-		// We defer the reaction setup to a microtask because this constructor
-		// runs from inside BudgetStore's constructor — at that moment
-		// `moneeeyStore.budget` is still undefined (BudgetStore hasn't been
-		// assigned to MoneeeyStore yet), and MobX would silently fail to
-		// track its observables.
-		queueMicrotask(() => {
-			reaction(
-				() =>
-					moneeeyStore.budget.all
-						.map(
-							(b) => `${b.budget_uuid}:${[...(b.tags || [])].sort().join(",")}`,
-						)
-						.sort()
-						.join("|"),
-				() => {
-					this.calculateRemaining(() => {});
-				},
-			);
-		});
+	/**
+	 * Set up the budget-tag reaction after all stores have been wired into
+	 * MoneeeyStore. Called by MoneeeyStore once construction is complete —
+	 * running this from the constructor would read `moneeeyStore.budget`
+	 * before BudgetStore has assigned itself onto MoneeeyStore.
+	 *
+	 * Whenever the budget set or any budget's tags change, usage must be
+	 * recomputed from scratch: transactions that used to match a budget
+	 * may no longer match, and vice versa. We build a stable fingerprint
+	 * of (budget_uuid, sorted tags) for all budgets; MobX fires the
+	 * reaction only when it changes.
+	 */
+	onStoresReady(): void {
+		this.reactionDisposer?.();
+		this.reactionDisposer = reaction(
+			() =>
+				this.moneeeyStore.budget.all
+					.map(
+						(b) => `${b.budget_uuid}:${[...(b.tags || [])].sort().join(",")}`,
+					)
+					.sort()
+					.join("|"),
+			() => {
+				this.calculateRemaining(() => {});
+			},
+		);
 	}
 
 	getEnvelope(entity: IBudget, starting: TDate) {

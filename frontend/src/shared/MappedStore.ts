@@ -40,6 +40,14 @@ export default class MappedStore<T extends IBaseEntity> {
 		return this.factory().entity_type;
 	}
 
+	/**
+	 * Called by MoneeeyStore after every store has been constructed.
+	 * Stores that need to set up cross-store reactions (which can't run in
+	 * the constructor because sibling stores aren't wired yet) should
+	 * override this. Base implementation is a no-op.
+	 */
+	onStoresReady(): void {}
+
 	merge(item: T, options: { setUpdated: boolean } = { setUpdated: true }) {
 		const uuid = this.getUuid(item);
 		this.moneeeyStore.tags.registerAll(item.tags);

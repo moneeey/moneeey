@@ -31,20 +31,23 @@ test("Account settings — rename, archive, merge", async ({
 	// Rename Banco Moneeey → Banco Principal
 	await Input(page, "editorName", undefined, 0).change("Banco Principal");
 
-	// Verify sidebar reflects the rename
+	// Verify sidebar reflects the rename. All sidebar assertions are scoped
+	// to the `appMenu` container so page body text (headings, breadcrumbs)
+	// can't accidentally match.
 	const menuToggle = page.getByTestId("toggleMenu");
 	if ((await menuToggle.getAttribute("data-expanded")) === "false") {
 		await menuToggle.click();
 	}
-	await expect(page.getByText("BRL Banco Principal")).toBeVisible();
-	await expect(page.getByText("BRL Banco Moneeey")).not.toBeVisible();
+	const sidebar = page.getByTestId("appMenu");
+	await expect(sidebar.getByText("BRL Banco Principal")).toBeVisible();
+	await expect(sidebar.getByText("BRL Banco Moneeey")).not.toBeVisible();
 
 	// Archive Bitcoinss via the Archived checkbox
 	await page.getByTestId("editorArchived").nth(1).click();
-	await expect(page.getByText("BTC Bitcoinss")).not.toBeVisible();
+	await expect(sidebar.getByText("BTC Bitcoinss")).not.toBeVisible();
 
 	// Add a transaction on Banco Principal to test merge reassignment
-	await OpenMenuItem(page, "BRL Banco Principal");
+	await sidebar.getByText("BRL Banco Principal").click();
 	await updateOnAccountTransactions(page, 1, "MoneeeyCard", "-500");
 
 	// Merge Banco Principal → MoneeeyCard
@@ -55,7 +58,7 @@ test("Account settings — rename, archive, merge", async ({
 	await page.getByTestId("merge-accounts").click();
 
 	// Banco Principal is gone from sidebar
-	await expect(page.getByText("BRL Banco Principal")).not.toBeVisible();
+	await expect(sidebar.getByText("BRL Banco Principal")).not.toBeVisible();
 
 	// Verify all transactions that referenced Banco Principal now reference MoneeeyCard
 	await OpenMenuItem(page, "All transactions");

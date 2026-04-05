@@ -163,7 +163,7 @@ test("Transactions — swapping direction flips from/to accounts", async ({
 	]);
 });
 
-test("Transactions — date can be edited on a transaction", async ({
+test("Transactions — editing the date reorders rows and recomputes running balance", async ({
 	wizardPage: page,
 }) => {
 	await page.getByText("BRL MoneeeyCard").click();
@@ -171,14 +171,20 @@ test("Transactions — date can be edited on a transaction", async ({
 	const yesterday = formatDate(
 		new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
 	);
-	const twoDaysAgo = formatDate(
-		new Date(new Date().getTime() - 2 * 24 * 60 * 60 * 1000),
-	);
 
-	// Add a transaction (defaults to today)
+	// Initial balance BRL → MoneeeyCard 2.000 is at index 0 (today).
+	// Add a -100 transaction at index 1; running balance should become 1.900.
 	await updateOnAccountTransactions(page, 1, "Bakery123", "-100");
 	await Input(page, "editorRunning", undefined, 1).toHaveValue("1.900");
 
+	// Move the new -100 transaction back one day. The table sorts by date
+	// ascending, so the -100 row should now appear at index 0 with running
+	// balance -100 and the (still-today) initial balance row moves to index 1
+	// with running balance 1.900. This proves the date was actually committed
+	// to the store, not just reflected on the DOM input.
 	await setDateField(page, "editorDate", 1, yesterday);
-	await setDateField(page, "editorDate", 1, twoDaysAgo);
+
+	await Input(page, "editorDate", undefined, 0).toHaveValue(yesterday);
+	await Input(page, "editorRunning", undefined, 0).toHaveValue("-100");
+	await Input(page, "editorRunning", undefined, 1).toHaveValue("1.900");
 });

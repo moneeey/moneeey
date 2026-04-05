@@ -4,6 +4,7 @@ import {
 	OpenMenuItem,
 	Select,
 	budgetEditorSave,
+	clickMenuByTestId,
 	mostUsedCurrencies,
 	test,
 	updateOnAllTransactions,
@@ -12,9 +13,16 @@ import {
 test("Multi-currency transactions in both directions with budget tracking", async ({
 	wizardPage: page,
 }) => {
+	// This test runs long on Firefox CI because react-select + multi-currency
+	// row re-renders compound with the AppMenu remounting on every running
+	// balance change. Default 30s timeout is not enough headroom.
+	test.setTimeout(90_000);
+
 	// Start with a same-currency BRL expense before adding multi-currency rows,
 	// so the editorAmount indices for multi-currency rows are easier to reason about.
-	await OpenMenuItem(page, "All transactions");
+	// Use testId menu navigation — `getByText("All transactions")` was observed
+	// hanging on Firefox CI when the AppMenu was mid-remount.
+	await clickMenuByTestId(page, "appMenu_subitems_transactions_all");
 	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Gas Station", "200");
 
 	// === Direction 1: BRL → BTC ===
@@ -37,7 +45,7 @@ test("Multi-currency transactions in both directions with budget tracking", asyn
 	await Input(page, "editorRunning", undefined, 1).toHaveValue("0,13345678");
 
 	// === Direction 2: BTC → BRL ===
-	await OpenMenuItem(page, "All transactions");
+	await clickMenuByTestId(page, "appMenu_subitems_transactions_all");
 	await Select(page, "editorFrom", 5).chooseOrCreate("Bitcoinss");
 	await Select(page, "editorTo", 5).chooseOrCreate("MoneeeyCard");
 
@@ -55,7 +63,7 @@ test("Multi-currency transactions in both directions with budget tracking", asyn
 	await Input(page, "editorRunning", undefined, 1).toHaveValue("2.500");
 
 	// === Budget over multi-currency transactions ===
-	await OpenMenuItem(page, "Budget");
+	await clickMenuByTestId(page, "appMenu_budget");
 
 	// Gas Station budget (same-currency) — used = 200
 	await budgetEditorSave(
