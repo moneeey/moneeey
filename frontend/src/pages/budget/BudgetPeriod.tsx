@@ -30,10 +30,6 @@ interface PeriodProps {
 	viewArchived: boolean;
 }
 
-/**
- * Returns CSS classes to visually mark an archived envelope's row.
- * The `archived-row` token is also there so tests can assert the state.
- */
 const archivedRowClass = (envelope: BudgetEnvelope): string =>
 	envelope.budget?.archived ? "archived-row opacity-50 italic" : "";
 
@@ -121,7 +117,6 @@ const BudgetPeriod = observer(
 					creatable={false}
 					schemaFilter={(b) => {
 						if (b.starting !== starting) return false;
-						// Orphaned envelopes (parent budget deleted) are hidden.
 						if (!b.budget) return false;
 						return !b.budget.archived || viewArchived;
 					}}
@@ -130,13 +125,8 @@ const BudgetPeriod = observer(
 							title: Messages.budget.budget,
 							width: 45,
 							validate: () => ({ valid: true }),
-							// When the "view archived" toggle is on, archived rows
-							// are dimmed and italicised so they're visually distinct
-							// from active budgets.
 							customClass: (b) => archivedRowClass(b),
 							...LinkField<BudgetEnvelope>({
-								// Suffix archived budgets so the state is textually
-								// clear even without color cues (accessibility).
 								read: ({ name, budget: parent }) =>
 									parent?.archived ? `${name} (archived)` : name,
 								delta: () => ({}),

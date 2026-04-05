@@ -19,13 +19,8 @@ const BudgetEnvelopeKey = (budget: IBudget, starting: TDate) =>
 	`${starting}_${budget.budget_uuid}_${budget.currency_uuid}`;
 
 /**
- * Virtual (non-persisted) view of a budget for a specific month.
- *
- * Holds ONLY the identifiers of its parent budget; `budget` and `name` are
- * computed getters that look up the current budget from the store on every
- * read. This guarantees a single source of truth — if the parent budget is
- * renamed, archived, or otherwise updated, every envelope referring to it
- * reflects the change immediately via MobX reactivity.
+ * Virtual (non-persisted) month view of a budget. `budget`/`name` are
+ * computed so rename/archive on the parent is reflected live.
  */
 export class BudgetEnvelope implements IBaseEntity {
 	[k: string]: unknown;
@@ -98,12 +93,6 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 				}) as BudgetEnvelope,
 		});
 
-		// `merge` is already annotated as an action by the parent
-		// `MappedStore.makeObservable`; re-annotating here would make MobX
-		// throw. Our override is picked up via the prototype chain at the
-		// moment the parent's `makeObservable` runs, so it's already wrapped.
-		// Every other method that mutates the observable map or envelope
-		// fields needs its own action annotation.
 		makeObservable(this, {
 			getEnvelope: action,
 			updateVirtualEnvelopeUsage: action,
@@ -111,18 +100,7 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 		});
 	}
 
-	/**
-	 * Set up the budget-tag reaction after all stores have been wired into
-	 * MoneeeyStore. Called by MoneeeyStore once construction is complete —
-	 * running this from the constructor would read `moneeeyStore.budget`
-	 * before BudgetStore has assigned itself onto MoneeeyStore.
-	 *
-	 * Whenever the budget set or any budget's tags change, usage must be
-	 * recomputed from scratch: transactions that used to match a budget
-	 * may no longer match, and vice versa. We build a stable fingerprint
-	 * of (budget_uuid, sorted tags) for all budgets; MobX fires the
-	 * reaction only when it changes.
-	 */
+	/** Recompute usage whenever any budget's tag set changes. */
 	onStoresReady(): void {
 		this.reactionDisposer?.();
 		this.reactionDisposer = reaction(
@@ -159,19 +137,10 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 	}
 
 	merge(item: BudgetEnvelope, _options?: { setUpdated: boolean }): void {
-		// `item` may arrive as a PLAIN OBJECT rather than a BudgetEnvelope
-		// instance — the editor commit flow in CurrencyAmountField does
-		// `commit({ ...entity, ...delta(...) })`, and object spread only
-		// copies own data properties, dropping our `budget` and `name`
-		// prototype getters. To preserve the single source of truth, always
-		// resolve to the existing class instance in the store and apply the
-		// mutable field updates there. Identity (envelope_uuid / budget_uuid
-		// / currency_uuid / starting) is immutable for an envelope and
-		// intentionally not copied.
-		//
-		// We deliberately don't call `super.merge` for envelopes — they are
-		// VIRTUAL (never persisted) and its object spread would drop the
-		// prototype accessors.
+		// `item` may be a plain object from `{...entity, ...delta()}` — object
+		// spread drops our prototype getters, so resolve to the existing class
+		// instance and mutate its fields in place. Envelopes are virtual and
+		// deliberately bypass `super.merge`.
 		const uuid = this.getUuid(item);
 		const existing = this.byUuid(uuid) as BudgetEnvelope | undefined;
 		const target = existing ?? item;
@@ -284,11 +253,8 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 					chunkThrottle: 20,
 				},
 			);
-			// Apply the freshly-computed usages. Any envelope NOT in `usages`
-			// had no matching transactions this pass (e.g. because its parent
-			// budget's tags changed and no longer match anything), so its
-			// `used` is reset to zero. This is what makes a tag change cause
-			// a full recalculation rather than leaving stale numbers.
+			// Zero-out envelopes whose parent budget no longer matches any
+			// transaction so tag changes fully recalc instead of going stale.
 			const matchedUuids = new Set(Object.keys(usages));
 			for (const envelope of this.all) {
 				if (!matchedUuids.has(envelope.envelope_uuid)) {

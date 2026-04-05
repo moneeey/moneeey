@@ -13,15 +13,10 @@ import {
 test("Multi-currency transactions in both directions with budget tracking", async ({
 	wizardPage: page,
 }) => {
-	// This test runs long on Firefox CI because react-select + multi-currency
-	// row re-renders compound with the AppMenu remounting on every running
-	// balance change. Default 30s timeout is not enough headroom.
+	// Firefox CI needs extra headroom for react-select + row-remount cascades.
 	test.setTimeout(90_000);
 
-	// Start with a same-currency BRL expense before adding multi-currency rows,
-	// so the editorAmount indices for multi-currency rows are easier to reason about.
-	// Use testId menu navigation — `getByText("All transactions")` was observed
-	// hanging on Firefox CI when the AppMenu was mid-remount.
+	// Same-currency row first so multi-currency amount indices are predictable.
 	await clickMenuByTestId(page, "appMenu_subitems_transactions_all");
 	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Gas Station", "200");
 

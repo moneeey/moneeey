@@ -53,10 +53,6 @@ export default class MoneeeyStore {
 		this.persistence.monitor(this.config);
 		this.management = new ManagementStore(this.persistence);
 
-		// All stores are now wired into this — give them a chance to set up
-		// cross-store reactions that couldn't run in their constructors.
-		// Note: ConfigStore.init() has a separate, post-load meaning and is
-		// intentionally not called here.
 		this.accounts.onStoresReady();
 		this.transactions.onStoresReady();
 		this.currencies.onStoresReady();

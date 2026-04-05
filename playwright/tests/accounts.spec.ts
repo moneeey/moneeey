@@ -31,9 +31,7 @@ test("Account settings — rename, archive, merge", async ({
 	// Rename Banco Moneeey → Banco Principal
 	await Input(page, "editorName", undefined, 0).change("Banco Principal");
 
-	// Verify sidebar reflects the rename. All sidebar assertions are scoped
-	// to the `appMenu` container so page body text (headings, breadcrumbs)
-	// can't accidentally match.
+	// Sidebar reflects the rename; scope to `appMenu` to avoid page-body matches.
 	const menuToggle = page.getByTestId("toggleMenu");
 	if ((await menuToggle.getAttribute("data-expanded")) === "false") {
 		await menuToggle.click();

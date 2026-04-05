@@ -177,11 +177,8 @@ test("Transactions — editing the date reorders rows and recomputes running bal
 	await updateOnAccountTransactions(page, 1, "Bakery123", "-100");
 	await Input(page, "editorRunning", undefined, 1).toHaveValue("1.900");
 
-	// Move the new -100 transaction back one day. The table sorts by date
-	// ascending, so the -100 row should now appear at index 0 with running
-	// balance -100 and the (still-today) initial balance row moves to index 1
-	// with running balance 1.900. This proves the date was actually committed
-	// to the store, not just reflected on the DOM input.
+	// Move it to yesterday: date-asc sort puts -100 at row 0, initial balance at row 1.
+	// The row reorder + running balance recalc prove the date was committed, not just rendered.
 	await setDateField(page, "editorDate", 1, yesterday);
 
 	await Input(page, "editorDate", undefined, 0).toHaveValue(yesterday);

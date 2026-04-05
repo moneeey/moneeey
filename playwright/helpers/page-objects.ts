@@ -108,25 +108,13 @@ export function Input(
 	};
 }
 
-/**
- * Expands the sidebar (if collapsed) and clicks a menu item by visible text.
- *
- * Scoped to the `appMenu` container so page-body text (headings,
- * breadcrumbs, in-table cells) can't accidentally match. The click is wrapped
- * in `toPass` because the AppMenu is keyed on the set of transactions and
- * running balances and fully remounts whenever either changes — on Firefox
- * CI that remount can race a click and leave Playwright hanging on a stale
- * element reference.
- */
+/** Expand sidebar if collapsed, then click the menu item by text (scoped to `appMenu` and retried to survive Navbar remounts on Firefox CI). */
 export async function OpenMenuItem(page: Page, title: string) {
 	const toggle = page.getByTestId("toggleMenu");
 	if ((await toggle.getAttribute("data-expanded")) === "false") {
 		await toggle.click();
 	}
 	const sidebar = page.getByTestId("appMenu");
-	// Not using `{ exact: true }` because account menu items render their
-	// label, currency and running balance as separate nodes — an exact
-	// match on inner text would include the running balance suffix.
 	await expect(async () => {
 		await sidebar.getByText(title).first().click({ timeout: 3000 });
 	}).toPass({ timeout: 15_000, intervals: [250, 500, 1000] });

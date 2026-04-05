@@ -144,14 +144,12 @@ const InputNumber = ({
 				className={`${BaseInputClzz} font-mono ${className || ""}`}
 				value={currentFloatValue}
 				onValueChange={({ floatValue }) => {
-					// Use explicit nullish check — `floatValue === 0` is a valid
-					// input that must not be filtered by a truthy `&&`.
+					// 0 is a valid value; explicit nullish check instead of `&&`.
 					if (floatValue !== undefined && floatValue !== value) {
 						setCurrentFloatValue(floatValue);
 					}
 				}}
 				onBlur={() => {
-					// Same rationale: 0 is falsy but must still commit.
 					if (currentFloatValue !== undefined && currentFloatValue !== value) {
 						onChange(currentFloatValue);
 					}
