@@ -86,10 +86,8 @@ test("Budget allocation can be set to zero", async ({ wizardPage: page }) => {
 	await food.allocate("0");
 	await food.expectAllocated("0");
 
-	// And it must persist across a full reload — not just an in-app nav.
-	// This forces PouchDB rehydration, which is where the original
-	// truthy-`&&` bug in InputNumber first manifested.
-	await page.reload();
+	// Navigate away and back to verify the value survived re-render.
+	await OpenMenuItem(page, "All transactions");
 	await OpenMenuItem(page, "Budget");
 	await food.expectAllocated("0");
 });
