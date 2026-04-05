@@ -1,5 +1,5 @@
 import { debounce, values } from "lodash";
-import { action, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable, reaction } from "mobx";
 
 import { EntityType, type IBaseEntity, type TMonetary } from "../shared/Entity";
 import MappedStore from "../shared/MappedStore";
@@ -12,11 +12,16 @@ import {
 } from "../utils/Date";
 import { asyncProcess } from "../utils/Utils";
 
-import type { IBudget } from "./Budget";
+import type { IBudget, TBudgetUUID } from "./Budget";
+import type { TCurrencyUUID } from "./Currency";
 
 const BudgetEnvelopeKey = (budget: IBudget, starting: TDate) =>
 	`${starting}_${budget.budget_uuid}_${budget.currency_uuid}`;
 
+/**
+ * Virtual (non-persisted) month view of a budget. `budget`/`name` are
+ * computed so rename/archive on the parent is reflected live.
+ */
 export class BudgetEnvelope implements IBaseEntity {
 	[k: string]: unknown;
 
@@ -26,9 +31,11 @@ export class BudgetEnvelope implements IBaseEntity {
 
 	tags = [];
 
-	name: string;
-
 	envelope_uuid: string;
+
+	budget_uuid: TBudgetUUID;
+
+	currency_uuid: TCurrencyUUID;
 
 	starting: TDate;
 
@@ -38,27 +45,45 @@ export class BudgetEnvelope implements IBaseEntity {
 
 	used: TMonetary;
 
-	budget: IBudget;
+	moneeeyStore: MoneeeyStore;
 
-	constructor(budget: IBudget, starting: TDate, allocated: number) {
+	constructor(
+		moneeeyStore: MoneeeyStore,
+		budget: IBudget,
+		starting: TDate,
+		allocated: number,
+	) {
 		makeObservable(this, {
 			allocated: observable,
 			remaining: observable,
 			used: observable,
+			budget: computed,
+			name: computed,
 		});
 
-		this.budget = budget;
+		this.moneeeyStore = moneeeyStore;
+		this.budget_uuid = budget.budget_uuid;
+		this.currency_uuid = budget.currency_uuid;
 		this.envelope_uuid = BudgetEnvelopeKey(budget, starting);
 		this.starting = starting;
 		this.allocated = allocated;
 		this.remaining = 0;
 		this.used = 0;
-		this.name = budget.name;
-		this._rev = this.budget._rev || "";
+		this._rev = budget._rev || "";
+	}
+
+	get budget(): IBudget | undefined {
+		return this.moneeeyStore.budget.byUuid(this.budget_uuid);
+	}
+
+	get name(): string {
+		return this.budget?.name ?? "";
 	}
 }
 
 export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
+	private reactionDisposer?: () => void;
+
 	constructor(moneeeyStore: MoneeeyStore) {
 		super(moneeeyStore, {
 			getUuid: (b) => b.envelope_uuid,
@@ -69,9 +94,27 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 		});
 
 		makeObservable(this, {
+			getEnvelope: action,
 			updateVirtualEnvelopeUsage: action,
 			updateVirtualEnvelopeRemainings: action,
 		});
+	}
+
+	/** Recompute usage whenever any budget's tag set changes. */
+	onStoresReady(): void {
+		this.reactionDisposer?.();
+		this.reactionDisposer = reaction(
+			() =>
+				this.moneeeyStore.budget.all
+					.map(
+						(b) => `${b.budget_uuid}:${[...(b.tags || [])].sort().join(",")}`,
+					)
+					.sort()
+					.join("|"),
+			() => {
+				this.calculateRemaining(() => {});
+			},
+		);
 	}
 
 	getEnvelope(entity: IBudget, starting: TDate) {
@@ -82,20 +125,42 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 		const allocated =
 			entity.envelopes.find((envelop) => envelop.starting === starting)
 				?.allocated || 0;
-		const envelope = new BudgetEnvelope(entity, starting, allocated);
-		super.merge(envelope);
+		const envelope = new BudgetEnvelope(
+			this.moneeeyStore,
+			entity,
+			starting,
+			allocated,
+		);
+		this.itemsByUuid.set(key, envelope);
 
 		return envelope;
 	}
 
-	merge(item: BudgetEnvelope, options?: { setUpdated: boolean }): void {
-		this.moneeeyStore.budget.setAllocation(
-			item.budget,
-			item.starting,
-			item.allocated,
-		);
+	merge(item: BudgetEnvelope, _options?: { setUpdated: boolean }): void {
+		// `item` may be a plain object from `{...entity, ...delta()}` — object
+		// spread drops our prototype getters, so resolve to the existing class
+		// instance and mutate its fields in place. Envelopes are virtual and
+		// deliberately bypass `super.merge`.
+		const uuid = this.getUuid(item);
+		const existing = this.byUuid(uuid) as BudgetEnvelope | undefined;
+		const target = existing ?? item;
+		if (existing) {
+			existing.allocated = item.allocated;
+			existing.used = item.used;
+			existing.remaining = item.remaining;
+			existing._rev = item._rev;
+		}
+
+		const parentBudget = target.budget;
+		if (parentBudget) {
+			this.moneeeyStore.budget.setAllocation(
+				parentBudget,
+				target.starting,
+				target.allocated,
+			);
+		}
 		this.updateRemainings();
-		super.merge(item, options);
+		this.itemsByUuid.set(uuid, target);
 	}
 
 	getRemaining(envelope: BudgetEnvelope): number {
@@ -110,9 +175,11 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 				-1,
 			).getTime() < previousEnvelopeStarting.getTime();
 
+		const parentBudget = envelope.budget;
 		const previousEnvelope =
-			hasPreviousTransaction &&
-			this.getEnvelope(envelope.budget, formatDate(previousEnvelopeStarting));
+			hasPreviousTransaction && parentBudget
+				? this.getEnvelope(parentBudget, formatDate(previousEnvelopeStarting))
+				: undefined;
 
 		const previousValue = previousEnvelope
 			? this.getRemaining(previousEnvelope)
@@ -129,14 +196,14 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 	updateVirtualEnvelopeUsage(envelope: BudgetEnvelope, usage: number) {
 		envelope.used = usage;
 		envelope._rev = this.nextEnvelopeRev();
-		super.merge(envelope);
+		this.itemsByUuid.set(this.getUuid(envelope), envelope);
 	}
 
 	updateVirtualEnvelopeRemainings() {
 		for (const envelope of this.all) {
 			envelope.remaining = this.getRemaining(envelope);
 			envelope._rev = this.nextEnvelopeRev();
-			super.merge(envelope);
+			this.itemsByUuid.set(this.getUuid(envelope), envelope);
 		}
 	}
 
@@ -186,6 +253,14 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 					chunkThrottle: 20,
 				},
 			);
+			// Zero-out envelopes whose parent budget no longer matches any
+			// transaction so tag changes fully recalc instead of going stale.
+			const matchedUuids = new Set(Object.keys(usages));
+			for (const envelope of this.all) {
+				if (!matchedUuids.has(envelope.envelope_uuid)) {
+					this.updateVirtualEnvelopeUsage(envelope, 0);
+				}
+			}
 			values(usages).map(({ envelope, usage }) =>
 				this.updateVirtualEnvelopeUsage(envelope, usage),
 			);

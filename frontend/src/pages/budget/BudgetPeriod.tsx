@@ -30,6 +30,9 @@ interface PeriodProps {
 	viewArchived: boolean;
 }
 
+const archivedRowClass = (envelope: BudgetEnvelope): string =>
+	envelope.budget?.archived ? "archived-row opacity-50 italic" : "";
+
 const SHOW_MONTHS = 6;
 
 const BudgetPeriods = observer(
@@ -112,26 +115,31 @@ const BudgetPeriod = observer(
 					store={budget.envelopes}
 					factory={budget.envelopes.factory}
 					creatable={false}
-					schemaFilter={(b) =>
-						b.starting === starting && (!b.budget.archived || viewArchived)
-					}
+					schemaFilter={(b) => {
+						if (b.starting !== starting) return false;
+						if (!b.budget) return false;
+						return !b.budget.archived || viewArchived;
+					}}
 					schema={[
 						{
 							title: Messages.budget.budget,
 							width: 45,
 							validate: () => ({ valid: true }),
+							customClass: (b) => archivedRowClass(b),
 							...LinkField<BudgetEnvelope>({
-								read: ({ name }) => name,
+								read: ({ name, budget: parent }) =>
+									parent?.archived ? `${name} (archived)` : name,
 								delta: () => ({}),
-								onClick: (entity) => setEditing(entity.budget),
+								onClick: (entity) => entity.budget && setEditing(entity.budget),
 							}),
 						},
 						{
 							title: Messages.budget.allocated,
 							width: 60,
 							validate: () => ({ valid: true }),
+							customClass: (b) => archivedRowClass(b),
 							...CurrencyAmountField<BudgetEnvelope>({
-								read: ({ allocated, budget: { currency_uuid } }) => ({
+								read: ({ allocated, currency_uuid }) => ({
 									amount: allocated,
 									currency: currencies.byUuid(currency_uuid),
 								}),
@@ -142,10 +150,10 @@ const BudgetPeriod = observer(
 							title: Messages.budget.used,
 							width: 60,
 							readOnly: true,
-							customClass: () => "text-gray-400",
+							customClass: (b) => `text-gray-400 ${archivedRowClass(b)}`.trim(),
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
-								read: ({ used, budget: { currency_uuid } }) => ({
+								read: ({ used, currency_uuid }) => ({
 									amount: used,
 									currency: currencies.byUuid(currency_uuid),
 								}),
@@ -156,11 +164,13 @@ const BudgetPeriod = observer(
 							title: Messages.budget.remaining,
 							width: 50,
 							readOnly: true,
-							customClass: ({ remaining }) =>
-								remaining < 0 ? "opacity-80 text-red-200" : "opacity-80 ",
+							customClass: (b) =>
+								`${
+									b.remaining < 0 ? "opacity-80 text-red-200" : "opacity-80"
+								} ${archivedRowClass(b)}`.trim(),
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
-								read: ({ remaining, budget: { currency_uuid } }) => ({
+								read: ({ remaining, currency_uuid }) => ({
 									amount: remaining,
 									currency: currencies.byUuid(currency_uuid),
 								}),

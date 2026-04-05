@@ -40,6 +40,9 @@ export default class MappedStore<T extends IBaseEntity> {
 		return this.factory().entity_type;
 	}
 
+	/** Hook called by MoneeeyStore once all stores are wired; override to set up cross-store reactions. */
+	onStoresReady(): void {}
+
 	merge(item: T, options: { setUpdated: boolean } = { setUpdated: true }) {
 		const uuid = this.getUuid(item);
 		this.moneeeyStore.tags.registerAll(item.tags);

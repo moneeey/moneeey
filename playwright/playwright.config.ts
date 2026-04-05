@@ -20,7 +20,7 @@ export default defineConfig({
 	/* Retry on CI only */
 	retries: isCI ? 3 : 1,
 	/* Opt out of parallel tests on CI. */
-	workers: isCI ? 1 : undefined,
+	workers: isCI ? 2 : undefined,
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
 	reporter: "html",
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -32,7 +32,7 @@ export default defineConfig({
 		trace: "on-first-retry",
 
 		// Record video
-		video: "on",
+		video: "retain-on-failure",
 	},
 
 	/* Configure projects for major browsers */
