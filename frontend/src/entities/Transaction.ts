@@ -18,6 +18,7 @@ import {
 	parseDate,
 } from "../utils/Date";
 import RunningBalance from "../utils/RunningBalance";
+import { tagsForText } from "../utils/Tags";
 import { uuid } from "../utils/Utils";
 
 import type { AccountStore, TAccountUUID } from "./Account";
@@ -83,6 +84,11 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 		if (item.from_value < 0 || item.to_value < 0) {
 			throw new Error("Transaction amounts must be positive numbers");
 		}
+
+		// Tags are derived exclusively from `#hashtag` tokens in the memo, so
+		// budget matching (and any other tag consumer) stays in sync with what
+		// the user sees in the memo field.
+		item.tags = tagsForText(item.memo || "");
 
 		super.merge(item, options);
 		if (!isEmpty(item.date)) {

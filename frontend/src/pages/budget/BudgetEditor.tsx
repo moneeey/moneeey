@@ -1,7 +1,7 @@
 import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import Drawer from "../../components/base/Drawer";
 import { Checkbox, Input } from "../../components/base/Input";
-import Select, { MultiSelect } from "../../components/base/Select";
+import { MultiSelect } from "../../components/base/Select";
 import Space, { VerticalSpace } from "../../components/base/Space";
 import { TextTitle } from "../../components/base/Text";
 import type { IBudget } from "../../entities/Budget";
@@ -46,8 +46,7 @@ const BudgetEditor = ({
 	setEditing: (budget?: IBudget) => void;
 }) => {
 	const Messages = useMessages();
-	const { budget, tags, currencies, config, transactions, accounts } =
-		useMoneeeyStore();
+	const { budget, tags } = useMoneeeyStore();
 
 	const onClose = () => setEditing(undefined);
 	const onSave = () => {
@@ -70,27 +69,6 @@ const BudgetEditor = ({
 					placeholder={Messages.util.name}
 					value={editing.name}
 					onChange={(name) => setEditing({ ...editing, name })}
-				/>
-				<label>{Messages.util.currency}</label>
-				<Select
-					containerArea
-					testId="budgetCurrency"
-					placeholder={Messages.util.currency}
-					options={currencies.all.map((c) => ({
-						label: (
-							<span>
-								<b>{c.short}</b> {c.name}
-							</span>
-						),
-						value: c.currency_uuid,
-					}))}
-					value={editing.currency_uuid}
-					onChange={(currency_uuid) =>
-						setEditing({
-							...editing,
-							currency_uuid: currency_uuid || config.main.default_currency,
-						})
-					}
 				/>
 				<label>{Messages.util.tags}</label>
 				<MultiSelect

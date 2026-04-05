@@ -15,8 +15,11 @@ import { asyncProcess } from "../utils/Utils";
 import type { IBudget, TBudgetUUID } from "./Budget";
 import type { TCurrencyUUID } from "./Currency";
 
-const BudgetEnvelopeKey = (budget: IBudget, starting: TDate) =>
-	`${starting}_${budget.budget_uuid}_${budget.currency_uuid}`;
+const BudgetEnvelopeKey = (
+	budget: IBudget,
+	starting: TDate,
+	currency_uuid: TCurrencyUUID,
+) => `${starting}_${budget.budget_uuid}_${currency_uuid}`;
 
 /**
  * Virtual (non-persisted) month view of a budget. `budget`/`name` are
@@ -51,6 +54,7 @@ export class BudgetEnvelope implements IBaseEntity {
 		moneeeyStore: MoneeeyStore,
 		budget: IBudget,
 		starting: TDate,
+		currency_uuid: TCurrencyUUID,
 		allocated: number,
 	) {
 		makeObservable(this, {
@@ -63,8 +67,8 @@ export class BudgetEnvelope implements IBaseEntity {
 
 		this.moneeeyStore = moneeeyStore;
 		this.budget_uuid = budget.budget_uuid;
-		this.currency_uuid = budget.currency_uuid;
-		this.envelope_uuid = BudgetEnvelopeKey(budget, starting);
+		this.currency_uuid = currency_uuid;
+		this.envelope_uuid = BudgetEnvelopeKey(budget, starting, currency_uuid);
 		this.starting = starting;
 		this.allocated = allocated;
 		this.remaining = 0;
@@ -117,18 +121,26 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 		);
 	}
 
-	getEnvelope(entity: IBudget, starting: TDate) {
-		const key = BudgetEnvelopeKey(entity, starting);
+	getEnvelope(
+		entity: IBudget,
+		starting: TDate,
+		currency_uuid: TCurrencyUUID,
+	) {
+		const key = BudgetEnvelopeKey(entity, starting, currency_uuid);
 		if (this.hasKey(key)) {
 			return this.byUuid(key) as BudgetEnvelope;
 		}
 		const allocated =
-			entity.envelopes.find((envelop) => envelop.starting === starting)
-				?.allocated || 0;
+			entity.envelopes.find(
+				(envelop) =>
+					envelop.starting === starting &&
+					envelop.currency_uuid === currency_uuid,
+			)?.allocated || 0;
 		const envelope = new BudgetEnvelope(
 			this.moneeeyStore,
 			entity,
 			starting,
+			currency_uuid,
 			allocated,
 		);
 		this.itemsByUuid.set(key, envelope);
@@ -156,6 +168,7 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 			this.moneeeyStore.budget.setAllocation(
 				parentBudget,
 				target.starting,
+				target.currency_uuid,
 				target.allocated,
 			);
 		}
@@ -178,7 +191,11 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 		const parentBudget = envelope.budget;
 		const previousEnvelope =
 			hasPreviousTransaction && parentBudget
-				? this.getEnvelope(parentBudget, formatDate(previousEnvelopeStarting))
+				? this.getEnvelope(
+						parentBudget,
+						formatDate(previousEnvelopeStarting),
+						envelope.currency_uuid,
+					)
 				: undefined;
 
 		const previousValue = previousEnvelope
@@ -233,8 +250,19 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 						);
 						const budgets =
 							this.moneeeyStore.budget.findBudgetsFor(allTransactionTags);
+						// Group usage by the transaction's own currency so a single
+						// budget with multi-currency matches produces one envelope row
+						// per currency.
+						const fromAccount = accounts.byUuid(transaction.from_account);
+						const tx_currency_uuid =
+							fromAccount?.currency_uuid ||
+							this.moneeeyStore.config.main.default_currency;
 						for (const budget of budgets) {
-							const envelope = this.getEnvelope(budget, starting);
+							const envelope = this.getEnvelope(
+								budget,
+								starting,
+								tx_currency_uuid,
+							);
 							state[envelope.envelope_uuid] = {
 								envelope,
 								usage:

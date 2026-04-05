@@ -120,7 +120,8 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 			tags: ["food"],
 		});
 
-		// Transaction in BRL — tagged via the transaction's tags field.
+		// Both transactions tag themselves via `#food` in the memo — the new
+		// Transaction.merge pipeline derives `tags` straight from memo hashtags.
 		makeTransaction(store.transactions, {
 			transaction_uuid: "t1",
 			date: "2024-01-15",
@@ -128,11 +129,10 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 			to_account: "acc-payee",
 			from_value: 100,
 			to_value: 100,
-			tags: ["food"],
-			memo: "",
+			tags: [],
+			memo: "groceries #food",
 		});
 
-		// Transaction in BTC — tagged via a #hashtag inside memo.
 		makeTransaction(store.transactions, {
 			transaction_uuid: "t2",
 			date: "2024-01-20",
