@@ -9,11 +9,11 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: "20.11"
+          node-version: "22.14"
           cache: yarn
 
       - run: yarn install --immutable
@@ -26,7 +26,7 @@ jobs:
         run: echo "PLAYWRIGHT_CACHE=${{ github.workspace }}/playwright-cache" >> $GITHUB_ENV
 
       - name: Playwright Dependencies cache
-        uses: actions/cache@v3
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ${{ github.workspace }}/playwright-cache
           key: playwright-${{ runner.os }}-${{ hashFiles('playwright/yarn.lock') }}
@@ -34,9 +34,9 @@ jobs:
             playwright-${{ runner.os }}-
 
       - name: Playwright
-        uses: addnab/docker-run-action@v3
+        uses: addnab/docker-run-action@4f65fabd2431ebc8d299f8e5a018d79a769ae185 # v3
         with:
-          image: mcr.microsoft.com/playwright:v1.51.1-noble
+          image: mcr.microsoft.com/playwright:v1.59.1-noble
           options: --rm -v ${{ github.workspace }}:/workspace -v ${{ github.workspace }}/playwright-cache:/root/.cache/ms-playwright
           run: |
             cd /workspace/playwright
@@ -45,7 +45,8 @@ jobs:
             export CI=true
             yarn test --reporter=html,json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
         with:
           name: playwright-report
           path: |
@@ -59,27 +60,34 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: denoland/setup-deno@v1
+      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
         with:
-          deno-version: v1.35.3
+          deno-version: v2.7
+
+      - name: Cache Deno dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ hashFiles('backend/deno.lock', 'backend/deno.jsonc') }}
+          restore-keys: |
+            deno-${{ runner.os }}-
 
       - run: deno cache main.ts
         name: Install
 
-      - run: deno test --allow-all
+      - run: deno task test
         name: Test
 
   LINT:
-    needs: [FRONTEND]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: "20.11"
+          node-version: "22.14"
           cache: yarn
 
       - run: yarn install --immutable
@@ -88,6 +96,9 @@ jobs:
       - run: yarn install --immutable
         name: Install frontend
         working-directory: frontend
+
+      - run: yarn ci
+        name: Format check
 
       - run: yarn lint
         name: Lint
@@ -110,20 +121,20 @@ jobs:
       run:
         working-directory: ${{ matrix.service }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Docker buildx
-        uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
       - name: Log into Github Docker registry
-        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -131,13 +142,13 @@ jobs:
 
       - name: Extract Docker metadata
         id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: ./${{ matrix.service }}
           file: ./${{ matrix.service }}/Dockerfile.prod
