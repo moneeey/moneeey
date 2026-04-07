@@ -87,7 +87,7 @@ const makeBudget = (
 };
 
 describe("BudgetEnvelope multi-currency aggregation", () => {
-	it("produces one envelope row per currency found in matching transactions", async () => {
+	it("produces one envelope row per currency found in matching transactions", () => {
 		const store = makeTestStore();
 
 		// Two on-budget accounts, one per currency.
@@ -144,9 +144,8 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 			memo: "lunch #food",
 		});
 
-		// Kick off aggregation; calculateRemaining is debounced so flush to await it.
-		store.budget.makeEnvelopes("2024-01-01", () => {});
-		await store.budget.envelopes.calculateRemaining.flush();
+		// Seed the month — computation is synchronous via @computed.
+		store.budget.seedEnvelopes("2024-01-01");
 
 		const januaryEnvelopesForB1 = store.budget.envelopes.all.filter(
 			(env) =>
@@ -172,7 +171,7 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 		store.transactions.updateRunningBalance.flush();
 	});
 
-	it("fills forward currency rows across all seeded months for a budget", async () => {
+	it("fills forward currency rows across all seeded months for a budget", () => {
 		const store = makeTestStore();
 
 		makeAccount(store.accounts, {
@@ -222,9 +221,8 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 		});
 
 		// Seed both months as the UI does.
-		store.budget.makeEnvelopes("2024-01-01", () => {});
-		store.budget.makeEnvelopes("2024-02-01", () => {});
-		await store.budget.envelopes.calculateRemaining.flush();
+		store.budget.seedEnvelopes("2024-01-01");
+		store.budget.seedEnvelopes("2024-02-01");
 
 		const envelopesByMonth = (starting: string) =>
 			store.budget.envelopes.all.filter(

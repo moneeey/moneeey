@@ -103,16 +103,8 @@ export class BudgetStore extends MappedStore<IBudget> {
 		}
 	}
 
-	makeEnvelopes(starting: TDate, onProgress: (percentage: number) => void) {
-		// Pre-seed one envelope per budget for the period using the default
-		// currency so MobX has a concrete observable to render before
-		// `calculateRemaining` populates per-currency rows from matched
-		// transactions.
-		const defaultCurrency = this.moneeeyStore.config.main.default_currency;
-		for (const budget of this.all) {
-			this.envelopes.getEnvelope(budget, starting, defaultCurrency);
-		}
-		this.envelopes.calculateRemaining(onProgress);
+	seedEnvelopes(starting: TDate) {
+		this.envelopes.seedMonth(starting);
 	}
 
 	findBudgetsFor(tags: string[]) {
