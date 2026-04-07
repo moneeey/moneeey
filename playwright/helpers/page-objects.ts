@@ -65,10 +65,14 @@ export function Select(page: Page, testId: string, index = 0) {
 			// Retry the whole pick-or-create loop — the react-select's display
 			// value can lag behind the MobX store during persistence re-renders.
 			await expect(async () => {
+				// If the value already matches, nothing to do.
+				const current = await currentValue().catch(() => "");
+				if (current.includes(optionName)) return;
+
 				await open();
 				const option = () => findMenuItem(optionName, false);
 				if ((await option().count()) > 0) {
-					await this.choose(optionName, false);
+					await option().click({ timeout: 5000 });
 				} else {
 					await createNew(optionName);
 				}
