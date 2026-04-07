@@ -789,6 +789,13 @@ export default {
 			hi: "खोज मानदंड",
 			cn: "搜索条件",
 		},
+		example_transactions: {
+			en: "Example transactions",
+			pt: "Transações de exemplo",
+			es: "Transacciones de ejemplo",
+			hi: "उदाहरण लेनदेन",
+			cn: "示例交易",
+		},
 		save: {
 			en: "Save",
 			pt: "Salvar",

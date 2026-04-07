@@ -85,7 +85,7 @@ const BudgetEditor = ({
 						setEditing({ ...editing, tags: [...new_tags] })
 					}
 				/>
-				<label>{Messages.menu.transactions}</label>
+				<label>{Messages.budget.example_transactions}</label>
 				<ExampleTransactions searchTags={editing.tags} />
 				<Space>
 					<SecondaryButton onClick={onClose}>
