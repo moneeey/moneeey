@@ -97,10 +97,14 @@ const Menu = observer(
 
 		const allRunningBalances = Array.from(runningBalances.values()).join("_");
 
+		const isMobile = () => window.innerWidth < 768;
+
 		const routeLink = (url: string) => ({
 			onClick: () => {
 				navigation.navigate(url);
-				setExpanded(false);
+				if (isMobile()) {
+					setExpanded(false);
+				}
 			},
 			isActive: activePath === url,
 		});
@@ -108,7 +112,9 @@ const Menu = observer(
 		const modalLink = (modal: NavigationModal) => ({
 			onClick: () => {
 				navigation.openModal(modal);
-				setExpanded(false);
+				if (isMobile()) {
+					setExpanded(false);
+				}
 			},
 			isActive: navigation.modal === modal,
 		});
@@ -311,9 +317,13 @@ const Content = ({
 );
 
 export default observer(function AppMenu() {
-	const [expanded, setExpanded] = useState(
-		getStorage("menu_expanded", "true", StorageKind.PERMANENT) === "true",
-	);
+	const [expanded, setExpanded] = useState(() => {
+		const stored = getStorage("menu_expanded", "", StorageKind.PERMANENT);
+		if (stored !== "") {
+			return stored === "true";
+		}
+		return window.innerWidth >= 768;
+	});
 	useEffect(() => {
 		setStorage("menu_expanded", String(expanded), StorageKind.PERMANENT);
 	}, [expanded]);
