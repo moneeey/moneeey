@@ -148,8 +148,7 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 		store.budget.seedEnvelopes("2024-01-01");
 
 		const januaryEnvelopesForB1 = store.budget.envelopes.all.filter(
-			(env) =>
-				env.budget_uuid === "b1" && env.starting === "2024-01-01",
+			(env) => env.budget_uuid === "b1" && env.starting === "2024-01-01",
 		);
 
 		expect(januaryEnvelopesForB1).toHaveLength(2);

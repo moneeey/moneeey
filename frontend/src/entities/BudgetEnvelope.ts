@@ -123,8 +123,7 @@ function computeEnvelopes(
 		if (!env) {
 			const allocated =
 				budget.envelopes.find(
-					(e) =>
-						e.starting === starting && e.currency_uuid === currency_uuid,
+					(e) => e.starting === starting && e.currency_uuid === currency_uuid,
 				)?.allocated || 0;
 			env = {
 				budget_uuid: budget.budget_uuid,
@@ -241,11 +240,7 @@ export class BudgetEnvelope implements IBaseEntity {
 
 	moneeeyStore: MoneeeyStore;
 
-	constructor(
-		moneeeyStore: MoneeeyStore,
-		data: EnvelopeData,
-		rev: string,
-	) {
+	constructor(moneeeyStore: MoneeeyStore, data: EnvelopeData, rev: string) {
 		this.moneeeyStore = moneeeyStore;
 		this.budget_uuid = data.budget_uuid;
 		this.currency_uuid = data.currency_uuid;
@@ -364,8 +359,7 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 	merge(item: BudgetEnvelope, _options?: { setUpdated: boolean }): void {
 		// Write allocation back to parent Budget — this triggers
 		// envelopeData recomputation via MobX dependency on budget.all.
-		const parentBudget =
-			this.moneeeyStore.budget.byUuid(item.budget_uuid);
+		const parentBudget = this.moneeeyStore.budget.byUuid(item.budget_uuid);
 		if (parentBudget) {
 			this.moneeeyStore.budget.setAllocation(
 				parentBudget,

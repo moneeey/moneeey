@@ -67,18 +67,14 @@ const BudgetPeriods = observer(
 );
 
 const BudgetPeriod = observer(
-	({
-		startingDate,
-		setEditing,
-		viewArchived,
-	}: PeriodProps) => {
+	({ startingDate, setEditing, viewArchived }: PeriodProps) => {
 		const Messages = useMessages();
 		const { budget, currencies } = useMoneeeyStore();
 		const starting = formatDate(startingDate);
 
 		useEffect(() => {
 			budget.seedEnvelopes(starting);
-		}, [starting]);
+		}, [budget, starting]);
 
 		return (
 			<Card
