@@ -1,14 +1,7 @@
 import { map, range } from "lodash";
 import { observer } from "mobx-react-lite";
-import {
-	type Dispatch,
-	type SetStateAction,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import { useEffect } from "react";
 
-import Loading from "../../components/Loading";
 import TableEditor from "../../components/TableEditor";
 import Card from "../../components/base/Card";
 import { TextTitle } from "../../components/base/Text";
@@ -37,7 +30,6 @@ const SHOW_MONTHS = 6;
 
 const BudgetPeriods = observer(
 	({ startingDate, setEditing, viewArchived }: PeriodProps) => {
-		const [progress, setProgress] = useState(0);
 		const { budget } = useMoneeeyStore();
 		const budgetIds = budget.ids.join("_");
 		const budgetArchives = budget.all
@@ -62,17 +54,11 @@ const BudgetPeriods = observer(
 							startOfMonthOffset(startingDate, offset),
 						)}_${budgetIds}_${budgetArchives}`}
 					>
-						<Loading
-							loading={progress !== 0 && progress !== 100}
-							progress={progress}
-						>
-							<BudgetPeriod
-								startingDate={startOfMonthOffset(startingDate, offset)}
-								setEditing={setEditing}
-								viewArchived={viewArchived}
-								setProgress={setProgress}
-							/>
-						</Loading>
+						<BudgetPeriod
+							startingDate={startOfMonthOffset(startingDate, offset)}
+							setEditing={setEditing}
+							viewArchived={viewArchived}
+						/>
 					</div>
 				))}
 			</div>
@@ -80,26 +66,16 @@ const BudgetPeriods = observer(
 	},
 );
 
-interface BudgetPeriodProps extends PeriodProps {
-	setProgress: Dispatch<SetStateAction<number>>;
-}
-
 const BudgetPeriod = observer(
-	({
-		startingDate,
-		setEditing,
-		viewArchived,
-		setProgress,
-	}: BudgetPeriodProps) => {
+	({ startingDate, setEditing, viewArchived }: PeriodProps) => {
 		const Messages = useMessages();
 		const { budget, currencies } = useMoneeeyStore();
-		const starting = useMemo(() => formatDate(startingDate), [startingDate]);
+		const starting = formatDate(startingDate);
 
 		useEffect(() => {
-			budget.makeEnvelopes(starting, (currentProgress) =>
-				setProgress(currentProgress),
-			);
-		}, [setProgress, starting, budget]);
+			budget.seedEnvelopes(starting);
+		}, [budget, starting]);
+
 		return (
 			<Card
 				className="h-full w-full"

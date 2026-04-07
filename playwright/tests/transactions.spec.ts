@@ -4,6 +4,7 @@ import {
 	Input,
 	OpenMenuItem,
 	REFERENCE_ACCOUNT_COLUMNS,
+	TIMEOUTS,
 	expect,
 	retrieveRowsData,
 	setDateField,
@@ -140,7 +141,10 @@ test("Transactions — swapping direction flips from/to accounts", async ({
 	await OpenMenuItem(page, "BRL MoneeeyCard");
 	await Input(page, "editorAmount", undefined, 3).change("128,00", "128");
 	await Input(page, "editorMemo", undefined, 3).change("Dinner (swapped)");
-	await Input(page, "editorRunning", undefined, 3).toHaveValue("-932");
+	await Input(page, "editorRunning", undefined, 3).toHaveValue(
+		"-932",
+		TIMEOUTS.compute,
+	);
 
 	// Verify both swaps in All Transactions
 	await OpenMenuItem(page, "All transactions");

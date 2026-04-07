@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { action, makeObservable } from "mobx";
 
 import { EntityType, type IBaseEntity, type TMonetary } from "../shared/Entity";
@@ -14,12 +13,12 @@ export type TBudgetUUID = string;
 
 interface IBudgetEnvelope {
 	starting: TDate;
+	currency_uuid: TCurrencyUUID;
 	allocated: TMonetary;
 }
 
 export interface IBudget extends IBaseEntity {
 	budget_uuid: TBudgetUUID;
-	currency_uuid: TCurrencyUUID;
 	name: string;
 	archived: boolean;
 	envelopes: IBudgetEnvelope[];
@@ -35,7 +34,6 @@ export class BudgetStore extends MappedStore<IBudget> {
 			factory: (id?: string) => ({
 				entity_type: EntityType.BUDGET,
 				name: "",
-				currency_uuid: "",
 				budget_uuid: id || uuid(),
 				tags: [],
 				envelopes: [],
@@ -56,48 +54,56 @@ export class BudgetStore extends MappedStore<IBudget> {
 		return this._envelopes;
 	}
 
-	getRealEnvelope(entity: IBudget, starting: TDate) {
+	getRealEnvelope(
+		entity: IBudget,
+		starting: TDate,
+		currency_uuid: TCurrencyUUID,
+	) {
 		const existing = entity.envelopes.find(
-			(envelope) => envelope.starting === starting,
+			(envelope) =>
+				envelope.starting === starting &&
+				envelope.currency_uuid === currency_uuid,
 		);
 		if (existing) {
 			return existing;
 		}
-		const envelope = { starting, allocated: 0 };
+		const envelope = { starting, currency_uuid, allocated: 0 };
 		entity.envelopes.push(envelope);
 
 		return envelope;
 	}
 
-	setAllocation(entity: IBudget, starting: TDate, allocated: number) {
+	setAllocation(
+		entity: IBudget,
+		starting: TDate,
+		currency_uuid: TCurrencyUUID,
+		allocated: number,
+	) {
 		const latest = this.byUuid(entity.budget_uuid);
 		if (latest) {
-			const realEnvelope = this.getRealEnvelope(latest, starting);
+			const realEnvelope = this.getRealEnvelope(
+				latest,
+				starting,
+				currency_uuid,
+			);
 			if (realEnvelope.allocated !== allocated) {
 				this.merge({
 					...latest,
 					envelopes: [
 						...latest.envelopes.filter(
-							(envelope) => envelope.starting !== starting,
+							(envelope) =>
+								envelope.starting !== starting ||
+								envelope.currency_uuid !== currency_uuid,
 						),
-						{ starting, allocated },
+						{ starting, currency_uuid, allocated },
 					],
 				});
 			}
 		}
 	}
 
-	makeEnvelopes(starting: TDate, onProgress: (percentage: number) => void) {
-		for (const budget of this.all) {
-			this.envelopes.getEnvelope(budget, starting);
-		}
-		this.envelopes.calculateRemaining(onProgress);
-	}
-
-	findBudgetsFor(tags: string[]) {
-		return this.all.filter((budget) => {
-			return _.some(budget.tags, (budgetTag) => _.includes(tags, budgetTag));
-		});
+	seedEnvelopes(starting: TDate) {
+		this.envelopes.seedMonth(starting);
 	}
 }
 

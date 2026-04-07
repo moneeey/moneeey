@@ -782,6 +782,20 @@ export default {
 			hi: "पिछला",
 			cn: "上一步",
 		},
+		search_criteria: {
+			en: "Search criteria",
+			pt: "Critérios de busca",
+			es: "Criterios de búsqueda",
+			hi: "खोज मानदंड",
+			cn: "搜索条件",
+		},
+		example_transactions: {
+			en: "Example transactions",
+			pt: "Transações de exemplo",
+			es: "Transacciones de ejemplo",
+			hi: "उदाहरण लेनदेन",
+			cn: "示例交易",
+		},
 		save: {
 			en: "Save",
 			pt: "Salvar",

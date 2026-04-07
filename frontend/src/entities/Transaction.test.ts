@@ -254,12 +254,12 @@ describe("TransactionStore", () => {
 			);
 		});
 
-		it("getAllTransactionTags combines account tags and transaction tags", () => {
+		it("getAllTransactionTags combines account tags and memo-derived tags", () => {
 			const tx = makeTx(store, {
 				transaction_uuid: "t1",
 				from_account: "bank",
 				to_account: "grocery",
-				tags: ["weekly"],
+				memo: "shopping #weekly",
 				date: "2024-01-01",
 			});
 			const tags = store.getAllTransactionTags(tx, accountsStore);
@@ -293,7 +293,7 @@ describe("TransactionStore", () => {
 				transaction_uuid: "t1",
 				from_account: "bank",
 				to_account: "grocery",
-				tags: ["special"],
+				memo: "#special",
 				date: "2024-03-01",
 			});
 			makeTx(store, {

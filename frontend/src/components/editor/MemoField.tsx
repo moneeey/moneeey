@@ -1,5 +1,6 @@
 import { observer } from "mobx-react";
 
+import { tagsForText } from "../../utils/Tags";
 import { Input } from "../base/Input";
 
 import { TagsMemo } from "../Tags";
@@ -10,11 +11,6 @@ import {
 	type FieldRenderProps,
 	readOnlyForFieldAndEntity,
 } from "./FieldDef";
-
-const tagsForText = (text: string): string[] =>
-	Array.from(text.matchAll(/[^#]?(#\w+)/g)).map((m: RegExpMatchArray) =>
-		m[1].replace("#", ""),
-	);
 
 export default function <TEntity>({
 	read,

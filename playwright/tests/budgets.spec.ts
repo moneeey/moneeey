@@ -6,7 +6,6 @@ import {
 	Select,
 	budgetEditorSave,
 	expect,
-	mostUsedCurrencies,
 	retrieveRowsData,
 	test,
 	updateOnAllTransactions,
@@ -34,8 +33,8 @@ test("Budget lifecycle — create, allocate, open editor, view archived toggle",
 
 	// Navigate to Budget and create two budgets
 	await OpenMenuItem(page, "Budget");
-	await budgetEditorSave(page, "Fuel", mostUsedCurrencies[0], "Gas Station");
-	await budgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
+	await budgetEditorSave(page, "Fuel", "Gas Station");
+	await budgetEditorSave(page, "Food", "Bakery");
 
 	// Budgets are sorted alphabetically: Food (0), Fuel (1)
 	await expect(page.getByText("R$").first()).toBeVisible();
@@ -73,7 +72,7 @@ test("Budget allocation can be set to zero", async ({ wizardPage: page }) => {
 	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "50");
 
 	await OpenMenuItem(page, "Budget");
-	await budgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
+	await budgetEditorSave(page, "Food", "Bakery");
 	await expect(page.getByText("R$").first()).toBeVisible();
 
 	const food = BudgetRow(page, 0);
@@ -100,7 +99,7 @@ test("Archived budgets have a visual indicator when shown", async ({
 	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "50");
 
 	await OpenMenuItem(page, "Budget");
-	await budgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
+	await budgetEditorSave(page, "Food", "Bakery");
 	await expect(page.getByText("R$").first()).toBeVisible();
 
 	// Archive the budget via its editor
@@ -140,7 +139,7 @@ test("Budget usage recalculates when tags change", async ({
 
 	// Create a budget tracking "Bakery" → used should settle at 100
 	await OpenMenuItem(page, "Budget");
-	await budgetEditorSave(page, "Food", mostUsedCurrencies[0], "Bakery");
+	await budgetEditorSave(page, "Food", "Bakery");
 	const food = BudgetRow(page, 0);
 	await food.expectUsed("100");
 
