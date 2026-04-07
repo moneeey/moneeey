@@ -5,7 +5,6 @@ import {
 	Select,
 	budgetEditorSave,
 	clickMenuByTestId,
-	mostUsedCurrencies,
 	test,
 	updateOnAllTransactions,
 } from "../helpers";
@@ -61,12 +60,7 @@ test("Multi-currency transactions in both directions with budget tracking", asyn
 	await clickMenuByTestId(page, "appMenu_budget");
 
 	// Gas Station budget (same-currency) — used = 200
-	await budgetEditorSave(
-		page,
-		"Gas Budget",
-		mostUsedCurrencies[0],
-		"Gas Station",
-	);
+	await budgetEditorSave(page, "Gas Budget", "Gas Station");
 	const gas = BudgetRow(page, 0);
 	await gas.allocate("300");
 	await gas.expectUsed("200");
@@ -75,12 +69,7 @@ test("Multi-currency transactions in both directions with budget tracking", asyn
 	// Banco Moneeey-tagged budget — matches Gas Station (200) only
 	// (The multi-currency BRL→BTC transaction's from_value is NOT counted here
 	// because budget used-calculation excludes cross-currency from the budget.)
-	await budgetEditorSave(
-		page,
-		"Crypto Expenses",
-		mostUsedCurrencies[0],
-		"Banco Moneeey",
-	);
+	await budgetEditorSave(page, "Crypto Expenses", "Banco Moneeey");
 	const crypto = BudgetRow(page, 1);
 	await crypto.allocate("500");
 	await crypto.expectUsed("200");

@@ -56,11 +56,10 @@ export async function completeLandingWizard(page: Page) {
 	await expect(page.getByText("Dashboard")).toBeVisible();
 }
 
-/** Opens budget editor, fills name/currency/tag, saves. */
+/** Opens budget editor, fills name/tag, saves. */
 export async function budgetEditorSave(
 	page: Page,
 	name: string,
-	currency: string,
 	tag: string,
 	expectedTags?: string[],
 ) {
@@ -68,10 +67,6 @@ export async function budgetEditorSave(
 
 	const budgetEditor = page.getByTestId("budgetEditorDrawer");
 	await Input(page, "budgetName", budgetEditor).change(name);
-
-	const budgetCurrency = Select(page, "budgetCurrency");
-	expect(await budgetCurrency.options()).toEqual(mostUsedCurrencies);
-	await budgetCurrency.choose(currency);
 
 	const budgetTags = Select(page, "budgetTags");
 	if (expectedTags) {

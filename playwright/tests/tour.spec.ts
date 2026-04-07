@@ -4,7 +4,6 @@ import {
 	completeLandingWizard,
 	dismissNotification,
 	expect,
-	mostUsedCurrencies,
 	test,
 	tourNext,
 	updateOnAllTransactions,
@@ -56,20 +55,8 @@ test("Tour walkthrough", async ({ seededPage: page }) => {
 		"Initial balance BTC",
 		"MoneeeyCard",
 	];
-	await budgetEditorSave(
-		page,
-		"Gas",
-		mostUsedCurrencies[0],
-		"Gas Station",
-		tourExpectedTags,
-	);
-	await budgetEditorSave(
-		page,
-		"Bakery",
-		mostUsedCurrencies[0],
-		"Bakery",
-		tourExpectedTags,
-	);
+	await budgetEditorSave(page, "Gas", "Gas Station", tourExpectedTags);
+	await budgetEditorSave(page, "Bakery", "Bakery", tourExpectedTags);
 
 	// Allocate on budget and wait for calculated used/remaining
 	await expect(page.getByText("R$").first()).toBeVisible();
