@@ -782,6 +782,13 @@ export default {
 			hi: "पिछला",
 			cn: "上一步",
 		},
+		search_criteria: {
+			en: "Search criteria",
+			pt: "Critérios de busca",
+			es: "Criterios de búsqueda",
+			hi: "खोज मानदंड",
+			cn: "搜索条件",
+		},
 		save: {
 			en: "Save",
 			pt: "Salvar",

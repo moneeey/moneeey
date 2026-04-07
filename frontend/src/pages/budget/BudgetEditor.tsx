@@ -70,11 +70,11 @@ const BudgetEditor = ({
 					value={editing.name}
 					onChange={(name) => setEditing({ ...editing, name })}
 				/>
-				<label>{Messages.util.tags}</label>
+				<label>{Messages.budget.search_criteria}</label>
 				<MultiSelect
 					containerArea
 					testId="budgetTags"
-					placeholder={Messages.util.tags}
+					placeholder={Messages.budget.search_criteria}
 					options={tags.all.map((t) => ({ label: t, value: t }))}
 					value={editing.tags}
 					onCreate={(tagName) => {
