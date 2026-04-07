@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { action, makeObservable } from "mobx";
 
 import { EntityType, type IBaseEntity, type TMonetary } from "../shared/Entity";
@@ -105,12 +104,6 @@ export class BudgetStore extends MappedStore<IBudget> {
 
 	seedEnvelopes(starting: TDate) {
 		this.envelopes.seedMonth(starting);
-	}
-
-	findBudgetsFor(tags: string[]) {
-		return this.all.filter((budget) => {
-			return _.some(budget.tags, (budgetTag) => _.includes(tags, budgetTag));
-		});
 	}
 }
 

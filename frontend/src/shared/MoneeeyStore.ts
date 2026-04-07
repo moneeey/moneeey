@@ -53,11 +53,6 @@ export default class MoneeeyStore {
 		this.persistence.monitor(this.config);
 		this.management = new ManagementStore(this.persistence);
 
-		this.accounts.onStoresReady();
-		this.transactions.onStoresReady();
-		this.currencies.onStoresReady();
-		this.budget.onStoresReady();
-		this.budget.envelopes.onStoresReady();
 	}
 
 	async load() {
