@@ -22,7 +22,7 @@ const VirtualizedGrid =
 	GenericVirtualizedGrid as unknown as ComponentType<VariableSizeGridProps>;
 
 const SCROLLBAR_WIDTH = 24;
-const ROW_HEIGHT = 20;
+const ROW_HEIGHT = 24;
 
 export type Row = {
 	entityId: string;
@@ -170,11 +170,11 @@ const ContentCell = observer(
 			: "";
 		const clzz = `${bgColor} ${columnClass}`;
 		return row ? (
-			<span key={`${clzz}_${row.entityId}`} style={style} className={clzz}>
+			<div key={`${clzz}_${row.entityId}`} style={style} className={clzz}>
 				<Renderer entityId={row.entityId} />
-			</span>
+			</div>
 		) : (
-			<span style={style} />
+			<div style={style} />
 		);
 	},
 );
