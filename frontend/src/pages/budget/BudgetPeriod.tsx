@@ -49,7 +49,7 @@ const BudgetPeriods = observer(
 			<div className="flex flex-row flex-wrap gap-4">
 				{map(range(0, SHOW_MONTHS), (offset) => (
 					<div
-						className={`grow w-[26em] ${height} pb-4`}
+						className={`grow w-[26em] max-w-[calc(50%-0.5rem)] ${height} pb-4`}
 						key={`budgetPeriod_${viewArchived}_${formatDate(
 							startOfMonthOffset(startingDate, offset),
 						)}_${budgetIds}_${budgetArchives}`}
