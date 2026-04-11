@@ -85,7 +85,13 @@ const AppContent = observer(() => {
 	);
 });
 
-const BootGate = observer(() => {
+/**
+ * Renders the language selector → encryption gate → unlocked app. This is the
+ * boot path users take for every non-landing route. `/` stays outside this
+ * gate so that the marketing LandingPage (with its own language picker and
+ * "Go to Moneeey" button) is reachable without unlocking anything.
+ */
+const AppBoot = observer(() => {
 	const { currentLanguage } = useLanguageSwitcher();
 	const [moneeeyStore, setMoneeeyStore] = useState<MoneeeyStore | null>(null);
 
@@ -105,10 +111,7 @@ const BootGate = observer(() => {
 
 	return (
 		<MoneeeyStoreProvider value={moneeeyStore}>
-			<Routes>
-				<Route path="/" element={<LandingPage />} />
-				<Route path="*" element={<AppContent />} />
-			</Routes>
+			<AppContent />
 		</MoneeeyStoreProvider>
 	);
 });
@@ -117,7 +120,10 @@ export const App = () => {
 	return (
 		<HashRouter>
 			<MessagesProvider>
-				<BootGate />
+				<Routes>
+					<Route path="/" element={<LandingPage />} />
+					<Route path="*" element={<AppBoot />} />
+				</Routes>
 			</MessagesProvider>
 		</HashRouter>
 	);

@@ -132,7 +132,14 @@ export const openEncryptedDatabase = async (
 	let db: PouchDB.Database;
 	try {
 		db = await createEncryptedPouchDB(passphrase);
-	} catch {
+	} catch (err) {
+		// Setup should never fail at the comdb layer — any failure is a bug
+		// we want to see, not a "wrong passphrase". Only unlock is allowed to
+		// collapse comdb errors into the user-facing wrong-passphrase code.
+		if (mode === "setup") {
+			console.error("createEncryptedPouchDB failed during setup", err);
+			throw err;
+		}
 		throw new Error("wrong_passphrase");
 	}
 	if (mode === "unlock") {
