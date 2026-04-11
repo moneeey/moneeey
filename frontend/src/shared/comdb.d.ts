@@ -4,7 +4,7 @@ declare module "comdb" {
 }
 
 declare namespace PouchDB {
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	// biome-ignore lint/complexity/noBannedTypes: upstream PouchDB.Database uses `{}` for its Content generic default, and interface augmentation must match the original signature exactly.
 	interface Database<Content extends {} = {}> {
 		setPassword(
 			password: string,

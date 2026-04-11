@@ -1,6 +1,7 @@
-import PouchDB from "pouchdb";
 import { action, makeObservable, observable } from "mobx";
+import PouchDB from "pouchdb";
 
+import { StorageKind, setStorage } from "../utils/Utils";
 import Logger from "./Logger";
 import {
 	CONFIG_DOC_ID,
@@ -9,7 +10,6 @@ import {
 	createEncryptedPouchDB,
 	verifyConfigCanary,
 } from "./Persistence";
-import { StorageKind, setStorage } from "../utils/Utils";
 
 export const ENCRYPTION_INITIALIZED_KEY = "moneeey.encryption.initialized";
 export const MIN_PASSPHRASE_LENGTH = 12;

@@ -9,6 +9,7 @@ import {
 	CurrencyDollarIcon,
 	EnvelopeIcon,
 	HomeIcon,
+	LockClosedIcon,
 	PlayCircleIcon,
 	QuestionMarkCircleIcon,
 	StopCircleIcon,
@@ -63,8 +64,14 @@ const Menu = observer(
 		expanded: boolean;
 	}) => {
 		const Messages = useMessages();
-		const { navigation, accounts, currencies, persistence, transactions } =
-			useMoneeeyStore();
+		const {
+			navigation,
+			accounts,
+			currencies,
+			persistence,
+			transactions,
+			encryption,
+		} = useMoneeeyStore();
 		const { all: allTransactions } = transactions;
 
 		const allAccountsKey = allTransactions
@@ -255,6 +262,13 @@ const Menu = observer(
 						label: Messages.menu.start_tour,
 						icon: <QuestionMarkCircleIcon />,
 						...modalLink(NavigationModal.LANDING),
+					},
+					{
+						key: "lock",
+						label: Messages.menu.lock,
+						icon: <LockClosedIcon />,
+						onClick: () => encryption.lock(),
+						isActive: false,
 					},
 				]}
 			/>

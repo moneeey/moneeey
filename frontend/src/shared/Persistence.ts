@@ -1,7 +1,7 @@
+import comdb from "comdb";
 import { debounce, isArray, isEmpty, isObject, omit } from "lodash";
 import { action, makeObservable, observable, observe, toJS } from "mobx";
 import PouchDB from "pouchdb";
-import comdb from "comdb";
 import memoryAdapter from "pouchdb-adapter-memory";
 
 import type { SyncConfig } from "../entities/Config";

@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-import { OkButton } from "../base/Button";
-import MinimalBasicScreen from "../base/MinimalBaseScreen";
 import {
 	ENCRYPTION_INITIALIZED_KEY,
 	MIN_PASSPHRASE_LENGTH,
@@ -9,6 +7,8 @@ import {
 } from "../../shared/EncryptionStore";
 import useMessages from "../../utils/Messages";
 import { StorageKind, getStorage, setStorage } from "../../utils/Utils";
+import { OkButton } from "../base/Button";
+import MinimalBasicScreen from "../base/MinimalBaseScreen";
 
 type Props = {
 	onUnlocked: (db: PouchDB.Database) => void;
@@ -90,7 +90,6 @@ export default function EncryptionGate({ onUnlocked }: Props) {
 					data-testid="encryptionPassphrase"
 					type="password"
 					autoComplete={isSetup ? "new-password" : "current-password"}
-					autoFocus
 					placeholder={Messages.encryption.passphrase_placeholder}
 					value={passphrase}
 					disabled={busy}
@@ -122,9 +121,7 @@ export default function EncryptionGate({ onUnlocked }: Props) {
 				</p>
 			)}
 			{busy && (
-				<p className="text-sm opacity-80">
-					{Messages.encryption.unlocking}
-				</p>
+				<p className="text-sm opacity-80">{Messages.encryption.unlocking}</p>
 			)}
 			<OkButton
 				disabled={busy || passphrase.length === 0}
