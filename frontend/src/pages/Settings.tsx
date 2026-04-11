@@ -110,10 +110,7 @@ export default function Settings() {
 				password: "",
 				enabled: false,
 			});
-			// Extract the underlying PouchDB via the persistence store.
-			const db = (
-				moneeeyStore.persistence as unknown as { db: PouchDB.Database }
-			).db;
+			const db = moneeeyStore.persistence.getDb();
 			await moneeeyStore.encryption.changePassphrase(db, newPassphrase);
 			// changePassphrase triggers a reload; this line is unreachable.
 		} catch (err) {

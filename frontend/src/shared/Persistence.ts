@@ -212,6 +212,12 @@ export default class PersistenceStore {
 		new PersistenceMonitor(this, this.logger, store);
 	}
 
+	/** Exposes the underlying PouchDB instance for flows that need direct
+	 * access (e.g. re-encrypting all documents under a new passphrase). */
+	getDb() {
+		return this.db;
+	}
+
 	async fetchAllDocs() {
 		const pouchDocs = await this.db.allDocs({
 			include_docs: true,
