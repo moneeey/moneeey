@@ -260,6 +260,32 @@ export default class PersistenceStore {
 		this.scheduleCommit();
 	}
 
+	/**
+	 * Drains any pending debounced commits + refetches. MoneeeyStore.load()
+	 * uses this before revealing the UI so the in-memory MappedStores are
+	 * consistent with the persisted _rev chain before the user can start
+	 * mutating documents. Without it, a fast user click (currency pick, etc.)
+	 * can race the initial commit and submit an update with a stale
+	 * (undefined) `_rev`, which PouchDB rejects as 409 on the memory DB even
+	 * though it may already have applied to the encrypted mirror.
+	 */
+	async flush() {
+		// Cancel any pending debounce and run doCommit directly. doCommit
+		// schedules refetches via `scheduleRefetch`, so we cancel + run that
+		// one directly too. One loop catches the case where refetch itself
+		// enqueues further commits (shouldn't happen with the current
+		// mergeBypassingMonitor, but be defensive).
+		for (let i = 0; i < 3 && this.commitables.size > 0; i += 1) {
+			this.scheduleCommit.cancel();
+			await this.doCommit();
+			this.scheduleRefetch.cancel();
+			await this.doRefetch();
+		}
+		// Final drain in case only refetches were pending.
+		this.scheduleRefetch.cancel();
+		await this.doRefetch();
+	}
+
 	notifyDocument(doc: PouchDocument) {
 		const listeners = this.watchers.get(doc.entity_type) ?? [];
 		for (const watcher of listeners) {

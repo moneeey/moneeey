@@ -98,9 +98,6 @@ const AppBoot = observer(() => {
 	const onUnlocked = useCallback(async (db: PouchDB.Database) => {
 		const store = new MoneeeyStore(() => db);
 		await store.load();
-		// Debug hook: expose the store on window so Playwright probes can
-		// inspect MobX state. Harmless in production (nothing reads it).
-		(window as unknown as { __moneeey?: MoneeeyStore }).__moneeey = store;
 		setMoneeeyStore(store);
 	}, []);
 

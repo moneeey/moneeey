@@ -63,6 +63,12 @@ export default class MoneeeyStore {
 		await this.persistence.load();
 		this.config.init();
 		this.currencies.addDefaults();
+		// Drain the initial Config + currencies commit chain before revealing
+		// the UI. See `PersistenceStore.flush` for why — without it, a fast
+		// user click can submit an update based on a Config doc whose `_rev`
+		// hasn't been refetched yet, which PouchDB rejects as a 409 and
+		// silently rolls back.
+		await this.persistence.flush();
 		const { couchSync } = this.config.main;
 		if (couchSync?.enabled) {
 			this.persistence.sync(couchSync);
