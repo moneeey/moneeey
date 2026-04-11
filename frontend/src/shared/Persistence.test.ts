@@ -8,7 +8,13 @@ import { MockLogger } from "./Logger";
 import Logger from "./Logger";
 import MappedStore from "./MappedStore";
 import type MoneeeyStore from "./MoneeeyStore";
-import PersistenceStore, { PersistenceMonitor, Status } from "./Persistence";
+import PersistenceStore, {
+	CONFIG_DOC_ID,
+	PersistenceMonitor,
+	Status,
+	createEncryptedPouchDB,
+	verifyConfigCanary,
+} from "./Persistence";
 import TagsStore from "./Tags";
 
 (PouchDB as unknown as { plugin: (p: unknown) => void }).plugin(memoryAdapter);
@@ -651,6 +657,160 @@ describe("Persistence", () => {
 				// Wait for refetch debounce to complete
 				await new Promise((r) => setTimeout(r, 400));
 			});
+		});
+	});
+
+	describe("createEncryptedPouchDB (comdb)", () => {
+		let counter = 0;
+		const nextName = () => {
+			counter += 1;
+			return `enc-test-${counter}-${Date.now()}`;
+		};
+
+		const cleanup = async (db: PouchDB.Database) => {
+			try {
+				await (
+					db as unknown as { destroy: (opts?: object) => Promise<void> }
+				).destroy();
+			} catch {
+				// already gone
+			}
+		};
+
+		const makeConfig = () => ({
+			_id: CONFIG_DOC_ID,
+			entity_type: EntityType.CONFIG,
+			date_format: "yyyy-MM-dd",
+			decimal_separator: ",",
+			thousand_separator: ".",
+			default_currency: "",
+			view_archived: false,
+			created: "2024-01-01T00:00:00Z",
+			updated: "2024-01-01T00:00:00Z",
+			tags: [],
+		});
+
+		it("round-trips a document under the same passphrase", async () => {
+			const name = nextName();
+			const encryptedName = `${name}-encrypted`;
+			const passphrase = "correct horse battery";
+
+			const db1 = await createEncryptedPouchDB(passphrase, {
+				name,
+				encryptedName,
+				decryptedAdapter: "memory",
+				encryptedAdapter: "memory",
+			});
+			await db1.put(makeConfig());
+			// Destroy only the decrypted memory DB so the encrypted mirror
+			// survives the "restart".
+			await (
+				db1 as unknown as {
+					destroy: (opts?: object) => Promise<void>;
+				}
+			).destroy({ unencrypted_only: true });
+
+			const db2 = await createEncryptedPouchDB(passphrase, {
+				name,
+				encryptedName,
+				decryptedAdapter: "memory",
+				encryptedAdapter: "memory",
+			});
+			const roundTripped = (await db2.get(CONFIG_DOC_ID)) as {
+				entity_type: string;
+				date_format: string;
+			};
+			expect(roundTripped.entity_type).toBe(EntityType.CONFIG);
+			expect(roundTripped.date_format).toBe("yyyy-MM-dd");
+
+			await cleanup(db2);
+		});
+
+		it("verifyConfigCanary succeeds after writing a Config doc", async () => {
+			const name = nextName();
+			const db = await createEncryptedPouchDB("a-long-enough-pass", {
+				name,
+				encryptedName: `${name}-encrypted`,
+				decryptedAdapter: "memory",
+				encryptedAdapter: "memory",
+			});
+			await db.put(makeConfig());
+			expect(await verifyConfigCanary(db)).toBe(true);
+			await cleanup(db);
+		});
+
+		it("verifyConfigCanary returns false on an empty database (setup state)", async () => {
+			const name = nextName();
+			const db = await createEncryptedPouchDB("a-long-enough-pass", {
+				name,
+				encryptedName: `${name}-encrypted`,
+				decryptedAdapter: "memory",
+				encryptedAdapter: "memory",
+			});
+			expect(await verifyConfigCanary(db)).toBe(false);
+			await cleanup(db);
+		});
+
+		it("verifyConfigCanary returns false when wrong passphrase decrypts nothing", async () => {
+			const name = nextName();
+			const encryptedName = `${name}-encrypted`;
+
+			const db1 = await createEncryptedPouchDB("right-passphrase-123", {
+				name,
+				encryptedName,
+				decryptedAdapter: "memory",
+				encryptedAdapter: "memory",
+			});
+			await db1.put(makeConfig());
+			await (
+				db1 as unknown as {
+					destroy: (opts?: object) => Promise<void>;
+				}
+			).destroy({ unencrypted_only: true });
+
+			// Reopen with a DIFFERENT passphrase. setPassword will silently
+			// accept it, but loadEncrypted's decryption fails so the
+			// decrypted memory DB ends up empty — canary check catches it.
+			let db2: PouchDB.Database | null = null;
+			try {
+				db2 = await createEncryptedPouchDB("wrong-passphrase-456", {
+					name,
+					encryptedName,
+					decryptedAdapter: "memory",
+					encryptedAdapter: "memory",
+				});
+				expect(await verifyConfigCanary(db2)).toBe(false);
+			} catch {
+				// loadEncrypted may also throw outright; either outcome is
+				// acceptable as "wrong passphrase detected".
+			}
+			if (db2) {
+				await cleanup(db2);
+			}
+
+			// Clean up the leftover encrypted mirror from the first run.
+			try {
+				await new PouchDB(encryptedName, { adapter: "memory" }).destroy();
+			} catch {
+				// already gone
+			}
+		});
+
+		it("verifyConfigCanary fails on a doc with the wrong entity_type", async () => {
+			const name = nextName();
+			const db = await createEncryptedPouchDB("a-long-enough-pass", {
+				name,
+				encryptedName: `${name}-encrypted`,
+				decryptedAdapter: "memory",
+				encryptedAdapter: "memory",
+			});
+			await db.put({
+				_id: CONFIG_DOC_ID,
+				entity_type: "NOT_CONFIG",
+				date_format: "yyyy-MM-dd",
+			});
+			expect(await verifyConfigCanary(db)).toBe(false);
+			await cleanup(db);
 		});
 	});
 

@@ -27,20 +27,38 @@ export const LOCAL_DB_NAME = "moneeey";
 export const ENCRYPTED_DB_NAME = "moneeey-encrypted";
 export const CONFIG_DOC_ID = `${EntityType.CONFIG}-CONFIG`;
 
+export type EncryptedPouchDBOptions = {
+	name?: string;
+	encryptedName?: string;
+	decryptedAdapter?: string;
+	encryptedAdapter?: string;
+};
+
 /**
  * Creates a comdb-encrypted PouchDB pair: an in-memory decrypted database
  * (the one the app reads and writes) backed by an on-disk encrypted mirror.
  * The encrypted mirror is what syncs to CouchDB, so neither IndexedDB nor the
  * remote server ever holds plaintext.
  *
- * On a wrong passphrase against an existing encrypted database, garbados-crypt
- * fails inside setPassword and this function rejects.
+ * On a wrong passphrase against an existing encrypted database, the canary
+ * check in `openEncryptedDatabase` catches it — `setPassword` itself accepts
+ * any string and only the first decryption attempt (via `loadEncrypted` or
+ * `get`) actually exercises the key.
  */
 export const createEncryptedPouchDB = async (
 	passphrase: string,
+	{
+		name = LOCAL_DB_NAME,
+		encryptedName = ENCRYPTED_DB_NAME,
+		decryptedAdapter = "memory",
+		encryptedAdapter,
+	}: EncryptedPouchDBOptions = {},
 ): Promise<PouchDB.Database> => {
-	const db = new PouchDB(LOCAL_DB_NAME, { adapter: "memory" });
-	await db.setPassword(passphrase, { name: ENCRYPTED_DB_NAME });
+	const db = new PouchDB(name, { adapter: decryptedAdapter });
+	await db.setPassword(passphrase, {
+		name: encryptedName,
+		opts: encryptedAdapter ? { adapter: encryptedAdapter } : undefined,
+	});
 	await db.loadEncrypted();
 	return db;
 };
