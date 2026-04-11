@@ -12,7 +12,7 @@ import {
 } from "./Persistence";
 
 export const ENCRYPTION_INITIALIZED_KEY = "moneeey.encryption.initialized";
-export const MIN_PASSPHRASE_LENGTH = 12;
+export const MIN_PASSPHRASE_LENGTH = 8;
 
 export enum EncryptionStatus {
 	LOCKED = "LOCKED",

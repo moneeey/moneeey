@@ -1439,11 +1439,11 @@ export default {
 			cn: "解锁",
 		},
 		passphrase_too_short: {
-			en: "Passphrase must be at least 12 characters long.",
-			pt: "A senha deve ter pelo menos 12 caracteres.",
-			es: "La contraseña debe tener al menos 12 caracteres.",
-			hi: "पासफ्रेज़ कम से कम 12 अक्षरों का होना चाहिए।",
-			cn: "密码长度必须至少为 12 个字符。",
+			en: "Passphrase must be at least 8 characters long.",
+			pt: "A senha deve ter pelo menos 8 caracteres.",
+			es: "La contraseña debe tener al menos 8 caracteres.",
+			hi: "पासफ्रेज़ कम से कम 8 अक्षरों का होना चाहिए।",
+			cn: "密码长度必须至少为 8 个字符。",
 		},
 		passphrase_mismatch: {
 			en: "Passphrases do not match.",

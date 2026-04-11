@@ -44,7 +44,7 @@ test.describe("Encryption gate", () => {
 		expect(flag).toBe("1");
 	});
 
-	test("rejects a passphrase shorter than 12 characters", async ({
+	test("rejects a passphrase shorter than 8 characters", async ({
 		seededPage: page,
 	}) => {
 		await pickLanguageEn(page);
@@ -54,7 +54,7 @@ test.describe("Encryption gate", () => {
 		await page.getByTestId("ok-button").click();
 
 		await expect(page.getByTestId("encryptionError")).toContainText(
-			"at least 12",
+			"at least 8",
 		);
 		// Still on the gate
 		await expect(page.getByTestId("defaultCurrencySelector")).not.toBeVisible();
