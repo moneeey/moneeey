@@ -31,8 +31,8 @@ export default {
 			},
 		},
 		fontFamily: {
-			sans: "PTSerif",
-			mono: "PTMono",
+			sans: "'PTSerif', Georgia, 'Times New Roman', serif",
+			mono: "'PTMono', 'Courier New', Courier, monospace",
 		},
 	},
 	plugins: [],

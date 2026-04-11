@@ -6,7 +6,7 @@ import type { ClassNameType } from "../../utils/Utils";
 import type { WithDataTestId } from "./Common";
 
 export const BaseInputClzz: ClassNameType =
-	"w-full color-inherit bg-transparent" as const;
+	"w-full color-inherit bg-transparent outline-none" as const;
 
 export type InputProps<T> = WithDataTestId & {
 	className?: string;
@@ -45,8 +45,10 @@ export const InputContainer = ({
 	return (
 		<div
 			data-testid={`inputContainer${testId}`}
-			className={`${baseClassname || BaseInputClzz} flex ${
-				isError ? "border border-red-400" : ""
+			className={`${baseClassname || BaseInputClzz} flex h-full focus-within:ring-1 focus-within:ring-inset ${
+				isError
+					? "border border-red-400 focus-within:ring-red-400"
+					: "focus-within:ring-primary-500"
 			}
       ${readOnly ? "opacity-85" : ""}
       ${containerArea ? "!bg-background-800 rounded-md p-2" : ""}
