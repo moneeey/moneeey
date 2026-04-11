@@ -2,9 +2,38 @@ import { type Locator, type Page, expect } from "@playwright/test";
 import { mostUsedCurrencies } from "./fixtures";
 import { Input, Select } from "./page-objects";
 
+/** Default passphrase used by the wizard for all E2E tests. */
+export const E2E_PASSPHRASE = "playwright-test-pass-123";
+
+/** Types passphrase + confirmation into the setup form and submits. */
+export async function completeEncryptionSetup(
+	page: Page,
+	passphrase: string = E2E_PASSPHRASE,
+) {
+	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
+	await page.getByTestId("encryptionPassphrase").fill(passphrase);
+	await page.getByTestId("encryptionPassphraseConfirm").fill(passphrase);
+	await page.getByTestId("ok-button").click();
+}
+
+/** Types passphrase into the unlock form and submits. */
+export async function unlockWithPassphrase(
+	page: Page,
+	passphrase: string = E2E_PASSPHRASE,
+) {
+	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
+	// In unlock mode the confirm field is not rendered.
+	await expect(
+		page.getByTestId("encryptionPassphraseConfirm"),
+	).toHaveCount(0);
+	await page.getByTestId("encryptionPassphrase").fill(passphrase);
+	await page.getByTestId("ok-button").click();
+}
+
 /**
- * Walks through the landing wizard: language → default currency → 3 initial
- * accounts. Leaves the tour modal open (call closeTourModal to dismiss).
+ * Walks through the landing wizard: language → encryption setup → default
+ * currency → 3 initial accounts. Leaves the tour modal open (call
+ * closeTourModal to dismiss).
  */
 export async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("minimalScreenTitle")).toContainText("Moneeey");
@@ -19,6 +48,11 @@ export async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("ok-button")).toContainText("Go to Moneeey");
 
 	await page.getByTestId("ok-button").click();
+
+	// Encryption setup screen — appears after language selection and must be
+	// cleared before the currency picker is rendered.
+	await completeEncryptionSetup(page);
+
 	await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible();
 	const defaultCurrencySelector = Select(page, "defaultCurrencySelector");
 	expect(await defaultCurrencySelector.options()).toEqual(mostUsedCurrencies);

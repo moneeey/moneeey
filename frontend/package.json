@@ -55,6 +55,7 @@
 		"ts-jest": "29.1.2",
 		"typescript": "5.8.2",
 		"vite": "5.2.12",
+		"vite-plugin-node-polyfills": "0.26.0",
 		"vite-plugin-pwa": "0.19.2"
 	}
 }

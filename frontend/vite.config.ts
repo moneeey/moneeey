@@ -1,5 +1,6 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
@@ -12,6 +13,13 @@ export default defineConfig({
 		chunkSizeWarningLimit: 32 * 1024 * 1024,
 	},
 	plugins: [
+		// pouchdb-adapter-memory transitively depends on levelup, which reaches
+		// into Node's `util.inherits` at require time. Without these polyfills
+		// the browser bundle crashes with `inherits2 is not a function`.
+		nodePolyfills({
+			include: ["util", "events", "stream", "buffer", "assert"],
+			globals: { Buffer: true, global: true, process: true },
+		}),
 		VitePWA({
 			registerType: "autoUpdate",
 			strategies: "generateSW",
