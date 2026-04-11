@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-import type PouchDB from "pouchdb";
-
 import { OkButton } from "../base/Button";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
 import {

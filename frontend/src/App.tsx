@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useCallback, useState } from "react";
 
 import { observer } from "mobx-react";
 
@@ -19,6 +19,7 @@ import MoneeeyTourProvider from "./components/tour/Tour";
 import { isEmpty } from "lodash";
 import LandingPage from "./components/LandingPage";
 import MinimalBasicScreen from "./components/base/MinimalBaseScreen";
+import EncryptionGate from "./components/tour/EncryptionGate";
 import InitialCurrencySelector, {
 	showInitialCurrencySelector,
 } from "./components/tour/InitialCurrencySelector";
@@ -26,7 +27,6 @@ import InitialLanguageSelector, {
 	showInitialLanguageSelector,
 } from "./components/tour/InitialLanguageSelector";
 import { NavigationModal } from "./shared/Navigation";
-import { PouchDBFactory } from "./shared/Persistence";
 import useMessages, {
 	MessagesProvider,
 	useLanguageSwitcher,
@@ -51,14 +51,6 @@ const AppLoaded = observer(() => {
 		accounts: { all: allAccounts },
 		navigation,
 	} = moneeeyStore;
-	const { currentLanguage } = useLanguageSwitcher();
-
-	if (showInitialLanguageSelector({ currentLanguage })) {
-		return <InitialLanguageSelector />;
-	}
-
-	// TODO: NewDB/MoneeySync/DBSync
-	//// Setup encryption
 
 	if (showInitialCurrencySelector({ default_currency })) {
 		return <InitialCurrencySelector />;
@@ -93,25 +85,39 @@ const AppContent = observer(() => {
 	);
 });
 
-export const App = () => {
-	const moneeeyStore = React.useMemo(
-		() => new MoneeeyStore(PouchDBFactory),
-		[],
+const BootGate = observer(() => {
+	const { currentLanguage } = useLanguageSwitcher();
+	const [moneeeyStore, setMoneeeyStore] = useState<MoneeeyStore | null>(null);
+
+	const onUnlocked = useCallback(async (db: PouchDB.Database) => {
+		const store = new MoneeeyStore(() => db);
+		await store.load();
+		setMoneeeyStore(store);
+	}, []);
+
+	if (showInitialLanguageSelector({ currentLanguage })) {
+		return <InitialLanguageSelector />;
+	}
+
+	if (!moneeeyStore) {
+		return <EncryptionGate onUnlocked={onUnlocked} />;
+	}
+
+	return (
+		<MoneeeyStoreProvider value={moneeeyStore}>
+			<Routes>
+				<Route path="/" element={<LandingPage />} />
+				<Route path="*" element={<AppContent />} />
+			</Routes>
+		</MoneeeyStoreProvider>
 	);
+});
 
-	useEffect(() => {
-		moneeeyStore.load();
-	}, [moneeeyStore]);
-
+export const App = () => {
 	return (
 		<HashRouter>
 			<MessagesProvider>
-				<MoneeeyStoreProvider value={moneeeyStore}>
-					<Routes>
-						<Route path="/" element={<LandingPage />} />
-						<Route path="*" element={<AppContent />} />
-					</Routes>
-				</MoneeeyStoreProvider>
+				<BootGate />
 			</MessagesProvider>
 		</HashRouter>
 	);
