@@ -1,13 +1,18 @@
 import { debounce, isArray, isEmpty, isObject, omit } from "lodash";
 import { action, makeObservable, observable, observe, toJS } from "mobx";
 import PouchDB from "pouchdb";
+import comdb from "comdb";
+import memoryAdapter from "pouchdb-adapter-memory";
 
 import type { SyncConfig } from "../entities/Config";
 
 import { asyncProcess } from "../utils/Utils";
-import type { EntityType, IBaseEntity } from "./Entity";
+import { EntityType, type IBaseEntity } from "./Entity";
 import Logger from "./Logger";
 import type MappedStore from "./MappedStore";
+
+(PouchDB as unknown as { plugin: (p: unknown) => void }).plugin(memoryAdapter);
+(PouchDB as unknown as { plugin: (p: unknown) => void }).plugin(comdb);
 
 export enum Status {
 	ONLINE = "ONLINE",
@@ -18,7 +23,54 @@ export enum Status {
 
 export type PouchDBFactoryFn = () => PouchDB.Database;
 
-export const PouchDBFactory = () => new PouchDB("moneeey");
+export const LOCAL_DB_NAME = "moneeey";
+export const ENCRYPTED_DB_NAME = "moneeey-encrypted";
+export const CONFIG_DOC_ID = `${EntityType.CONFIG}-CONFIG`;
+
+/**
+ * Creates a comdb-encrypted PouchDB pair: an in-memory decrypted database
+ * (the one the app reads and writes) backed by an on-disk encrypted mirror.
+ * The encrypted mirror is what syncs to CouchDB, so neither IndexedDB nor the
+ * remote server ever holds plaintext.
+ *
+ * On a wrong passphrase against an existing encrypted database, garbados-crypt
+ * fails inside setPassword and this function rejects.
+ */
+export const createEncryptedPouchDB = async (
+	passphrase: string,
+): Promise<PouchDB.Database> => {
+	const db = new PouchDB(LOCAL_DB_NAME, { adapter: "memory" });
+	await db.setPassword(passphrase, { name: ENCRYPTED_DB_NAME });
+	await db.loadEncrypted();
+	return db;
+};
+
+/**
+ * Verifies that the Config document exists and has the expected shape. Used
+ * as a passphrase canary: if the encrypted mirror contains a valid Config, the
+ * passphrase unlocked real data rather than garbage.
+ */
+export const verifyConfigCanary = async (
+	db: PouchDB.Database,
+): Promise<boolean> => {
+	try {
+		const doc = (await db.get(CONFIG_DOC_ID)) as {
+			entity_type?: string;
+			date_format?: unknown;
+		};
+		return (
+			doc.entity_type === EntityType.CONFIG &&
+			typeof doc.date_format === "string"
+		);
+	} catch (err) {
+		if ((err as PouchDB.Core.Error).status === 404) {
+			return false;
+		}
+		throw err;
+	}
+};
+
+export const PouchDBFactory = () => new PouchDB(LOCAL_DB_NAME);
 
 export const PouchDBRemoteFactory = ({ url, username, password }: SyncConfig) =>
 	new PouchDB(url, {
