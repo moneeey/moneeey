@@ -23,9 +23,7 @@ export async function unlockWithPassphrase(
 ) {
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
 	// In unlock mode the confirm field is not rendered.
-	await expect(
-		page.getByTestId("encryptionPassphraseConfirm"),
-	).toHaveCount(0);
+	await expect(page.getByTestId("encryptionPassphraseConfirm")).toHaveCount(0);
 	await page.getByTestId("encryptionPassphrase").fill(passphrase);
 	await page.getByTestId("ok-button").click();
 }

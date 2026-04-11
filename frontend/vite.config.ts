@@ -27,10 +27,7 @@ export default defineConfig({
 			// `require_immediate_browser()` recursively and returns `undefined`
 			// — causing `setImmediate is not a function` at runtime. Forcing
 			// `immediate` to an absolute file path breaks the name collision.
-			immediate: path.resolve(
-				__dirname,
-				"node_modules/immediate/lib/index.js",
-			),
+			immediate: path.resolve(__dirname, "node_modules/immediate/lib/index.js"),
 		},
 	},
 	plugins: [

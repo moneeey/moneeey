@@ -30,9 +30,7 @@ test.describe("Encryption gate", () => {
 
 		// Encryption gate: setup mode (no prior flag in localStorage)
 		await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
-		await expect(
-			page.getByTestId("encryptionPassphraseConfirm"),
-		).toBeVisible();
+		await expect(page.getByTestId("encryptionPassphraseConfirm")).toBeVisible();
 
 		await completeEncryptionSetup(page);
 
@@ -59,9 +57,7 @@ test.describe("Encryption gate", () => {
 			"at least 12",
 		);
 		// Still on the gate
-		await expect(
-			page.getByTestId("defaultCurrencySelector"),
-		).not.toBeVisible();
+		await expect(page.getByTestId("defaultCurrencySelector")).not.toBeVisible();
 	});
 
 	test("rejects mismatched confirmation", async ({ seededPage: page }) => {
@@ -78,9 +74,7 @@ test.describe("Encryption gate", () => {
 		await expect(page.getByTestId("encryptionError")).toContainText(
 			"do not match",
 		);
-		await expect(
-			page.getByTestId("defaultCurrencySelector"),
-		).not.toBeVisible();
+		await expect(page.getByTestId("defaultCurrencySelector")).not.toBeVisible();
 	});
 
 	test("unlock after reload requires the same passphrase", async ({
@@ -98,9 +92,9 @@ test.describe("Encryption gate", () => {
 		await page.reload();
 
 		await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
-		await expect(
-			page.getByTestId("encryptionPassphraseConfirm"),
-		).toHaveCount(0);
+		await expect(page.getByTestId("encryptionPassphraseConfirm")).toHaveCount(
+			0,
+		);
 
 		// Wrong passphrase first
 		await page
@@ -128,9 +122,9 @@ test.describe("Encryption gate", () => {
 		// Lock triggers a full reload; language is remembered, encrypted
 		// mirror is intact, so we should land back on unlock.
 		await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
-		await expect(
-			page.getByTestId("encryptionPassphraseConfirm"),
-		).toHaveCount(0);
+		await expect(page.getByTestId("encryptionPassphraseConfirm")).toHaveCount(
+			0,
+		);
 
 		await unlockWithPassphrase(page);
 

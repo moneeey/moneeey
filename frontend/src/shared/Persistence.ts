@@ -6,13 +6,13 @@ import memoryAdapter from "pouchdb-adapter-memory";
 import type { SyncConfig } from "../entities/Config";
 
 import { asyncProcess } from "../utils/Utils";
+import { EntityType, type IBaseEntity } from "./Entity";
+import Logger from "./Logger";
+import type MappedStore from "./MappedStore";
 // Vendored + patched comdb (upstream keys envelopes by content hash, which
 // loses plaintext updates on loadEncrypted; ours keys envelopes by plaintext
 // `_id` so updates flow through normal PouchDB rev tracking).
 import comdbPatched from "./comdbPatched";
-import { EntityType, type IBaseEntity } from "./Entity";
-import Logger from "./Logger";
-import type MappedStore from "./MappedStore";
 
 (PouchDB as unknown as { plugin: (p: unknown) => void }).plugin(memoryAdapter);
 (PouchDB as unknown as { plugin: (p: unknown) => void }).plugin(comdbPatched);

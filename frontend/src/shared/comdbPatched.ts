@@ -45,17 +45,19 @@ export default function comdbPatched(PouchDB) {
 	// apply class method wrappers
 	const replicate = PouchDB.replicate;
 	PouchDB.replicate = function (source, target, opts = {}) {
+		let resolvedSource = source;
+		let resolvedTarget = target;
 		if (opts.comdb !== false) {
-			if (source._encrypted) source = source._encrypted;
-			if (target._encrypted) target = target._encrypted;
+			if (resolvedSource._encrypted) resolvedSource = resolvedSource._encrypted;
+			if (resolvedTarget._encrypted) resolvedTarget = resolvedTarget._encrypted;
 		}
-		return replicate.call(this, source, target, opts);
+		return replicate.call(this, resolvedSource, resolvedTarget, opts);
 	};
 
 	// apply instance method wrappers
 	const destroy = PouchDB.prototype.destroy;
 	PouchDB.prototype.destroy = async function (opts = {}) {
-		let promise;
+		let promise: Promise<unknown> | undefined;
 		if (!this._encrypted || opts.unencrypted_only) {
 			if (!this._destroyed) {
 				promise = destroy.call(this, opts);
@@ -107,7 +109,7 @@ export default function comdbPatched(PouchDB) {
 
 				// For updates we need to know the envelope's current `_rev`
 				// so PouchDB accepts the new revision. Look it up.
-				let existingRev;
+				let existingRev: string | undefined;
 				try {
 					const existing = await db.get(id);
 					existingRev = existing._rev;
