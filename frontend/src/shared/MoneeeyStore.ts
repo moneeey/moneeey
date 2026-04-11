@@ -6,6 +6,7 @@ import ConfigStore from "../entities/Config";
 import CurrencyStore from "../entities/Currency";
 import TransactionStore from "../entities/Transaction";
 
+import EncryptionStore from "./EncryptionStore";
 import Logger from "./Logger";
 import ManagementStore from "./Management";
 import NavigationStore from "./Navigation";
@@ -34,6 +35,8 @@ export default class MoneeeyStore {
 
 	config = new ConfigStore(this);
 
+	encryption: EncryptionStore;
+
 	persistence: PersistenceStore;
 
 	management: ManagementStore;
@@ -45,6 +48,7 @@ export default class MoneeeyStore {
 			setLoaded: action,
 		});
 
+		this.encryption = new EncryptionStore(this.logger);
 		this.persistence = new PersistenceStore(dbFactory, this.logger);
 		this.persistence.monitor(this.accounts);
 		this.persistence.monitor(this.currencies);
