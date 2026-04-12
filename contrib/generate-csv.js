@@ -8,7 +8,12 @@ const recurring = [
 	{ name: "Aluguel Apartamento", value_min: -1800, value_max: -1800, day: 5 },
 	{ name: "Conta de Luz - CPFL", value_min: -120, value_max: -280, day: 10 },
 	{ name: "Conta de Agua - Sabesp", value_min: -40, value_max: -90, day: 12 },
-	{ name: "Internet Vivo Fibra", value_min: -119.9, value_max: -119.9, day: 15 },
+	{
+		name: "Internet Vivo Fibra",
+		value_min: -119.9,
+		value_max: -119.9,
+		day: 15,
+	},
 	{ name: "Netflix", value_min: -55.9, value_max: -55.9, day: 8 },
 	{ name: "Spotify", value_min: -21.9, value_max: -21.9, day: 8 },
 	{ name: "Seguro Auto Porto", value_min: -180, value_max: -180, day: 20 },
@@ -175,7 +180,7 @@ function randValue(config, inflation) {
 }
 
 function inflationMultiplier(monthsAgo) {
-	return Math.pow(1.004, TOTAL_MONTHS - monthsAgo);
+	return 1.004 ** (TOTAL_MONTHS - monthsAgo);
 }
 
 function seasonalMultiplier(calendarMonth) {
@@ -232,7 +237,10 @@ function generateTransactions(monthsAgo) {
 	}
 
 	for (const entry of oneOff) {
-		const prob = isApril && entry.aprilProbability ? entry.aprilProbability : entry.probability;
+		const prob =
+			isApril && entry.aprilProbability
+				? entry.aprilProbability
+				: entry.probability;
 		if (Math.random() < prob) {
 			const value = randValue(entry, inflation);
 			const date = new Date(targetYear, calendarMonth, rand(1, 28));
@@ -253,7 +261,11 @@ function generateTransactions(monthsAgo) {
 
 function generateFiles(dir) {
 	for (let monthsAgo = TOTAL_MONTHS - 1; monthsAgo >= 0; monthsAgo--) {
-		const fileDate = new Date(today.getFullYear(), today.getMonth() - monthsAgo, 1);
+		const fileDate = new Date(
+			today.getFullYear(),
+			today.getMonth() - monthsAgo,
+			1,
+		);
 		const formatted = formatDate(fileDate);
 		const path = `${dir}/${formatted}.csv`;
 		const csvContent = generateTransactions(monthsAgo);

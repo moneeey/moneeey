@@ -157,7 +157,7 @@ class Importer {
 			tokenData.scoreMap,
 			tokenData.idf,
 		);
-		const MIN_COSINE_SCORE = 0.5;
+		const MIN_COSINE_SCORE = 0.4;
 		const nonReferenceAccount = filter(
 			flatten(matchingAccounts),
 			(match) =>
