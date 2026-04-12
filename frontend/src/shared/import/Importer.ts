@@ -159,9 +159,13 @@ class Importer {
 			tokenData.scoreMap,
 			tokenData.idf,
 		);
+		const MIN_COSINE_SCORE = 0.5;
 		const nonReferenceAccount = filter(
 			flatten(matchingAccounts),
-			(match) => !isEmpty(match.id) && match.id !== referenceAccount,
+			(match) =>
+				!isEmpty(match.id) &&
+				match.id !== referenceAccount &&
+				match.score >= MIN_COSINE_SCORE,
 		);
 
 		const accountScore = (account_uuid: TAccountUUID) =>
