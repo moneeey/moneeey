@@ -12,6 +12,7 @@ import {
 	pollForMagicLinkAuth,
 	startMagicLink,
 } from "../../shared/encryption/bootstrapFromMoneeeyAccount";
+import { isWebCryptoAvailable } from "../../shared/encryption/crypto";
 import { hasEncryptionMeta } from "../../shared/encryption/encryptedPouch";
 import useMessages, { type TMessages } from "../../utils/Messages";
 import { OkButton, SecondaryButton } from "../base/Button";
@@ -269,6 +270,26 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		return (
 			<MinimalBasicScreen>
 				<p>{Messages.util.loading}</p>
+			</MinimalBasicScreen>
+		);
+	}
+
+	// WebCrypto (crypto.subtle) requires a secure context — HTTPS or
+	// literal localhost. A custom hostname like `local.moneeey.io` over
+	// plain HTTP does NOT qualify in Chrome/Firefox. Surface a clear error
+	// instead of letting every crypto call fail cryptically.
+	if (!isWebCryptoAvailable()) {
+		return (
+			<MinimalBasicScreen>
+				<h2 className="text-xl font-semibold text-danger-300">
+					{Messages.encryption.insecure_context_title}
+				</h2>
+				<p className="text-sm opacity-80">
+					{Messages.encryption.insecure_context_description}
+				</p>
+				<p className="text-xs opacity-60 font-mono">
+					{globalThis.location?.origin}
+				</p>
 			</MinimalBasicScreen>
 		);
 	}

@@ -1482,6 +1482,20 @@ export default {
 			hi: "वर्तमान पासफ्रेज़",
 			cn: "当前密码",
 		},
+		insecure_context_title: {
+			en: "Secure connection required",
+			pt: "Conexão segura necessária",
+			es: "Se requiere conexión segura",
+			hi: "सुरक्षित कनेक्शन आवश्यक है",
+			cn: "需要安全连接",
+		},
+		insecure_context_description: {
+			en: "Moneeey's encryption requires HTTPS or localhost. Please access the app via https:// or http://localhost.",
+			pt: "A criptografia do Moneeey requer HTTPS ou localhost. Acesse o aplicativo via https:// ou http://localhost.",
+			es: "El cifrado de Moneeey requiere HTTPS o localhost. Acceda a la aplicación a través de https:// o http://localhost.",
+			hi: "मनी के एन्क्रिप्शन के लिए HTTPS या localhost की आवश्यकता है। कृपया ऐप को https:// या http://localhost के माध्यम से एक्सेस करें।",
+			cn: "Moneeey 的加密需要 HTTPS 或 localhost。请通过 https:// 或 http://localhost 访问应用。",
+		},
 		setup_title: {
 			en: "Protect your data",
 			pt: "Proteja seus dados",

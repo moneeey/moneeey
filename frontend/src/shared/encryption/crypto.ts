@@ -26,14 +26,34 @@ const SALT_LENGTH_BYTES = 16;
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
-const getCrypto = (): Crypto => {
+/**
+ * Returns the SubtleCrypto interface, or throws a descriptive error if
+ * WebCrypto isn't available (e.g. non-secure-context HTTP). Chrome, Firefox,
+ * and Safari require HTTPS or `localhost` for `crypto.subtle` — a hostname
+ * like `local.moneeey.io` that resolves to loopback does NOT qualify.
+ */
+const getSubtle = (): SubtleCrypto => {
 	const c = globalThis.crypto;
-	if (!c || !c.subtle) {
+	if (!c?.subtle) {
 		throw new Error(
-			"WebCrypto (crypto.subtle) is not available in this environment",
+			`insecure_context: crypto.subtle requires HTTPS or localhost. Current origin: ${globalThis.location?.origin ?? "unknown"}`,
 		);
 	}
-	return c;
+	return c.subtle;
+};
+
+/**
+ * Early check the caller can run before entering any async crypto flow.
+ * Returns `true` if WebCrypto is usable, `false` otherwise. The gate uses
+ * this to show a helpful message instead of an opaque "something went wrong".
+ */
+export const isWebCryptoAvailable = (): boolean => {
+	try {
+		getSubtle();
+		return true;
+	} catch {
+		return false;
+	}
 };
 
 /** Converts Uint8Array → base64 string (browser-safe, no Buffer). */
@@ -55,17 +75,19 @@ export const base64ToBytes = (base64: string): Uint8Array => {
 	return out;
 };
 
-/** Generates cryptographically-random salt bytes. */
+/** Generates cryptographically-random salt bytes.
+ * Uses `crypto.getRandomValues` directly — this API is available even in
+ * insecure contexts, unlike `crypto.subtle`. */
 export const randomSalt = (): Uint8Array => {
 	const salt = new Uint8Array(SALT_LENGTH_BYTES);
-	getCrypto().getRandomValues(salt);
+	globalThis.crypto.getRandomValues(salt);
 	return salt;
 };
 
 /** Generates cryptographically-random IV bytes for AES-GCM. */
 const randomIv = (): Uint8Array => {
 	const iv = new Uint8Array(IV_LENGTH_BYTES);
-	getCrypto().getRandomValues(iv);
+	globalThis.crypto.getRandomValues(iv);
 	return iv;
 };
 
@@ -79,7 +101,7 @@ export const deriveKek = async (
 	passphrase: string,
 	salt: Uint8Array,
 ): Promise<CryptoKey> => {
-	const subtle = getCrypto().subtle;
+	const subtle = getSubtle();
 	const passphraseKey = await subtle.importKey(
 		"raw",
 		textEncoder.encode(passphrase),
@@ -104,7 +126,7 @@ export const deriveKek = async (
 /** Generates a fresh random data key. This is the key that actually
  * encrypts document bodies. It is marked extractable so we can wrap it. */
 export const generateDataKey = async (): Promise<CryptoKey> => {
-	return getCrypto().subtle.generateKey(
+	return getSubtle().generateKey(
 		{ name: CIPHER_NAME, length: KEY_LENGTH_BITS },
 		true,
 		["encrypt", "decrypt"],
@@ -118,7 +140,7 @@ export const wrapDataKey = async (
 	dataKey: CryptoKey,
 	kek: CryptoKey,
 ): Promise<string> => {
-	const subtle = getCrypto().subtle;
+	const subtle = getSubtle();
 	const iv = randomIv();
 	const wrapped = await subtle.wrapKey("raw", dataKey, kek, {
 		name: CIPHER_NAME,
@@ -139,7 +161,7 @@ export const unwrapDataKey = async (
 	const combined = base64ToBytes(wrappedBase64);
 	const iv = combined.slice(0, IV_LENGTH_BYTES);
 	const wrapped = combined.slice(IV_LENGTH_BYTES);
-	return getCrypto().subtle.unwrapKey(
+	return getSubtle().unwrapKey(
 		"raw",
 		wrapped as BufferSource,
 		kek,
@@ -160,7 +182,7 @@ export const encryptString = async (
 	dataKey: CryptoKey,
 ): Promise<string> => {
 	const iv = randomIv();
-	const cipherBuffer = await getCrypto().subtle.encrypt(
+	const cipherBuffer = await getSubtle().encrypt(
 		{ name: CIPHER_NAME, iv: iv as BufferSource },
 		dataKey,
 		textEncoder.encode(plaintext) as BufferSource,
@@ -181,7 +203,7 @@ export const decryptString = async (
 	const combined = base64ToBytes(combinedBase64);
 	const iv = combined.slice(0, IV_LENGTH_BYTES);
 	const cipher = combined.slice(IV_LENGTH_BYTES);
-	const plainBuffer = await getCrypto().subtle.decrypt(
+	const plainBuffer = await getSubtle().decrypt(
 		{ name: CIPHER_NAME, iv: iv as BufferSource },
 		dataKey,
 		cipher as BufferSource,
