@@ -10,7 +10,7 @@ import {
 	noop,
 	setStorage,
 	slugify,
-	tokenize,
+	shingle,
 	uuid,
 } from "./Utils";
 
@@ -40,21 +40,49 @@ describe("Utils", () => {
 		});
 	});
 
-	describe("tokenize", () => {
-		it("lowercases and splits on non-word/digit boundaries", () => {
-			expect(tokenize("Hello World")).toEqual(["hello", "world"]);
+	describe("shingle", () => {
+		it("produces 3-char sliding windows from cleaned lowercase text", () => {
+			expect(shingle("Hello World")).toEqual([
+				"hel",
+				"ell",
+				"llo",
+				"low",
+				"owo",
+				"wor",
+				"orl",
+				"rld",
+			]);
 		});
 
-		it("strips digits and punctuation", () => {
-			expect(tokenize("foo-123 bar!")).toEqual(["foo", "bar"]);
+		it("preserves digits", () => {
+			expect(shingle("PIX 8234")).toEqual([
+				"pix",
+				"ix8",
+				"x82",
+				"823",
+				"234",
+			]);
+		});
+
+		it("returns short string as single shingle when shorter than n", () => {
+			expect(shingle("ab")).toEqual(["ab"]);
+			expect(shingle("x")).toEqual(["x"]);
 		});
 
 		it("returns empty array for undefined", () => {
-			expect(tokenize(undefined)).toEqual([]);
+			expect(shingle(undefined)).toEqual([]);
 		});
 
 		it("returns empty array for empty string", () => {
-			expect(tokenize("")).toEqual([]);
+			expect(shingle("")).toEqual([]);
+		});
+
+		it("returns empty array for string with only special chars", () => {
+			expect(shingle("!@#$%")).toEqual([]);
+		});
+
+		it("supports custom shingle size", () => {
+			expect(shingle("abcde", 2)).toEqual(["ab", "bc", "cd", "de"]);
 		});
 	});
 

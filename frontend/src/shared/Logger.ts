@@ -19,7 +19,7 @@ class BaseLogger {
 
 	parent: Logger | undefined;
 
-	level: LogLevel = "log";
+	level: LogLevel = "info";
 
 	constructor(name: string, parent?: Logger) {
 		this.name = name;

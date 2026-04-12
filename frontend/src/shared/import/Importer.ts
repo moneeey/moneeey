@@ -2,110 +2,138 @@ import { compact, filter, flatten, isEmpty, keys } from "lodash";
 
 import { AccountKind, type TAccountUUID } from "../../entities/Account";
 import type { ITransaction } from "../../entities/Transaction";
-import { tokenize } from "../../utils/Utils";
+import { shingle } from "../../utils/Utils";
 import type MoneeeyStore from "../MoneeeyStore";
 
-export const tokenWeightMap = (tokens: string[]): Map<string, number> => {
-	const scores = new Map<string, number>();
-	for (const token of tokens) {
-		scores.set(token, (scores.get(token) || 0) + 1);
-	}
-	scores.forEach((frequency, token) =>
-		scores.set(token, 1 - frequency / tokens.length),
-	);
-
-	return scores;
-};
-
-export const tokenTopScores = (
-	tokens: string[],
-	scores: Map<string, number>,
-): { token: string; score: number }[] =>
-	Array.from(new Set(tokens).values())
-		.map((token) => ({
-			token,
-			score: scores.get(token) || 0,
-		}))
-		.filter((entry) => entry.score > 0)
-		.sort((a, b) => b.score - a.score);
-
-export const tokensForTransactions = (transaction: ITransaction) =>
+export const shinglesForTransaction = (transaction: ITransaction): string[] =>
 	compact(
 		flatten([
-			...tokenize(transaction.memo),
-			...tokenize(transaction.import_data),
-			...transaction.tags.map(tokenize),
+			shingle(transaction.memo),
+			shingle(transaction.import_data),
+			...transaction.tags.map((tag) => shingle(tag)),
 		]),
-	).filter((token) => token.length > 2);
+	);
 
-type ScoreMap = { [id: string]: { [token: string]: number } };
+export const computeIdf = (
+	accountShingles: Map<string, string[]>,
+): Map<string, number> => {
+	const numDocs = accountShingles.size;
+	const docFreq = new Map<string, number>();
 
-export const tokenTransactionAccountScoreMap = (
-	transactions: ITransaction[],
-): ScoreMap => {
-	const allAccountTokens = transactions.reduce((rs, t) => {
-		const tokens = tokensForTransactions(t);
-		const accounts = compact([t.from_account, t.to_account]);
-		for (const account_uuid of accounts) {
-			rs.set(account_uuid, [...(rs.get(account_uuid) || []), ...tokens]);
+	for (const shingles of accountShingles.values()) {
+		const unique = new Set(shingles);
+		for (const s of unique) {
+			docFreq.set(s, (docFreq.get(s) || 0) + 1);
 		}
+	}
 
+	const idf = new Map<string, number>();
+	for (const [term, df] of docFreq) {
+		idf.set(term, Math.log((numDocs + 1) / (df + 1)) + 1);
+	}
+	return idf;
+};
+
+export const tfIdfVector = (
+	shingles: string[],
+	idf: Map<string, number>,
+): Map<string, number> => {
+	const tf = new Map<string, number>();
+	for (const s of shingles) {
+		tf.set(s, (tf.get(s) || 0) + 1);
+	}
+	const vec = new Map<string, number>();
+	for (const [term, count] of tf) {
+		const idfVal = idf.get(term) || 0;
+		vec.set(term, count * idfVal);
+	}
+	return vec;
+};
+
+export const cosineSimilarity = (
+	a: Map<string, number>,
+	b: Map<string, number>,
+): number => {
+	let dot = 0;
+	let normA = 0;
+	let normB = 0;
+
+	for (const [key, val] of a) {
+		normA += val * val;
+		const bVal = b.get(key);
+		if (bVal) dot += val * bVal;
+	}
+	for (const val of b.values()) {
+		normB += val * val;
+	}
+
+	if (normA === 0 || normB === 0) return 0;
+	return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+};
+
+type ScoreMap = { [id: string]: { [shingle: string]: number } };
+
+export type AccountVectors = { scoreMap: ScoreMap; idf: Map<string, number> };
+
+export const buildAccountVectors = (
+	transactions: ITransaction[],
+): AccountVectors => {
+	const accountShingles = transactions.reduce((rs, t) => {
+		const shingles = shinglesForTransaction(t);
+		for (const acct of compact([t.from_account, t.to_account])) {
+			rs.set(acct, [...(rs.get(acct) || []), ...shingles]);
+		}
 		return rs;
 	}, new Map<TAccountUUID, string[]>());
 
-	const weightMap = tokenWeightMap(
-		flatten(Array.from(allAccountTokens.values())),
-	);
+	const idf = computeIdf(accountShingles);
 
-	return Array.from(allAccountTokens.entries()).reduce(
-		(rs, [account_uuid, tokens]) => {
-			const topScores = tokenTopScores(tokens, weightMap);
+	const scoreMap: ScoreMap = {};
+	for (const [acct, shingles] of accountShingles) {
+		const vec = tfIdfVector(shingles, idf);
+		const obj: Record<string, number> = {};
+		for (const [term, weight] of vec) {
+			obj[term] = weight;
+		}
+		scoreMap[acct] = obj;
+	}
 
-			const scores = topScores.reduce(
-				(rss, score) => {
-					rss[score.token] = score.score;
-					return rss;
-				},
-				{} as Record<string, number>,
-			);
-
-			rs[account_uuid] = scores;
-			return rs;
-		},
-		{} as ScoreMap,
-	);
+	return { scoreMap, idf };
 };
 
-export const tokenMatchScoreMap = (tokens: string[], scoreMap: ScoreMap) =>
-	keys(scoreMap)
+export const cosineMatchScoreMap = (
+	queryShingles: string[],
+	scoreMap: ScoreMap,
+	idf: Map<string, number>,
+) => {
+	const queryVec = tfIdfVector(queryShingles, idf);
+
+	return keys(scoreMap)
 		.map((id) => {
-			const accountTokenScores = scoreMap[id] || {};
-			const domain = keys(accountTokenScores).length;
-			const scores = tokens.map((token) => accountTokenScores[token] || 0);
-			const total = scores.reduce((a, b) => a + b, 0);
-			const matching = scores.filter((s) => s > 0).length;
-			const match = tokens
-				.map((token, idx) => ({ token, score: scores[idx] }))
-				.filter((m) => m.score > 0)
-				.reduce(
-					(rs, m) => {
-						rs[m.token] = m.score;
-						return rs;
-					},
-					{} as Record<string, number>,
-				);
+			const accountVec = new Map(Object.entries(scoreMap[id] || {}));
+			const score = cosineSimilarity(queryVec, accountVec);
+
+			const match: Record<string, number> = {};
+			for (const [term] of queryVec) {
+				const aWeight = accountVec.get(term);
+				if (aWeight) {
+					match[term] = aWeight;
+				}
+			}
+			const matching = Object.keys(match).length;
 
 			return {
 				id,
-				total,
+				score,
 				matching,
-				domain,
-				score: matching + total / domain,
+				domain: accountVec.size,
+				total: score,
 				match,
 			};
 		})
 		.filter((si) => si.score > 0)
 		.sort((a, b) => b.score - a.score);
+};
 
 class Importer {
 	private moneeeyStore: MoneeeyStore;
@@ -114,22 +142,25 @@ class Importer {
 		this.moneeeyStore = moneeeyStore;
 	}
 
-	get tokenMap() {
-		return tokenTransactionAccountScoreMap(this.moneeeyStore.transactions.all);
+	get tokenMap(): AccountVectors {
+		return buildAccountVectors(this.moneeeyStore.transactions.all);
 	}
 
 	findAccountsForTokens(
 		referenceAccount: TAccountUUID,
-		tokenMap: ScoreMap,
-		tokens: string[],
+		tokenData: AccountVectors,
+		queryTexts: string[],
 	) {
-		const allTokenized = compact(flatten(tokens.map((s) => tokenize(s))));
-		const matchingTransactionAccounts = tokenMatchScoreMap(
-			allTokenized,
-			tokenMap,
+		const allShingles = compact(
+			flatten(queryTexts.map((s) => shingle(s))),
+		);
+		const matchingAccounts = cosineMatchScoreMap(
+			allShingles,
+			tokenData.scoreMap,
+			tokenData.idf,
 		);
 		const nonReferenceAccount = filter(
-			flatten(matchingTransactionAccounts),
+			flatten(matchingAccounts),
 			(match) => !isEmpty(match.id) && match.id !== referenceAccount,
 		);
 

@@ -1,4 +1,4 @@
-import { chunk, compact } from "lodash";
+import { chunk } from "lodash";
 import { nanoid } from "nanoid";
 
 const uuid = () => nanoid();
@@ -9,8 +9,15 @@ const noop = () => {
 
 const identity = (o: unknown) => o;
 
-const tokenize = (text: string | undefined) =>
-	compact((text || "").toLowerCase().split(/[\W\d]/));
+const shingle = (text: string | undefined, n = 3): string[] => {
+	const cleaned = (text || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+	if (cleaned.length < n) return cleaned.length > 0 ? [cleaned] : [];
+	const result: string[] = [];
+	for (let i = 0; i <= cleaned.length - n; i++) {
+		result.push(cleaned.substring(i, i + n));
+	}
+	return result;
+};
 
 const asyncTimeout = <R>(fn: () => R | Promise<R>, delay: number): Promise<R> =>
 	new Promise((resolve) => {
@@ -142,6 +149,6 @@ export {
 	noop,
 	setStorage,
 	StorageKind,
-	tokenize,
+	shingle,
 	uuid,
 };

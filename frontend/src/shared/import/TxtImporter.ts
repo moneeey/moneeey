@@ -1,5 +1,5 @@
 import { isEmpty, shuffle } from "lodash";
-import { asyncProcess, tokenize } from "../../utils/Utils";
+import { asyncProcess } from "../../utils/Utils";
 import Logger from "../Logger";
 import type MoneeeyStore from "../MoneeeyStore";
 
@@ -70,11 +70,10 @@ const txtImportFromLines = ({
 					);
 					if (!foundColumns) continue;
 					const { value, date, other } = foundColumns;
-					const query_tokens = tokenize(other);
 					const accounts = importer.findAccountsForTokens(
 						referenceAccount,
 						tokenMap,
-						query_tokens,
+						[other],
 					);
 					const other_account = accounts[0]?.account_uuid || "";
 					const { transaction, existing } = importTransaction({
@@ -91,7 +90,7 @@ const txtImportFromLines = ({
 						date,
 						other,
 						other_account,
-						query_tokens,
+						query: other,
 						recommendedAccounts: accounts,
 						transaction,
 						existing,
