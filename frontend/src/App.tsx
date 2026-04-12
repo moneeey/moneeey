@@ -7,7 +7,6 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import AppMenu from "./components/AppMenu";
 import Navigator from "./components/Navigator";
 import Notifications from "./components/Notifications";
-import type { UnlockResult } from "./shared/EncryptionStore";
 import MoneeeyStore from "./shared/MoneeeyStore";
 import { openRawDatabase } from "./shared/encryption/encryptedPouch";
 import useMoneeeyStore, {
@@ -101,12 +100,15 @@ const AppBoot = observer(() => {
 	// once the gate has installed the encryption transform on it.
 	const rawDb = useMemo(() => openRawDatabase(), []);
 
-	const onUnlocked = useCallback(async ({ db, dataKey }: UnlockResult) => {
-		const store = new MoneeeyStore(() => db);
-		store.persistence.setDataKey(dataKey);
-		await store.load();
-		setMoneeeyStore(store);
-	}, []);
+	const onUnlocked = useCallback(
+		async (dataKey: CryptoKey) => {
+			const store = new MoneeeyStore(() => rawDb);
+			store.persistence.setDataKey(dataKey);
+			await store.load();
+			setMoneeeyStore(store);
+		},
+		[rawDb],
+	);
 
 	if (showInitialLanguageSelector({ currentLanguage })) {
 		return <InitialLanguageSelector />;

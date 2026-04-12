@@ -52,9 +52,7 @@ test.describe("Encryption gate", () => {
 		const hasMeta = await page.evaluate(async () => {
 			// Open a sibling PouchDB handle to the same underlying data.
 			const dbs = await window.indexedDB.databases?.();
-			return Boolean(
-				dbs?.find((d) => d.name === "_pouch_moneeey"),
-			);
+			return Boolean(dbs?.find((d) => d.name === "_pouch_moneeey"));
 		});
 		expect(hasMeta).toBe(true);
 	});
@@ -63,9 +61,7 @@ test.describe("Encryption gate", () => {
 		seededPage: page,
 	}) => {
 		await pickLanguageEn(page);
-		await page
-			.getByRole("button", { name: "Create new (local only)" })
-			.click();
+		await page.getByRole("button", { name: "Create new (local only)" }).click();
 
 		await page.getByTestId("encryptionPassphrase").fill("short");
 		await page.getByTestId("encryptionPassphraseConfirm").fill("short");
@@ -82,9 +78,7 @@ test.describe("Encryption gate", () => {
 
 	test("rejects mismatched confirmation", async ({ seededPage: page }) => {
 		await pickLanguageEn(page);
-		await page
-			.getByRole("button", { name: "Create new (local only)" })
-			.click();
+		await page.getByRole("button", { name: "Create new (local only)" }).click();
 
 		await page
 			.getByTestId("encryptionPassphrase")

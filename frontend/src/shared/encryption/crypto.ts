@@ -189,13 +189,6 @@ export const decryptString = async (
 	return textDecoder.decode(plainBuffer);
 };
 
-/** Stable JSON stringify is not required — we only need round-trip
- * correctness, not canonicalisation. This re-export is a hint for call
- * sites that they should use `JSON.stringify` rather than fancier libs. */
-export const encodeJsonForEncryption = (value: unknown): string =>
-	JSON.stringify(value);
-export const decodeJsonFromDecryption = <T>(raw: string): T => JSON.parse(raw);
-
 /** Exposed for tests + meta-doc construction. */
 export const PBKDF2_PARAMS = {
 	iterations: PBKDF2_ITERATIONS,

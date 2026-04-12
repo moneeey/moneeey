@@ -702,7 +702,7 @@ describe("Persistence", () => {
 		it("setupNewEncryption writes an ENCRYPTION-META doc", async () => {
 			const db = freshDb(nextName());
 			expect(await hasEncryptionMeta(db)).toBe(false);
-			const { dataKey } = await setupNewEncryption(db, "correct-horse-battery");
+			const dataKey = await setupNewEncryption(db, "correct-horse-battery");
 			expect(dataKey).toBeDefined();
 			expect(await hasEncryptionMeta(db)).toBe(true);
 			const meta = await readMetaDoc(db);
@@ -721,7 +721,7 @@ describe("Persistence", () => {
 			// First "session": set up, write a Config, close the in-memory
 			// handle (the underlying PouchDB data survives).
 			const db1 = freshDb(name);
-			const { dataKey: dataKey1 } = await setupNewEncryption(db1, passphrase);
+			const dataKey1 = await setupNewEncryption(db1, passphrase);
 			await db1.put(makeConfig());
 			const stored = (await db1.get(CONFIG_DOC_ID)) as Record<string, unknown>;
 			// On disk the body is encrypted.
@@ -738,10 +738,7 @@ describe("Persistence", () => {
 			// Second "session": reopen the same DB, unlock, decrypt.
 			const db2 = freshDb(name);
 			expect(await hasEncryptionMeta(db2)).toBe(true);
-			const { dataKey: dataKey2 } = await unlockExistingEncryption(
-				db2,
-				passphrase,
-			);
+			const dataKey2 = await unlockExistingEncryption(db2, passphrase);
 			const reloaded = (await db2.get(CONFIG_DOC_ID)) as Record<
 				string,
 				unknown
@@ -781,7 +778,7 @@ describe("Persistence", () => {
 			const passphraseB = "passphrase-beta";
 
 			const db1 = freshDb(name);
-			const { dataKey } = await setupNewEncryption(db1, passphraseA);
+			const dataKey = await setupNewEncryption(db1, passphraseA);
 			await db1.put(makeConfig());
 			const configRevBefore = (
 				(await db1.get(CONFIG_DOC_ID)) as { _rev: string }
@@ -805,10 +802,7 @@ describe("Persistence", () => {
 				"wrong_passphrase",
 			);
 			const db3 = freshDb(name);
-			const { dataKey: dataKeyB } = await unlockExistingEncryption(
-				db3,
-				passphraseB,
-			);
+			const dataKeyB = await unlockExistingEncryption(db3, passphraseB);
 			const stored = (await db3.get(CONFIG_DOC_ID)) as Record<string, unknown>;
 			const plain = (await decryptDoc(stored, dataKeyB)) as Record<
 				string,
@@ -855,7 +849,7 @@ describe("Persistence", () => {
 			});
 			expect(await hasEncryptionMeta(deviceB)).toBe(true);
 
-			const { dataKey } = await unlockExistingEncryption(deviceB, passphrase);
+			const dataKey = await unlockExistingEncryption(deviceB, passphrase);
 			const stored = (await deviceB.get(CONFIG_DOC_ID)) as Record<
 				string,
 				unknown
@@ -891,7 +885,7 @@ describe("Persistence", () => {
 
 		it("installEncryptionTransform encrypts ordinary writes but preserves clear routing fields", async () => {
 			const db = freshDb(nextName());
-			const { dataKey } = await setupNewEncryption(db, "test-passphrase-99");
+			const dataKey = await setupNewEncryption(db, "test-passphrase-99");
 			installEncryptionTransform(db, dataKey);
 			await db.put({
 				_id: "ACCOUNT-probe",

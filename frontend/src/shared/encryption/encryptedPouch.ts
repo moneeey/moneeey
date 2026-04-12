@@ -29,6 +29,23 @@
  *   `entity_type`, `updated` stay out of the ciphertext so PouchDB's
  *   rev-tracking, `PersistenceStore.notifyDocument` dispatch, and
  *   `resolveConflict` continue to work without decrypting every doc.
+ *
+ * **Invariants to be aware of when extending this module:**
+ *
+ * - Documents that existed in the DB *before* `setupNewEncryption` installs
+ *   the transform remain in plaintext form. `decryptDoc` handles them via
+ *   its `isAlreadyEncrypted` passthrough, so reads still work, but the app
+ *   will not automatically re-encrypt them. This is acceptable because the
+ *   gate only reaches `setupNewEncryption` on an otherwise-empty DB, or one
+ *   whose only pre-existing content came from incoming replication of
+ *   already-encrypted envelopes.
+ * - Concurrent `changePassphrase` calls across two devices produce a
+ *   meta-doc conflict. PouchDB's default conflict resolution picks a
+ *   winner by `_rev`; the losing passphrase silently stops working and the
+ *   user has to unlock with the winner. We surface this as a generic
+ *   `wrong_passphrase` error today — if this becomes a real problem,
+ *   inspect `_conflicts` on the meta doc and offer a manual reconciliation
+ *   step.
  */
 
 import PouchDB from "pouchdb";
@@ -38,10 +55,8 @@ import {
 	PBKDF2_PARAMS,
 	base64ToBytes,
 	bytesToBase64,
-	decodeJsonFromDecryption,
 	decryptString,
 	deriveKek,
-	encodeJsonForEncryption,
 	encryptString,
 	generateDataKey,
 	randomSalt,
@@ -55,6 +70,27 @@ export const LOCAL_DB_NAME = "moneeey";
 export const ENCRYPTION_META_ID = "ENCRYPTION-META";
 export const ENCRYPTION_META_SCHEMA_VERSION = 1;
 
+/**
+ * Stable string codes thrown from encryption operations. Used as `Error.message`
+ * and matched by the gate / settings UI to pick a localised message. Keeping
+ * them as a union means typos surface at compile time in the places that
+ * switch on them.
+ */
+export type EncryptionErrorCode =
+	| "passphrase_too_short"
+	| "wrong_passphrase"
+	| "no_meta_doc"
+	| "unsupported_schema_version"
+	| "no_data_key"
+	| "magic_link_timeout"
+	| "magic_link_cancelled"
+	| "not_found_on_server"
+	| "network_error"
+	| "unknown_error";
+
+export const encryptionError = (code: EncryptionErrorCode): Error =>
+	new Error(code);
+
 /** Fields that stay in the clear alongside `encrypted_body`.
  *
  * `_id`, `_rev`, `_deleted`, `_conflicts` are required by PouchDB for
@@ -63,18 +99,18 @@ export const ENCRYPTION_META_SCHEMA_VERSION = 1;
  * information beyond what the `_id` prefix already does. `updated` is kept in
  * the clear so `resolveConflict` can compare timestamps without needing the
  * key (a doc-level change-frequency leak we've decided is acceptable). */
-const CLEAR_FIELDS = new Set([
+const CLEAR_FIELDS: readonly string[] = [
 	"_id",
 	"_rev",
 	"_deleted",
 	"_conflicts",
 	"entity_type",
 	"updated",
-]);
+];
 
 const ENCRYPTED_BODY_FIELD = "encrypted_body";
 
-type MetaDoc = {
+export type MetaDoc = {
 	_id: typeof ENCRYPTION_META_ID;
 	_rev?: string;
 	entity_type: "ENCRYPTION_META";
@@ -86,17 +122,6 @@ type MetaDoc = {
 	wrapped_key: string;
 };
 
-type TransformApi = {
-	transform: (opts: {
-		incoming?: (
-			doc: Record<string, unknown>,
-		) => Promise<Record<string, unknown>>;
-		outgoing?: (
-			doc: Record<string, unknown>,
-		) => Promise<Record<string, unknown>>;
-	}) => void;
-};
-
 /** Splits a plaintext doc into (clearFields, encryptableBody). */
 const splitClearFromBody = (
 	doc: Record<string, unknown>,
@@ -104,7 +129,7 @@ const splitClearFromBody = (
 	const clear: Record<string, unknown> = {};
 	const body: Record<string, unknown> = {};
 	for (const [key, value] of Object.entries(doc)) {
-		if (CLEAR_FIELDS.has(key)) {
+		if (CLEAR_FIELDS.includes(key)) {
 			clear[key] = value;
 		} else {
 			body[key] = value;
@@ -129,7 +154,7 @@ export const installEncryptionTransform = (
 	db: PouchDB.Database,
 	dataKey: CryptoKey,
 ): void => {
-	(db as unknown as TransformApi).transform({
+	db.transform({
 		incoming: async (doc) => {
 			// Meta doc has its own shape and must stay readable without a
 			// data key.
@@ -139,10 +164,7 @@ export const installEncryptionTransform = (
 			if (isAlreadyEncrypted(doc)) return doc;
 
 			const { clear, body } = splitClearFromBody(doc);
-			const payload = await encryptString(
-				encodeJsonForEncryption(body),
-				dataKey,
-			);
+			const payload = await encryptString(JSON.stringify(body), dataKey);
 			return { ...clear, [ENCRYPTED_BODY_FIELD]: payload };
 		},
 	});
@@ -156,18 +178,29 @@ export const openRawDatabase = (
 ): PouchDB.Database => new PouchDB(name);
 
 /** Reads the meta doc if present. Returns `null` if the DB has no
- * encryption yet (fresh install). */
+ * encryption yet (fresh install). Throws `unsupported_schema_version` if
+ * the stored schema is newer than the one this build understands — this
+ * protects future-dated devices from silently reinterpreting the layout.
+ */
 export const readMetaDoc = async (
 	db: PouchDB.Database,
 ): Promise<MetaDoc | null> => {
+	let doc: MetaDoc;
 	try {
-		return (await db.get(ENCRYPTION_META_ID)) as unknown as MetaDoc;
+		doc = (await db.get(ENCRYPTION_META_ID)) as unknown as MetaDoc;
 	} catch (err) {
 		if ((err as PouchDB.Core.Error).status === 404) {
 			return null;
 		}
 		throw err;
 	}
+	if (
+		typeof doc.schema_version !== "number" ||
+		doc.schema_version > ENCRYPTION_META_SCHEMA_VERSION
+	) {
+		throw encryptionError("unsupported_schema_version");
+	}
+	return doc;
 };
 
 /** True if the given db has an ENCRYPTION-META doc — i.e. the user is
@@ -178,17 +211,21 @@ export const hasEncryptionMeta = async (
 
 /**
  * First-time setup: generates a random data key, wraps it under the
- * passphrase-derived KEK, writes the meta doc, installs the transform.
- * The caller then holds the returned handle for the rest of the session.
+ * passphrase-derived KEK, writes the meta doc, installs the transform. The
+ * returned data key is the one the caller should hand to
+ * `PersistenceStore.setDataKey` — the transform is already installed on
+ * `db` as a side-effect.
  */
 export const setupNewEncryption = async (
 	db: PouchDB.Database,
 	passphrase: string,
-): Promise<{ db: PouchDB.Database; dataKey: CryptoKey }> => {
+): Promise<CryptoKey> => {
 	const existingMeta = await readMetaDoc(db);
 	if (existingMeta) {
+		// Should never happen in the gate's flow because we only reach
+		// setupNewEncryption when hasEncryptionMeta is false. Defensive.
 		throw new Error(
-			"ENCRYPTION-META already exists — use unlock() instead of setupNewEncryption()",
+			"ENCRYPTION-META already exists — use unlockExistingEncryption() instead",
 		);
 	}
 	const salt = randomSalt();
@@ -208,7 +245,35 @@ export const setupNewEncryption = async (
 	};
 	await db.put(meta as unknown as PouchDB.Core.PutDocument<object>);
 	installEncryptionTransform(db, dataKey);
-	return { db, dataKey };
+	return dataKey;
+};
+
+/**
+ * Verifies `passphrase` against the meta doc in `db` without installing any
+ * transform. On success returns the unwrapped data key (which the caller
+ * can use for subsequent operations, e.g. re-wrapping under a new
+ * passphrase). On failure throws `wrong_passphrase` or `no_meta_doc`.
+ *
+ * This is the primitive used by the change-passphrase flow to prove the
+ * current session actually knows the current passphrase — otherwise any
+ * unlocked tab could silently lock out the account owner by rewrapping the
+ * data key under a new passphrase.
+ */
+export const verifyPassphrase = async (
+	db: PouchDB.Database,
+	passphrase: string,
+): Promise<CryptoKey> => {
+	const meta = await readMetaDoc(db);
+	if (!meta) {
+		throw encryptionError("no_meta_doc");
+	}
+	const salt = base64ToBytes(meta.salt);
+	const kek = await deriveKek(passphrase, salt);
+	try {
+		return await unwrapDataKey(meta.wrapped_key, kek);
+	} catch {
+		throw encryptionError("wrong_passphrase");
+	}
 };
 
 /**
@@ -221,21 +286,10 @@ export const setupNewEncryption = async (
 export const unlockExistingEncryption = async (
 	db: PouchDB.Database,
 	passphrase: string,
-): Promise<{ db: PouchDB.Database; dataKey: CryptoKey }> => {
-	const meta = await readMetaDoc(db);
-	if (!meta) {
-		throw new Error("no_meta_doc");
-	}
-	const salt = base64ToBytes(meta.salt);
-	const kek = await deriveKek(passphrase, salt);
-	let dataKey: CryptoKey;
-	try {
-		dataKey = await unwrapDataKey(meta.wrapped_key, kek);
-	} catch {
-		throw new Error("wrong_passphrase");
-	}
+): Promise<CryptoKey> => {
+	const dataKey = await verifyPassphrase(db, passphrase);
 	installEncryptionTransform(db, dataKey);
-	return { db, dataKey };
+	return dataKey;
 };
 
 /**
@@ -255,7 +309,7 @@ export const changePassphrase = async (
 
 	const existing = await readMetaDoc(db);
 	if (!existing) {
-		throw new Error("no_meta_doc");
+		throw encryptionError("no_meta_doc");
 	}
 	const updated: MetaDoc = {
 		...existing,
@@ -271,8 +325,8 @@ export const changePassphrase = async (
 /**
  * Decrypts a stored document, returning the plaintext form the app expects.
  * Passthrough for the meta doc and any doc that lacks `encrypted_body` —
- * the latter shouldn't normally happen post-setup, but handles gracefully
- * any plaintext leftovers from migration paths.
+ * the latter handles legacy / pre-setup plaintext rows that predate the
+ * encryption transform.
  */
 export const decryptDoc = async <T extends Record<string, unknown>>(
 	doc: T,
@@ -282,7 +336,7 @@ export const decryptDoc = async <T extends Record<string, unknown>>(
 	if (!isAlreadyEncrypted(doc)) return doc;
 	const payload = doc[ENCRYPTED_BODY_FIELD] as string;
 	const plaintext = await decryptString(payload, dataKey);
-	const body = decodeJsonFromDecryption<Record<string, unknown>>(plaintext);
+	const body = JSON.parse(plaintext) as Record<string, unknown>;
 	const { [ENCRYPTED_BODY_FIELD]: _omitted, ...rest } = doc;
 	return { ...rest, ...body } as T;
 };

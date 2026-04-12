@@ -1438,6 +1438,50 @@ export default {
 			hi: "उस सर्वर पर कोई मौजूदा मनी खाता नहीं मिला।",
 			cn: "在该服务器上未找到现有的 Moneeey 账户。",
 		},
+		network_error: {
+			en: "Could not reach the server. Check the URL and your connection.",
+			pt: "Não foi possível conectar ao servidor. Verifique a URL e sua conexão.",
+			es: "No se pudo contactar al servidor. Verifique la URL y su conexión.",
+			hi: "सर्वर तक नहीं पहुँच सके। URL और अपना कनेक्शन जाँचें।",
+			cn: "无法连接到服务器。请检查 URL 和您的网络连接。",
+		},
+		unknown_error: {
+			en: "Something went wrong. Please try again.",
+			pt: "Algo deu errado. Por favor, tente novamente.",
+			es: "Algo salió mal. Por favor, inténtelo de nuevo.",
+			hi: "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+			cn: "出现问题。请重试。",
+		},
+		unsupported_schema_version: {
+			en: "This database was created by a newer version of Moneeey. Please upgrade the app.",
+			pt: "Este banco foi criado por uma versão mais recente do Moneeey. Atualize o aplicativo.",
+			es: "Esta base de datos fue creada por una versión más reciente de Moneeey. Actualice la aplicación.",
+			hi: "यह डेटाबेस मनी के नए संस्करण द्वारा बनाया गया था। कृपया ऐप को अपग्रेड करें।",
+			cn: "此数据库由较新版本的 Moneeey 创建。请升级应用。",
+		},
+		magic_link_timeout: {
+			en: "The sign-in link was not confirmed in time. Please try again.",
+			pt: "O link de acesso não foi confirmado a tempo. Por favor, tente novamente.",
+			es: "El enlace de acceso no se confirmó a tiempo. Por favor, inténtelo de nuevo.",
+			hi: "साइन-इन लिंक समय पर पुष्टि नहीं हुआ। कृपया पुनः प्रयास करें।",
+			cn: "登录链接未及时确认。请重试。",
+		},
+		waiting_progress: {
+			en: (attempt: number, max: number) => `Checking… (${attempt} of ${max})`,
+			pt: (attempt: number, max: number) =>
+				`Verificando… (${attempt} de ${max})`,
+			es: (attempt: number, max: number) =>
+				`Verificando… (${attempt} de ${max})`,
+			hi: (attempt: number, max: number) => `जाँच रहे हैं… (${attempt}/${max})`,
+			cn: (attempt: number, max: number) => `正在检查… (${attempt}/${max})`,
+		},
+		current_passphrase_placeholder: {
+			en: "Current passphrase",
+			pt: "Senha atual",
+			es: "Contraseña actual",
+			hi: "वर्तमान पासफ्रेज़",
+			cn: "当前密码",
+		},
 		setup_title: {
 			en: "Protect your data",
 			pt: "Proteja seus dados",

@@ -5,7 +5,10 @@ import { PrimaryButton, SecondaryButton } from "../components/base/Button";
 import Drawer from "../components/base/Drawer";
 import { TextArea } from "../components/base/Input";
 import Space, { VerticalSpace } from "../components/base/Space";
-import { MIN_PASSPHRASE_LENGTH } from "../shared/EncryptionStore";
+import {
+	MIN_PASSPHRASE_LENGTH,
+	verifyPassphrase,
+} from "../shared/EncryptionStore";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import ConfigTable from "../tables/ConfigTable";
 import useMessages from "../utils/Messages";
@@ -23,6 +26,7 @@ export default function Settings() {
 	const [action, setAction] = useState<Action | undefined>(undefined);
 	const [loading, setLoading] = useState<number | false>(false);
 	const [changingPassphrase, setChangingPassphrase] = useState(false);
+	const [currentPassphrase, setCurrentPassphrase] = useState("");
 	const [newPassphrase, setNewPassphrase] = useState("");
 	const [confirmPassphrase, setConfirmPassphrase] = useState("");
 	const [passphraseError, setPassphraseError] = useState<string | null>(null);
@@ -84,6 +88,7 @@ export default function Settings() {
 	};
 
 	const onChangePassphrase = () => {
+		setCurrentPassphrase("");
 		setNewPassphrase("");
 		setConfirmPassphrase("");
 		setPassphraseError(null);
@@ -91,6 +96,10 @@ export default function Settings() {
 	};
 
 	const onSubmitPassphraseChange = async () => {
+		if (currentPassphrase.length === 0) {
+			setPassphraseError(Messages.encryption.wrong_passphrase);
+			return;
+		}
 		if (newPassphrase.length < MIN_PASSPHRASE_LENGTH) {
 			setPassphraseError(Messages.encryption.passphrase_too_short);
 			return;
@@ -103,13 +112,11 @@ export default function Settings() {
 		setPassphraseBusy(true);
 		try {
 			const db = moneeeyStore.persistence.getDb();
-			const dataKey = moneeeyStore.persistence.getDataKey();
-			if (!dataKey) {
-				throw new Error("no_data_key");
-			}
-			// Changing the passphrase only re-wraps the data key in the
-			// ENCRYPTION-META doc — no doc walk, no sync pause needed. Live
-			// sync (if any) will happily push the single updated meta doc.
+			// Re-derive the KEK from the current passphrase and attempt to
+			// unwrap the data key. This proves the caller knows the current
+			// passphrase — without it, any unlocked session could silently
+			// lock out the account owner by rewrapping under a new passphrase.
+			const dataKey = await verifyPassphrase(db, currentPassphrase);
 			await moneeeyStore.encryption.changePassphrase(
 				db,
 				dataKey,
@@ -168,13 +175,29 @@ export default function Settings() {
 								{Messages.encryption.change_description}
 							</p>
 							<input
+								data-testid="currentPassphrase"
+								type="password"
+								autoComplete="current-password"
+								placeholder={Messages.encryption.current_passphrase_placeholder}
+								value={currentPassphrase}
+								disabled={passphraseBusy}
+								onChange={(event) => {
+									setCurrentPassphrase(event.target.value);
+									setPassphraseError(null);
+								}}
+								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+							/>
+							<input
 								data-testid="newPassphrase"
 								type="password"
 								autoComplete="new-password"
 								placeholder={Messages.encryption.new_passphrase_placeholder}
 								value={newPassphrase}
 								disabled={passphraseBusy}
-								onChange={(event) => setNewPassphrase(event.target.value)}
+								onChange={(event) => {
+									setNewPassphrase(event.target.value);
+									setPassphraseError(null);
+								}}
 								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 							/>
 							<input
@@ -184,7 +207,10 @@ export default function Settings() {
 								placeholder={Messages.encryption.confirm_placeholder}
 								value={confirmPassphrase}
 								disabled={passphraseBusy}
-								onChange={(event) => setConfirmPassphrase(event.target.value)}
+								onChange={(event) => {
+									setConfirmPassphrase(event.target.value);
+									setPassphraseError(null);
+								}}
 								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 							/>
 							{passphraseError && (

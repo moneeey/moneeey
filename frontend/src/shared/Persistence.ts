@@ -236,18 +236,8 @@ export default class PersistenceStore {
 	 * though it may already have applied to the encrypted mirror.
 	 */
 	async flush() {
-		// Cancel any pending debounce and run doCommit directly. doCommit
-		// schedules refetches via `scheduleRefetch`, so we cancel + run that
-		// one directly too. One loop catches the case where refetch itself
-		// enqueues further commits (shouldn't happen with the current
-		// mergeBypassingMonitor, but be defensive).
-		for (let i = 0; i < 3 && this.commitables.size > 0; i += 1) {
-			this.scheduleCommit.cancel();
-			await this.doCommit();
-			this.scheduleRefetch.cancel();
-			await this.doRefetch();
-		}
-		// Final drain in case only refetches were pending.
+		this.scheduleCommit.cancel();
+		await this.doCommit();
 		this.scheduleRefetch.cancel();
 		await this.doRefetch();
 	}
