@@ -4,6 +4,10 @@ import { action, makeObservable, observable } from "mobx";
 import { getCurrentHost } from "../utils/Utils";
 
 import type PersistenceStore from "./Persistence";
+import {
+	fetchMagicLinkState,
+	startMagicLink,
+} from "./encryption/bootstrapFromMoneeeyAccount";
 
 export default class ManagementStore {
 	accessToken = "";
@@ -32,29 +36,11 @@ export default class ManagementStore {
 		this.checkLoggedIn();
 	}
 
-	async post<T>(url: string, body: object, headers?: object): Promise<T> {
-		const response = await fetch(url, {
-			method: "POST",
-			body: JSON.stringify(body),
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-				...headers,
-			},
-		});
-
-		return (await response.json()) as T;
-	}
-
 	async start(email: string) {
-		const { sent } = await this.post<{ sent: string }>("/api/auth/magic/send", {
-			email,
-		});
-
+		const sent = await startMagicLink(email);
 		this.attempts = 0;
 		this.startMonitor();
-
-		return Boolean(sent);
+		return sent;
 	}
 
 	async checkLoggedIn() {
@@ -63,13 +49,9 @@ export default class ManagementStore {
 			this.stopMonitor();
 			return;
 		}
-		const { authenticated, database, accessToken } = await this.post<{
-			authenticated: boolean;
-			database: string;
-			accessToken: string;
-		}>("/api/auth/couch", {});
-		if (authenticated && database && accessToken) {
-			this.complete(database, accessToken);
+		const remote = await fetchMagicLinkState();
+		if (remote) {
+			this.complete(remote.password, remote.url);
 		}
 	}
 
@@ -97,10 +79,13 @@ export default class ManagementStore {
 		});
 	}
 
-	complete(database: string, accessToken: string) {
+	complete(accessToken: string, _url: string) {
 		if (!isEmpty(accessToken)) {
 			this.accessToken = accessToken;
-			this.database = database;
+			// Extract database name from the URL returned by fetchMagicLinkState
+			// which has the form `${host}/db/${database}`.
+			const urlParts = _url.split("/db/");
+			this.database = urlParts.length > 1 ? urlParts[1] : "";
 			this.loggedIn = true;
 			this.stopMonitor();
 			this.applySync();
@@ -108,7 +93,14 @@ export default class ManagementStore {
 	}
 
 	async logout() {
-		await this.post<{ authenticated: boolean }>("/api/auth/logout", {});
+		await fetch("/api/auth/logout", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify({}),
+		});
 		this.accessToken = "";
 		this.database = "";
 		this.loggedIn = false;

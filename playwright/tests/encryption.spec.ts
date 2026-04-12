@@ -160,6 +160,7 @@ test.describe("Encryption gate", () => {
 		await page.getByRole("button", { name: "Change passphrase" }).click();
 
 		const newPass = "new-playwright-pass-789";
+		await page.getByTestId("currentPassphrase").fill(E2E_PASSPHRASE);
 		await page.getByTestId("newPassphrase").fill(newPass);
 		await page.getByTestId("newPassphraseConfirm").fill(newPass);
 		await page.getByRole("button", { name: "Re-encrypt and reload" }).click();

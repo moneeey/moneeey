@@ -24,6 +24,7 @@ import {
 	readMetaDoc,
 	setupNewEncryption,
 	unlockExistingEncryption,
+	verifyPassphrase,
 } from "./encryption/encryptedPouch";
 
 (PouchDB as unknown as { plugin: (p: unknown) => void }).plugin(memoryAdapter);
@@ -912,6 +913,53 @@ describe("Persistence", () => {
 			>;
 			expect(plain.name).toBe("Secret Account");
 			expect(plain.secret_number).toBe(42);
+			await cleanup(db);
+		});
+		it("verifyPassphrase accepts the correct passphrase and returns the data key", async () => {
+			const db = freshDb(nextName());
+			const dataKey = await setupNewEncryption(db, "verify-me-123");
+			await db.put(makeConfig());
+
+			const verifiedKey = await verifyPassphrase(db, "verify-me-123");
+			expect(verifiedKey).toBeDefined();
+			// The verified key should decrypt docs produced by the original.
+			const stored = (await db.get(CONFIG_DOC_ID)) as Record<string, unknown>;
+			const plain = (await decryptDoc(stored, verifiedKey)) as Record<
+				string,
+				unknown
+			>;
+			expect(plain.date_format).toBe("yyyy-MM-dd");
+			await cleanup(db);
+		});
+
+		it("verifyPassphrase rejects a wrong passphrase", async () => {
+			const db = freshDb(nextName());
+			await setupNewEncryption(db, "right-passphrase-1");
+			await expect(verifyPassphrase(db, "wrong-passphrase-2")).rejects.toThrow(
+				"wrong_passphrase",
+			);
+			await cleanup(db);
+		});
+
+		it("rejects an ENCRYPTION-META doc with an unsupported schema version", async () => {
+			const db = freshDb(nextName());
+			// Manually write a meta doc with a future schema version.
+			await db.put({
+				_id: ENCRYPTION_META_ID,
+				entity_type: "ENCRYPTION_META",
+				schema_version: 999,
+				kdf: "PBKDF2",
+				iterations: 600000,
+				hash: "SHA-256",
+				salt: "AAAA",
+				wrapped_key: "AAAA",
+			});
+			await expect(readMetaDoc(db)).rejects.toThrow(
+				"unsupported_schema_version",
+			);
+			await expect(hasEncryptionMeta(db)).rejects.toThrow(
+				"unsupported_schema_version",
+			);
 			await cleanup(db);
 		});
 	});

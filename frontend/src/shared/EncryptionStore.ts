@@ -37,8 +37,6 @@ export default class EncryptionStore {
 		});
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: harmless counter used
-	// only to satisfy MobX's `makeObservable` contract.
 	_tick = 0;
 	bump() {
 		this._tick += 1;

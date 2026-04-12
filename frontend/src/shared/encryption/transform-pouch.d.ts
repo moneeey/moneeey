@@ -11,9 +11,7 @@ declare namespace PouchDB {
 		doc: Record<string, unknown>,
 	) => Promise<Record<string, unknown>> | Record<string, unknown>;
 
-	// biome-ignore lint/complexity/noBannedTypes: upstream PouchDB.Database
-	// uses `{}` as the Content generic default, so our augmentation must
-	// match exactly for TypeScript to merge the declarations.
+	// biome-ignore lint/complexity/noBannedTypes: must match upstream PouchDB.Database Content generic default `{}`
 	interface Database<Content extends {} = {}> {
 		transform(opts: {
 			incoming?: TransformIncoming;
