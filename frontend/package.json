@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@heroicons/react": "2.1.1",
+		"@simplewebauthn/browser": "^13.3.0",
 		"autoprefixer": "10.4.27",
 		"classnames": "2.5.1",
 		"date-fns": "3.6.0",

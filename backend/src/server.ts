@@ -2,6 +2,11 @@ import { setupAuth } from "./auth.ts";
 import { PORT } from "./config.ts";
 import { oak } from "./deps.ts";
 import { Logger } from "./logger.ts";
+import { ensureUsersDbExists } from "./users.ts";
+
+export const serverInternals = {
+	ensureUsersDbExists,
+};
 
 export function createServer() {
 	const app = new oak.Application();
@@ -26,6 +31,7 @@ export function createServer() {
 }
 
 export async function runServer(app: ReturnType<typeof createServer>) {
+	await serverInternals.ensureUsersDbExists();
 	const port = PORT;
 	Logger("runServer").info("Moneeey API listening", { port });
 	await app.listen({ port });

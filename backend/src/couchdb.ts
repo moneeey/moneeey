@@ -7,7 +7,7 @@ import { Logger } from "./logger.ts";
 
 const logger = Logger("couchdb");
 
-async function dbApi(method: string, url: string, data?: object) {
+export async function dbApi(method: string, url: string, data?: object) {
 	try {
 		const body = data && JSON.stringify(data);
 		return await fetch(`${COUCHDB_HOST}/${url}`, {
@@ -15,6 +15,7 @@ async function dbApi(method: string, url: string, data?: object) {
 			method,
 			headers: {
 				Authorization: `Basic ${btoa(`${COUCHDB_ADMIN_USERNAME}:${COUCHDB_ADMIN_PASSWORD}`)}`,
+				"Content-Type": "application/json",
 			},
 		});
 	} catch (e) {
@@ -22,20 +23,33 @@ async function dbApi(method: string, url: string, data?: object) {
 	}
 }
 
-async function dbExists(dbName: string) {
+export async function dbExists(dbName: string) {
 	const req = await dbApi("HEAD", dbName);
 	return req?.status === 200;
 }
 
-function dbCreate(dbName: string) {
+export function dbCreate(dbName: string) {
 	return dbApi("PUT", dbName, { id: dbName, name: dbName });
 }
 
-function dbSecurityApply(dbName: string, members: string[]) {
+export function dbSecurityApply(dbName: string, members: string[]) {
 	return dbApi("PUT", `${dbName}/_security`, {
 		members: { roles: ["_admin"], names: members },
 		admins: { roles: ["_admin"] },
 	});
+}
+
+export async function dbSecurityAddMember(dbName: string, email: string) {
+	const resp = await dbApi("GET", `${dbName}/_security`);
+	if (!resp || resp.status !== 200) {
+		throw new Error(`failed to read security for ${dbName}`);
+	}
+	const security = await resp.json();
+	const members: string[] = security.members?.names || [];
+	if (!members.includes(email)) {
+		members.push(email);
+	}
+	return dbSecurityApply(dbName, members);
 }
 
 export async function prepareUserDatabase(dbName: string, email: string) {

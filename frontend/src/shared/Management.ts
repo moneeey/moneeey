@@ -4,10 +4,7 @@ import { action, makeObservable, observable } from "mobx";
 import { getCurrentHost } from "../utils/Utils";
 
 import type PersistenceStore from "./Persistence";
-import {
-	fetchMagicLinkState,
-	startMagicLink,
-} from "./encryption/bootstrapFromMoneeeyAccount";
+import { fetchPasskeyAuthState } from "./encryption/bootstrapFromPasskey";
 
 export default class ManagementStore {
 	accessToken = "";
@@ -16,10 +13,6 @@ export default class ManagementStore {
 
 	loggedIn = false;
 
-	monitorTmr = 0;
-
-	attempts = 0;
-
 	persistence: PersistenceStore;
 
 	constructor(persistence: PersistenceStore) {
@@ -27,47 +20,19 @@ export default class ManagementStore {
 			accessToken: observable,
 			database: observable,
 			loggedIn: observable,
-			start: action,
 			complete: action,
 			logout: action,
 		});
 
 		this.persistence = persistence;
-		this.checkLoggedIn();
+		this.checkExistingSession();
 	}
 
-	async start(email: string) {
-		const sent = await startMagicLink(email);
-		this.attempts = 0;
-		this.startMonitor();
-		return sent;
-	}
-
-	async checkLoggedIn() {
-		this.attempts++;
-		if (this.attempts > 20) {
-			this.stopMonitor();
-			return;
-		}
-		const remote = await fetchMagicLinkState();
+	async checkExistingSession() {
+		const remote = await fetchPasskeyAuthState();
 		if (remote) {
 			this.complete(remote.password, remote.url);
 		}
-	}
-
-	stopMonitor() {
-		clearTimeout(this.monitorTmr);
-	}
-
-	startMonitor() {
-		this.stopMonitor();
-		this.monitorTmr = setTimeout(
-			() => {
-				this.startMonitor();
-				this.checkLoggedIn();
-			},
-			10000 + this.attempts * 4000,
-		);
 	}
 
 	applySync() {
@@ -82,12 +47,9 @@ export default class ManagementStore {
 	complete(accessToken: string, _url: string) {
 		if (!isEmpty(accessToken)) {
 			this.accessToken = accessToken;
-			// Extract database name from the URL returned by fetchMagicLinkState
-			// which has the form `${host}/db/${database}`.
 			const urlParts = _url.split("/db/");
 			this.database = urlParts.length > 1 ? urlParts[1] : "";
 			this.loggedIn = true;
-			this.stopMonitor();
 			this.applySync();
 		}
 	}
