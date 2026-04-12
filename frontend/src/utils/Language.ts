@@ -1517,13 +1517,6 @@ export default {
 			hi: "कोई पुनर्प्राप्ति नहीं है। यदि आप यह पासफ्रेज़ भूल जाते हैं, तो आपका डेटा स्थायी रूप से खो जाएगा।",
 			cn: "没有恢复选项。如果您忘记此密码，您的数据将永久丢失。",
 		},
-		upgrade_hint: {
-			en: "Upgrading from an older Moneeey? Export your data from the old version first — existing local data is not migrated automatically.",
-			pt: "Atualizando de um Moneeey antigo? Exporte seus dados da versão anterior primeiro — os dados locais existentes não são migrados automaticamente.",
-			es: "¿Actualizando desde un Moneeey anterior? Exporte sus datos de la versión anterior primero — los datos locales existentes no se migran automáticamente.",
-			hi: "पुराने मनी से अपग्रेड कर रहे हैं? पहले पुराने संस्करण से अपना डेटा निर्यात करें — मौजूदा स्थानीय डेटा स्वचालित रूप से माइग्रेट नहीं होता है।",
-			cn: "从旧版 Moneeey 升级？请先从旧版本导出您的数据 — 现有的本地数据不会自动迁移。",
-		},
 		unlock_title: {
 			en: "Unlock Moneeey",
 			pt: "Desbloquear Moneeey",

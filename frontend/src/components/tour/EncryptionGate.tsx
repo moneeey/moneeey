@@ -525,11 +525,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					}
 				/>
 			</div>
-			{isSetup && (
-				<p className="text-xs opacity-60 max-w-md">
-					{Messages.encryption.upgrade_hint}
-				</p>
-			)}
 		</MinimalBasicScreen>
 	);
 }
