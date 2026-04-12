@@ -158,7 +158,7 @@ Deno.test(async function magicSendAndValidates() {
 			assert.assertEquals(validateResp.status, 302); // redirect
 			assert.assertEquals(
 				await validateResp.text(),
-				'Redirecting to <a href="http://localhost:4280">http://localhost:4280</a>.',
+				'Redirecting to <a href="http://localhost:4280/#/dashboard">http://localhost:4280/#/dashboard</a>.',
 			);
 			assertAuthTokenCookie(validateResp, true);
 		},
