@@ -5,15 +5,24 @@ import { Input, Select } from "./page-objects";
 /** Default passphrase used by the wizard for all E2E tests. */
 export const E2E_PASSPHRASE = "playwright-test-pass-123";
 
-/** Types passphrase + confirmation into the setup form and submits. */
+/**
+ * Walks the three-state encryption gate to set up a fresh local-only
+ * account: clicks "Create new (local only)" from the three-way chooser,
+ * fills the passphrase + confirmation fields, submits. Leaves the page on
+ * whatever the next boot step renders (usually the currency picker).
+ */
 export async function completeEncryptionSetup(
 	page: Page,
 	passphrase: string = E2E_PASSPHRASE,
 ) {
+	// Gate starts on the "choose" screen. Pick the local-only path.
+	await page.getByRole("button", { name: "Create new (local only)" }).click();
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
 	await page.getByTestId("encryptionPassphrase").fill(passphrase);
 	await page.getByTestId("encryptionPassphraseConfirm").fill(passphrase);
-	await page.getByTestId("ok-button").click();
+	await page
+		.getByRole("button", { name: "Create passphrase and continue" })
+		.click();
 }
 
 /** Types passphrase into the unlock form and submits. */

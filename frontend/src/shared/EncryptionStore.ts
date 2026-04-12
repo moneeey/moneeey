@@ -1,12 +1,12 @@
 import { action, makeObservable, observable } from "mobx";
 
+import Logger from "./Logger";
+import { CONFIG_DOC_ID } from "./Persistence";
 import {
 	changePassphrase as changePassphraseInMeta,
 	setupNewEncryption,
 	unlockExistingEncryption,
 } from "./encryption/encryptedPouch";
-import Logger from "./Logger";
-import { CONFIG_DOC_ID } from "./Persistence";
 
 export const MIN_PASSPHRASE_LENGTH = 8;
 

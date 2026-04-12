@@ -17,7 +17,7 @@
  *   intentionally do *not* install an outgoing transform — if we did,
  *   outgoing replication would decrypt before sending and leak plaintext to
  *   the remote.
- * - **Passthrough.** Incoming docs that already look encrypted (`_encrypted_body`
+ * - **Passthrough.** Incoming docs that already look encrypted (`encrypted_body`
  *   present) are written as-is. That's how incoming replication of
  *   already-encrypted envelopes from another device works without touching
  *   the key.
@@ -55,7 +55,7 @@ export const LOCAL_DB_NAME = "moneeey";
 export const ENCRYPTION_META_ID = "ENCRYPTION-META";
 export const ENCRYPTION_META_SCHEMA_VERSION = 1;
 
-/** Fields that stay in the clear alongside `_encrypted_body`.
+/** Fields that stay in the clear alongside `encrypted_body`.
  *
  * `_id`, `_rev`, `_deleted`, `_conflicts` are required by PouchDB for
  * identity and rev tracking. `entity_type` lets `PersistenceStore` dispatch
@@ -72,7 +72,7 @@ const CLEAR_FIELDS = new Set([
 	"updated",
 ]);
 
-const ENCRYPTED_BODY_FIELD = "_encrypted_body";
+const ENCRYPTED_BODY_FIELD = "encrypted_body";
 
 type MetaDoc = {
 	_id: typeof ENCRYPTION_META_ID;
@@ -88,8 +88,12 @@ type MetaDoc = {
 
 type TransformApi = {
 	transform: (opts: {
-		incoming?: (doc: Record<string, unknown>) => Promise<Record<string, unknown>>;
-		outgoing?: (doc: Record<string, unknown>) => Promise<Record<string, unknown>>;
+		incoming?: (
+			doc: Record<string, unknown>,
+		) => Promise<Record<string, unknown>>;
+		outgoing?: (
+			doc: Record<string, unknown>,
+		) => Promise<Record<string, unknown>>;
 	}) => void;
 };
 
@@ -266,7 +270,7 @@ export const changePassphrase = async (
 
 /**
  * Decrypts a stored document, returning the plaintext form the app expects.
- * Passthrough for the meta doc and any doc that lacks `_encrypted_body` —
+ * Passthrough for the meta doc and any doc that lacks `encrypted_body` —
  * the latter shouldn't normally happen post-setup, but handles gracefully
  * any plaintext leftovers from migration paths.
  */

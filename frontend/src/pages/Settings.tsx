@@ -102,16 +102,19 @@ export default function Settings() {
 		setPassphraseError(null);
 		setPassphraseBusy(true);
 		try {
-			// Pause sync before mutating both databases; on reload it will
-			// re-establish with the new ciphertext.
-			await moneeeyStore.persistence.sync({
-				url: "",
-				username: "",
-				password: "",
-				enabled: false,
-			});
 			const db = moneeeyStore.persistence.getDb();
-			await moneeeyStore.encryption.changePassphrase(db, newPassphrase);
+			const dataKey = moneeeyStore.persistence.getDataKey();
+			if (!dataKey) {
+				throw new Error("no_data_key");
+			}
+			// Changing the passphrase only re-wraps the data key in the
+			// ENCRYPTION-META doc — no doc walk, no sync pause needed. Live
+			// sync (if any) will happily push the single updated meta doc.
+			await moneeeyStore.encryption.changePassphrase(
+				db,
+				dataKey,
+				newPassphrase,
+			);
 			// changePassphrase triggers a reload; this line is unreachable.
 		} catch (err) {
 			const code = (err as Error).message;

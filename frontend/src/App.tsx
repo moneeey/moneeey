@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { observer } from "mobx-react";
 
@@ -7,7 +7,9 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import AppMenu from "./components/AppMenu";
 import Navigator from "./components/Navigator";
 import Notifications from "./components/Notifications";
+import type { UnlockResult } from "./shared/EncryptionStore";
 import MoneeeyStore from "./shared/MoneeeyStore";
+import { openRawDatabase } from "./shared/encryption/encryptedPouch";
 import useMoneeeyStore, {
 	MoneeeyStoreProvider,
 } from "./shared/useMoneeeyStore";
@@ -94,9 +96,14 @@ const AppContent = observer(() => {
 const AppBoot = observer(() => {
 	const { currentLanguage } = useLanguageSwitcher();
 	const [moneeeyStore, setMoneeeyStore] = useState<MoneeeyStore | null>(null);
+	// One raw PouchDB handle reused by the encryption gate (for mode
+	// detection + pre-unlock one-shot sync) and then handed to MoneeeyStore
+	// once the gate has installed the encryption transform on it.
+	const rawDb = useMemo(() => openRawDatabase(), []);
 
-	const onUnlocked = useCallback(async (db: PouchDB.Database) => {
+	const onUnlocked = useCallback(async ({ db, dataKey }: UnlockResult) => {
 		const store = new MoneeeyStore(() => db);
+		store.persistence.setDataKey(dataKey);
 		await store.load();
 		setMoneeeyStore(store);
 	}, []);
@@ -106,7 +113,7 @@ const AppBoot = observer(() => {
 	}
 
 	if (!moneeeyStore) {
-		return <EncryptionGate onUnlocked={onUnlocked} />;
+		return <EncryptionGate db={rawDb} onUnlocked={onUnlocked} />;
 	}
 
 	return (

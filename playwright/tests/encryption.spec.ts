@@ -23,35 +23,55 @@ async function pickLanguageEn(page: import("@playwright/test").Page) {
 }
 
 test.describe("Encryption gate", () => {
-	test("setup flow creates passphrase and advances to currency picker", async ({
+	test("setup flow: three-way chooser → create new → advances to currency picker", async ({
 		seededPage: page,
 	}) => {
 		await pickLanguageEn(page);
 
-		// Encryption gate: setup mode (no prior flag in localStorage)
-		await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
-		await expect(page.getByTestId("encryptionPassphraseConfirm")).toBeVisible();
+		// Gate starts on the three-way chooser. Confirm all three paths are
+		// advertised before the user picks one.
+		await expect(
+			page.getByRole("button", { name: "Create new (local only)" }),
+		).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "Sign in with email (magic link)" }),
+		).toBeVisible();
+		await expect(
+			page.getByRole("button", {
+				name: "Sign in with self-hosted CouchDB",
+			}),
+		).toBeVisible();
 
 		await completeEncryptionSetup(page);
 
 		// Next boot step = currency selection
 		await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible();
 
-		// localStorage marker is now set
-		const flag = await page.evaluate(() =>
-			window.localStorage.getItem("moneeey.encryption.initialized"),
-		);
-		expect(flag).toBe("1");
+		// Verify the ENCRYPTION-META doc was written to the local PouchDB
+		// (cross-device mode detection depends on this doc replicating).
+		const hasMeta = await page.evaluate(async () => {
+			// Open a sibling PouchDB handle to the same underlying data.
+			const dbs = await window.indexedDB.databases?.();
+			return Boolean(
+				dbs?.find((d) => d.name === "_pouch_moneeey"),
+			);
+		});
+		expect(hasMeta).toBe(true);
 	});
 
 	test("rejects a passphrase shorter than 8 characters", async ({
 		seededPage: page,
 	}) => {
 		await pickLanguageEn(page);
+		await page
+			.getByRole("button", { name: "Create new (local only)" })
+			.click();
 
 		await page.getByTestId("encryptionPassphrase").fill("short");
 		await page.getByTestId("encryptionPassphraseConfirm").fill("short");
-		await page.getByTestId("ok-button").click();
+		await page
+			.getByRole("button", { name: "Create passphrase and continue" })
+			.click();
 
 		await expect(page.getByTestId("encryptionError")).toContainText(
 			"at least 8",
@@ -62,6 +82,9 @@ test.describe("Encryption gate", () => {
 
 	test("rejects mismatched confirmation", async ({ seededPage: page }) => {
 		await pickLanguageEn(page);
+		await page
+			.getByRole("button", { name: "Create new (local only)" })
+			.click();
 
 		await page
 			.getByTestId("encryptionPassphrase")
@@ -69,7 +92,9 @@ test.describe("Encryption gate", () => {
 		await page
 			.getByTestId("encryptionPassphraseConfirm")
 			.fill("second-long-enough-456");
-		await page.getByTestId("ok-button").click();
+		await page
+			.getByRole("button", { name: "Create passphrase and continue" })
+			.click();
 
 		await expect(page.getByTestId("encryptionError")).toContainText(
 			"do not match",
@@ -100,14 +125,14 @@ test.describe("Encryption gate", () => {
 		await page
 			.getByTestId("encryptionPassphrase")
 			.fill("totally-wrong-passphrase");
-		await page.getByTestId("ok-button").click();
+		await page.getByRole("button", { name: "Unlock" }).click();
 		await expect(page.getByTestId("encryptionError")).toContainText(
 			"Wrong passphrase",
 		);
 
 		// Then the correct one
 		await page.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
-		await page.getByTestId("ok-button").click();
+		await page.getByRole("button", { name: "Unlock" }).click();
 		await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible();
 	});
 
@@ -151,14 +176,14 @@ test.describe("Encryption gate", () => {
 
 		// Old passphrase should no longer work
 		await page.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
-		await page.getByTestId("ok-button").click();
+		await page.getByRole("button", { name: "Unlock" }).click();
 		await expect(page.getByTestId("encryptionError")).toContainText(
 			"Wrong passphrase",
 		);
 
 		// New one unlocks back into the app
 		await page.getByTestId("encryptionPassphrase").fill(newPass);
-		await page.getByTestId("ok-button").click();
+		await page.getByRole("button", { name: "Unlock" }).click();
 		await expect(page.getByText("Dashboard")).toBeVisible();
 	});
 });

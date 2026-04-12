@@ -6,9 +6,12 @@ import {
 	type UnlockResult,
 	openEncryptedDatabase,
 } from "../../shared/EncryptionStore";
-import { hasEncryptionMeta } from "../../shared/encryption/encryptedPouch";
 import { Status } from "../../shared/Persistence";
-import { startMagicLink, pollForMagicLinkAuth } from "../../shared/encryption/bootstrapFromMoneeeyAccount";
+import {
+	pollForMagicLinkAuth,
+	startMagicLink,
+} from "../../shared/encryption/bootstrapFromMoneeeyAccount";
+import { hasEncryptionMeta } from "../../shared/encryption/encryptedPouch";
 import useMessages from "../../utils/Messages";
 import { OkButton, SecondaryButton } from "../base/Button";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
@@ -48,9 +51,7 @@ const messageForError = (
  * the user is returning and we show unlock, otherwise we show the three-way
  * choice (create new / magic link / self-hosted).
  */
-const detectInitialState = async (
-	db: PouchDB.Database,
-): Promise<GateState> => {
+const detectInitialState = async (db: PouchDB.Database): Promise<GateState> => {
 	return (await hasEncryptionMeta(db))
 		? { kind: "unlock" }
 		: { kind: "choose" };
@@ -422,4 +423,3 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		</MinimalBasicScreen>
 	);
 }
-

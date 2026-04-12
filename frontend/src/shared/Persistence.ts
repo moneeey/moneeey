@@ -5,10 +5,10 @@ import PouchDB from "pouchdb";
 import type { SyncConfig } from "../entities/Config";
 
 import { asyncProcess } from "../utils/Utils";
-import { decryptDoc } from "./encryption/encryptedPouch";
 import { EntityType, type IBaseEntity } from "./Entity";
 import Logger from "./Logger";
 import type MappedStore from "./MappedStore";
+import { decryptDoc } from "./encryption/encryptedPouch";
 
 export enum Status {
 	ONLINE = "ONLINE",
@@ -155,6 +155,13 @@ export default class PersistenceStore {
 		this.dataKey = key;
 	}
 
+	/** Returns the data key that was injected after unlock. Used by
+	 * `Settings.changePassphrase` which needs it to re-wrap the key under
+	 * a new passphrase. Returns null before unlock. */
+	getDataKey() {
+		return this.dataKey;
+	}
+
 	monitor<T extends IBaseEntity>(store: MappedStore<T>) {
 		new PersistenceMonitor(this, this.logger, store);
 	}
@@ -175,10 +182,7 @@ export default class PersistenceStore {
 		return Promise.all(
 			raw.map(async (doc) =>
 				doc
-					? await decryptDoc(
-							doc as unknown as Record<string, unknown>,
-							key,
-						)
+					? await decryptDoc(doc as unknown as Record<string, unknown>, key)
 					: doc,
 			),
 		);
