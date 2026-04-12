@@ -55,10 +55,19 @@ describe("MappedStore", () => {
 			expect(store.byUuid("e1")?.name).toBe("First");
 		});
 
-		it("sets _id from entity_type and uuid", () => {
+		it("generates opaque _id when none is set", () => {
 			const { store } = createStore();
 			mergeEntity(store, { test_uuid: "e1" });
-			expect(store.byUuid("e1")?._id).toBe("ACCOUNT-e1");
+			const id = store.byUuid("e1")?._id;
+			expect(id).toBeTruthy();
+			expect(id).not.toContain("ACCOUNT");
+			expect(id).not.toContain("e1");
+		});
+
+		it("preserves existing _id", () => {
+			const { store } = createStore();
+			mergeEntity(store, { test_uuid: "e1", _id: "existing-id" });
+			expect(store.byUuid("e1")?._id).toBe("existing-id");
 		});
 
 		it("sets created if not present", () => {
