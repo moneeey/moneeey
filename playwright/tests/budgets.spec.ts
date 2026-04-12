@@ -43,7 +43,7 @@ test("Budget lifecycle — create, allocate, open editor, view archived toggle",
 	const food = BudgetRow(page, 0);
 	await food.allocate("30");
 	await food.expectUsed("50");
-	await food.expectRemaining("-20", "bg---800 opacity-80 text-red-200");
+	await food.expectRemaining("-20", "bg---800 opacity-80 text-negative");
 
 	// Index 1 = Fuel (Gas Station): allocate 200, used=100, remaining=100
 	const fuel = BudgetRow(page, 1);

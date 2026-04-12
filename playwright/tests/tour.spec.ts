@@ -63,7 +63,7 @@ test("Tour walkthrough", async ({ seededPage: page }) => {
 	const bakery = BudgetRow(page, 0);
 	await bakery.allocate("65,00", "65");
 	await bakery.expectUsed("89,8");
-	await bakery.expectRemaining("-24,80", "bg---800 opacity-80 text-red-200");
+	await bakery.expectRemaining("-24,80", "bg---800 opacity-80 text-negative");
 
 	const gas = BudgetRow(page, 1);
 	await gas.allocate("5435,25", "5.435,25");
