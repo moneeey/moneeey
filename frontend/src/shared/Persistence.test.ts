@@ -726,7 +726,7 @@ describe("Persistence", () => {
 			await db1.put(makeConfig());
 			const stored = (await db1.get(CONFIG_DOC_ID)) as Record<string, unknown>;
 			// On disk the body is encrypted.
-			expect(stored.encrypted_body).toBeDefined();
+			expect(stored.sealed).toBeDefined();
 			expect(stored.default_currency).toBeUndefined();
 			// Decrypting with the live data key yields plaintext.
 			const decrypted = (await decryptDoc(stored, dataKey1)) as Record<
@@ -877,9 +877,9 @@ describe("Persistence", () => {
 			expect(meta).not.toBeNull();
 			expect(meta?._id).toBe(ENCRYPTION_META_ID);
 			// Not "encrypted" as a doc — the meta payload is inside
-			// wrapped_key, not encrypted_body.
+			// wrapped_key, not sealed.
 			expect(
-				(meta as unknown as Record<string, unknown>).encrypted_body,
+				(meta as unknown as Record<string, unknown>).sealed,
 			).toBeUndefined();
 			await cleanup(db);
 		});
@@ -897,15 +897,16 @@ describe("Persistence", () => {
 				tags: [],
 			});
 			const stored = (await db.get("ACCOUNT-probe")) as Record<string, unknown>;
-			// Clear fields are still present on the stored doc.
-			expect(stored.entity_type).toBe(EntityType.ACCOUNT);
+			// Only PouchDB structural fields remain in the clear.
 			expect(stored._id).toBe("ACCOUNT-probe");
-			expect(stored.updated).toBe("2024-01-01T00:00:00Z");
-			// Body fields are gone from the clear doc — they live only
-			// inside the encrypted blob.
+			expect(stored._rev).toBeDefined();
+			// Everything else — including entity_type, updated, and all
+			// body fields — is inside the sealed blob.
+			expect(stored.entity_type).toBeUndefined();
+			expect(stored.updated).toBeUndefined();
 			expect(stored.name).toBeUndefined();
 			expect(stored.secret_number).toBeUndefined();
-			expect(stored.encrypted_body).toBeDefined();
+			expect(stored.sealed).toBeDefined();
 			// decryptDoc brings everything back.
 			const plain = (await decryptDoc(stored, dataKey)) as Record<
 				string,

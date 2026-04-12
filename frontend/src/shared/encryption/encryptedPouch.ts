@@ -17,7 +17,7 @@
  *   intentionally do *not* install an outgoing transform — if we did,
  *   outgoing replication would decrypt before sending and leak plaintext to
  *   the remote.
- * - **Passthrough.** Incoming docs that already look encrypted (`encrypted_body`
+ * - **Passthrough.** Incoming docs that already look encrypted (`sealed`
  *   present) are written as-is. That's how incoming replication of
  *   already-encrypted envelopes from another device works without touching
  *   the key.
@@ -91,24 +91,21 @@ export type EncryptionErrorCode =
 export const encryptionError = (code: EncryptionErrorCode): Error =>
 	new Error(code);
 
-/** Fields that stay in the clear alongside `encrypted_body`.
+/** Fields that stay in the clear alongside `sealed`.
  *
- * `_id`, `_rev`, `_deleted`, `_conflicts` are required by PouchDB for
- * identity and rev tracking. `entity_type` lets `PersistenceStore` dispatch
- * to the right watcher without decrypting every doc first — and it leaks no
- * information beyond what the `_id` prefix already does. `updated` is kept in
- * the clear so `resolveConflict` can compare timestamps without needing the
- * key (a doc-level change-frequency leak we've decided is acceptable). */
+ * Only PouchDB's own structural fields are exempt from encryption.
+ * Everything else — including `entity_type` and `updated` — is sealed
+ * inside the ciphertext blob. This is safe because every read path
+ * (`fetchAllDocs`, `refetch`) runs `decryptDoc` before the data reaches
+ * `notifyDocument` or `resolveConflict`. */
 const CLEAR_FIELDS: readonly string[] = [
 	"_id",
 	"_rev",
 	"_deleted",
 	"_conflicts",
-	"entity_type",
-	"updated",
 ];
 
-const ENCRYPTED_BODY_FIELD = "encrypted_body";
+const ENCRYPTED_BODY_FIELD = "sealed";
 
 export type MetaDoc = {
 	_id: typeof ENCRYPTION_META_ID;
@@ -324,7 +321,7 @@ export const changePassphrase = async (
 
 /**
  * Decrypts a stored document, returning the plaintext form the app expects.
- * Passthrough for the meta doc and any doc that lacks `encrypted_body` —
+ * Passthrough for the meta doc and any doc that lacks `sealed` —
  * the latter handles legacy / pre-setup plaintext rows that predate the
  * encryption transform.
  */

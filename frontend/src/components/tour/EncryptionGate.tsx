@@ -19,9 +19,17 @@ import { OkButton, SecondaryButton } from "../base/Button";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
 import SelfHostedSyncForm from "../sync/SelfHostedSyncForm";
 
+export type UnlockResult = {
+	dataKey: CryptoKey;
+	/** If the user signed in via magic-link or self-hosted before setup,
+	 * this carries the remote config so App.tsx can kick off live sync
+	 * immediately after the store loads. */
+	syncConfig?: SyncConfig;
+};
+
 type Props = {
 	db: PouchDB.Database;
-	onUnlocked: (dataKey: CryptoKey) => void;
+	onUnlocked: (result: UnlockResult) => void;
 };
 
 type GateState =
@@ -80,6 +88,10 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 	const [confirm, setConfirm] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
+	// Sync config remembered from a successful magic-link or self-hosted
+	// pull. Passed through `onUnlocked` so App.tsx can start live sync
+	// after the store boots.
+	const pendingSyncRef = useRef<SyncConfig | null>(null);
 	const [email, setEmail] = useState("");
 	// AbortController for any in-flight magic-link poll. Held in a ref so
 	// cancel handlers survive re-renders without re-creating the
@@ -131,7 +143,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		setBusy(true);
 		try {
 			const dataKey = await openEncryptedDatabase(db, passphrase, "setup");
-			onUnlocked(dataKey);
+			onUnlocked({ dataKey, syncConfig: pendingSyncRef.current ?? undefined });
 		} catch (err) {
 			setError(messageForError(err, Messages));
 			setBusy(false);
@@ -147,7 +159,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		setBusy(true);
 		try {
 			const dataKey = await openEncryptedDatabase(db, passphrase, "unlock");
-			onUnlocked(dataKey);
+			onUnlocked({ dataKey, syncConfig: pendingSyncRef.current ?? undefined });
 		} catch (err) {
 			setError(messageForError(err, Messages));
 			setBusy(false);
@@ -189,17 +201,22 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					.on("error", (err: unknown) => reject(err));
 			});
 
+			// Remember the sync config so it survives the setup/unlock
+			// transition and gets passed to App.tsx via onUnlocked.
+			pendingSyncRef.current = remote;
+
 			if (await hasEncryptionMeta(db)) {
+				// Existing account on this server — go to unlock.
 				reset();
 				setState({ kind: "unlock" });
 				return;
 			}
-			// Sync succeeded but the remote had no ENCRYPTION-META — either
-			// the URL points at the wrong database or the user doesn't
-			// actually have a prior Moneeey account there.
-			setError(Messages.encryption.no_existing_data_found);
-			setState({ kind: "choose" });
-			setBusy(false);
+			// The remote is empty (first-time user) or points at a DB that
+			// has no Moneeey data. Transition to setup so the user can
+			// create a passphrase; after setup the sync config will be
+			// applied and data will flow to the remote.
+			reset();
+			setState({ kind: "setup" });
 		} catch (err) {
 			console.error("pull-from-remote failed", err);
 			// Anything that crashed the replication path is most likely a

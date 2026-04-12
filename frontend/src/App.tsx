@@ -7,6 +7,7 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import AppMenu from "./components/AppMenu";
 import Navigator from "./components/Navigator";
 import Notifications from "./components/Notifications";
+import type { UnlockResult } from "./components/tour/EncryptionGate";
 import MoneeeyStore from "./shared/MoneeeyStore";
 import { openRawDatabase } from "./shared/encryption/encryptedPouch";
 import useMoneeeyStore, {
@@ -101,10 +102,21 @@ const AppBoot = observer(() => {
 	const rawDb = useMemo(() => openRawDatabase(), []);
 
 	const onUnlocked = useCallback(
-		async (dataKey: CryptoKey) => {
+		async ({ dataKey, syncConfig }: UnlockResult) => {
 			const store = new MoneeeyStore(() => rawDb);
 			store.persistence.setDataKey(dataKey);
 			await store.load();
+			// If the gate obtained sync credentials (magic-link or
+			// self-hosted pull), apply them so the freshly-created data
+			// starts syncing immediately. Also persist them into the Config
+			// doc so sync survives the next reload.
+			if (syncConfig) {
+				store.config.merge({
+					...store.config.main,
+					couchSync: syncConfig,
+				});
+				store.persistence.sync(syncConfig);
+			}
 			setMoneeeyStore(store);
 		},
 		[rawDb],
