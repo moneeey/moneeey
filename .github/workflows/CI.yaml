@@ -43,16 +43,8 @@ jobs:
             yarn install --immutable
             yarn playwright install
             export CI=true
-            yarn test --reporter=html,json
+            yarn test
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: always()
-        with:
-          name: playwright-report
-          path: |
-            ${{ github.workspace }}/playwright/playwright-report/
-            ${{ github.workspace }}/playwright/test-results/videos/
-          retention-days: 30
 
   BACKEND:
     runs-on: ubuntu-latest
