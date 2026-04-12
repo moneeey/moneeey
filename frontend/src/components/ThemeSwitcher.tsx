@@ -52,8 +52,8 @@ export default function ThemeSwitcher() {
 		return (
 			<i
 				data-testid={`themeSwitcher_${value}`}
-				className={`inline-block h-6 w-6 rounded-xl hover:ring-2 ring-secondary-500 p-0.5 ${
-					isActive ? "ring-2" : ""
+				className={`inline-block h-6 w-6 rounded-xl hover:ring-3 ring-secondary-500 p-0.5 ${
+					isActive ? "ring-3" : ""
 				}`}
 				onClick={() => selectMode(value)}
 				onKeyDown={() => selectMode(value)}

@@ -29,6 +29,7 @@
     --text-muted: 148 163 184;
     --text-positive: 134 239 172;
     --text-negative: 252 165 165;
+    --blink-color: 250 204 21;
   }
 
   [data-theme="light"] {
@@ -47,6 +48,7 @@
     --text-muted: 71 85 105;
     --text-positive: 22 101 52;
     --text-negative: 153 27 27;
+    --blink-color: 37 99 235;
   }
 
   body,
@@ -71,12 +73,12 @@
 
   @keyframes blink {
     0% { border-color: transparent; }
-    50% { border-color: yellow; }
+    50% { border-color: rgb(var(--blink-color)); }
     100% { border-color: transparent; }
   }
 
   .blink {
     animation: blink 1s infinite;
-    border: 1px solid transparent;
+    border: 2px solid transparent;
   }
 }
