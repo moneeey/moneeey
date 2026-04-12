@@ -102,7 +102,7 @@ function ImportProcessResultTable({
 				},
 				{
 					title: Messages.transactions.from_account,
-					width: 90,
+					width: 140,
 					validate: () => ({ valid: true }),
 					customClass: classAlreadyExistAccount(
 						transactions,
@@ -119,7 +119,7 @@ function ImportProcessResultTable({
 				},
 				{
 					title: Messages.transactions.to_account,
-					width: 90,
+					width: 140,
 					validate: () => ({ valid: true }),
 					customClass: classAlreadyExistAccount(
 						transactions,
