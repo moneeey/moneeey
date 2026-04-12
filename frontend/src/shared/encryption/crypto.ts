@@ -30,7 +30,7 @@ const textDecoder = new TextDecoder();
  * Returns the SubtleCrypto interface, or throws a descriptive error if
  * WebCrypto isn't available (e.g. non-secure-context HTTP). Chrome, Firefox,
  * and Safari require HTTPS or `localhost` for `crypto.subtle` — a hostname
- * like `local.moneeey.io` that resolves to loopback does NOT qualify.
+ * like `custom-hostname.local` that resolves to loopback does NOT qualify.
  */
 const getSubtle = (): SubtleCrypto => {
 	const c = globalThis.crypto;

@@ -17,11 +17,11 @@ Execute these steps to run locally:
 docker-compose up
 ```
 
-The frontend will be available at: [local.moneeey.io:4280](<http://local.moneeey.io:4280>)
+The frontend will be available at: [localhost:4280](<http://localhost:4280>)
 
-The backend will be available at: [local.moneeey.io:4280/api/](<http://local.moneeey.io:4280/api/>)
+The backend will be available at: [localhost:4280/api/](<http://localhost:4280/api/>)
 
-CouchDB admin is available at: [local.moneeey.io:4280/db/_utils/#login](<http://local.moneeey.io:4280/db/_utils/#login>)
+CouchDB admin is available at: [localhost:4280/db/_utils/#login](<http://localhost:4280/db/_utils/#login>)
 use `dev/dev` to login as admin.
 
 ## Features

@@ -275,7 +275,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 	}
 
 	// WebCrypto (crypto.subtle) requires a secure context — HTTPS or
-	// literal localhost. A custom hostname like `local.moneeey.io` over
+	// literal localhost. A custom hostname like `custom-hostname.local` over
 	// plain HTTP does NOT qualify in Chrome/Firefox. Surface a clear error
 	// instead of letting every crypto call fail cryptically.
 	if (!isWebCryptoAvailable()) {

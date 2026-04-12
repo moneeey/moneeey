@@ -49,7 +49,7 @@ export default function SelfHostedSyncForm({
 							testId="url"
 							value={state.url}
 							onChange={(value) => setState({ ...state, url: value })}
-							placeholder="http://local.moneeey.io:4280/db/mydatabase"
+							placeholder="http://localhost:4280/db/mydatabase"
 						/>
 					),
 				},
