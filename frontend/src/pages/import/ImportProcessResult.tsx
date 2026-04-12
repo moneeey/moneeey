@@ -18,9 +18,18 @@ import type {
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import useMessages from "../../utils/Messages";
 
-const classExisting = ["bg-cyan-900", "bg-cyan-950"];
-const classUpdated = ["bg-fuchsia-900", "bg-fuchsia-950"];
-const classRequired = ["bg-green-900", "bg-green-950"];
+const classExisting = [
+	"bg-cyan-200 text-gray-900",
+	"bg-cyan-300 text-gray-900",
+];
+const classUpdated = [
+	"bg-fuchsia-200 text-gray-900",
+	"bg-fuchsia-300 text-gray-900",
+];
+const classRequired = [
+	"bg-green-200 text-gray-900",
+	"bg-green-300 text-gray-900",
+];
 
 function classAlreadyExist<TValue>(
 	transactions: TransactionStore,
@@ -93,7 +102,7 @@ function ImportProcessResultTable({
 				},
 				{
 					title: Messages.transactions.from_account,
-					width: 90,
+					width: 140,
 					validate: () => ({ valid: true }),
 					customClass: classAlreadyExistAccount(
 						transactions,
@@ -110,7 +119,7 @@ function ImportProcessResultTable({
 				},
 				{
 					title: Messages.transactions.to_account,
-					width: 90,
+					width: 140,
 					validate: () => ({ valid: true }),
 					customClass: classAlreadyExistAccount(
 						transactions,
@@ -210,13 +219,13 @@ const ImportProcessResult = ({
 					{Messages.util.cancel}
 				</SecondaryButton>
 				<div className="grow flex flex-row justify-end gap-2">
-					<span className={`${classRequired[0]} py-1 px-2`}>
+					<span className={`${classRequired[0]} py-1 px-2 rounded`}>
 						{Messages.util.required}
 					</span>
-					<span className={`${classExisting[0]} py-1 px-2`}>
+					<span className={`${classExisting[0]} py-1 px-2 rounded`}>
 						{Messages.import.existing}
 					</span>
-					<span className={`${classUpdated[0]} py-1 px-2`}>
+					<span className={`${classUpdated[0]} py-1 px-2 rounded`}>
 						{Messages.import.updated}
 					</span>
 				</div>

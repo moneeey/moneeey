@@ -40,12 +40,12 @@ test("Import CSV and OFX, map accounts, merge with existing data", async ({
 	await importFile("bank_statement_a.csv");
 	await waitLoading(page);
 	expect(await retrieveRowsData(page, IMPORT_COLUMNS, 6)).toEqual([
-		"date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
-		"date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
-		"date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
-		"date: 2015-02-04 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 40,4 (bg---600) | memo: 2015-02-04;Lava Jato - Carros;-40.40 (bg---600)",
-		"date: 2015-02-06 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-900) | amount: 57,52 (bg---800) | memo: 2015-02-06;Gas Station;-57.52 (bg---800)",
-		"date: 2015-02-07 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-950) | amount: 50,5 (bg---600) | memo: 2015-02-07;Transfer;-50.50 (bg---600)",
+		"date: 2015-02-01 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-200 text-gray-900) | amount: 100,1 (bg---800) | memo: 2015-02-01;Auto Posto Aurora;-100.10 (bg---800)",
+		"date: 2015-02-01 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-300 text-gray-900) | amount: 20,2 (bg---600) | memo: 2015-02-01;Padaria;-20.20 (bg---600)",
+		"date: 2015-02-03 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-200 text-gray-900) | amount: 30,3 (bg---800) | memo: 2015-02-03;Restaurante Sorocaba;-30.30 (bg---800)",
+		"date: 2015-02-04 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-300 text-gray-900) | amount: 40,4 (bg---600) | memo: 2015-02-04;Lava Jato - Carros;-40.40 (bg---600)",
+		"date: 2015-02-06 (bg---800) | from: Banco Moneeey (bg---800) | to: To (bg---800 bg-green-200 text-gray-900) | amount: 57,52 (bg---800) | memo: 2015-02-06;Gas Station;-57.52 (bg---800)",
+		"date: 2015-02-07 (bg---600) | from: Banco Moneeey (bg---600) | to: To (bg---600 bg-green-300 text-gray-900) | amount: 50,5 (bg---600) | memo: 2015-02-07;Transfer;-50.50 (bg---600)",
 	]);
 
 	// Map imported rows to target accounts
@@ -81,15 +81,15 @@ test("Import CSV and OFX, map accounts, merge with existing data", async ({
 
 	// OFX with duplicate detection — first row shows cyan/fuchsia highlight
 	expect(await retrieveRowsData(page, IMPORT_COLUMNS, 5)).toEqual([
-		"date: 2015-02-07 (bg---800 bg-cyan-900) | from: Banco Moneeey (bg---800 bg-cyan-900) | to: MoneeeyCard (bg---800 bg-cyan-900) | amount: 50,5 (bg---800 bg-cyan-900) | memo: 2015-02-07;Transfer;-50.50;50.50  FromMyOtherAccount Transfer from savings  2015-02-07 (bg---800 bg-fuchsia-900)",
-		"date: 2015-02-10 (bg---600) | from: MoneeeyCard (bg---600) | to: To (bg---600 bg-green-950) | amount: 60,6 (bg---600) | memo: -60.60  Drogaria Drogas 420 Pharmacy purchase  2015-02-10 (bg---600)",
+		"date: 2015-02-07 (bg---800 bg-cyan-200 text-gray-900) | from: Banco Moneeey (bg---800 bg-cyan-200 text-gray-900) | to: MoneeeyCard (bg---800 bg-cyan-200 text-gray-900) | amount: 50,5 (bg---800 bg-cyan-200 text-gray-900) | memo: 2015-02-07;Transfer;-50.50;50.50  FromMyOtherAccount Transfer from savings  2015-02-07 (bg---800 bg-fuchsia-200 text-gray-900)",
+		"date: 2015-02-10 (bg---600) | from: MoneeeyCard (bg---600) | to: To (bg---600 bg-green-300 text-gray-900) | amount: 60,6 (bg---600) | memo: -60.60  Drogaria Drogas 420 Pharmacy purchase  2015-02-10 (bg---600)",
 		"date: 2015-02-10 (bg---800) | from: MoneeeyCard (bg---800) | to: Restaurant (bg---800) | amount: 70,7 (bg---800) | memo: -70.70  Restaurante Monteiro Dining out  2015-02-10 (bg---800)",
-		"date: 2015-02-11 (bg---600) | from: MoneeeyCard (bg---600) | to: To (bg---600 bg-green-950) | amount: 80,8 (bg---600) | memo: -80.80  Mercado Bom Preco Grocery shopping  2015-02-11 (bg---600)",
+		"date: 2015-02-11 (bg---600) | from: MoneeeyCard (bg---600) | to: To (bg---600 bg-green-300 text-gray-900) | amount: 80,8 (bg---600) | memo: -80.80  Mercado Bom Preco Grocery shopping  2015-02-11 (bg---600)",
 		"date: 2015-02-17 (bg---800) | from: MoneeeyCard (bg---800) | to: Car Wash (bg---800) | amount: 90,9 (bg---800) | memo: -90.90  Lava Jato Eco Car wash  2015-02-17 (bg---800)",
 	]);
 	await updateEditorTos([null, "Pharmacy", null, "Groceries", null]);
 	expect(await retrieveRowsData(page, ["editorTo"], 5)).toEqual([
-		"to: MoneeeyCard (bg---800 bg-cyan-900)",
+		"to: MoneeeyCard (bg---800 bg-cyan-200 text-gray-900)",
 		"to: Pharmacy (bg---600)",
 		"to: Restaurant (bg---800)",
 		"to: Groceries (bg---600)",

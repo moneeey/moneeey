@@ -1,12 +1,13 @@
 import { type ITransaction, mockTransaction } from "../../entities/Transaction";
-import { tokenize } from "../../utils/Utils";
+import { shingle } from "../../utils/Utils";
 
 import {
-	tokenMatchScoreMap,
-	tokenTopScores,
-	tokenTransactionAccountScoreMap,
-	tokenWeightMap,
-	tokensForTransactions,
+	buildAccountVectors,
+	computeIdf,
+	cosineMatchScoreMap,
+	cosineSimilarity,
+	shinglesForTransaction,
+	tfIdfVector,
 } from "./Importer";
 
 const sampleTransactions: ITransaction[] = [
@@ -57,71 +58,31 @@ const sampleTransactions: ITransaction[] = [
 ];
 
 describe("Importer", () => {
-	it("tokenize", () => {
-		expect(tokenize("hello 7/21 world 30% coupon")).toEqual([
-			"hello",
-			"world",
-			"coupon",
-		]);
-		expect(tokenize("some@bad*boys")).toEqual(["some", "bad", "boys"]);
-	});
-
-	it("tokenScoreMap simple", () => {
-		const tokens = "1223334444".split("");
-
-		expect(tokenWeightMap(tokens)).toMatchInlineSnapshot(`
-      Map {
-        "1" => 0.9,
-        "2" => 0.8,
-        "3" => 0.7,
-        "4" => 0.6,
-      }
-    `);
-	});
-
-	it("tokenScoreMap random numbers", () => {
-		const tokens =
-			"2836788741484086466019596043251807718469095087302450890762989257138040064396808737591754583512735764".split(
-				"",
-			);
-
-		expect(tokenWeightMap(tokens)).toMatchInlineSnapshot(`
-      Map {
-        "2" => 0.94,
-        "8" => 0.86,
-        "3" => 0.92,
-        "6" => 0.9,
-        "7" => 0.88,
-        "4" => 0.89,
-        "1" => 0.9299999999999999,
-        "0" => 0.87,
-        "9" => 0.91,
-        "5" => 0.9,
-      }
-    `);
-	});
-
-	it("tokenTopScores", () => {
-		const scores = new Map([
-			["fernando", 0.9],
-			["gas", 0.9],
-			["oil", 0.9],
-			["pix", 0.8],
-			["restaurant", 0.9],
-			["station", 0.9],
-			["transaction", 0.7],
-		]);
-
-		expect(
-			tokenTopScores(["transaction", "pix", "fernando", "pix"], scores),
-		).toEqual([
-			{ score: 0.9, token: "fernando" },
-			{ score: 0.8, token: "pix" },
-			{ score: 0.7, token: "transaction" },
+	it("shingle", () => {
+		expect(shingle("hello 7/21 world 30% coupon")).toEqual([
+			"hel",
+			"ell",
+			"llo",
+			"lo7",
+			"o72",
+			"721",
+			"21w",
+			"1wo",
+			"wor",
+			"orl",
+			"rld",
+			"ld3",
+			"d30",
+			"30c",
+			"0co",
+			"cou",
+			"oup",
+			"upo",
+			"pon",
 		]);
 	});
 
-	it("tokenTransactionScoreMap", () => {
+	it("shinglesForTransaction", () => {
 		const transaction = mockTransaction({
 			transaction_uuid: "t1",
 			from_account: "a",
@@ -131,257 +92,113 @@ describe("Importer", () => {
 			tags: ["tagX"],
 		});
 
-		expect(tokensForTransactions(transaction)).toEqual([
-			"hello",
-			"world",
-			"tagx",
+		expect(shinglesForTransaction(transaction)).toEqual([
+			...shingle("hello de world"),
+			...shingle("tagX"),
 		]);
 	});
 
-	const sampleScoreMap = () =>
-		tokenTransactionAccountScoreMap(sampleTransactions);
+	it("computeIdf", () => {
+		const accountShingles = new Map([
+			["a", ["abc", "bcd", "cde"]],
+			["b", ["abc", "xyz"]],
+			["c", ["xyz", "yzw"]],
+		]);
 
-	it("tokenTransactionAccountScoreMap", () => {
-		expect(sampleScoreMap()).toMatchInlineSnapshot(`
-      {
-        "banco": {
-          "chocolate": 0.9375,
-          "company": 0.9375,
-          "dolly": 0.9375,
-          "fernando": 0.9375,
-          "groceries": 0.8125,
-          "lua": 0.9375,
-          "market": 0.875,
-          "salary": 0.9375,
-          "super": 0.9375,
-          "transfer": 0.8125,
-          "xyz": 0.9375,
-        },
-        "chocolate": {
-          "chocolate": 0.9375,
-          "transfer": 0.8125,
-        },
-        "fernando": {
-          "fernando": 0.9375,
-          "transfer": 0.8125,
-        },
-        "lua": {
-          "lua": 0.9375,
-          "transfer": 0.8125,
-        },
-        "market_dolly": {
-          "dolly": 0.9375,
-          "groceries": 0.8125,
-          "market": 0.875,
-        },
-        "market_super": {
-          "groceries": 0.8125,
-          "market": 0.875,
-          "super": 0.9375,
-        },
-        "xyz_company": {
-          "company": 0.9375,
-          "salary": 0.9375,
-          "xyz": 0.9375,
-        },
-      }
-    `);
+		const idf = computeIdf(accountShingles);
+
+		expect(idf.get("abc")).toBeCloseTo(Math.log(4 / 3) + 1);
+		expect(idf.get("bcd")).toBeCloseTo(Math.log(4 / 2) + 1);
+		expect(idf.get("xyz")).toBeCloseTo(Math.log(4 / 3) + 1);
 	});
 
-	describe("tokenMatchScoreMap", () => {
-		const queryTokenMatchScoreMap = (tokens: string[]) => ({
-			query: tokens,
-			result: tokenMatchScoreMap(tokens, sampleScoreMap()),
+	it("tfIdfVector", () => {
+		const idf = new Map([
+			["abc", 1.5],
+			["bcd", 2.0],
+		]);
+		const vec = tfIdfVector(["abc", "abc", "bcd"], idf);
+
+		expect(vec.get("abc")).toBe(3.0);
+		expect(vec.get("bcd")).toBe(2.0);
+	});
+
+	describe("cosineSimilarity", () => {
+		it("identical vectors return 1", () => {
+			const v = new Map([
+				["a", 1],
+				["b", 2],
+			]);
+			expect(cosineSimilarity(v, v)).toBeCloseTo(1.0);
 		});
 
-		it("transfer to fernando", () => {
-			expect(
-				queryTokenMatchScoreMap(["transfer", "to", "fernando"]),
-			).toMatchInlineSnapshot(`
-        {
-          "query": [
-            "transfer",
-            "to",
-            "fernando",
-          ],
-          "result": [
-            {
-              "domain": 2,
-              "id": "fernando",
-              "match": {
-                "fernando": 0.9375,
-                "transfer": 0.8125,
-              },
-              "matching": 2,
-              "score": 2.875,
-              "total": 1.75,
-            },
-            {
-              "domain": 11,
-              "id": "banco",
-              "match": {
-                "fernando": 0.9375,
-                "transfer": 0.8125,
-              },
-              "matching": 2,
-              "score": 2.159090909090909,
-              "total": 1.75,
-            },
-            {
-              "domain": 2,
-              "id": "chocolate",
-              "match": {
-                "transfer": 0.8125,
-              },
-              "matching": 1,
-              "score": 1.40625,
-              "total": 0.8125,
-            },
-            {
-              "domain": 2,
-              "id": "lua",
-              "match": {
-                "transfer": 0.8125,
-              },
-              "matching": 1,
-              "score": 1.40625,
-              "total": 0.8125,
-            },
-          ],
-        }
-      `);
+		it("orthogonal vectors return 0", () => {
+			const a = new Map([["x", 1]]);
+			const b = new Map([["y", 1]]);
+			expect(cosineSimilarity(a, b)).toBe(0);
 		});
 
-		it("transfer to chocolate", () => {
-			expect(
-				queryTokenMatchScoreMap(["transfer", "to", "chocolate"]),
-			).toMatchInlineSnapshot(`
-        {
-          "query": [
-            "transfer",
-            "to",
-            "chocolate",
-          ],
-          "result": [
-            {
-              "domain": 2,
-              "id": "chocolate",
-              "match": {
-                "chocolate": 0.9375,
-                "transfer": 0.8125,
-              },
-              "matching": 2,
-              "score": 2.875,
-              "total": 1.75,
-            },
-            {
-              "domain": 11,
-              "id": "banco",
-              "match": {
-                "chocolate": 0.9375,
-                "transfer": 0.8125,
-              },
-              "matching": 2,
-              "score": 2.159090909090909,
-              "total": 1.75,
-            },
-            {
-              "domain": 2,
-              "id": "fernando",
-              "match": {
-                "transfer": 0.8125,
-              },
-              "matching": 1,
-              "score": 1.40625,
-              "total": 0.8125,
-            },
-            {
-              "domain": 2,
-              "id": "lua",
-              "match": {
-                "transfer": 0.8125,
-              },
-              "matching": 1,
-              "score": 1.40625,
-              "total": 0.8125,
-            },
-          ],
-        }
-      `);
+		it("empty vector returns 0", () => {
+			const a = new Map<string, number>();
+			const b = new Map([["x", 1]]);
+			expect(cosineSimilarity(a, b)).toBe(0);
+		});
+	});
+
+	const sampleVectors = () => buildAccountVectors(sampleTransactions);
+
+	describe("cosineMatchScoreMap", () => {
+		const queryMatch = (text: string) => {
+			const { scoreMap, idf } = sampleVectors();
+			const queryShingles = shingle(text);
+			return {
+				query: text,
+				result: cosineMatchScoreMap(queryShingles, scoreMap, idf),
+			};
+		};
+
+		it("transfer to fernando ranks fernando first", () => {
+			const { result } = queryMatch("transfer to fernando");
+			expect(result.length).toBeGreaterThan(0);
+			expect(result[0].id).toBe("fernando");
 		});
 
-		it("market", () => {
-			expect(queryTokenMatchScoreMap(["market"])).toMatchInlineSnapshot(`
-        {
-          "query": [
-            "market",
-          ],
-          "result": [
-            {
-              "domain": 3,
-              "id": "market_dolly",
-              "match": {
-                "market": 0.875,
-              },
-              "matching": 1,
-              "score": 1.2916666666666667,
-              "total": 0.875,
-            },
-            {
-              "domain": 3,
-              "id": "market_super",
-              "match": {
-                "market": 0.875,
-              },
-              "matching": 1,
-              "score": 1.2916666666666667,
-              "total": 0.875,
-            },
-            {
-              "domain": 11,
-              "id": "banco",
-              "match": {
-                "market": 0.875,
-              },
-              "matching": 1,
-              "score": 1.0795454545454546,
-              "total": 0.875,
-            },
-          ],
-        }
-      `);
+		it("transfer to chocolate ranks chocolate first", () => {
+			const { result } = queryMatch("transfer to chocolate");
+			expect(result.length).toBeGreaterThan(0);
+			expect(result[0].id).toBe("chocolate");
 		});
 
-		it("salary", () => {
-			expect(queryTokenMatchScoreMap(["salary"])).toMatchInlineSnapshot(`
-        {
-          "query": [
-            "salary",
-          ],
-          "result": [
-            {
-              "domain": 3,
-              "id": "xyz_company",
-              "match": {
-                "salary": 0.9375,
-              },
-              "matching": 1,
-              "score": 1.3125,
-              "total": 0.9375,
-            },
-            {
-              "domain": 11,
-              "id": "banco",
-              "match": {
-                "salary": 0.9375,
-              },
-              "matching": 1,
-              "score": 1.0852272727272727,
-              "total": 0.9375,
-            },
-          ],
-        }
-      `);
+		it("market ranks market_dolly and market_super as top matches", () => {
+			const { result } = queryMatch("market");
+			expect(result.length).toBeGreaterThanOrEqual(2);
+			const topTwo = result
+				.slice(0, 2)
+				.map((r) => r.id)
+				.sort();
+			expect(topTwo).toEqual(["market_dolly", "market_super"]);
+		});
+
+		it("salary ranks xyz_company first", () => {
+			const { result } = queryMatch("salary");
+			expect(result.length).toBeGreaterThan(0);
+			expect(result[0].id).toBe("xyz_company");
+		});
+
+		it("groceries ranks market accounts highest", () => {
+			const { result } = queryMatch("groceries");
+			expect(result.length).toBeGreaterThanOrEqual(2);
+			const topTwo = result
+				.slice(0, 2)
+				.map((r) => r.id)
+				.sort();
+			expect(topTwo).toEqual(["market_dolly", "market_super"]);
+		});
+
+		it("returns empty for completely unrelated query", () => {
+			const { scoreMap, idf } = sampleVectors();
+			const result = cosineMatchScoreMap(["zzz"], scoreMap, idf);
+			expect(result).toEqual([]);
 		});
 	});
 });
