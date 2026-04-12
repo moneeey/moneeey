@@ -46,11 +46,6 @@ type GateState =
 			onCancel?: () => void;
 	  };
 
-/**
- * Maps a thrown encryption error code to a user-visible message. Falls
- * back to the generic unknown-error string so we never render the raw code
- * in the UI.
- */
 const messageForError = (err: unknown, Messages: TMessages): string => {
 	const code = (err as Error | undefined)?.message as
 		| EncryptionErrorCode
@@ -88,14 +83,8 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 	const [confirm, setConfirm] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
-	// Sync config remembered from a successful magic-link or self-hosted
-	// pull. Passed through `onUnlocked` so App.tsx can start live sync
-	// after the store boots.
 	const pendingSyncRef = useRef<SyncConfig | null>(null);
 	const [email, setEmail] = useState("");
-	// AbortController for any in-flight magic-link poll. Held in a ref so
-	// cancel handlers survive re-renders without re-creating the
-	// controller.
 	const pollAbortRef = useRef<AbortController | null>(null);
 
 	useEffect(() => {
@@ -105,8 +94,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		});
 		return () => {
 			cancelled = true;
-			// Drop any dangling poll when the gate unmounts (e.g. after
-			// successful unlock).
 			pollAbortRef.current?.abort();
 		};
 	}, [db]);
@@ -166,18 +153,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		}
 	};
 
-	/**
-	 * Runs a one-shot pull from the given remote into the local `db`. After
-	 * replication completes, re-checks for the ENCRYPTION-META doc:
-	 *   - found     → transition to unlock so the user enters the passphrase
-	 *   - not found → return to chooser with "no data on that server"
-	 *   - error     → return to chooser with a network error message
-	 *
-	 * The remote is built via `PouchDBRemoteFactory` so that both magic-link
-	 * (JWT) and self-hosted (basic auth) credentials flow through the same
-	 * custom-fetch header injection that the post-unlock `PersistenceStore`
-	 * uses.
-	 */
 	const pullFromRemote = async (remote: SyncConfig) => {
 		setError(null);
 		setBusy(true);
@@ -188,11 +163,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		try {
 			const remoteDb = PouchDBRemoteFactory(remote);
 			await new Promise<void>((resolve, reject) => {
-				// The gate's db is still plaintext-empty, so the "push"
-				// direction has nothing to send; all real work is incoming
-				// replication of already-encrypted envelopes, which pass
-				// through transform-pouch untouched (no transform installed
-				// yet).
 				db.sync(remoteDb, { live: false, retry: false })
 					.on("complete", () => resolve())
 					.on("denied", (info) =>
@@ -201,26 +171,18 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					.on("error", (err: unknown) => reject(err));
 			});
 
-			// Remember the sync config so it survives the setup/unlock
-			// transition and gets passed to App.tsx via onUnlocked.
 			pendingSyncRef.current = remote;
 
 			if (await hasEncryptionMeta(db)) {
-				// Existing account on this server — go to unlock.
 				reset();
 				setState({ kind: "unlock" });
 				return;
 			}
-			// The remote is empty (first-time user) or points at a DB that
-			// has no Moneeey data. Transition to setup so the user can
-			// create a passphrase; after setup the sync config will be
-			// applied and data will flow to the remote.
+			// No existing data — transition to setup (first-time user).
 			reset();
 			setState({ kind: "setup" });
 		} catch (err) {
 			console.error("pull-from-remote failed", err);
-			// Anything that crashed the replication path is most likely a
-			// networking or auth problem.
 			setError(Messages.encryption.network_error);
 			setState({ kind: "choose" });
 			setBusy(false);
@@ -230,9 +192,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 	const onMagicLinkSubmit = async () => {
 		setError(null);
 		setBusy(true);
-		// Fresh AbortController for this attempt so the Cancel button can
-		// interrupt both the `await` on the poll and any in-flight network
-		// request.
 		const controller = new AbortController();
 		pollAbortRef.current = controller;
 		setState({
@@ -249,9 +208,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				setBusy(false);
 				return;
 			}
-			// If the user has already clicked the link in another window
-			// between `startMagicLink` and our first poll, shortcut straight
-			// to replication.
+			// Shortcut if already clicked before the poll starts.
 			const immediate = await fetchMagicLinkState();
 			const remote =
 				immediate ??
@@ -268,7 +225,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 			await pullFromRemote(remote);
 		} catch (err) {
 			if ((err as Error).message === "magic_link_cancelled") {
-				// User hit Cancel — go quietly back to the chooser.
 				goChoose();
 				return;
 			}
@@ -291,10 +247,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		);
 	}
 
-	// WebCrypto (crypto.subtle) requires a secure context — HTTPS or
-	// literal localhost. A custom hostname like `custom-hostname.local` over
-	// plain HTTP does NOT qualify in Chrome/Firefox. Surface a clear error
-	// instead of letting every crypto call fail cryptically.
 	if (!isWebCryptoAvailable()) {
 		return (
 			<MinimalBasicScreen>
@@ -521,10 +473,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				<p className="text-sm opacity-80">{Messages.encryption.unlocking}</p>
 			)}
 			<div className="flex gap-2">
-				{/* Allow returning to the three-way chooser only when the user
-				    is genuinely in "no local encryption yet" land — the unlock
-				    form's only out is entering the correct passphrase (or
-				    going to lock/reset, which lives post-unlock). */}
 				{isSetup && (
 					<SecondaryButton
 						onClick={goChoose}

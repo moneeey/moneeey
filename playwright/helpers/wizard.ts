@@ -2,20 +2,12 @@ import { type Locator, type Page, expect } from "@playwright/test";
 import { mostUsedCurrencies } from "./fixtures";
 import { Input, Select } from "./page-objects";
 
-/** Default passphrase used by the wizard for all E2E tests. */
 export const E2E_PASSPHRASE = "playwright-test-pass-123";
 
-/**
- * Walks the three-state encryption gate to set up a fresh local-only
- * account: clicks "Create new (local only)" from the three-way chooser,
- * fills the passphrase + confirmation fields, submits. Leaves the page on
- * whatever the next boot step renders (usually the currency picker).
- */
 export async function completeEncryptionSetup(
 	page: Page,
 	passphrase: string = E2E_PASSPHRASE,
 ) {
-	// Gate starts on the "choose" screen. Pick the local-only path.
 	await page.getByRole("button", { name: "Create new (local only)" }).click();
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
 	await page.getByTestId("encryptionPassphrase").fill(passphrase);
@@ -25,23 +17,16 @@ export async function completeEncryptionSetup(
 		.click();
 }
 
-/** Types passphrase into the unlock form and submits. */
 export async function unlockWithPassphrase(
 	page: Page,
 	passphrase: string = E2E_PASSPHRASE,
 ) {
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
-	// In unlock mode the confirm field is not rendered.
 	await expect(page.getByTestId("encryptionPassphraseConfirm")).toHaveCount(0);
 	await page.getByTestId("encryptionPassphrase").fill(passphrase);
 	await page.getByTestId("ok-button").click();
 }
 
-/**
- * Walks through the landing wizard: language → encryption setup → default
- * currency → 3 initial accounts. Leaves the tour modal open (call
- * closeTourModal to dismiss).
- */
 export async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("minimalScreenTitle")).toContainText("Moneeey");
 
@@ -56,8 +41,6 @@ export async function completeLandingWizard(page: Page) {
 
 	await page.getByTestId("ok-button").click();
 
-	// Encryption setup screen — appears after language selection and must be
-	// cleared before the currency picker is rendered.
 	await completeEncryptionSetup(page);
 
 	await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible();
@@ -97,7 +80,6 @@ export async function completeLandingWizard(page: Page) {
 	await expect(page.getByText("Dashboard")).toBeVisible();
 }
 
-/** Opens budget editor, fills name/tag, saves. */
 export async function budgetEditorSave(
 	page: Page,
 	name: string,
@@ -122,7 +104,6 @@ export function tourNext(page: Page) {
 	return page.getByTestId("nm-modal-card").getByTestId("next").click();
 }
 
-/** Opens the budget editor at `index`, runs `fn`, auto-closes if still open. */
 export async function withBudgetEditor(
 	page: Page,
 	index: number,

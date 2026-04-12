@@ -13,20 +13,6 @@ type Props = {
 	onSubmit: (cfg: SyncConfig) => void;
 };
 
-/**
- * Reusable URL/username/password form for configuring a self-hosted
- * CouchDB sync target. Used by:
- *
- *   - `pages/Sync.tsx` — the post-unlock settings page, where the current
- *     values come from `config.main.couchSync`.
- *   - `components/tour/EncryptionGate.tsx` — the pre-unlock three-way
- *     chooser, where the form is fresh and `onSubmit` kicks off a one-shot
- *     pull to seed the local DB before the passphrase prompt.
- *
- * The form itself is controlled + stateless; the caller decides what
- * happens with the returned `SyncConfig` (merge into Config, call
- * `persistence.sync`, run a one-shot `db.sync`, etc.).
- */
 export default function SelfHostedSyncForm({
 	initial,
 	submitTitle,

@@ -131,10 +131,6 @@ export default class PersistenceStore {
 
 	private refetchables = new Set<string>();
 
-	/** Data key injected after the encryption gate unlocks. Until this is
-	 * set, `fetchAllDocs` / `refetch` will return stored (encrypted) docs
-	 * as-is — useful for pre-unlock mode detection but unsafe for normal
-	 * app use. */
 	private dataKey: CryptoKey | null = null;
 
 	constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
@@ -148,16 +144,10 @@ export default class PersistenceStore {
 		});
 	}
 
-	/** Sets the data key used to decrypt docs on read. Called once by
-	 * App.tsx / BootGate after the encryption gate completes setup or
-	 * unlock. */
 	setDataKey(key: CryptoKey) {
 		this.dataKey = key;
 	}
 
-	/** Returns the data key that was injected after unlock. Used by
-	 * `Settings.changePassphrase` which needs it to re-wrap the key under
-	 * a new passphrase. Returns null before unlock. */
 	getDataKey() {
 		return this.dataKey;
 	}
@@ -166,8 +156,6 @@ export default class PersistenceStore {
 		new PersistenceMonitor(this, this.logger, store);
 	}
 
-	/** Exposes the underlying PouchDB instance for flows that need direct
-	 * access (e.g. re-encrypting all documents under a new passphrase). */
 	getDb() {
 		return this.db;
 	}
@@ -226,15 +214,8 @@ export default class PersistenceStore {
 		this.scheduleCommit();
 	}
 
-	/**
-	 * Drains any pending debounced commits + refetches. MoneeeyStore.load()
-	 * uses this before revealing the UI so the in-memory MappedStores are
-	 * consistent with the persisted _rev chain before the user can start
-	 * mutating documents. Without it, a fast user click (currency pick, etc.)
-	 * can race the initial commit and submit an update with a stale
-	 * (undefined) `_rev`, which PouchDB rejects as 409 on the memory DB even
-	 * though it may already have applied to the encrypted mirror.
-	 */
+	// Drains pending debounced commits + refetches so _rev chain is
+	// consistent before UI reveals (prevents race with fast user clicks).
 	async flush() {
 		this.scheduleCommit.cancel();
 		await this.doCommit();

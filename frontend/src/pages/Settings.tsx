@@ -112,10 +112,6 @@ export default function Settings() {
 		setPassphraseBusy(true);
 		try {
 			const db = moneeeyStore.persistence.getDb();
-			// Re-derive the KEK from the current passphrase and attempt to
-			// unwrap the data key. This proves the caller knows the current
-			// passphrase — without it, any unlocked session could silently
-			// lock out the account owner by rewrapping under a new passphrase.
 			const dataKey = await verifyPassphrase(db, currentPassphrase);
 			await moneeeyStore.encryption.changePassphrase(
 				db,

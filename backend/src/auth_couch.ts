@@ -52,8 +52,6 @@ export async function authenticateUser(
 	ctx.cookies.set("authToken", authToken, {
 		httpOnly: true,
 	});
-	// Redirect to /#/dashboard so the user lands inside the encryption
-	// gate (AppBoot) rather than on the marketing LandingPage at `/`.
 	ctx.response.redirect(`${APP_URL}/#/dashboard`);
 	return true;
 }

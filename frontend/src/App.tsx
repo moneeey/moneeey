@@ -87,18 +87,9 @@ const AppContent = observer(() => {
 	);
 });
 
-/**
- * Renders the language selector → encryption gate → unlocked app. This is the
- * boot path users take for every non-landing route. `/` stays outside this
- * gate so that the marketing LandingPage (with its own language picker and
- * "Go to Moneeey" button) is reachable without unlocking anything.
- */
 const AppBoot = observer(() => {
 	const { currentLanguage } = useLanguageSwitcher();
 	const [moneeeyStore, setMoneeeyStore] = useState<MoneeeyStore | null>(null);
-	// One raw PouchDB handle reused by the encryption gate (for mode
-	// detection + pre-unlock one-shot sync) and then handed to MoneeeyStore
-	// once the gate has installed the encryption transform on it.
 	const rawDb = useMemo(() => openRawDatabase(), []);
 
 	const onUnlocked = useCallback(
@@ -106,10 +97,6 @@ const AppBoot = observer(() => {
 			const store = new MoneeeyStore(() => rawDb);
 			store.persistence.setDataKey(dataKey);
 			await store.load();
-			// If the gate obtained sync credentials (magic-link or
-			// self-hosted pull), apply them so the freshly-created data
-			// starts syncing immediately. Also persist them into the Config
-			// doc so sync survives the next reload.
 			if (syncConfig) {
 				store.config.merge({
 					...store.config.main,
