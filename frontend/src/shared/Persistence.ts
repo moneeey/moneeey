@@ -224,6 +224,13 @@ export default class PersistenceStore {
 	}
 
 	notifyDocument(doc: PouchDocument) {
+		if (this.commitables.has(doc._id)) {
+			const pending = this.commitables.get(doc._id);
+			if (pending) {
+				pending._rev = doc._rev;
+			}
+			return;
+		}
 		const listeners = this.watchers.get(doc.entity_type) ?? [];
 		for (const watcher of listeners) {
 			watcher(doc);
@@ -263,7 +270,10 @@ export default class PersistenceStore {
 							});
 							return;
 						}
-						if (ok || status === 409) {
+						if (ok) {
+							current._rev = rev;
+							this.notifyDocument(current);
+						} else if (status === 409) {
 							this.refetchables.add(id);
 							this.scheduleRefetch();
 						} else if (error) {
