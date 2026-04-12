@@ -129,8 +129,6 @@ export default class PersistenceStore {
 
 	private commitables = new Map<string, PouchDocument>();
 
-	private refetchables = new Set<string>();
-
 	private dataKey: CryptoKey | null = null;
 
 	constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
@@ -214,13 +212,11 @@ export default class PersistenceStore {
 		this.scheduleCommit();
 	}
 
-	// Drains pending debounced commits + refetches so _rev chain is
+	// Drains pending debounced commits so _rev chain is
 	// consistent before UI reveals (prevents race with fast user clicks).
 	async flush() {
 		this.scheduleCommit.cancel();
 		await this.doCommit();
-		this.scheduleRefetch.cancel();
-		await this.doRefetch();
 	}
 
 	notifyDocument(doc: PouchDocument) {
@@ -274,8 +270,7 @@ export default class PersistenceStore {
 							current._rev = rev;
 							this.notifyDocument(current);
 						} else if (status === 409) {
-							this.refetchables.add(id);
-							this.scheduleRefetch();
+							this.refetch(id);
 						} else if (error) {
 							this.logger.error("sync commit error on doc", {
 								status,
@@ -294,16 +289,6 @@ export default class PersistenceStore {
 		} catch (err) {
 			const error = err as PouchDB.Core.Error;
 			this.logger.error("sync commit error", error);
-		}
-	};
-
-	private scheduleRefetch = debounce(async () => this.doRefetch(), 200);
-
-	doRefetch = async () => {
-		const ids = Array.from(this.refetchables.keys());
-		this.refetchables.clear();
-		for (const id of ids) {
-			this.refetch(id);
 		}
 	};
 
