@@ -1,8 +1,8 @@
 import { ALG } from "../generate_key.ts";
 import {
 	JWT_AUTH_KEY_ID,
+	JWT_CHALLENGE_KEY_ID,
 	JWT_COUCH_KEY_ID,
-	JWT_MAGIC_KEY_ID,
 	JWT_PRIVATE_KEY,
 	JWT_PUBLIC_KEY,
 } from "./config.ts";
@@ -63,6 +63,6 @@ const jwtForKey = (keyId: string) => ({
 	validate: (jwtToken: string) => jwtInternals.validateJwt(jwtToken, keyId),
 });
 
-export const magicJwt = jwtForKey(JWT_MAGIC_KEY_ID);
+export const challengeJwt = jwtForKey(JWT_CHALLENGE_KEY_ID);
 export const couchJwt = jwtForKey(JWT_COUCH_KEY_ID);
 export const authJwt = jwtForKey(JWT_AUTH_KEY_ID);

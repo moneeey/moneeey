@@ -26,7 +26,7 @@ test.describe("Encryption gate", () => {
 			page.getByRole("button", { name: "Create new (local only)" }),
 		).toBeVisible();
 		await expect(
-			page.getByRole("button", { name: "Sign in with email (magic link)" }),
+			page.getByRole("button", { name: "Online account (passkey)" }),
 		).toBeVisible();
 		await expect(
 			page.getByRole("button", {

@@ -8,10 +8,11 @@ import {
 } from "../../shared/EncryptionStore";
 import { PouchDBRemoteFactory } from "../../shared/Persistence";
 import {
-	fetchMagicLinkState,
-	pollForMagicLinkAuth,
-	startMagicLink,
-} from "../../shared/encryption/bootstrapFromMoneeeyAccount";
+	getInviteInfo,
+	loginPasskey,
+	registerPasskey,
+	registerViaInvite,
+} from "../../shared/encryption/bootstrapFromPasskey";
 import { isWebCryptoAvailable } from "../../shared/encryption/crypto";
 import { hasEncryptionMeta } from "../../shared/encryption/encryptedPouch";
 import useMessages, { type TMessages } from "../../utils/Messages";
@@ -21,9 +22,6 @@ import SelfHostedSyncForm from "../sync/SelfHostedSyncForm";
 
 export type UnlockResult = {
 	dataKey: CryptoKey;
-	/** If the user signed in via magic-link or self-hosted before setup,
-	 * this carries the remote config so App.tsx can kick off live sync
-	 * immediately after the store loads. */
 	syncConfig?: SyncConfig;
 };
 
@@ -37,14 +35,10 @@ type GateState =
 	| { kind: "choose" }
 	| { kind: "setup" }
 	| { kind: "unlock" }
-	| { kind: "magic-link" }
+	| { kind: "passkey" }
+	| { kind: "invite"; token: string }
 	| { kind: "self-hosted" }
-	| {
-			kind: "pulling";
-			label: string;
-			progress?: { attempt: number; max: number };
-			onCancel?: () => void;
-	  };
+	| { kind: "pulling"; label: string };
 
 const messageForError = (err: unknown, Messages: TMessages): string => {
 	const code = (err as Error | undefined)?.message as
@@ -62,15 +56,25 @@ const messageForError = (err: unknown, Messages: TMessages): string => {
 			return Messages.encryption.no_existing_data_found;
 		case "network_error":
 			return Messages.encryption.network_error;
-		case "magic_link_cancelled":
-		case "magic_link_timeout":
-			return Messages.encryption.magic_link_timeout;
 		default:
 			return Messages.encryption.unknown_error;
 	}
 };
 
+function parseInviteToken(): string | null {
+	const hash = globalThis.location?.hash || "";
+	const match = hash.match(/#\/invite\/([a-f0-9]+)/);
+	return match ? match[1] : null;
+}
+
 const detectInitialState = async (db: PouchDB.Database): Promise<GateState> => {
+	const inviteToken = parseInviteToken();
+	if (inviteToken) {
+		const info = await getInviteInfo(inviteToken);
+		if (info?.valid) {
+			return { kind: "invite", token: inviteToken };
+		}
+	}
 	return (await hasEncryptionMeta(db))
 		? { kind: "unlock" }
 		: { kind: "choose" };
@@ -85,7 +89,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 	const [busy, setBusy] = useState(false);
 	const pendingSyncRef = useRef<SyncConfig | null>(null);
 	const [email, setEmail] = useState("");
-	const pollAbortRef = useRef<AbortController | null>(null);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -94,7 +97,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		});
 		return () => {
 			cancelled = true;
-			pollAbortRef.current?.abort();
 		};
 	}, [db]);
 
@@ -106,8 +108,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 	};
 
 	const goChoose = () => {
-		pollAbortRef.current?.abort();
-		pollAbortRef.current = null;
 		reset();
 		setState({ kind: "choose" });
 	};
@@ -178,7 +178,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				setState({ kind: "unlock" });
 				return;
 			}
-			// No existing data — transition to setup (first-time user).
 			reset();
 			setState({ kind: "setup" });
 		} catch (err) {
@@ -189,53 +188,42 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		}
 	};
 
-	const onMagicLinkSubmit = async () => {
+	const onPasskeyRegister = async () => {
 		setError(null);
 		setBusy(true);
-		const controller = new AbortController();
-		pollAbortRef.current = controller;
-		setState({
-			kind: "pulling",
-			label: Messages.encryption.waiting_for_magic_link,
-			progress: { attempt: 0, max: 30 },
-			onCancel: () => controller.abort(),
-		});
 		try {
-			const sent = await startMagicLink(email);
-			if (!sent) {
-				setError(Messages.encryption.no_existing_data_found);
-				setState({ kind: "magic-link" });
-				setBusy(false);
-				return;
-			}
-			// Shortcut if already clicked before the poll starts.
-			const immediate = await fetchMagicLinkState();
-			const remote =
-				immediate ??
-				(await pollForMagicLinkAuth({
-					signal: controller.signal,
-					onAttempt: (attempt, max) => {
-						setState((prev) =>
-							prev.kind === "pulling"
-								? { ...prev, progress: { attempt, max } }
-								: prev,
-						);
-					},
-				}));
-			await pullFromRemote(remote);
+			const syncConfig = await registerPasskey(email);
+			await pullFromRemote(syncConfig);
 		} catch (err) {
-			if ((err as Error).message === "magic_link_cancelled") {
-				goChoose();
-				return;
-			}
-			console.error("magic-link flow failed", err);
-			setError(messageForError(err, Messages));
-			setState({ kind: "choose" });
+			console.error("passkey register failed", err);
+			setError(Messages.encryption.passkey_error);
 			setBusy(false);
-		} finally {
-			if (pollAbortRef.current === controller) {
-				pollAbortRef.current = null;
-			}
+		}
+	};
+
+	const onPasskeyLogin = async () => {
+		setError(null);
+		setBusy(true);
+		try {
+			const syncConfig = await loginPasskey(email);
+			await pullFromRemote(syncConfig);
+		} catch (err) {
+			console.error("passkey login failed", err);
+			setError(Messages.encryption.passkey_error);
+			setBusy(false);
+		}
+	};
+
+	const onInviteRegister = async (token: string) => {
+		setError(null);
+		setBusy(true);
+		try {
+			const syncConfig = await registerViaInvite(token, email);
+			await pullFromRemote(syncConfig);
+		} catch (err) {
+			console.error("invite register failed", err);
+			setError(Messages.encryption.passkey_error);
+			setBusy(false);
 		}
 	};
 
@@ -268,20 +256,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 			<MinimalBasicScreen>
 				<h2 className="text-xl font-semibold">{state.label}</h2>
 				<p className="text-sm opacity-80">{Messages.util.loading}</p>
-				{state.progress && (
-					<p className="text-xs opacity-60" data-testid="magicLinkProgress">
-						{Messages.encryption.waiting_progress(
-							state.progress.attempt,
-							state.progress.max,
-						)}
-					</p>
-				)}
-				{state.onCancel && (
-					<SecondaryButton
-						onClick={state.onCancel}
-						title={Messages.util.cancel}
-					/>
-				)}
 			</MinimalBasicScreen>
 		);
 	}
@@ -303,9 +277,9 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					<SecondaryButton
 						onClick={() => {
 							reset();
-							setState({ kind: "magic-link" });
+							setState({ kind: "passkey" });
 						}}
-						title={Messages.encryption.signin_magic_link}
+						title={Messages.encryption.signin_online_account}
 					/>
 					<SecondaryButton
 						onClick={() => {
@@ -324,19 +298,20 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		);
 	}
 
-	if (state.kind === "magic-link") {
+	if (state.kind === "passkey") {
 		return (
 			<MinimalBasicScreen>
 				<h2 className="text-xl font-semibold">
-					{Messages.encryption.signin_magic_link}
+					{Messages.encryption.signin_online_account}
 				</h2>
 				<p className="text-sm opacity-80">
-					{Messages.encryption.magic_link_description}
+					{Messages.encryption.passkey_description}
 				</p>
 				<div className="flex flex-col gap-3 w-full max-w-sm">
 					<input
-						data-testid="magicLinkEmail"
+						data-testid="passkeyEmail"
 						type="email"
+						autoComplete="username webauthn"
 						placeholder={Messages.login.email}
 						value={email}
 						disabled={busy}
@@ -344,10 +319,63 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 							setEmail(event.target.value);
 							setError(null);
 						}}
-						onKeyDown={(event) => {
-							if (event.key === "Enter" && email.length > 0) {
-								onMagicLinkSubmit();
-							}
+						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+					/>
+				</div>
+				<a
+					href="https://fidoalliance.org/passkeys/"
+					target="_blank"
+					rel="noreferrer noopener"
+					className="text-xs underline opacity-70 hover:opacity-100"
+				>
+					{Messages.encryption.passkey_learn_more}
+				</a>
+				{error && (
+					<p className="text-sm text-danger-300" data-testid="encryptionError">
+						{error}
+					</p>
+				)}
+				<div className="flex gap-2">
+					<SecondaryButton
+						onClick={goChoose}
+						title={Messages.util.cancel}
+						disabled={busy}
+					/>
+					<SecondaryButton
+						onClick={onPasskeyLogin}
+						title={Messages.encryption.passkey_login}
+						disabled={busy || email.length === 0}
+					/>
+					<OkButton
+						onClick={onPasskeyRegister}
+						title={Messages.encryption.passkey_register}
+						disabled={busy || email.length === 0}
+					/>
+				</div>
+			</MinimalBasicScreen>
+		);
+	}
+
+	if (state.kind === "invite") {
+		return (
+			<MinimalBasicScreen>
+				<h2 className="text-xl font-semibold">
+					{Messages.encryption.invite_title}
+				</h2>
+				<p className="text-sm opacity-80">
+					{Messages.encryption.invite_description}
+				</p>
+				<div className="flex flex-col gap-3 w-full max-w-sm">
+					<input
+						data-testid="inviteEmail"
+						type="email"
+						autoComplete="username webauthn"
+						placeholder={Messages.login.email}
+						value={email}
+						disabled={busy}
+						onChange={(event) => {
+							setEmail(event.target.value);
+							setError(null);
 						}}
 						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 					/>
@@ -364,8 +392,8 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 						disabled={busy}
 					/>
 					<OkButton
-						onClick={onMagicLinkSubmit}
-						title={Messages.login.login_or_signup}
+						onClick={() => onInviteRegister(state.token)}
+						title={Messages.encryption.invite_join}
 						disabled={busy || email.length === 0}
 					/>
 				</div>
@@ -401,8 +429,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		);
 	}
 
-	// setup or unlock — both are passphrase forms that differ in whether a
-	// confirm field is rendered and which API call fires on submit.
 	const isSetup = state.kind === "setup";
 	const onSubmit = isSetup ? onSubmitSetup : onSubmitUnlock;
 	return (
@@ -435,10 +461,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 						setError(null);
 					}}
 					onKeyDown={(event) => {
-						// Enter submits in both setup and unlock. For setup we
-						// only fire if both fields are populated, so stray
-						// Enters while editing the first field don't bounce
-						// through the confirm-mismatch path.
 						if (event.key !== "Enter") return;
 						if (isSetup && confirm.length === 0) return;
 						onSubmit();

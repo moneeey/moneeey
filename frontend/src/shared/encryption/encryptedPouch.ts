@@ -37,8 +37,6 @@ export type EncryptionErrorCode =
 	| "no_meta_doc"
 	| "unsupported_schema_version"
 	| "no_data_key"
-	| "magic_link_timeout"
-	| "magic_link_cancelled"
 	| "not_found_on_server"
 	| "network_error"
 	| "unknown_error";

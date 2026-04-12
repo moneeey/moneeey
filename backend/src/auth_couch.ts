@@ -1,4 +1,3 @@
-import { APP_URL } from "./config.ts";
 import { prepareUserDatabase } from "./couchdb.ts";
 import { oak } from "./deps.ts";
 import { authJwt, couchJwt } from "./jwt.ts";
@@ -38,7 +37,7 @@ export async function authAndEnsureDbExists({
 	};
 }
 
-export async function authenticateUser(
+export async function setAuthCookie(
 	ctx: oak.Context,
 	strategy: string,
 	email: string,
@@ -52,8 +51,19 @@ export async function authenticateUser(
 	ctx.cookies.set("authToken", authToken, {
 		httpOnly: true,
 	});
-	ctx.response.redirect(`${APP_URL}/#/dashboard`);
-	return true;
+	return authToken;
+}
+
+export async function authenticateAndRespond(
+	ctx: oak.Context,
+	strategy: string,
+	email: string,
+	userId: string,
+	database: string,
+) {
+	await setAuthCookie(ctx, strategy, email, userId);
+	const accessToken = await couchJwt.generate(email, { db: database }, "36h");
+	return { authenticated: true, database, accessToken };
 }
 
 export function setupCouch(authRouter: oak.Router) {

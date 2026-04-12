@@ -1,5 +1,5 @@
 import { loggerInternals } from "./logger.ts";
-import { createServer, runServer } from "./server.ts";
+import { createServer, runServer, serverInternals } from "./server.ts";
 import {
 	assert,
 	assertResponse,
@@ -36,27 +36,34 @@ Deno.test(async function appError() {
 });
 
 Deno.test(async function runTheServer() {
-	await withSpyingLogger(async (logger) => {
-		const app = createServer();
-		await withSpying({
-			object: app,
-			method: "listen",
-			expect: [
-				[
-					{
-						port: 4269,
+	await withSpying({
+		object: serverInternals,
+		method: "ensureUsersDbExists",
+		action: async (ensureStub) => {
+			ensureStub.resolves();
+			await withSpyingLogger(async (logger) => {
+				const app = createServer();
+				await withSpying({
+					object: app,
+					method: "listen",
+					expect: [
+						[
+							{
+								port: 4269,
+							},
+						],
+					],
+					action: (stub) => {
+						stub.resolves(true);
+						runServer(app);
 					},
-				],
-			],
-			action: (stub) => {
-				stub.resolves(true);
-				runServer(app);
-			},
-		});
+				});
 
-		assert.assertEquals(logger.args, [
-			["info", "[runServer] Moneeey API listening", { port: 4269 }],
-		]);
+				assert.assertEquals(logger.args, [
+					["info", "[runServer] Moneeey API listening", { port: 4269 }],
+				]);
+			});
+		},
 	});
 });
 
