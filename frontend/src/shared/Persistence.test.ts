@@ -8,11 +8,7 @@ import { MockLogger } from "./Logger";
 import Logger from "./Logger";
 import MappedStore from "./MappedStore";
 import type MoneeeyStore from "./MoneeeyStore";
-import PersistenceStore, {
-	CONFIG_DOC_ID,
-	PersistenceMonitor,
-	Status,
-} from "./Persistence";
+import PersistenceStore, { PersistenceMonitor, Status } from "./Persistence";
 import TagsStore from "./Tags";
 import {
 	ENCRYPTION_META_ID,
@@ -688,7 +684,7 @@ describe("Persistence", () => {
 		};
 
 		const makeConfig = () => ({
-			_id: CONFIG_DOC_ID,
+			_id: "CONFIG-test",
 			entity_type: EntityType.CONFIG,
 			date_format: "yyyy-MM-dd",
 			decimal_separator: ",",
@@ -724,7 +720,7 @@ describe("Persistence", () => {
 			const db1 = freshDb(name);
 			const dataKey1 = await setupNewEncryption(db1, passphrase);
 			await db1.put(makeConfig());
-			const stored = (await db1.get(CONFIG_DOC_ID)) as Record<string, unknown>;
+			const stored = (await db1.get("CONFIG-test")) as Record<string, unknown>;
 			// On disk the body is encrypted.
 			expect(stored.sealed).toBeDefined();
 			expect(stored.default_currency).toBeUndefined();
@@ -740,7 +736,7 @@ describe("Persistence", () => {
 			const db2 = freshDb(name);
 			expect(await hasEncryptionMeta(db2)).toBe(true);
 			const dataKey2 = await unlockExistingEncryption(db2, passphrase);
-			const reloaded = (await db2.get(CONFIG_DOC_ID)) as Record<
+			const reloaded = (await db2.get("CONFIG-test")) as Record<
 				string,
 				unknown
 			>;
@@ -782,7 +778,7 @@ describe("Persistence", () => {
 			const dataKey = await setupNewEncryption(db1, passphraseA);
 			await db1.put(makeConfig());
 			const configRevBefore = (
-				(await db1.get(CONFIG_DOC_ID)) as { _rev: string }
+				(await db1.get("CONFIG-test")) as { _rev: string }
 			)._rev;
 			const metaRevBefore = (await readMetaDoc(db1))?._rev;
 
@@ -790,7 +786,7 @@ describe("Persistence", () => {
 
 			// Config's _rev is unchanged — we never touched it.
 			const configRevAfter = (
-				(await db1.get(CONFIG_DOC_ID)) as { _rev: string }
+				(await db1.get("CONFIG-test")) as { _rev: string }
 			)._rev;
 			expect(configRevAfter).toBe(configRevBefore);
 			// Meta's _rev bumped once — single write.
@@ -804,7 +800,7 @@ describe("Persistence", () => {
 			);
 			const db3 = freshDb(name);
 			const dataKeyB = await unlockExistingEncryption(db3, passphraseB);
-			const stored = (await db3.get(CONFIG_DOC_ID)) as Record<string, unknown>;
+			const stored = (await db3.get("CONFIG-test")) as Record<string, unknown>;
 			const plain = (await decryptDoc(stored, dataKeyB)) as Record<
 				string,
 				unknown
@@ -851,7 +847,7 @@ describe("Persistence", () => {
 			expect(await hasEncryptionMeta(deviceB)).toBe(true);
 
 			const dataKey = await unlockExistingEncryption(deviceB, passphrase);
-			const stored = (await deviceB.get(CONFIG_DOC_ID)) as Record<
+			const stored = (await deviceB.get("CONFIG-test")) as Record<
 				string,
 				unknown
 			>;
@@ -924,7 +920,7 @@ describe("Persistence", () => {
 			const verifiedKey = await verifyPassphrase(db, "verify-me-123");
 			expect(verifiedKey).toBeDefined();
 			// The verified key should decrypt docs produced by the original.
-			const stored = (await db.get(CONFIG_DOC_ID)) as Record<string, unknown>;
+			const stored = (await db.get("CONFIG-test")) as Record<string, unknown>;
 			const plain = (await decryptDoc(stored, verifiedKey)) as Record<
 				string,
 				unknown
@@ -993,17 +989,16 @@ describe("Persistence", () => {
 		it("local store change triggers commit to PouchDB", async () => {
 			persistence.monitor(store);
 
-			// Merge into store — monitor should detect and commit
 			const entity = store.factory();
 			store.merge(
 				{ ...entity, test_uuid: "e1", name: "FromStore" },
 				{ setUpdated: false },
 			);
 
-			// Flush the commit
 			await persistence.doCommit();
 
-			const doc = await db.get("ACCOUNT-e1");
+			// biome-ignore lint/style/noNonNullAssertion: test helper, entity was just merged
+			const doc = await db.get(store.byUuid("e1")!._id as string);
 			expect((doc as unknown as ITestEntity).name).toBe("FromStore");
 		});
 
@@ -1030,14 +1025,17 @@ describe("Persistence", () => {
 			);
 			await persistence.doCommit();
 
+			// biome-ignore lint/style/noNonNullAssertion: test helper, entity was just merged
+			const docId = store.byUuid("e1")!._id as string;
+
 			// Refetch to sync _rev back into the store
-			await persistence.refetch("ACCOUNT-e1");
+			await persistence.refetch(docId);
 
 			// Update the entity — monitor detects and queues commit
 			store.update("e1", { name: "Updated" } as Partial<ITestEntity>);
 			await persistence.doCommit();
 
-			const doc = await db.get("ACCOUNT-e1");
+			const doc = await db.get(docId);
 			expect((doc as unknown as ITestEntity).name).toBe("Updated");
 		});
 

@@ -425,7 +425,6 @@ export class CurrencyStore extends MappedStore<ICurrency> {
 
 	addDefaults() {
 		const addDefault = (currency: ICurrency) => {
-			currency.currency_uuid = `${currency.name}_${currency.short}`;
 			this.merge(currency);
 		};
 

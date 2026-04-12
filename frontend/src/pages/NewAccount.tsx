@@ -42,13 +42,23 @@ export default function NewAccount() {
 	}).render;
 
 	const onSubmit = () => {
-		const initialAccountForCurrencyId = `INITIAL_ACCOUNT_${state.currency}`;
-		if (!accounts.byUuid(initialAccountForCurrencyId)) {
+		const currencyShort = currencies.byUuid(state.currency)?.short;
+		const initialBalanceName = `${Messages.new_account.initial_balance} ${currencyShort}`;
+		const existingInitialAccount = accounts.all.find(
+			(a) =>
+				a.name === initialBalanceName &&
+				a.kind === AccountKind.PAYEE &&
+				a.currency_uuid === state.currency,
+		);
+		let initialAccountId: string;
+		if (existingInitialAccount) {
+			initialAccountId = existingInitialAccount.account_uuid;
+		} else {
+			const newInitialAccount = accounts.factory();
+			initialAccountId = newInitialAccount.account_uuid;
 			accounts.merge({
-				...accounts.factory(initialAccountForCurrencyId),
-				name: `${Messages.new_account.initial_balance} ${
-					currencies.byUuid(state.currency)?.short
-				}`,
+				...newInitialAccount,
+				name: initialBalanceName,
 				kind: AccountKind.PAYEE,
 				currency_uuid: state.currency,
 			});
@@ -62,7 +72,7 @@ export default function NewAccount() {
 		});
 		transactions.merge({
 			...transactions.factory(),
-			from_account: initialAccountForCurrencyId,
+			from_account: initialAccountId,
 			from_value: state.initialBalance,
 			to_account: accountId,
 			to_value: state.initialBalance,

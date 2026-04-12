@@ -2,6 +2,7 @@ import { isEmpty } from "lodash";
 import { action, computed, makeObservable, observable } from "mobx";
 
 import { currentDateTime } from "../utils/Date";
+import { uuid as generateId } from "../utils/Utils";
 
 import type { IBaseEntity } from "./Entity";
 import type MoneeeyStore from "./MoneeeyStore";
@@ -46,7 +47,7 @@ export default class MappedStore<T extends IBaseEntity> {
 		this.itemsByUuid.set(uuid, {
 			...item,
 			entity_type: this.factory().entity_type,
-			_id: `${item.entity_type}-${uuid}`,
+			_id: item._id || generateId(),
 			created: item.created || currentDateTime(),
 			updated: options.setUpdated
 				? currentDateTime()

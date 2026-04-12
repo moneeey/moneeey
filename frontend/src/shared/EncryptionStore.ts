@@ -1,7 +1,6 @@
 import { action, makeObservable, observable } from "mobx";
 
 import Logger from "./Logger";
-import { CONFIG_DOC_ID } from "./Persistence";
 import {
 	type EncryptionErrorCode,
 	changePassphrase as changePassphraseInMeta,
@@ -59,4 +58,4 @@ export const openEncryptedDatabase = async (
 };
 
 export type { EncryptionErrorCode };
-export { verifyPassphrase, CONFIG_DOC_ID };
+export { verifyPassphrase };

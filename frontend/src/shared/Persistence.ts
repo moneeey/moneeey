@@ -5,7 +5,7 @@ import PouchDB from "pouchdb";
 import type { SyncConfig } from "../entities/Config";
 
 import { asyncProcess } from "../utils/Utils";
-import { EntityType, type IBaseEntity } from "./Entity";
+import type { EntityType, IBaseEntity } from "./Entity";
 import Logger from "./Logger";
 import type MappedStore from "./MappedStore";
 import { decryptDoc } from "./encryption/encryptedPouch";
@@ -20,7 +20,6 @@ export enum Status {
 export type PouchDBFactoryFn = () => PouchDB.Database;
 
 export const LOCAL_DB_NAME = "moneeey";
-export const CONFIG_DOC_ID = `${EntityType.CONFIG}-CONFIG`;
 
 export const PouchDBFactory = () => new PouchDB(LOCAL_DB_NAME);
 
