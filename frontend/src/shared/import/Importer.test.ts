@@ -1,7 +1,4 @@
-import {
-	type ITransaction,
-	mockTransaction,
-} from "../../entities/Transaction";
+import { type ITransaction, mockTransaction } from "../../entities/Transaction";
 import { shingle } from "../../utils/Utils";
 
 import {
@@ -175,7 +172,10 @@ describe("Importer", () => {
 		it("market ranks market_dolly and market_super as top matches", () => {
 			const { result } = queryMatch("market");
 			expect(result.length).toBeGreaterThanOrEqual(2);
-			const topTwo = result.slice(0, 2).map((r) => r.id).sort();
+			const topTwo = result
+				.slice(0, 2)
+				.map((r) => r.id)
+				.sort();
 			expect(topTwo).toEqual(["market_dolly", "market_super"]);
 		});
 
@@ -188,7 +188,10 @@ describe("Importer", () => {
 		it("groceries ranks market accounts highest", () => {
 			const { result } = queryMatch("groceries");
 			expect(result.length).toBeGreaterThanOrEqual(2);
-			const topTwo = result.slice(0, 2).map((r) => r.id).sort();
+			const topTwo = result
+				.slice(0, 2)
+				.map((r) => r.id)
+				.sort();
 			expect(topTwo).toEqual(["market_dolly", "market_super"]);
 		});
 

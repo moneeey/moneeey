@@ -151,9 +151,7 @@ class Importer {
 		tokenData: AccountVectors,
 		queryTexts: string[],
 	) {
-		const allShingles = compact(
-			flatten(queryTexts.map((s) => shingle(s))),
-		);
+		const allShingles = compact(flatten(queryTexts.map((s) => shingle(s))));
 		const matchingAccounts = cosineMatchScoreMap(
 			allShingles,
 			tokenData.scoreMap,

@@ -9,8 +9,8 @@ import {
 	identity,
 	noop,
 	setStorage,
-	slugify,
 	shingle,
+	slugify,
 	uuid,
 } from "./Utils";
 
@@ -55,13 +55,7 @@ describe("Utils", () => {
 		});
 
 		it("preserves digits", () => {
-			expect(shingle("PIX 8234")).toEqual([
-				"pix",
-				"ix8",
-				"x82",
-				"823",
-				"234",
-			]);
+			expect(shingle("PIX 8234")).toEqual(["pix", "ix8", "x82", "823", "234"]);
 		});
 
 		it("returns short string as single shingle when shorter than n", () => {
