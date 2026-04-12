@@ -311,6 +311,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					<input
 						data-testid="passkeyEmail"
 						type="email"
+						autoComplete="username webauthn"
 						placeholder={Messages.login.email}
 						value={email}
 						disabled={busy}
@@ -321,6 +322,14 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 					/>
 				</div>
+				<a
+					href="https://fidoalliance.org/passkeys/"
+					target="_blank"
+					rel="noreferrer noopener"
+					className="text-xs underline opacity-70 hover:opacity-100"
+				>
+					{Messages.encryption.passkey_learn_more}
+				</a>
 				{error && (
 					<p className="text-sm text-danger-300" data-testid="encryptionError">
 						{error}
@@ -360,6 +369,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					<input
 						data-testid="inviteEmail"
 						type="email"
+						autoComplete="username webauthn"
 						placeholder={Messages.login.email}
 						value={email}
 						disabled={busy}

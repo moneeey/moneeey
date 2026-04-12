@@ -59,3 +59,12 @@ export async function prepareUserDatabase(dbName: string, email: string) {
 		await dbSecurityApply(dbName, [email]);
 	}
 }
+
+export const couchdbInternals = {
+	dbApi,
+	dbExists,
+	dbCreate,
+	dbSecurityApply,
+	dbSecurityAddMember,
+	prepareUserDatabase,
+};

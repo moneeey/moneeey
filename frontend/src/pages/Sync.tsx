@@ -46,38 +46,52 @@ const MoneeeyLogin = ({
 	};
 
 	return (
-		<BaseFormEditor
-			testId="providedSync"
-			items={[
-				{
-					label: Messages.login.email,
-					editor: (
-						<input
-							data-testid="email"
-							type="email"
-							value={state.email}
-							placeholder={Messages.login.email}
-							onChange={(event) =>
-								setState({ ...state, email: event.target.value })
-							}
-							className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+		<>
+			<p className="text-sm opacity-80">
+				{Messages.encryption.passkey_description}
+			</p>
+			<a
+				href="https://fidoalliance.org/passkeys/"
+				target="_blank"
+				rel="noreferrer noopener"
+				className="text-xs underline opacity-70 hover:opacity-100"
+			>
+				{Messages.encryption.passkey_learn_more}
+			</a>
+			<BaseFormEditor
+				testId="providedSync"
+				items={[
+					{
+						label: Messages.login.email,
+						editor: (
+							<input
+								data-testid="email"
+								type="email"
+								autoComplete="username webauthn"
+								value={state.email}
+								placeholder={Messages.login.email}
+								onChange={(event) =>
+									setState({ ...state, email: event.target.value })
+								}
+								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+							/>
+						),
+					},
+				]}
+				footer={
+					<div className="flex gap-2">
+						<SecondaryButton
+							onClick={onLogin}
+							title={Messages.encryption.passkey_login}
 						/>
-					),
-				},
-			]}
-			footer={
-				<div className="flex gap-2">
-					<SecondaryButton
-						onClick={onLogin}
-						title={Messages.encryption.passkey_login}
-					/>
-					<OkButton
-						onClick={onRegister}
-						title={Messages.encryption.passkey_register}
-					/>
-				</div>
-			}
-		/>
+						<OkButton
+							onClick={onRegister}
+							title={Messages.encryption.passkey_register}
+						/>
+					</div>
+				}
+			/>
+		</>
 	);
 };
 

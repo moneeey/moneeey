@@ -11,6 +11,8 @@ type AuthenticationOptionsJSON = Parameters<
 	typeof startAuthentication
 >[0]["optionsJSON"];
 
+type FlowResponse<O> = { options: O; flowToken: string };
+
 type AuthResponse = {
 	authenticated: boolean;
 	database: string;
@@ -47,27 +49,27 @@ function toSyncConfig(auth: AuthResponse): SyncConfig {
 }
 
 export const registerPasskey = async (email: string): Promise<SyncConfig> => {
-	const options = await post<RegistrationOptionsJSON>(
-		"/api/auth/passkey/register/options",
-		{ email },
-	);
+	const { options, flowToken } = await post<
+		FlowResponse<RegistrationOptionsJSON>
+	>("/api/auth/passkey/register/options", { email });
 	const credential = await startRegistration({ optionsJSON: options });
 	const auth = await post<AuthResponse>("/api/auth/passkey/register/verify", {
 		email,
 		credential,
+		flowToken,
 	});
 	return toSyncConfig(auth);
 };
 
 export const loginPasskey = async (email: string): Promise<SyncConfig> => {
-	const options = await post<AuthenticationOptionsJSON>(
-		"/api/auth/passkey/login/options",
-		{ email },
-	);
+	const { options, flowToken } = await post<
+		FlowResponse<AuthenticationOptionsJSON>
+	>("/api/auth/passkey/login/options", { email });
 	const credential = await startAuthentication({ optionsJSON: options });
 	const auth = await post<AuthResponse>("/api/auth/passkey/login/verify", {
 		email,
 		credential,
+		flowToken,
 	});
 	return toSyncConfig(auth);
 };
@@ -107,14 +109,13 @@ export const registerViaInvite = async (
 	token: string,
 	email: string,
 ): Promise<SyncConfig> => {
-	const options = await post<RegistrationOptionsJSON>(
-		"/api/auth/passkey/invite/register/options",
-		{ token, email },
-	);
+	const { options, flowToken } = await post<
+		FlowResponse<RegistrationOptionsJSON>
+	>("/api/auth/passkey/invite/register/options", { token, email });
 	const credential = await startRegistration({ optionsJSON: options });
 	const auth = await post<AuthResponse>(
 		"/api/auth/passkey/invite/register/verify",
-		{ email, credential },
+		{ email, credential, flowToken },
 	);
 	return toSyncConfig(auth);
 };

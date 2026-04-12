@@ -50,9 +50,16 @@ const getBodyJson = async (ctx: oak.Context) => {
 	return await ctx.request.body({ type: "json" }).value;
 };
 
-const parseEmail = (raw: string): string | null => {
+// Permissive but bounded: at least one char before @, at least one dot in the
+// domain, no whitespace. Final correctness is enforced by the WebAuthn ceremony
+// and downstream usage; we mainly want to reject obvious garbage.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+const parseEmail = (raw: unknown): string | null => {
+	if (typeof raw !== "string") return null;
 	const email = raw.toLowerCase().trim();
-	if (!/\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/.test(email)) return null;
+	if (email.length > 254) return null;
+	if (!EMAIL_RE.test(email)) return null;
 	return email;
 };
 
@@ -61,17 +68,24 @@ function respond(ctx: oak.Context, status: oak.Status, body: object) {
 	ctx.response.status = status;
 }
 
-async function setChallengeCooke(ctx: oak.Context, challenge: string) {
-	const token = await challengeJwt.generate(challenge, {}, "5min");
-	ctx.cookies.set("webauthnChallenge", token, { httpOnly: true });
+async function makeFlowToken(
+	challenge: string,
+	extraClaims: Record<string, string> = {},
+) {
+	return await challengeJwt.generate(challenge, extraClaims, "5min");
 }
 
-async function getChallengeCookie(ctx: oak.Context): Promise<string> {
-	const token = await ctx.cookies.get("webauthnChallenge");
-	if (!token) throw new Error("no challenge cookie");
-	const result = await challengeJwt.validate(token);
-	ctx.cookies.delete("webauthnChallenge");
-	return result.payload.sub || "";
+async function readFlowToken(
+	flowToken: unknown,
+): Promise<{ challenge: string; claims: Record<string, unknown> }> {
+	if (typeof flowToken !== "string" || flowToken.length === 0) {
+		throw new Error("missing flow token");
+	}
+	const result = await challengeJwt.validate(flowToken);
+	return {
+		challenge: result.payload.sub || "",
+		claims: result.payload as Record<string, unknown>,
+	};
 }
 
 function credentialToStored(
@@ -120,8 +134,8 @@ export function setupPasskey(authRouter: oak.Router) {
 				},
 			});
 
-			await setChallengeCooke(ctx, options.challenge);
-			respond(ctx, oak.Status.OK, options);
+			const flowToken = await makeFlowToken(options.challenge);
+			respond(ctx, oak.Status.OK, { options, flowToken });
 		} catch (err) {
 			logger.error("register/options error", { err });
 			respond(ctx, oak.Status.InternalServerError, {
@@ -132,14 +146,18 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/register/verify", async (ctx) => {
 		try {
-			const { email: rawEmail, credential } = await getBodyJson(ctx);
+			const {
+				email: rawEmail,
+				credential,
+				flowToken,
+			} = await getBodyJson(ctx);
 			const email = parseEmail(rawEmail);
 			if (!email) {
 				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
 				return;
 			}
 
-			const expectedChallenge = await getChallengeCookie(ctx);
+			const { challenge: expectedChallenge } = await readFlowToken(flowToken);
 			const verification =
 				await authPasskeyInternals.verifyRegistrationResponse({
 					response: credential as RegistrationResponseJSON,
@@ -203,8 +221,8 @@ export function setupPasskey(authRouter: oak.Router) {
 				userVerification: "preferred",
 			});
 
-			await setChallengeCooke(ctx, options.challenge);
-			respond(ctx, oak.Status.OK, options);
+			const flowToken = await makeFlowToken(options.challenge);
+			respond(ctx, oak.Status.OK, { options, flowToken });
 		} catch (err) {
 			logger.error("login/options error", { err });
 			respond(ctx, oak.Status.InternalServerError, {
@@ -215,7 +233,11 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/login/verify", async (ctx) => {
 		try {
-			const { email: rawEmail, credential } = await getBodyJson(ctx);
+			const {
+				email: rawEmail,
+				credential,
+				flowToken,
+			} = await getBodyJson(ctx);
 			const email = parseEmail(rawEmail);
 			if (!email) {
 				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
@@ -228,7 +250,7 @@ export function setupPasskey(authRouter: oak.Router) {
 				return;
 			}
 
-			const expectedChallenge = await getChallengeCookie(ctx);
+			const { challenge: expectedChallenge } = await readFlowToken(flowToken);
 			const authResponse = credential as AuthenticationResponseJSON;
 			const storedCred = user.credentials.find(
 				(c) => c.credentialId === authResponse.id,
@@ -297,9 +319,19 @@ export function setupPasskey(authRouter: oak.Router) {
 				return;
 			}
 
-			const token = await authPasskeyInternals.createInvite(email);
-			const inviteUrl = `${APP_URL}/#/invite/${token}`;
-			respond(ctx, oak.Status.OK, { inviteUrl, token });
+			try {
+				const token = await authPasskeyInternals.createInvite(email);
+				const inviteUrl = `${APP_URL}/#/invite/${token}`;
+				respond(ctx, oak.Status.OK, { inviteUrl, token });
+			} catch (err) {
+				if ((err as Error).message === "invite_quota_exceeded") {
+					respond(ctx, oak.Status.TooManyRequests, {
+						error: "invite_quota_exceeded",
+					});
+					return;
+				}
+				throw err;
+			}
 		} catch (err) {
 			logger.error("invite/create error", { err });
 			respond(ctx, oak.Status.InternalServerError, {
@@ -357,9 +389,10 @@ export function setupPasskey(authRouter: oak.Router) {
 				},
 			});
 
-			await setChallengeCooke(ctx, options.challenge);
-			ctx.cookies.set("inviteToken", token, { httpOnly: true });
-			respond(ctx, oak.Status.OK, options);
+			const flowToken = await makeFlowToken(options.challenge, {
+				inviteToken: token,
+			});
+			respond(ctx, oak.Status.OK, { options, flowToken });
 		} catch (err) {
 			logger.error("invite/register/options error", { err });
 			respond(ctx, oak.Status.InternalServerError, {
@@ -370,21 +403,25 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/invite/register/verify", async (ctx) => {
 		try {
-			const { email: rawEmail, credential } = await getBodyJson(ctx);
+			const {
+				email: rawEmail,
+				credential,
+				flowToken,
+			} = await getBodyJson(ctx);
 			const email = parseEmail(rawEmail);
 			if (!email) {
 				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
 				return;
 			}
 
-			const inviteToken = await ctx.cookies.get("inviteToken");
-			if (!inviteToken) {
+			const { challenge: expectedChallenge, claims } =
+				await readFlowToken(flowToken);
+			const inviteToken = claims.inviteToken;
+			if (typeof inviteToken !== "string" || inviteToken.length === 0) {
 				respond(ctx, oak.Status.BadRequest, { error: "no invite token" });
 				return;
 			}
-			ctx.cookies.delete("inviteToken");
 
-			const expectedChallenge = await getChallengeCookie(ctx);
 			const verification =
 				await authPasskeyInternals.verifyRegistrationResponse({
 					response: credential as RegistrationResponseJSON,
@@ -405,10 +442,21 @@ export function setupPasskey(authRouter: oak.Router) {
 				(credential as RegistrationResponseJSON).response.transports,
 			);
 
-			const database = await authPasskeyInternals.redeemInvite(
-				inviteToken,
-				email,
-			);
+			let database: string;
+			try {
+				database = await authPasskeyInternals.redeemInvite(inviteToken, email);
+			} catch (err) {
+				const msg = (err as Error).message;
+				if (msg === "invite_already_redeemed") {
+					respond(ctx, oak.Status.Conflict, { error: "invite_already_redeemed" });
+					return;
+				}
+				if (msg === "invite_not_found") {
+					respond(ctx, oak.Status.NotFound, { error: "invite not found" });
+					return;
+				}
+				throw err;
+			}
 			await authPasskeyInternals.createUserForInvite(email, database, stored);
 
 			const result = await authPasskeyInternals.authenticateAndRespond(

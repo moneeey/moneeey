@@ -6,15 +6,6 @@ import {
 	withSpying,
 } from "./test.ts";
 
-function assertChallengeCookie(resp: Response, hasToken: boolean) {
-	return assert.assertEquals(
-		!!resp.headers
-			.getSetCookie()
-			.find((cookie) => cookie.startsWith("webauthnChallenge=")),
-		hasToken,
-	);
-}
-
 Deno.test(async function passkeyRegisterOptionsBadEmail() {
 	const { resp } = await runServerRequest(
 		"POST",
@@ -58,8 +49,9 @@ Deno.test(async function passkeyRegisterOptionsSuccess() {
 					);
 					assert.assertEquals(resp.status, 200);
 					const body = await resp.json();
-					assert.assertEquals(body.challenge, "test-challenge");
-					assertChallengeCookie(resp, true);
+					assert.assertEquals(body.options.challenge, "test-challenge");
+					assert.assertEquals(typeof body.flowToken, "string");
+					assert.assertEquals(body.flowToken.length > 0, true);
 				},
 			});
 		},
@@ -113,12 +105,21 @@ Deno.test(async function passkeyLoginOptionsSuccess() {
 					);
 					assert.assertEquals(resp.status, 200);
 					const body = await resp.json();
-					assert.assertEquals(body.challenge, "auth-challenge");
-					assertChallengeCookie(resp, true);
+					assert.assertEquals(body.options.challenge, "auth-challenge");
+					assert.assertEquals(typeof body.flowToken, "string");
 				},
 			});
 		},
 	});
+});
+
+Deno.test(async function passkeyRegisterVerifyMissingFlowToken() {
+	const { resp } = await runServerRequest(
+		"POST",
+		"/api/auth/passkey/register/verify",
+		{ email: "user@test.com", credential: {}, flowToken: "" },
+	);
+	assertResponse(resp, 500, { error: "internal server error" });
 });
 
 Deno.test(async function passkeyInviteCreateNotAuthenticated() {
@@ -153,7 +154,7 @@ Deno.test(async function passkeyInviteInfoSuccess() {
 		action: async (stub) => {
 			stub.resolves({
 				user: { database: "db_123" },
-				invite: { token: "good" },
+				invite: { tokenHash: "abc" },
 			});
 			const { resp } = await runServerRequest(
 				"POST",
