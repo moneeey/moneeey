@@ -8,41 +8,10 @@ import {
 import { BaseFormEditor } from "../components/FormEditor";
 import { Status } from "../components/Status";
 import { OkButton } from "../components/base/Button";
-import { Checkbox, Input } from "../components/base/Input";
 import Tabs from "../components/base/Tabs";
+import SelfHostedSyncForm from "../components/sync/SelfHostedSyncForm";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
-
-const ConfigEditor = <TConfig extends { [key: string]: string | boolean }>({
-	placeholder,
-	field,
-	state,
-	setState,
-}: {
-	placeholder: string;
-	field: Extract<keyof TConfig, string | boolean>;
-	state: TConfig;
-	setState: Dispatch<SetStateAction<TConfig>>;
-}) =>
-	typeof state[field] === "boolean" ? (
-		<Checkbox
-			onChange={(newValue) => setState({ ...state, [field]: newValue })}
-			value={state[field] as boolean}
-			placeholder={placeholder}
-			testId={field}
-			key={field}
-		>
-			{placeholder}
-		</Checkbox>
-	) : (
-		<Input
-			onChange={(newValue) => setState({ ...state, [field]: newValue })}
-			value={state[field] as string}
-			placeholder={placeholder}
-			testId={field}
-			key={field}
-		/>
-	);
 
 const MoneeeyLogin = ({
 	setMessage,
@@ -67,11 +36,15 @@ const MoneeeyLogin = ({
 				{
 					label: Messages.login.email,
 					editor: (
-						<ConfigEditor
-							field="email"
-							state={state}
-							setState={setState}
+						<input
+							data-testid="email"
+							type="email"
+							value={state.email}
 							placeholder={Messages.login.email}
+							onChange={(event) =>
+								setState({ ...state, email: event.target.value })
+							}
+							className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 						/>
 					),
 				},
@@ -106,69 +79,38 @@ const MoneeeyAccountConfig = observer(() => {
 const DatabaseConfig = () => {
 	const Messages = useMessages();
 	const { persistence, config } = useMoneeeyStore();
-	const [state, setState] = useState(
-		config.main.couchSync || {
-			url: "",
-			username: "",
-			password: "",
-			enabled: false,
-		},
-	);
-	const syncWith = (enabled: boolean) => {
-		const newState = { ...state, enabled };
-		setState(newState);
+	const initialCfg = config.main.couchSync || {
+		url: "",
+		username: "",
+		password: "",
+		enabled: false,
+	};
+	const onSubmit = (cfg: {
+		url: string;
+		username: string;
+		password: string;
+	}) => {
+		const newState = { ...cfg, enabled: true };
 		config.merge({ ...config.main, couchSync: newState });
 		persistence.sync(newState);
 	};
-	const onStart = () => syncWith(true);
-	const onStop = () => syncWith(false);
+	const onStop = () => {
+		const newState = { ...initialCfg, enabled: false };
+		config.merge({ ...config.main, couchSync: newState });
+		persistence.sync(newState);
+	};
 
 	return (
-		<BaseFormEditor
-			testId="selfHostedSync"
-			items={[
-				{
-					label: Messages.sync.couchdb_url,
-					editor: (
-						<ConfigEditor
-							field="url"
-							state={state}
-							setState={setState}
-							placeholder="http://local.moneeey.io:4280/db/mydatabase"
-						/>
-					),
-				},
-				{
-					label: Messages.sync.couchdb_username,
-					editor: (
-						<ConfigEditor
-							field="username"
-							state={state}
-							setState={setState}
-							placeholder={Messages.sync.couchdb_username}
-						/>
-					),
-				},
-				{
-					label: Messages.sync.couchdb_password,
-					editor: (
-						<ConfigEditor
-							field="password"
-							state={state}
-							setState={setState}
-							placeholder={Messages.sync.couchdb_password}
-						/>
-					),
-				},
-			]}
-			footer={
-				state.enabled ? (
-					<OkButton onClick={onStop} title={Messages.sync.stop} />
-				) : (
-					<OkButton onClick={onStart} title={Messages.sync.start} />
-				)
-			}
-		/>
+		<div className="flex flex-col gap-2">
+			<SelfHostedSyncForm
+				initial={initialCfg}
+				submitTitle={Messages.sync.start}
+				onSubmit={onSubmit}
+			/>
+			{initialCfg.enabled && (
+				<OkButton onClick={onStop} title={Messages.sync.stop} />
+			)}
+		</div>
 	);
 };
 

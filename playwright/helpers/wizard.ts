@@ -2,10 +2,31 @@ import { type Locator, type Page, expect } from "@playwright/test";
 import { mostUsedCurrencies } from "./fixtures";
 import { Input, Select } from "./page-objects";
 
-/**
- * Walks through the landing wizard: language → default currency → 3 initial
- * accounts. Leaves the tour modal open (call closeTourModal to dismiss).
- */
+export const E2E_PASSPHRASE = "playwright-test-pass-123";
+
+export async function completeEncryptionSetup(
+	page: Page,
+	passphrase: string = E2E_PASSPHRASE,
+) {
+	await page.getByRole("button", { name: "Create new (local only)" }).click();
+	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
+	await page.getByTestId("encryptionPassphrase").fill(passphrase);
+	await page.getByTestId("encryptionPassphraseConfirm").fill(passphrase);
+	await page
+		.getByRole("button", { name: "Create passphrase and continue" })
+		.click();
+}
+
+export async function unlockWithPassphrase(
+	page: Page,
+	passphrase: string = E2E_PASSPHRASE,
+) {
+	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
+	await expect(page.getByTestId("encryptionPassphraseConfirm")).toHaveCount(0);
+	await page.getByTestId("encryptionPassphrase").fill(passphrase);
+	await page.getByTestId("ok-button").click();
+}
+
 export async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("minimalScreenTitle")).toContainText("Moneeey");
 
@@ -19,6 +40,9 @@ export async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("ok-button")).toContainText("Go to Moneeey");
 
 	await page.getByTestId("ok-button").click();
+
+	await completeEncryptionSetup(page);
+
 	await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible();
 	const defaultCurrencySelector = Select(page, "defaultCurrencySelector");
 	expect(await defaultCurrencySelector.options()).toEqual(mostUsedCurrencies);
@@ -56,7 +80,6 @@ export async function completeLandingWizard(page: Page) {
 	await expect(page.getByText("Dashboard")).toBeVisible();
 }
 
-/** Opens budget editor, fills name/tag, saves. */
 export async function budgetEditorSave(
 	page: Page,
 	name: string,
@@ -81,7 +104,6 @@ export function tourNext(page: Page) {
 	return page.getByTestId("nm-modal-card").getByTestId("next").click();
 }
 
-/** Opens the budget editor at `index`, runs `fn`, auto-closes if still open. */
 export async function withBudgetEditor(
 	page: Page,
 	index: number,

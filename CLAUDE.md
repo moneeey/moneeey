@@ -12,7 +12,7 @@ Moneeey is a personal budgeting app with E2E encryption. React+MobX+PouchDB fron
 ```bash
 docker-compose up                    # Start everything (frontend :4270, backend :4269, caddy :4280, couchdb :5984)
 ```
-Access at http://local.moneeey.io:4280 — CouchDB admin: dev/dev at /db/_utils/#login
+Access at http://localhost:4280 — CouchDB admin: dev/dev at /db/_utils/#login
 
 ### Frontend (working directory: frontend/)
 ```bash

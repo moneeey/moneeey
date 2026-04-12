@@ -1,0 +1,495 @@
+import { useEffect, useRef, useState } from "react";
+
+import type { SyncConfig } from "../../entities/Config";
+import {
+	type EncryptionErrorCode,
+	MIN_PASSPHRASE_LENGTH,
+	openEncryptedDatabase,
+} from "../../shared/EncryptionStore";
+import { PouchDBRemoteFactory } from "../../shared/Persistence";
+import {
+	fetchMagicLinkState,
+	pollForMagicLinkAuth,
+	startMagicLink,
+} from "../../shared/encryption/bootstrapFromMoneeeyAccount";
+import { isWebCryptoAvailable } from "../../shared/encryption/crypto";
+import { hasEncryptionMeta } from "../../shared/encryption/encryptedPouch";
+import useMessages, { type TMessages } from "../../utils/Messages";
+import { OkButton, SecondaryButton } from "../base/Button";
+import MinimalBasicScreen from "../base/MinimalBaseScreen";
+import SelfHostedSyncForm from "../sync/SelfHostedSyncForm";
+
+export type UnlockResult = {
+	dataKey: CryptoKey;
+	/** If the user signed in via magic-link or self-hosted before setup,
+	 * this carries the remote config so App.tsx can kick off live sync
+	 * immediately after the store loads. */
+	syncConfig?: SyncConfig;
+};
+
+type Props = {
+	db: PouchDB.Database;
+	onUnlocked: (result: UnlockResult) => void;
+};
+
+type GateState =
+	| { kind: "loading" }
+	| { kind: "choose" }
+	| { kind: "setup" }
+	| { kind: "unlock" }
+	| { kind: "magic-link" }
+	| { kind: "self-hosted" }
+	| {
+			kind: "pulling";
+			label: string;
+			progress?: { attempt: number; max: number };
+			onCancel?: () => void;
+	  };
+
+const messageForError = (err: unknown, Messages: TMessages): string => {
+	const code = (err as Error | undefined)?.message as
+		| EncryptionErrorCode
+		| undefined;
+	switch (code) {
+		case "passphrase_too_short":
+			return Messages.encryption.passphrase_too_short;
+		case "wrong_passphrase":
+		case "no_meta_doc":
+			return Messages.encryption.wrong_passphrase;
+		case "unsupported_schema_version":
+			return Messages.encryption.unsupported_schema_version;
+		case "not_found_on_server":
+			return Messages.encryption.no_existing_data_found;
+		case "network_error":
+			return Messages.encryption.network_error;
+		case "magic_link_cancelled":
+		case "magic_link_timeout":
+			return Messages.encryption.magic_link_timeout;
+		default:
+			return Messages.encryption.unknown_error;
+	}
+};
+
+const detectInitialState = async (db: PouchDB.Database): Promise<GateState> => {
+	return (await hasEncryptionMeta(db))
+		? { kind: "unlock" }
+		: { kind: "choose" };
+};
+
+export default function EncryptionGate({ db, onUnlocked }: Props) {
+	const Messages = useMessages();
+	const [state, setState] = useState<GateState>({ kind: "loading" });
+	const [passphrase, setPassphrase] = useState("");
+	const [confirm, setConfirm] = useState("");
+	const [error, setError] = useState<string | null>(null);
+	const [busy, setBusy] = useState(false);
+	const pendingSyncRef = useRef<SyncConfig | null>(null);
+	const [email, setEmail] = useState("");
+	const pollAbortRef = useRef<AbortController | null>(null);
+
+	useEffect(() => {
+		let cancelled = false;
+		detectInitialState(db).then((next) => {
+			if (!cancelled) setState(next);
+		});
+		return () => {
+			cancelled = true;
+			pollAbortRef.current?.abort();
+		};
+	}, [db]);
+
+	const reset = () => {
+		setPassphrase("");
+		setConfirm("");
+		setError(null);
+		setBusy(false);
+	};
+
+	const goChoose = () => {
+		pollAbortRef.current?.abort();
+		pollAbortRef.current = null;
+		reset();
+		setState({ kind: "choose" });
+	};
+
+	const goSetup = () => {
+		reset();
+		setState({ kind: "setup" });
+	};
+
+	const onSubmitSetup = async () => {
+		if (passphrase.length < MIN_PASSPHRASE_LENGTH) {
+			setError(Messages.encryption.passphrase_too_short);
+			return;
+		}
+		if (passphrase !== confirm) {
+			setError(Messages.encryption.passphrase_mismatch);
+			return;
+		}
+		setError(null);
+		setBusy(true);
+		try {
+			const dataKey = await openEncryptedDatabase(db, passphrase, "setup");
+			onUnlocked({ dataKey, syncConfig: pendingSyncRef.current ?? undefined });
+		} catch (err) {
+			setError(messageForError(err, Messages));
+			setBusy(false);
+		}
+	};
+
+	const onSubmitUnlock = async () => {
+		if (passphrase.length === 0) {
+			setError(Messages.encryption.passphrase_too_short);
+			return;
+		}
+		setError(null);
+		setBusy(true);
+		try {
+			const dataKey = await openEncryptedDatabase(db, passphrase, "unlock");
+			onUnlocked({ dataKey, syncConfig: pendingSyncRef.current ?? undefined });
+		} catch (err) {
+			setError(messageForError(err, Messages));
+			setBusy(false);
+		}
+	};
+
+	const pullFromRemote = async (remote: SyncConfig) => {
+		setError(null);
+		setBusy(true);
+		setState({
+			kind: "pulling",
+			label: Messages.encryption.pulling_from_remote,
+		});
+		try {
+			const remoteDb = PouchDBRemoteFactory(remote);
+			await new Promise<void>((resolve, reject) => {
+				db.sync(remoteDb, { live: false, retry: false })
+					.on("complete", () => resolve())
+					.on("denied", (info) =>
+						reject(new Error(`denied: ${JSON.stringify(info)}`)),
+					)
+					.on("error", (err: unknown) => reject(err));
+			});
+
+			pendingSyncRef.current = remote;
+
+			if (await hasEncryptionMeta(db)) {
+				reset();
+				setState({ kind: "unlock" });
+				return;
+			}
+			// No existing data — transition to setup (first-time user).
+			reset();
+			setState({ kind: "setup" });
+		} catch (err) {
+			console.error("pull-from-remote failed", err);
+			setError(Messages.encryption.network_error);
+			setState({ kind: "choose" });
+			setBusy(false);
+		}
+	};
+
+	const onMagicLinkSubmit = async () => {
+		setError(null);
+		setBusy(true);
+		const controller = new AbortController();
+		pollAbortRef.current = controller;
+		setState({
+			kind: "pulling",
+			label: Messages.encryption.waiting_for_magic_link,
+			progress: { attempt: 0, max: 30 },
+			onCancel: () => controller.abort(),
+		});
+		try {
+			const sent = await startMagicLink(email);
+			if (!sent) {
+				setError(Messages.encryption.no_existing_data_found);
+				setState({ kind: "magic-link" });
+				setBusy(false);
+				return;
+			}
+			// Shortcut if already clicked before the poll starts.
+			const immediate = await fetchMagicLinkState();
+			const remote =
+				immediate ??
+				(await pollForMagicLinkAuth({
+					signal: controller.signal,
+					onAttempt: (attempt, max) => {
+						setState((prev) =>
+							prev.kind === "pulling"
+								? { ...prev, progress: { attempt, max } }
+								: prev,
+						);
+					},
+				}));
+			await pullFromRemote(remote);
+		} catch (err) {
+			if ((err as Error).message === "magic_link_cancelled") {
+				goChoose();
+				return;
+			}
+			console.error("magic-link flow failed", err);
+			setError(messageForError(err, Messages));
+			setState({ kind: "choose" });
+			setBusy(false);
+		} finally {
+			if (pollAbortRef.current === controller) {
+				pollAbortRef.current = null;
+			}
+		}
+	};
+
+	if (state.kind === "loading") {
+		return (
+			<MinimalBasicScreen>
+				<p>{Messages.util.loading}</p>
+			</MinimalBasicScreen>
+		);
+	}
+
+	if (!isWebCryptoAvailable()) {
+		return (
+			<MinimalBasicScreen>
+				<h2 className="text-xl font-semibold text-danger-300">
+					{Messages.encryption.insecure_context_title}
+				</h2>
+				<p className="text-sm opacity-80">
+					{Messages.encryption.insecure_context_description}
+				</p>
+				<p className="text-xs opacity-60 font-mono">
+					{globalThis.location?.origin}
+				</p>
+			</MinimalBasicScreen>
+		);
+	}
+
+	if (state.kind === "pulling") {
+		return (
+			<MinimalBasicScreen>
+				<h2 className="text-xl font-semibold">{state.label}</h2>
+				<p className="text-sm opacity-80">{Messages.util.loading}</p>
+				{state.progress && (
+					<p className="text-xs opacity-60" data-testid="magicLinkProgress">
+						{Messages.encryption.waiting_progress(
+							state.progress.attempt,
+							state.progress.max,
+						)}
+					</p>
+				)}
+				{state.onCancel && (
+					<SecondaryButton
+						onClick={state.onCancel}
+						title={Messages.util.cancel}
+					/>
+				)}
+			</MinimalBasicScreen>
+		);
+	}
+
+	if (state.kind === "choose") {
+		return (
+			<MinimalBasicScreen>
+				<h2 className="text-xl font-semibold">
+					{Messages.encryption.choose_title}
+				</h2>
+				<p className="text-sm opacity-80">
+					{Messages.encryption.choose_description}
+				</p>
+				<div className="flex flex-col gap-3 w-full max-w-sm">
+					<OkButton
+						onClick={goSetup}
+						title={Messages.encryption.create_new_account}
+					/>
+					<SecondaryButton
+						onClick={() => {
+							reset();
+							setState({ kind: "magic-link" });
+						}}
+						title={Messages.encryption.signin_magic_link}
+					/>
+					<SecondaryButton
+						onClick={() => {
+							reset();
+							setState({ kind: "self-hosted" });
+						}}
+						title={Messages.encryption.signin_self_hosted}
+					/>
+				</div>
+				{error && (
+					<p className="text-sm text-danger-300" data-testid="encryptionError">
+						{error}
+					</p>
+				)}
+			</MinimalBasicScreen>
+		);
+	}
+
+	if (state.kind === "magic-link") {
+		return (
+			<MinimalBasicScreen>
+				<h2 className="text-xl font-semibold">
+					{Messages.encryption.signin_magic_link}
+				</h2>
+				<p className="text-sm opacity-80">
+					{Messages.encryption.magic_link_description}
+				</p>
+				<div className="flex flex-col gap-3 w-full max-w-sm">
+					<input
+						data-testid="magicLinkEmail"
+						type="email"
+						placeholder={Messages.login.email}
+						value={email}
+						disabled={busy}
+						onChange={(event) => {
+							setEmail(event.target.value);
+							setError(null);
+						}}
+						onKeyDown={(event) => {
+							if (event.key === "Enter" && email.length > 0) {
+								onMagicLinkSubmit();
+							}
+						}}
+						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+					/>
+				</div>
+				{error && (
+					<p className="text-sm text-danger-300" data-testid="encryptionError">
+						{error}
+					</p>
+				)}
+				<div className="flex gap-2">
+					<SecondaryButton
+						onClick={goChoose}
+						title={Messages.util.cancel}
+						disabled={busy}
+					/>
+					<OkButton
+						onClick={onMagicLinkSubmit}
+						title={Messages.login.login_or_signup}
+						disabled={busy || email.length === 0}
+					/>
+				</div>
+			</MinimalBasicScreen>
+		);
+	}
+
+	if (state.kind === "self-hosted") {
+		return (
+			<MinimalBasicScreen>
+				<h2 className="text-xl font-semibold">
+					{Messages.encryption.signin_self_hosted}
+				</h2>
+				<p className="text-sm opacity-80">
+					{Messages.encryption.self_hosted_description}
+				</p>
+				<SelfHostedSyncForm
+					onSubmit={(remote) => pullFromRemote(remote)}
+					submitTitle={Messages.encryption.pull_from_remote}
+					disabled={busy}
+				/>
+				{error && (
+					<p className="text-sm text-danger-300" data-testid="encryptionError">
+						{error}
+					</p>
+				)}
+				<SecondaryButton
+					onClick={goChoose}
+					title={Messages.util.cancel}
+					disabled={busy}
+				/>
+			</MinimalBasicScreen>
+		);
+	}
+
+	// setup or unlock — both are passphrase forms that differ in whether a
+	// confirm field is rendered and which API call fires on submit.
+	const isSetup = state.kind === "setup";
+	const onSubmit = isSetup ? onSubmitSetup : onSubmitUnlock;
+	return (
+		<MinimalBasicScreen>
+			<h2 className="text-xl font-semibold">
+				{isSetup
+					? Messages.encryption.setup_title
+					: Messages.encryption.unlock_title}
+			</h2>
+			<p className="text-sm opacity-80">
+				{isSetup
+					? Messages.encryption.setup_description
+					: Messages.encryption.unlock_description}
+			</p>
+			{isSetup && (
+				<p className="text-sm font-semibold text-danger-300">
+					{Messages.encryption.setup_warning}
+				</p>
+			)}
+			<div className="flex flex-col gap-3 w-full max-w-sm">
+				<input
+					data-testid="encryptionPassphrase"
+					type="password"
+					autoComplete={isSetup ? "new-password" : "current-password"}
+					placeholder={Messages.encryption.passphrase_placeholder}
+					value={passphrase}
+					disabled={busy}
+					onChange={(event) => {
+						setPassphrase(event.target.value);
+						setError(null);
+					}}
+					onKeyDown={(event) => {
+						// Enter submits in both setup and unlock. For setup we
+						// only fire if both fields are populated, so stray
+						// Enters while editing the first field don't bounce
+						// through the confirm-mismatch path.
+						if (event.key !== "Enter") return;
+						if (isSetup && confirm.length === 0) return;
+						onSubmit();
+					}}
+					className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+				/>
+				{isSetup && (
+					<input
+						data-testid="encryptionPassphraseConfirm"
+						type="password"
+						autoComplete="new-password"
+						placeholder={Messages.encryption.confirm_placeholder}
+						value={confirm}
+						disabled={busy}
+						onChange={(event) => {
+							setConfirm(event.target.value);
+							setError(null);
+						}}
+						onKeyDown={(event) => {
+							if (event.key === "Enter") onSubmit();
+						}}
+						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+					/>
+				)}
+			</div>
+			{error && (
+				<p className="text-sm text-danger-300" data-testid="encryptionError">
+					{error}
+				</p>
+			)}
+			{busy && (
+				<p className="text-sm opacity-80">{Messages.encryption.unlocking}</p>
+			)}
+			<div className="flex gap-2">
+				{isSetup && (
+					<SecondaryButton
+						onClick={goChoose}
+						title={Messages.util.cancel}
+						disabled={busy}
+					/>
+				)}
+				<OkButton
+					disabled={busy || passphrase.length === 0}
+					onClick={onSubmit}
+					title={
+						isSetup
+							? Messages.encryption.setup_submit
+							: Messages.encryption.unlock_submit
+					}
+				/>
+			</div>
+		</MinimalBasicScreen>
+	);
+}

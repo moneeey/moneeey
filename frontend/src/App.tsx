@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { observer } from "mobx-react";
 
@@ -7,7 +7,9 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import AppMenu from "./components/AppMenu";
 import Navigator from "./components/Navigator";
 import Notifications from "./components/Notifications";
+import type { UnlockResult } from "./components/tour/EncryptionGate";
 import MoneeeyStore from "./shared/MoneeeyStore";
+import { openRawDatabase } from "./shared/encryption/encryptedPouch";
 import useMoneeeyStore, {
 	MoneeeyStoreProvider,
 } from "./shared/useMoneeeyStore";
@@ -19,6 +21,7 @@ import MoneeeyTourProvider from "./components/tour/Tour";
 import { isEmpty } from "lodash";
 import LandingPage from "./components/LandingPage";
 import MinimalBasicScreen from "./components/base/MinimalBaseScreen";
+import EncryptionGate from "./components/tour/EncryptionGate";
 import InitialCurrencySelector, {
 	showInitialCurrencySelector,
 } from "./components/tour/InitialCurrencySelector";
@@ -26,7 +29,6 @@ import InitialLanguageSelector, {
 	showInitialLanguageSelector,
 } from "./components/tour/InitialLanguageSelector";
 import { NavigationModal } from "./shared/Navigation";
-import { PouchDBFactory } from "./shared/Persistence";
 import useMessages, {
 	MessagesProvider,
 	useLanguageSwitcher,
@@ -51,14 +53,6 @@ const AppLoaded = observer(() => {
 		accounts: { all: allAccounts },
 		navigation,
 	} = moneeeyStore;
-	const { currentLanguage } = useLanguageSwitcher();
-
-	if (showInitialLanguageSelector({ currentLanguage })) {
-		return <InitialLanguageSelector />;
-	}
-
-	// TODO: NewDB/MoneeySync/DBSync
-	//// Setup encryption
 
 	if (showInitialCurrencySelector({ default_currency })) {
 		return <InitialCurrencySelector />;
@@ -93,25 +87,51 @@ const AppContent = observer(() => {
 	);
 });
 
-export const App = () => {
-	const moneeeyStore = React.useMemo(
-		() => new MoneeeyStore(PouchDBFactory),
-		[],
+const AppBoot = observer(() => {
+	const { currentLanguage } = useLanguageSwitcher();
+	const [moneeeyStore, setMoneeeyStore] = useState<MoneeeyStore | null>(null);
+	const rawDb = useMemo(() => openRawDatabase(), []);
+
+	const onUnlocked = useCallback(
+		async ({ dataKey, syncConfig }: UnlockResult) => {
+			const store = new MoneeeyStore(() => rawDb);
+			store.persistence.setDataKey(dataKey);
+			await store.load();
+			if (syncConfig) {
+				store.config.merge({
+					...store.config.main,
+					couchSync: syncConfig,
+				});
+				store.persistence.sync(syncConfig);
+			}
+			setMoneeeyStore(store);
+		},
+		[rawDb],
 	);
 
-	useEffect(() => {
-		moneeeyStore.load();
-	}, [moneeeyStore]);
+	if (showInitialLanguageSelector({ currentLanguage })) {
+		return <InitialLanguageSelector />;
+	}
 
+	if (!moneeeyStore) {
+		return <EncryptionGate db={rawDb} onUnlocked={onUnlocked} />;
+	}
+
+	return (
+		<MoneeeyStoreProvider value={moneeeyStore}>
+			<AppContent />
+		</MoneeeyStoreProvider>
+	);
+});
+
+export const App = () => {
 	return (
 		<HashRouter>
 			<MessagesProvider>
-				<MoneeeyStoreProvider value={moneeeyStore}>
-					<Routes>
-						<Route path="/" element={<LandingPage />} />
-						<Route path="*" element={<AppContent />} />
-					</Routes>
-				</MoneeeyStoreProvider>
+				<Routes>
+					<Route path="/" element={<LandingPage />} />
+					<Route path="*" element={<AppBoot />} />
+				</Routes>
 			</MessagesProvider>
 		</HashRouter>
 	);

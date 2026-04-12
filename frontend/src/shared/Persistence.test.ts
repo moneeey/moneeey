@@ -8,8 +8,24 @@ import { MockLogger } from "./Logger";
 import Logger from "./Logger";
 import MappedStore from "./MappedStore";
 import type MoneeeyStore from "./MoneeeyStore";
-import PersistenceStore, { PersistenceMonitor, Status } from "./Persistence";
+import PersistenceStore, {
+	CONFIG_DOC_ID,
+	PersistenceMonitor,
+	Status,
+} from "./Persistence";
 import TagsStore from "./Tags";
+import {
+	ENCRYPTION_META_ID,
+	changePassphrase as changePassphraseInMeta,
+	decryptDoc,
+	hasEncryptionMeta,
+	installEncryptionTransform,
+	openRawDatabase,
+	readMetaDoc,
+	setupNewEncryption,
+	unlockExistingEncryption,
+	verifyPassphrase,
+} from "./encryption/encryptedPouch";
 
 (PouchDB as unknown as { plugin: (p: unknown) => void }).plugin(memoryAdapter);
 
@@ -651,6 +667,301 @@ describe("Persistence", () => {
 				// Wait for refetch debounce to complete
 				await new Promise((r) => setTimeout(r, 400));
 			});
+		});
+	});
+
+	describe("encryption/encryptedPouch (custom WebCrypto module)", () => {
+		let counter = 0;
+		const nextName = () => {
+			counter += 1;
+			return `enc-test-${counter}-${Date.now()}`;
+		};
+
+		const freshDb = (name: string) => new PouchDB(name, { adapter: "memory" });
+
+		const cleanup = async (db: PouchDB.Database) => {
+			try {
+				await db.destroy();
+			} catch {
+				// already gone
+			}
+		};
+
+		const makeConfig = () => ({
+			_id: CONFIG_DOC_ID,
+			entity_type: EntityType.CONFIG,
+			date_format: "yyyy-MM-dd",
+			decimal_separator: ",",
+			thousand_separator: ".",
+			default_currency: "",
+			view_archived: false,
+			created: "2024-01-01T00:00:00Z",
+			updated: "2024-01-01T00:00:00Z",
+			tags: [],
+		});
+
+		it("setupNewEncryption writes an ENCRYPTION-META doc", async () => {
+			const db = freshDb(nextName());
+			expect(await hasEncryptionMeta(db)).toBe(false);
+			const dataKey = await setupNewEncryption(db, "correct-horse-battery");
+			expect(dataKey).toBeDefined();
+			expect(await hasEncryptionMeta(db)).toBe(true);
+			const meta = await readMetaDoc(db);
+			expect(meta?.entity_type).toBe("ENCRYPTION_META");
+			expect(meta?.kdf).toBe("PBKDF2");
+			expect(meta?.iterations).toBeGreaterThanOrEqual(100_000);
+			expect(typeof meta?.salt).toBe("string");
+			expect(typeof meta?.wrapped_key).toBe("string");
+			await cleanup(db);
+		});
+
+		it("round-trips a doc across a simulated restart under the same passphrase", async () => {
+			const name = nextName();
+			const passphrase = "correct-horse-battery";
+
+			// First "session": set up, write a Config, close the in-memory
+			// handle (the underlying PouchDB data survives).
+			const db1 = freshDb(name);
+			const dataKey1 = await setupNewEncryption(db1, passphrase);
+			await db1.put(makeConfig());
+			const stored = (await db1.get(CONFIG_DOC_ID)) as Record<string, unknown>;
+			// On disk the body is encrypted.
+			expect(stored.sealed).toBeDefined();
+			expect(stored.default_currency).toBeUndefined();
+			// Decrypting with the live data key yields plaintext.
+			const decrypted = (await decryptDoc(stored, dataKey1)) as Record<
+				string,
+				unknown
+			>;
+			expect(decrypted.entity_type).toBe(EntityType.CONFIG);
+			expect(decrypted.date_format).toBe("yyyy-MM-dd");
+
+			// Second "session": reopen the same DB, unlock, decrypt.
+			const db2 = freshDb(name);
+			expect(await hasEncryptionMeta(db2)).toBe(true);
+			const dataKey2 = await unlockExistingEncryption(db2, passphrase);
+			const reloaded = (await db2.get(CONFIG_DOC_ID)) as Record<
+				string,
+				unknown
+			>;
+			const reloadedDecrypted = (await decryptDoc(
+				reloaded,
+				dataKey2,
+			)) as Record<string, unknown>;
+			expect(reloadedDecrypted.date_format).toBe("yyyy-MM-dd");
+
+			await cleanup(db2);
+		});
+
+		it("unlockExistingEncryption rejects the wrong passphrase", async () => {
+			const name = nextName();
+			const db1 = freshDb(name);
+			await setupNewEncryption(db1, "right-passphrase");
+
+			const db2 = freshDb(name);
+			await expect(
+				unlockExistingEncryption(db2, "wrong-passphrase"),
+			).rejects.toThrow("wrong_passphrase");
+			await cleanup(db2);
+		});
+
+		it("unlockExistingEncryption rejects a database with no meta doc", async () => {
+			const db = freshDb(nextName());
+			await expect(
+				unlockExistingEncryption(db, "any-passphrase"),
+			).rejects.toThrow("no_meta_doc");
+			await cleanup(db);
+		});
+
+		it("changePassphrase re-wraps the data key without touching other docs (O(1))", async () => {
+			const name = nextName();
+			const passphraseA = "passphrase-alpha";
+			const passphraseB = "passphrase-beta";
+
+			const db1 = freshDb(name);
+			const dataKey = await setupNewEncryption(db1, passphraseA);
+			await db1.put(makeConfig());
+			const configRevBefore = (
+				(await db1.get(CONFIG_DOC_ID)) as { _rev: string }
+			)._rev;
+			const metaRevBefore = (await readMetaDoc(db1))?._rev;
+
+			await changePassphraseInMeta(db1, dataKey, passphraseB);
+
+			// Config's _rev is unchanged — we never touched it.
+			const configRevAfter = (
+				(await db1.get(CONFIG_DOC_ID)) as { _rev: string }
+			)._rev;
+			expect(configRevAfter).toBe(configRevBefore);
+			// Meta's _rev bumped once — single write.
+			const metaRevAfter = (await readMetaDoc(db1))?._rev;
+			expect(metaRevAfter).not.toBe(metaRevBefore);
+
+			// New passphrase works, old one is rejected.
+			const db2 = freshDb(name);
+			await expect(unlockExistingEncryption(db2, passphraseA)).rejects.toThrow(
+				"wrong_passphrase",
+			);
+			const db3 = freshDb(name);
+			const dataKeyB = await unlockExistingEncryption(db3, passphraseB);
+			const stored = (await db3.get(CONFIG_DOC_ID)) as Record<string, unknown>;
+			const plain = (await decryptDoc(stored, dataKeyB)) as Record<
+				string,
+				unknown
+			>;
+			expect(plain.entity_type).toBe(EntityType.CONFIG);
+
+			await cleanup(db3);
+		});
+
+		// TODO: add a real cross-device test that spins up a CouchDB
+		// container and round-trips through it. For now this simulation
+		// uses in-memory replication between two PouchDB instances — same
+		// transport semantics, no network.
+		it("cross-device: device B pulls encrypted docs + meta via replication and unlocks", async () => {
+			const remoteName = nextName();
+			const localAName = nextName();
+			const localBName = nextName();
+			const passphrase = "shared-passphrase-123";
+
+			// Device A: set up, write a Config.
+			const deviceA = freshDb(localAName);
+			await setupNewEncryption(deviceA, passphrase);
+			await deviceA.put(makeConfig());
+
+			// "Remote": an empty DB that will receive A's encrypted envelopes.
+			const remote = freshDb(remoteName);
+			await new Promise<void>((resolve, reject) => {
+				deviceA.replicate
+					.to(remote)
+					.on("complete", () => resolve())
+					.on("error", (err: unknown) => reject(err));
+			});
+
+			// Device B: fresh, pulls from remote BEFORE running
+			// setupNewEncryption. After the pull completes, the meta doc is
+			// present so unlock should work with the same passphrase.
+			const deviceB = openRawDatabase(localBName);
+			await new Promise<void>((resolve, reject) => {
+				deviceB.replicate
+					.from(remote)
+					.on("complete", () => resolve())
+					.on("error", (err: unknown) => reject(err));
+			});
+			expect(await hasEncryptionMeta(deviceB)).toBe(true);
+
+			const dataKey = await unlockExistingEncryption(deviceB, passphrase);
+			const stored = (await deviceB.get(CONFIG_DOC_ID)) as Record<
+				string,
+				unknown
+			>;
+			const plain = (await decryptDoc(stored, dataKey)) as Record<
+				string,
+				unknown
+			>;
+			expect(plain.date_format).toBe("yyyy-MM-dd");
+
+			await cleanup(deviceA);
+			await cleanup(remote);
+			await cleanup(deviceB);
+		});
+
+		it("incoming transform leaves the meta doc readable without a key", async () => {
+			// A fresh DB that has only setupNewEncryption run on it: we
+			// should still be able to read the meta doc via readMetaDoc
+			// (which uses a plain `.get`), even though the transform is
+			// active.
+			const db = freshDb(nextName());
+			await setupNewEncryption(db, "some-passphrase-123");
+			const meta = await readMetaDoc(db);
+			expect(meta).not.toBeNull();
+			expect(meta?._id).toBe(ENCRYPTION_META_ID);
+			// Not "encrypted" as a doc — the meta payload is inside
+			// wrapped_key, not sealed.
+			expect(
+				(meta as unknown as Record<string, unknown>).sealed,
+			).toBeUndefined();
+			await cleanup(db);
+		});
+
+		it("installEncryptionTransform encrypts ordinary writes but preserves clear routing fields", async () => {
+			const db = freshDb(nextName());
+			const dataKey = await setupNewEncryption(db, "test-passphrase-99");
+			installEncryptionTransform(db, dataKey);
+			await db.put({
+				_id: "ACCOUNT-probe",
+				entity_type: EntityType.ACCOUNT,
+				name: "Secret Account",
+				secret_number: 42,
+				updated: "2024-01-01T00:00:00Z",
+				tags: [],
+			});
+			const stored = (await db.get("ACCOUNT-probe")) as Record<string, unknown>;
+			// Only PouchDB structural fields remain in the clear.
+			expect(stored._id).toBe("ACCOUNT-probe");
+			expect(stored._rev).toBeDefined();
+			// Everything else — including entity_type, updated, and all
+			// body fields — is inside the sealed blob.
+			expect(stored.entity_type).toBeUndefined();
+			expect(stored.updated).toBeUndefined();
+			expect(stored.name).toBeUndefined();
+			expect(stored.secret_number).toBeUndefined();
+			expect(stored.sealed).toBeDefined();
+			// decryptDoc brings everything back.
+			const plain = (await decryptDoc(stored, dataKey)) as Record<
+				string,
+				unknown
+			>;
+			expect(plain.name).toBe("Secret Account");
+			expect(plain.secret_number).toBe(42);
+			await cleanup(db);
+		});
+		it("verifyPassphrase accepts the correct passphrase and returns the data key", async () => {
+			const db = freshDb(nextName());
+			const dataKey = await setupNewEncryption(db, "verify-me-123");
+			await db.put(makeConfig());
+
+			const verifiedKey = await verifyPassphrase(db, "verify-me-123");
+			expect(verifiedKey).toBeDefined();
+			// The verified key should decrypt docs produced by the original.
+			const stored = (await db.get(CONFIG_DOC_ID)) as Record<string, unknown>;
+			const plain = (await decryptDoc(stored, verifiedKey)) as Record<
+				string,
+				unknown
+			>;
+			expect(plain.date_format).toBe("yyyy-MM-dd");
+			await cleanup(db);
+		});
+
+		it("verifyPassphrase rejects a wrong passphrase", async () => {
+			const db = freshDb(nextName());
+			await setupNewEncryption(db, "right-passphrase-1");
+			await expect(verifyPassphrase(db, "wrong-passphrase-2")).rejects.toThrow(
+				"wrong_passphrase",
+			);
+			await cleanup(db);
+		});
+
+		it("rejects an ENCRYPTION-META doc with an unsupported schema version", async () => {
+			const db = freshDb(nextName());
+			// Manually write a meta doc with a future schema version.
+			await db.put({
+				_id: ENCRYPTION_META_ID,
+				entity_type: "ENCRYPTION_META",
+				schema_version: 999,
+				kdf: "PBKDF2",
+				iterations: 600000,
+				hash: "SHA-256",
+				salt: "AAAA",
+				wrapped_key: "AAAA",
+			});
+			await expect(readMetaDoc(db)).rejects.toThrow(
+				"unsupported_schema_version",
+			);
+			await expect(hasEncryptionMeta(db)).rejects.toThrow(
+				"unsupported_schema_version",
+			);
+			await cleanup(db);
 		});
 	});
 

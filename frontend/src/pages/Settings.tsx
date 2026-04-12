@@ -5,6 +5,10 @@ import { PrimaryButton, SecondaryButton } from "../components/base/Button";
 import Drawer from "../components/base/Drawer";
 import { TextArea } from "../components/base/Input";
 import Space, { VerticalSpace } from "../components/base/Space";
+import {
+	MIN_PASSPHRASE_LENGTH,
+	verifyPassphrase,
+} from "../shared/EncryptionStore";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import ConfigTable from "../tables/ConfigTable";
 import useMessages from "../utils/Messages";
@@ -21,6 +25,12 @@ export default function Settings() {
 	const Messages = useMessages();
 	const [action, setAction] = useState<Action | undefined>(undefined);
 	const [loading, setLoading] = useState<number | false>(false);
+	const [changingPassphrase, setChangingPassphrase] = useState(false);
+	const [currentPassphrase, setCurrentPassphrase] = useState("");
+	const [newPassphrase, setNewPassphrase] = useState("");
+	const [confirmPassphrase, setConfirmPassphrase] = useState("");
+	const [passphraseError, setPassphraseError] = useState<string | null>(null);
+	const [passphraseBusy, setPassphraseBusy] = useState(false);
 	const moneeeyStore = useMoneeeyStore();
 
 	const onExportData = async () => {
@@ -77,6 +87,49 @@ export default function Settings() {
 		});
 	};
 
+	const onChangePassphrase = () => {
+		setCurrentPassphrase("");
+		setNewPassphrase("");
+		setConfirmPassphrase("");
+		setPassphraseError(null);
+		setChangingPassphrase(true);
+	};
+
+	const onSubmitPassphraseChange = async () => {
+		if (currentPassphrase.length === 0) {
+			setPassphraseError(Messages.encryption.wrong_passphrase);
+			return;
+		}
+		if (newPassphrase.length < MIN_PASSPHRASE_LENGTH) {
+			setPassphraseError(Messages.encryption.passphrase_too_short);
+			return;
+		}
+		if (newPassphrase !== confirmPassphrase) {
+			setPassphraseError(Messages.encryption.passphrase_mismatch);
+			return;
+		}
+		setPassphraseError(null);
+		setPassphraseBusy(true);
+		try {
+			const db = moneeeyStore.persistence.getDb();
+			const dataKey = await verifyPassphrase(db, currentPassphrase);
+			await moneeeyStore.encryption.changePassphrase(
+				db,
+				dataKey,
+				newPassphrase,
+			);
+			// changePassphrase triggers a reload; this line is unreachable.
+		} catch (err) {
+			const code = (err as Error).message;
+			if (code === "passphrase_too_short") {
+				setPassphraseError(Messages.encryption.passphrase_too_short);
+			} else {
+				setPassphraseError(Messages.encryption.wrong_passphrase);
+			}
+			setPassphraseBusy(false);
+		}
+	};
+
 	return (
 		<>
 			<Space className="p-2 scale-75">
@@ -89,8 +142,84 @@ export default function Settings() {
 				<SecondaryButton onClick={onClearData}>
 					{Messages.settings.clear_all}
 				</SecondaryButton>
+				<SecondaryButton onClick={onChangePassphrase}>
+					{Messages.menu.change_passphrase}
+				</SecondaryButton>
 			</Space>
 			<VerticalSpace>
+				{changingPassphrase && (
+					<Drawer
+						testId="changePassphraseDrawer"
+						header={Messages.encryption.change_title}
+						footer={
+							<Space>
+								<SecondaryButton
+									onClick={() => setChangingPassphrase(false)}
+									title={Messages.util.close}
+									disabled={passphraseBusy}
+								/>
+								<PrimaryButton
+									onClick={onSubmitPassphraseChange}
+									title={Messages.encryption.change_submit}
+									disabled={passphraseBusy}
+								/>
+							</Space>
+						}
+					>
+						<div className="bg-background-900 p-2 flex flex-col gap-3">
+							<p className="text-sm opacity-80">
+								{Messages.encryption.change_description}
+							</p>
+							<input
+								data-testid="currentPassphrase"
+								type="password"
+								autoComplete="current-password"
+								placeholder={Messages.encryption.current_passphrase_placeholder}
+								value={currentPassphrase}
+								disabled={passphraseBusy}
+								onChange={(event) => {
+									setCurrentPassphrase(event.target.value);
+									setPassphraseError(null);
+								}}
+								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+							/>
+							<input
+								data-testid="newPassphrase"
+								type="password"
+								autoComplete="new-password"
+								placeholder={Messages.encryption.new_passphrase_placeholder}
+								value={newPassphrase}
+								disabled={passphraseBusy}
+								onChange={(event) => {
+									setNewPassphrase(event.target.value);
+									setPassphraseError(null);
+								}}
+								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+							/>
+							<input
+								data-testid="newPassphraseConfirm"
+								type="password"
+								autoComplete="new-password"
+								placeholder={Messages.encryption.confirm_placeholder}
+								value={confirmPassphrase}
+								disabled={passphraseBusy}
+								onChange={(event) => {
+									setConfirmPassphrase(event.target.value);
+									setPassphraseError(null);
+								}}
+								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+							/>
+							{passphraseError && (
+								<p
+									className="text-sm text-danger-300"
+									data-testid="changePassphraseError"
+								>
+									{passphraseError}
+								</p>
+							)}
+						</div>
+					</Drawer>
+				)}
 				{action && (
 					<Drawer
 						testId="accountSettings"

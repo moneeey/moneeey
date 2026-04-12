@@ -52,7 +52,7 @@ export async function authenticateUser(
 	ctx.cookies.set("authToken", authToken, {
 		httpOnly: true,
 	});
-	ctx.response.redirect(APP_URL);
+	ctx.response.redirect(`${APP_URL}/#/dashboard`);
 	return true;
 }
 

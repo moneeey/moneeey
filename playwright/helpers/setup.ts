@@ -1,6 +1,5 @@
 import type { Page } from "@playwright/test";
 
-/** Navigates to `/` and clears localStorage + PouchDB IndexedDB. */
 export async function resetAppState(page: Page) {
 	await page.goto("/");
 	await page.evaluate(() => {
@@ -11,5 +10,6 @@ export async function resetAppState(page: Page) {
 			}
 		}
 		window.indexedDB.deleteDatabase("_pouch_moneeey");
+		window.indexedDB.deleteDatabase("_pouch_moneeey-encrypted");
 	});
 }

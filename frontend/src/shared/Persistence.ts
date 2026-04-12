@@ -5,9 +5,10 @@ import PouchDB from "pouchdb";
 import type { SyncConfig } from "../entities/Config";
 
 import { asyncProcess } from "../utils/Utils";
-import type { EntityType, IBaseEntity } from "./Entity";
+import { EntityType, type IBaseEntity } from "./Entity";
 import Logger from "./Logger";
 import type MappedStore from "./MappedStore";
+import { decryptDoc } from "./encryption/encryptedPouch";
 
 export enum Status {
 	ONLINE = "ONLINE",
@@ -18,7 +19,10 @@ export enum Status {
 
 export type PouchDBFactoryFn = () => PouchDB.Database;
 
-export const PouchDBFactory = () => new PouchDB("moneeey");
+export const LOCAL_DB_NAME = "moneeey";
+export const CONFIG_DOC_ID = `${EntityType.CONFIG}-CONFIG`;
+
+export const PouchDBFactory = () => new PouchDB(LOCAL_DB_NAME);
 
 export const PouchDBRemoteFactory = ({ url, username, password }: SyncConfig) =>
 	new PouchDB(url, {
@@ -125,7 +129,7 @@ export default class PersistenceStore {
 
 	private commitables = new Map<string, PouchDocument>();
 
-	private refetchables = new Set<string>();
+	private dataKey: CryptoKey | null = null;
 
 	constructor(dbFactory: PouchDBFactoryFn, parent: Logger) {
 		this.logger = new Logger("persistence", parent);
@@ -138,15 +142,36 @@ export default class PersistenceStore {
 		});
 	}
 
+	setDataKey(key: CryptoKey) {
+		this.dataKey = key;
+	}
+
+	getDataKey() {
+		return this.dataKey;
+	}
+
 	monitor<T extends IBaseEntity>(store: MappedStore<T>) {
 		new PersistenceMonitor(this, this.logger, store);
+	}
+
+	getDb() {
+		return this.db;
 	}
 
 	async fetchAllDocs() {
 		const pouchDocs = await this.db.allDocs({
 			include_docs: true,
 		});
-		return pouchDocs.rows.map(({ doc }) => doc);
+		const raw = pouchDocs.rows.map(({ doc }) => doc);
+		if (!this.dataKey) return raw;
+		const key = this.dataKey;
+		return Promise.all(
+			raw.map(async (doc) =>
+				doc
+					? await decryptDoc(doc as unknown as Record<string, unknown>, key)
+					: doc,
+			),
+		);
 	}
 
 	async load() {
@@ -166,7 +191,13 @@ export default class PersistenceStore {
 	async refetch(documentId: string) {
 		const actual = await this.db.get(documentId, { conflicts: true });
 		this.logger.log("refetch", { documentId, actual });
-		this.handleReceivedDocument(actual as PouchDocument);
+		const decrypted = this.dataKey
+			? ((await decryptDoc(
+					actual as unknown as Record<string, unknown>,
+					this.dataKey,
+				)) as unknown as PouchDocument)
+			: (actual as PouchDocument);
+		this.handleReceivedDocument(decrypted);
 	}
 
 	watch(entityType: EntityType, listener: DocumentWatchListener) {
@@ -181,7 +212,21 @@ export default class PersistenceStore {
 		this.scheduleCommit();
 	}
 
+	// Drains pending debounced commits so _rev chain is
+	// consistent before UI reveals (prevents race with fast user clicks).
+	async flush() {
+		this.scheduleCommit.cancel();
+		await this.doCommit();
+	}
+
 	notifyDocument(doc: PouchDocument) {
+		if (this.commitables.has(doc._id)) {
+			const pending = this.commitables.get(doc._id);
+			if (pending) {
+				pending._rev = doc._rev;
+			}
+			return;
+		}
 		const listeners = this.watchers.get(doc.entity_type) ?? [];
 		for (const watcher of listeners) {
 			watcher(doc);
@@ -221,9 +266,11 @@ export default class PersistenceStore {
 							});
 							return;
 						}
-						if (ok || status === 409) {
-							this.refetchables.add(id);
-							this.scheduleRefetch();
+						if (ok) {
+							current._rev = rev;
+							this.notifyDocument(current);
+						} else if (status === 409) {
+							this.refetch(id);
 						} else if (error) {
 							this.logger.error("sync commit error on doc", {
 								status,
@@ -242,16 +289,6 @@ export default class PersistenceStore {
 		} catch (err) {
 			const error = err as PouchDB.Core.Error;
 			this.logger.error("sync commit error", error);
-		}
-	};
-
-	private scheduleRefetch = debounce(async () => this.doRefetch(), 200);
-
-	doRefetch = async () => {
-		const ids = Array.from(this.refetchables.keys());
-		this.refetchables.clear();
-		for (const id of ids) {
-			this.refetch(id);
 		}
 	};
 
