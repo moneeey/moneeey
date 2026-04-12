@@ -143,7 +143,7 @@ export async function findInvite(
 	token: string,
 ): Promise<{ user: UserDocument; invite: StoredInvite } | null> {
 	const resp = await dbApi("POST", `${USERS_DB}/_find`, {
-		selector: { "invites.token": token },
+		selector: { invites: { $elemMatch: { token } } },
 		limit: 1,
 	});
 	if (!resp || resp.status !== 200) return null;
