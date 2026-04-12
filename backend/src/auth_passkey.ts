@@ -146,11 +146,7 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/register/verify", async (ctx) => {
 		try {
-			const {
-				email: rawEmail,
-				credential,
-				flowToken,
-			} = await getBodyJson(ctx);
+			const { email: rawEmail, credential, flowToken } = await getBodyJson(ctx);
 			const email = parseEmail(rawEmail);
 			if (!email) {
 				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
@@ -233,11 +229,7 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/login/verify", async (ctx) => {
 		try {
-			const {
-				email: rawEmail,
-				credential,
-				flowToken,
-			} = await getBodyJson(ctx);
+			const { email: rawEmail, credential, flowToken } = await getBodyJson(ctx);
 			const email = parseEmail(rawEmail);
 			if (!email) {
 				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
@@ -403,11 +395,7 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/invite/register/verify", async (ctx) => {
 		try {
-			const {
-				email: rawEmail,
-				credential,
-				flowToken,
-			} = await getBodyJson(ctx);
+			const { email: rawEmail, credential, flowToken } = await getBodyJson(ctx);
 			const email = parseEmail(rawEmail);
 			if (!email) {
 				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
@@ -448,7 +436,9 @@ export function setupPasskey(authRouter: oak.Router) {
 			} catch (err) {
 				const msg = (err as Error).message;
 				if (msg === "invite_already_redeemed") {
-					respond(ctx, oak.Status.Conflict, { error: "invite_already_redeemed" });
+					respond(ctx, oak.Status.Conflict, {
+						error: "invite_already_redeemed",
+					});
 					return;
 				}
 				if (msg === "invite_not_found") {
