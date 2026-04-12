@@ -168,9 +168,9 @@ export default observer(
 						}) => {
 							if (!referenceAccount) return "";
 							return referenceAccount === from_account
-								? "text-red-200"
+								? "text-negative"
 								: referenceAccount === to_account
-									? "text-green-200"
+									? "text-positive"
 									: "";
 						},
 						validate: () => ({ valid: true }),
@@ -225,7 +225,7 @@ export default observer(
 											from_account,
 											to_account,
 										});
-										return amount < 0 ? "text-red-200" : "text-green-200";
+										return amount < 0 ? "text-negative" : "text-positive";
 									},
 									validate: () => ({ valid: true }),
 									...CurrencyAmountField<ITransaction>({

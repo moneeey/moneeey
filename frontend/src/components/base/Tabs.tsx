@@ -36,7 +36,7 @@ export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
 						key={item.key}
 						onClick={() => update(idx)}
 						testId={`${props.testId}_${item.key}`}
-						className={idx === current ? "!bg-background-400" : ""}
+						className={idx === current ? "!bg-background-700" : ""}
 					>
 						{item.label}
 					</LinkButton>

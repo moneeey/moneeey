@@ -3,12 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#18181B" />
+    <meta name="theme-color" content="#18181b" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
     <link rel="icon" href="/favicon.svg?url" />
     <link rel="apple-touch-icon" href="/favicon.svg?url" />
     <title>Moneeey</title>
+    <script>
+      (function() {
+        var s = localStorage.getItem('theme');
+        var t;
+        if (s === 'light' || s === 'dark') {
+          t = s;
+        } else {
+          t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+        document.documentElement.style.backgroundColor = t === 'light' ? '#f9fafb' : '#18181b';
+        document.documentElement.style.color = t === 'light' ? '#0f172a' : '#f1f5f9';
+      })();
+    </script>
   </head>
-  <body style="background-color: #0f172a; color: #f1f5f9;"> <!-- bg-slate-900 text-slate-100 -->
+  <body>
     <div class="App text-sm md:text-base"></div>
     <script type="module" src="/src/polyfills.ts"></script>
     <script type="module" src="/src/main.tsx"></script>
