@@ -209,7 +209,7 @@ const BaseTooltip = (xFormatter: (v: TDate) => string) => (
 	<Tooltip
 		content={CustomTooltip}
 		labelFormatter={(label: string) => (
-			<span className="text-black">{xFormatter(label)}</span>
+			<span className="text-foreground">{xFormatter(label)}</span>
 		)}
 	/>
 );

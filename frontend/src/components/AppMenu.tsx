@@ -51,6 +51,7 @@ import useMessages from "../utils/Messages";
 import DashboardRoute from "../routes/DashboardRouter";
 import SyncRoute from "../routes/SyncRoute";
 import LanguageSelector from "./LanguageSelector";
+import ThemeSwitcher from "./ThemeSwitcher";
 import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
@@ -132,7 +133,14 @@ const Menu = observer(
 				className="px-2"
 				testId="appMenu"
 				expanded={expanded}
-				footer={expanded ? <LanguageSelector /> : null}
+				footer={
+					expanded ? (
+						<div className="flex flex-col gap-2">
+							<ThemeSwitcher />
+							<LanguageSelector />
+						</div>
+					) : null
+				}
 				items={[
 					{
 						key: "dashboard",
@@ -177,7 +185,7 @@ const Menu = observer(
 										>
 											<TextSecondary>{getAccountCurrency(acct)}</TextSecondary>{" "}
 											{acct.name}{" "}
-											<span className="text-slate-400 text-xs">
+											<span className="text-muted text-xs">
 												{runningBalances.get(acct.account_uuid)}
 											</span>
 										</TextNormal>

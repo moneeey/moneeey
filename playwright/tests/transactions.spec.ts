@@ -58,12 +58,12 @@ test("Transactions — create on MoneeeyCard and verify across views", async ({
 	// Assert MoneeeyCard view including row styling and running balances
 	const today = formatDate(new Date());
 	expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 7)).toEqual([
-		`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2.000 (bg---800 text-green-200) | running: 2.000 (bg---800 text-green-200) | memo:  (bg---800)`,
-		`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 3.000 (bg---600 text-green-200) | running: 5.000 (bg---600 text-green-200) | memo:  (bg---600)`,
-		`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800 text-red-200) | running: 4.940 (bg---800 text-green-200) | memo: pao (bg---800)`,
-		`date: ${today} (bg---600) | account: Ristorant88 (bg---600) | amount: -128 (bg---600 text-red-200) | running: 4.812 (bg---600 text-green-200) | memo:  (bg---600)`,
-		`date: ${today} (bg---800) | account: Playxbox421 (bg---800) | amount: -7.213,21 (bg---800 text-red-200) | running: -2.401,21 (bg---800 text-red-200) | memo:  (bg---800)`,
-		`date: ${today} (bg---600) | account: Cashbazk (bg---600) | amount: 69,42 (bg---600 text-green-200) | running: -2.331,79 (bg---600 text-red-200) | memo: cashback (bg---600)`,
+		`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2.000 (bg---800 text-positive) | running: 2.000 (bg---800 text-positive) | memo:  (bg---800)`,
+		`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 3.000 (bg---600 text-positive) | running: 5.000 (bg---600 text-positive) | memo:  (bg---600)`,
+		`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800 text-negative) | running: 4.940 (bg---800 text-positive) | memo: pao (bg---800)`,
+		`date: ${today} (bg---600) | account: Ristorant88 (bg---600) | amount: -128 (bg---600 text-negative) | running: 4.812 (bg---600 text-positive) | memo:  (bg---600)`,
+		`date: ${today} (bg---800) | account: Playxbox421 (bg---800) | amount: -7.213,21 (bg---800 text-negative) | running: -2.401,21 (bg---800 text-negative) | memo:  (bg---800)`,
+		`date: ${today} (bg---600) | account: Cashbazk (bg---600) | amount: 69,42 (bg---600 text-positive) | running: -2.331,79 (bg---600 text-negative) | memo: cashback (bg---600)`,
 		`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
 	]);
 
@@ -84,8 +84,8 @@ test("Transactions — create on MoneeeyCard and verify across views", async ({
 	// Verify Banco Moneeey reference view shows the reverse entry
 	await OpenMenuItem(page, "BRL Banco Moneeey");
 	expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 3)).toEqual([
-		`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-green-200) | running: 1.234,56 (bg---800 text-green-200) | memo:  (bg---800)`,
-		`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: -3.000 (bg---600 text-red-200) | running: -1.765,44 (bg---600 text-red-200) | memo:  (bg---600)`,
+		`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-positive) | running: 1.234,56 (bg---800 text-positive) | memo:  (bg---800)`,
+		`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: -3.000 (bg---600 text-negative) | running: -1.765,44 (bg---600 text-negative) | memo:  (bg---600)`,
 		`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
 	]);
 });
@@ -161,8 +161,8 @@ test("Transactions — swapping direction flips from/to accounts", async ({
 	// Verify Banco Moneeey view reflects the Salary swap
 	await OpenMenuItem(page, "BRL Banco Moneeey");
 	expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 3)).toEqual([
-		`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-green-200) | running: 1.234,56 (bg---800 text-green-200) | memo:  (bg---800)`,
-		`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: 3.000 (bg---600 text-green-200) | running: 4.234,56 (bg---600 text-green-200) | memo: Salary (swapped) (bg---600)`,
+		`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-positive) | running: 1.234,56 (bg---800 text-positive) | memo:  (bg---800)`,
+		`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: 3.000 (bg---600 text-positive) | running: 4.234,56 (bg---600 text-positive) | memo: Salary (swapped) (bg---600)`,
 		`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
 	]);
 });

@@ -766,6 +766,13 @@ export default {
 			hi: "भाषा चुनें",
 			cn: "选择语言",
 		},
+		select_theme: {
+			en: "Choose theme",
+			pt: "Escolher tema",
+			es: "Elegir tema",
+			hi: "थीम चुनें",
+			cn: "选择主题",
+		},
 	},
 	budget: {
 		budget: {

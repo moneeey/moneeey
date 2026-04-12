@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import useMessages from "../utils/Messages";
 import LanguageSelector from "./LanguageSelector";
+import ThemeSwitcher from "./ThemeSwitcher";
 import { OkButton } from "./base/Button";
 import MinimalBaseScreen from "./base/MinimalBaseScreen";
 
@@ -33,10 +34,10 @@ const FeatureBalloon = ({ title, description, delay }: FeatureBalloonProps) => {
 	return (
 		<div
 			style={{ animationDelay: `${delay}s` }}
-			className="bg-background-600 rounded-lg shadow-lg p-6 max-w-sm hover:shadow-xl transition-all duration-300 animate-fade-in-up opacity-0 border border-primary-100 hover:border-primary-200"
+			className="bg-background-600 rounded-lg shadow-lg p-6 max-w-sm hover:shadow-xl transition-all duration-300 animate-fade-in-up opacity-0 border border-primary-300 hover:border-primary-500"
 		>
-			<h3 className="text-xl font-semibold text-primary-300 mb-2">{title}</h3>
-			<p className="text-gray-300">{description}</p>
+			<h3 className="text-xl font-semibold text-primary-600 mb-2">{title}</h3>
+			<p className="text-muted">{description}</p>
 		</div>
 	);
 };
@@ -77,12 +78,13 @@ export default function LandingPage() {
 		<MinimalBaseScreen>
 			<div className="container mx-auto px-4 py-8">
 				<div className="text-center mb-8 animate-fade-in">
-					<p className="text-xl text-gray-300 max-w-2xl mx-auto">
+					<p className="text-xl text-muted max-w-2xl mx-auto">
 						{landing.messages[0]}
 					</p>
 				</div>
 
-				<div className="flex justify-center mb-8">
+				<div className="flex flex-col items-center mb-8 gap-4">
+					<ThemeSwitcher />
 					<LanguageSelector />
 				</div>
 

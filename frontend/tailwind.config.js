@@ -2,6 +2,8 @@
 
 import colors from "tailwindcss/colors";
 
+const bgShade = (n) => `rgb(var(--bg-${n}) / <alpha-value>)`;
+
 export default {
 	content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
 	theme: {
@@ -9,7 +11,23 @@ export default {
 			colors: {
 				primary: colors.green,
 				secondary: colors.blue,
-				background: colors.zinc,
+				background: {
+					50: bgShade(50),
+					100: bgShade(100),
+					200: bgShade(200),
+					300: bgShade(300),
+					400: bgShade(400),
+					500: bgShade(500),
+					600: bgShade(600),
+					700: bgShade(700),
+					800: bgShade(800),
+					900: bgShade(900),
+					950: bgShade(950),
+				},
+				foreground: "rgb(var(--text-default) / <alpha-value>)",
+				muted: "rgb(var(--text-muted) / <alpha-value>)",
+				positive: "rgb(var(--text-positive) / <alpha-value>)",
+				negative: "rgb(var(--text-negative) / <alpha-value>)",
 				error: colors.red,
 				warning: colors.yellow,
 				success: colors.green,

@@ -126,7 +126,7 @@ const BudgetPeriod = observer(
 							title: Messages.budget.used,
 							width: 60,
 							readOnly: true,
-							customClass: (b) => `text-gray-400 ${archivedRowClass(b)}`.trim(),
+							customClass: (b) => `text-muted ${archivedRowClass(b)}`.trim(),
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
 								read: ({ used, currency_uuid }) => ({
@@ -142,7 +142,7 @@ const BudgetPeriod = observer(
 							readOnly: true,
 							customClass: (b) =>
 								`${
-									b.remaining < 0 ? "opacity-80 text-red-200" : "opacity-80"
+									b.remaining < 0 ? "opacity-80 text-negative" : "opacity-80"
 								} ${archivedRowClass(b)}`.trim(),
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<BudgetEnvelope>({
