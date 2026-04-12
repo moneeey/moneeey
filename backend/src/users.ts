@@ -186,6 +186,10 @@ async function countActiveInvitesFor(ownerEmail: string): Promise<number> {
 			redeemedBy: null,
 			expiresAt: { $gt: nowIso },
 		},
+		use_index: [
+			INVITE_INDEX_DDOC.replace(/^_design\//, ""),
+			INVITE_INDEX_NAME,
+		],
 		fields: ["_id"],
 		limit: INVITE_QUOTA_PER_USER + 1,
 	});
