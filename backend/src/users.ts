@@ -1,17 +1,12 @@
-import {
-	couchdbInternals,
-	dbApi,
-	dbSecurityAddMember,
-	prepareUserDatabase,
-} from "./couchdb.ts";
+import { couchdbInternals } from "./couchdb.ts";
 import type { AuthenticatorTransportFuture } from "./deps.ts";
 import { Logger } from "./logger.ts";
 
 const logger = Logger("users");
 
 const USERS_DB = "moneeey_users";
-const INVITE_INDEX_DDOC = "_design/invites";
-const INVITE_INDEX_NAME = "by_invite_hash";
+const INVITE_INDEX_DDOC = "_design/invites_by_owner";
+const INVITE_INDEX_NAME = "by_owner";
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const INVITE_QUOTA_PER_USER = 10;
 
@@ -23,21 +18,25 @@ export type StoredCredential = {
 	createdAt: string;
 };
 
-export type StoredInvite = {
-	tokenHash: string;
-	createdAt: string;
-	expiresAt: string;
-	redeemedBy: string | null;
-};
-
 export type UserDocument = {
 	_id: string;
 	_rev?: string;
+	type: "user";
 	email: string;
 	database: string;
 	credentials: StoredCredential[];
-	invites: StoredInvite[];
 	createdAt: string;
+};
+
+export type InviteDocument = {
+	_id: string;
+	_rev?: string;
+	type: "invite";
+	ownerEmail: string;
+	database: string;
+	createdAt: string;
+	expiresAt: string;
+	redeemedBy: string | null;
 };
 
 async function sha384(value: string) {
@@ -57,8 +56,11 @@ async function sha(algo: "SHA-256" | "SHA-384", value: string) {
 }
 
 async function userDocId(email: string) {
-	const hash = await sha384(email);
-	return `user:${hash}`;
+	return `user:${await sha384(email)}`;
+}
+
+function inviteDocId(tokenHash: string) {
+	return `invite:${tokenHash}`;
 }
 
 async function ensureInviteIndex() {
@@ -68,12 +70,12 @@ async function ensureInviteIndex() {
 		views: {
 			[INVITE_INDEX_NAME]: {
 				map: {
-					fields: { "invites.[].tokenHash": "asc" },
+					fields: { type: "asc", ownerEmail: "asc" },
 					partial_filter_selector: {},
 				},
 				reduce: "_count",
 				options: {
-					def: { fields: ["invites.[].tokenHash"] },
+					def: { fields: ["type", "ownerEmail"] },
 				},
 			},
 		},
@@ -107,7 +109,7 @@ export async function getUserByEmail(
 	email: string,
 ): Promise<UserDocument | null> {
 	const docId = await userDocId(email);
-	const resp = await dbApi("GET", `${USERS_DB}/${docId}`);
+	const resp = await couchdbInternals.dbApi("GET", `${USERS_DB}/${docId}`);
 	if (!resp || resp.status !== 200) return null;
 	return (await resp.json()) as UserDocument;
 }
@@ -120,13 +122,13 @@ export async function createUser(
 	const docId = await userDocId(email);
 	const doc: UserDocument = {
 		_id: docId,
+		type: "user",
 		email,
 		database,
 		credentials: [credential],
-		invites: [],
 		createdAt: new Date().toISOString(),
 	};
-	const resp = await dbApi("PUT", `${USERS_DB}/${docId}`, doc);
+	const resp = await couchdbInternals.dbApi("PUT", `${USERS_DB}/${docId}`, doc);
 	if (!resp || resp.status !== 201) {
 		const body = resp ? await resp.text() : "no response";
 		throw new Error(`failed to create user: ${body}`);
@@ -137,10 +139,12 @@ export async function createUser(
 }
 
 async function updateUser(user: UserDocument): Promise<UserDocument> {
-	const resp = await dbApi("PUT", `${USERS_DB}/${user._id}`, user);
-	if (resp?.status === 409) {
-		throw new Error("conflict");
-	}
+	const resp = await couchdbInternals.dbApi(
+		"PUT",
+		`${USERS_DB}/${user._id}`,
+		user,
+	);
+	if (resp?.status === 409) throw new Error("conflict");
 	if (!resp || resp.status !== 201) {
 		const body = resp ? await resp.text() : "no response";
 		throw new Error(`failed to update user: ${body}`);
@@ -173,18 +177,28 @@ export async function updateCredentialCounter(
 	await updateUser(user);
 }
 
-function pruneInvites(invites: StoredInvite[]): StoredInvite[] {
-	const now = Date.now();
-	return invites.filter(
-		(i) => i.redeemedBy === null && new Date(i.expiresAt).getTime() > now,
-	);
+async function countActiveInvitesFor(ownerEmail: string): Promise<number> {
+	const nowIso = new Date().toISOString();
+	const resp = await couchdbInternals.dbApi("POST", `${USERS_DB}/_find`, {
+		selector: {
+			type: "invite",
+			ownerEmail,
+			redeemedBy: null,
+			expiresAt: { $gt: nowIso },
+		},
+		fields: ["_id"],
+		limit: INVITE_QUOTA_PER_USER + 1,
+	});
+	if (!resp || resp.status !== 200) return 0;
+	const result = await resp.json();
+	return (result.docs as unknown[]).length;
 }
 
 export async function createInvite(email: string): Promise<string> {
 	const user = await getUserByEmail(email);
 	if (!user) throw new Error("user not found");
-	user.invites = pruneInvites(user.invites);
-	if (user.invites.length >= INVITE_QUOTA_PER_USER) {
+	const active = await countActiveInvitesFor(email);
+	if (active >= INVITE_QUOTA_PER_USER) {
 		throw new Error("invite_quota_exceeded");
 	}
 	const tokenBytes = new Uint8Array(32);
@@ -194,34 +208,45 @@ export async function createInvite(email: string): Promise<string> {
 		.join("");
 	const tokenHash = await sha256(token);
 	const now = Date.now();
-	user.invites.push({
-		tokenHash,
+	const doc: InviteDocument = {
+		_id: inviteDocId(tokenHash),
+		type: "invite",
+		ownerEmail: email,
+		database: user.database,
 		createdAt: new Date(now).toISOString(),
 		expiresAt: new Date(now + INVITE_TTL_MS).toISOString(),
 		redeemedBy: null,
-	});
-	await updateUser(user);
+	};
+	const resp = await couchdbInternals.dbApi(
+		"PUT",
+		`${USERS_DB}/${doc._id}`,
+		doc,
+	);
+	if (!resp || resp.status !== 201) {
+		const body = resp ? await resp.text() : "no response";
+		throw new Error(`failed to create invite: ${body}`);
+	}
 	return token;
+}
+
+async function getInviteByHash(tokenHash: string): Promise<InviteDocument | null> {
+	const resp = await couchdbInternals.dbApi(
+		"GET",
+		`${USERS_DB}/${inviteDocId(tokenHash)}`,
+	);
+	if (!resp || resp.status !== 200) return null;
+	return (await resp.json()) as InviteDocument;
 }
 
 export async function findInvite(
 	token: string,
-): Promise<{ user: UserDocument; invite: StoredInvite } | null> {
+): Promise<{ invite: InviteDocument } | null> {
 	const tokenHash = await sha256(token);
-	const resp = await dbApi("POST", `${USERS_DB}/_find`, {
-		selector: { "invites.[].tokenHash": tokenHash },
-		use_index: [INVITE_INDEX_DDOC.replace(/^_design\//, ""), INVITE_INDEX_NAME],
-		limit: 1,
-	});
-	if (!resp || resp.status !== 200) return null;
-	const result = await resp.json();
-	const docs = result.docs as UserDocument[];
-	if (docs.length === 0) return null;
-	const user = docs[0];
-	const invite = user.invites.find((i) => i.tokenHash === tokenHash);
-	if (!invite || invite.redeemedBy) return null;
+	const invite = await getInviteByHash(tokenHash);
+	if (!invite) return null;
+	if (invite.redeemedBy) return null;
 	if (new Date(invite.expiresAt).getTime() <= Date.now()) return null;
-	return { user, invite };
+	return { invite };
 }
 
 export async function redeemInvite(
@@ -230,23 +255,24 @@ export async function redeemInvite(
 ): Promise<string> {
 	const found = await findInvite(token);
 	if (!found) throw new Error("invite_not_found");
-	const { user, invite } = found;
+	const { invite } = found;
 	invite.redeemedBy = redeemerEmail;
-	try {
-		await updateUser(user);
-	} catch (err) {
-		if ((err as Error).message === "conflict") {
-			throw new Error("invite_already_redeemed");
-		}
-		throw err;
+	const resp = await couchdbInternals.dbApi(
+		"PUT",
+		`${USERS_DB}/${invite._id}`,
+		invite,
+	);
+	if (resp?.status === 409) throw new Error("invite_already_redeemed");
+	if (!resp || resp.status !== 201) {
+		const body = resp ? await resp.text() : "no response";
+		throw new Error(`failed to redeem invite: ${body}`);
 	}
-	await dbSecurityAddMember(user.database, redeemerEmail);
-	return user.database;
+	await couchdbInternals.dbSecurityAddMember(invite.database, redeemerEmail);
+	return invite.database;
 }
 
 export async function generateDatabaseName(email: string): Promise<string> {
-	const hash = await sha384(`passkey:${email}`);
-	return `passkey_${hash}`;
+	return `pk${await sha384(`passkey:${email}`)}`;
 }
 
 export async function createUserWithDatabase(
@@ -254,7 +280,7 @@ export async function createUserWithDatabase(
 	credential: StoredCredential,
 ): Promise<UserDocument> {
 	const database = await generateDatabaseName(email);
-	await prepareUserDatabase(database, email);
+	await couchdbInternals.prepareUserDatabase(database, email);
 	return createUser(email, database, credential);
 }
 
@@ -271,5 +297,6 @@ export const usersInternals = {
 	sha256,
 	userDocId,
 	updateUser,
-	pruneInvites,
+	countActiveInvitesFor,
+	getInviteByHash,
 };

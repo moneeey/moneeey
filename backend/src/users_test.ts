@@ -1,10 +1,9 @@
 import { couchdbInternals } from "./couchdb.ts";
 import { assert, withSpying } from "./test.ts";
 import {
-	type StoredInvite,
+	type InviteDocument,
 	createInvite,
 	ensureUsersDbExists,
-	usersInternals,
 } from "./users.ts";
 
 const USERS_DB = "moneeey_users";
@@ -77,71 +76,85 @@ Deno.test(async function ensureUsersDbExistsSkipsRecreateWhenPresent() {
 	});
 });
 
-Deno.test(function pruneInvitesDropsRedeemedAndExpired() {
-	const now = Date.now();
-	const invites: StoredInvite[] = [
-		{
-			tokenHash: "active",
-			createdAt: new Date(now).toISOString(),
-			expiresAt: new Date(now + 60_000).toISOString(),
-			redeemedBy: null,
-		},
-		{
-			tokenHash: "redeemed",
-			createdAt: new Date(now).toISOString(),
-			expiresAt: new Date(now + 60_000).toISOString(),
-			redeemedBy: "someone@test.com",
-		},
-		{
-			tokenHash: "expired",
-			createdAt: new Date(now - 120_000).toISOString(),
-			expiresAt: new Date(now - 60_000).toISOString(),
-			redeemedBy: null,
-		},
-	];
-	const pruned = usersInternals.pruneInvites(invites);
-	assert.assertEquals(pruned.length, 1);
-	assert.assertEquals(pruned[0].tokenHash, "active");
-});
-
 Deno.test(async function createInviteEnforcesQuota() {
 	const now = Date.now();
-	const fullInvites: StoredInvite[] = Array.from({ length: 10 }, (_, i) => ({
-		tokenHash: `t${i}`,
-		createdAt: new Date(now).toISOString(),
-		expiresAt: new Date(now + 60_000).toISOString(),
-		redeemedBy: null,
-	}));
 	const fakeUser = {
 		_id: "user:abc",
+		type: "user" as const,
 		email: "u@test.com",
 		database: "db",
 		credentials: [],
-		invites: fullInvites,
+		createdAt: new Date(now).toISOString(),
+	};
+	const fakeActiveInvites: Partial<InviteDocument>[] = Array.from(
+		{ length: 10 },
+		(_, i) => ({ _id: `invite:t${i}` }),
+	);
+	await withSpying({
+		object: couchdbInternals,
+		method: "dbApi",
+		action: async (apiStub) => {
+			// First call: GET user; second call: POST _find for active invites.
+			apiStub.onCall(0).resolves({
+				status: 200,
+				json: () => Promise.resolve(fakeUser),
+			});
+			apiStub.onCall(1).resolves({
+				status: 200,
+				json: () => Promise.resolve({ docs: fakeActiveInvites }),
+			});
+			let thrown: Error | undefined;
+			try {
+				await createInvite("u@test.com");
+			} catch (err) {
+				thrown = err as Error;
+			}
+			assert.assertEquals(thrown?.message, "invite_quota_exceeded");
+		},
+	});
+});
+
+Deno.test(async function createInviteAllowsBelowQuota() {
+	const now = Date.now();
+	const fakeUser = {
+		_id: "user:abc",
+		type: "user" as const,
+		email: "u@test.com",
+		database: "db",
+		credentials: [],
 		createdAt: new Date(now).toISOString(),
 	};
 	await withSpying({
-		object: usersInternals,
-		method: "updateUser",
-		action: async (updateStub) => {
-			updateStub.resolves(fakeUser);
-			await withSpying({
-				object: couchdbInternals,
-				method: "dbApi",
-				action: async (apiStub) => {
-					apiStub.resolves({
-						status: 200,
-						json: () => Promise.resolve(fakeUser),
-					});
-					let thrown: Error | undefined;
-					try {
-						await createInvite("u@test.com");
-					} catch (err) {
-						thrown = err as Error;
-					}
-					assert.assertEquals(thrown?.message, "invite_quota_exceeded");
-				},
+		object: couchdbInternals,
+		method: "dbApi",
+		action: async (apiStub) => {
+			apiStub.onCall(0).resolves({
+				status: 200,
+				json: () => Promise.resolve(fakeUser),
 			});
+			apiStub.onCall(1).resolves({
+				status: 200,
+				json: () => Promise.resolve({ docs: [] }),
+			});
+			apiStub.onCall(2).resolves({
+				status: 201,
+				json: () => Promise.resolve({ rev: "1-x" }),
+			});
+			const token = await createInvite("u@test.com");
+			assert.assertEquals(typeof token, "string");
+			assert.assertEquals(token.length, 64);
+			// Verify the PUT went to invite:<hash>
+			const putCall = apiStub.getCall(2);
+			assert.assertEquals(putCall.args[0], "PUT");
+			assert.assertEquals(
+				(putCall.args[1] as string).startsWith(`${USERS_DB}/invite:`),
+				true,
+			);
+			const body = putCall.args[2] as InviteDocument;
+			assert.assertEquals(body.type, "invite");
+			assert.assertEquals(body.ownerEmail, "u@test.com");
+			assert.assertEquals(body.database, "db");
+			assert.assertEquals(body.redeemedBy, null);
 		},
 	});
 });
