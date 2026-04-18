@@ -1,7 +1,6 @@
 [![frontend](https://github.com/moneeey/moneeey/actions/workflows/CI.yaml/badge.svg)](https://github.com/moneeey/moneeey/actions/workflows/CI.yaml)
 
 # Welcome to Moneeey
-<!-- test push protection -->
 
 Moneeey is a personal budgeting and financial tool designed to be affordable,
 privacy-focused, and user-friendly. It supports multiple user experiences,
