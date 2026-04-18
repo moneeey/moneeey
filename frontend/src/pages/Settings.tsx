@@ -91,7 +91,6 @@ function ProfileTab() {
 						<PrimaryButton
 							onClick={() => {
 								persistence.truncateAll();
-								window.location.reload();
 							}}
 							className="!bg-danger-300 !text-danger-900"
 						>

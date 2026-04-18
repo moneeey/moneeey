@@ -6,7 +6,7 @@ import {
 	MIN_PASSPHRASE_LENGTH,
 	openEncryptedDatabase,
 } from "../../shared/EncryptionStore";
-import { PouchDBRemoteFactory } from "../../shared/Persistence";
+import { PouchDBRemoteFactory, deleteAllData } from "../../shared/Persistence";
 import {
 	getInviteInfo,
 	loginPasskey,
@@ -447,10 +447,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				<div className="flex gap-2">
 					<CancelButton onClick={() => setState(state.returnTo)} />
 					<DeleteButton
-						onClick={() => {
-							db.destroy();
-							window.location.reload();
-						}}
+						onClick={() => deleteAllData(db)}
 						title={Messages.menu.delete_data}
 					/>
 				</div>

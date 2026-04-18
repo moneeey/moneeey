@@ -496,12 +496,21 @@ describe("Persistence", () => {
 		});
 
 		describe("truncateAll", () => {
-			it("destroys the database", async () => {
+			it("destroys the database and clears storage", async () => {
+				const reloadMock = jest.fn();
+				Object.defineProperty(globalThis, "window", {
+					value: {
+						localStorage: { clear: jest.fn() },
+						sessionStorage: { clear: jest.fn() },
+						location: { reload: reloadMock },
+					},
+					writable: true,
+				});
 				await db.put(makeDoc("e1"));
 				persistence.truncateAll();
-				// After destroy completes, operations should fail
 				await new Promise((r) => setTimeout(r, 100));
 				await expect(db.info()).rejects.toThrow();
+				expect(reloadMock).toHaveBeenCalled();
 			});
 		});
 
