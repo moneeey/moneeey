@@ -23,10 +23,10 @@ const ExampleTransactions = ({ searchTags }: { searchTags: string[] }) => {
 	}, [] as ITransaction[]);
 
 	return (
-		<div className="rounded-md bg-background-800 p-2 h-24">
+		<div className="rounded-md bg-background-800 p-2 h-24 overflow-auto">
 			{exampleTransactions.length === 0 ? <p>{Messages.util.empty}</p> : null}
 			{exampleTransactions.map((t) => (
-				<p key={t.transaction_uuid} title={t.memo}>
+				<p key={t.transaction_uuid} title={t.memo} className="truncate text-sm">
 					{Messages.budget.format_example(
 						accounts.nameForUuid(t.from_account),
 						accounts.nameForUuid(t.to_account),
