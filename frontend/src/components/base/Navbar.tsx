@@ -37,9 +37,7 @@ const NavbarItems = ({
 
 		return compact([
 			<LinkButton
-				className={`flex items-center gap-1 !py-0.5 no-underline hover:bg-background-900 hover:opacity-75 h-6 ${
-					item.children && item.children.length > 0 ? "!px-0" : "!px-2"
-				} ${
+				className={`relative flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6 ${
 					item.isActive ? "opacity-75 !bg-background-900 mn-active-navbar" : ""
 				}`}
 				testId={`${testId}_${item.key}`}
@@ -48,7 +46,7 @@ const NavbarItems = ({
 				title={item.label}
 			>
 				{expanded && item.children && item.children.length > 0 && (
-					<Icon className="!w-3 !h-3 -mr-1">
+					<Icon className="!w-3 !h-3 absolute -left-1">
 						<ChevronRightIcon />
 					</Icon>
 				)}

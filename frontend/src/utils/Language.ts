@@ -107,11 +107,18 @@ export default {
 			cn: "偏好设置",
 		},
 		start_tour: {
-			en: "Start tour",
-			pt: "Iniciar tour",
-			es: "Comenzar tour",
-			hi: "यात्रा शुरू करें",
-			cn: "开始游览",
+			en: "Restart tour",
+			pt: "Reiniciar tour",
+			es: "Reiniciar tour",
+			hi: "टूर पुनः शुरू करें",
+			cn: "重新开始游览",
+		},
+		start_tour_description: {
+			en: "Reopen the guided walkthrough across the app",
+			pt: "Reabrir o guia interativo pelo aplicativo",
+			es: "Reabrir la guía interactiva de la aplicación",
+			hi: "ऐप में गाइडेड वॉकथ्रू फिर से खोलें",
+			cn: "重新打开应用引导教程",
 		},
 		lock: {
 			en: "Lock",

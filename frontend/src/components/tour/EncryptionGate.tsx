@@ -542,7 +542,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				/>
 			</div>
 			{!isSetup && (
-				<SecondaryButton
+				<DeleteButton
 					onClick={() => setState({ kind: "confirm-delete", returnTo: state })}
 					title={Messages.menu.delete_data}
 					disabled={busy}

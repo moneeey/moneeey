@@ -4,7 +4,12 @@ import { useState } from "react";
 import LanguageSelector from "../components/LanguageSelector";
 import Loading from "../components/Loading";
 import ThemeSwitcher from "../components/ThemeSwitcher";
-import { PrimaryButton, SecondaryButton } from "../components/base/Button";
+import {
+	DeleteButton,
+	LinkButton,
+	PrimaryButton,
+	SecondaryButton,
+} from "../components/base/Button";
 import { Input, TextArea } from "../components/base/Input";
 import MinimalBasicScreen from "../components/base/MinimalBaseScreen";
 import Space from "../components/base/Space";
@@ -20,10 +25,54 @@ import useMessages from "../utils/Messages";
 import { noop } from "../utils/Utils";
 import { DatabaseConfig, MoneeeyAccountConfig } from "./Sync";
 
+type ActionState = {
+	content: string;
+	submitTitle?: string;
+	submitFn?: (content: string) => void;
+};
+
 function ProfileTab() {
 	const Messages = useMessages();
 	const { persistence, navigation } = useMoneeeyStore();
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
+	const [action, setAction] = useState<ActionState | undefined>(undefined);
+	const [loading, setLoading] = useState<number | false>(false);
+
+	const onExportData = async () => {
+		setAction(undefined);
+		const update = (newContent: string) => setAction({ content: newContent });
+		update(Messages.settings.backup_loading(0));
+		const data = await persistence.exportAll((percentage) => {
+			update(Messages.settings.backup_loading(percentage));
+			setLoading(percentage);
+		});
+		setLoading(false);
+		update(data);
+	};
+
+	const onImportData = () => {
+		setAction(undefined);
+		const submitFn = async (content: string) => {
+			const update = (newContent: string) =>
+				setAction({
+					content: newContent,
+					submitTitle: Messages.util.close,
+					submitFn: noop,
+				});
+			update(Messages.settings.restore_loading(0));
+			await persistence.restoreAll(content, (percentage) => {
+				update(Messages.settings.restore_loading(percentage));
+				setLoading(percentage);
+			});
+			setLoading(false);
+			update(Messages.settings.reload_page);
+		};
+		setAction({
+			content: Messages.settings.restore_data_placeholder,
+			submitFn,
+			submitTitle: Messages.settings.import_data,
+		});
+	};
 
 	if (confirmingDelete) {
 		return (
@@ -56,13 +105,16 @@ function ProfileTab() {
 	}
 
 	return (
-		<div className="flex flex-col gap-6 p-2">
+		<div className="flex flex-col gap-4 p-2">
 			<LanguageSelector />
 			<ThemeSwitcher />
-			<SecondaryButton
-				onClick={() => navigation.openModal(NavigationModal.LANDING)}
-				title={Messages.menu.start_tour}
-			/>
+			<div className="flex flex-col justify-center items-center gap-2">
+				<p>{Messages.menu.start_tour_description}</p>
+				<LinkButton
+					onClick={() => navigation.openModal(NavigationModal.LANDING)}
+					title={Messages.menu.start_tour}
+				/>
+			</div>
 			<hr className="border-background-600" />
 			<span className="white-space-preline">{Messages.sync.intro}</span>
 			<Tabs
@@ -81,69 +133,6 @@ function ProfileTab() {
 				]}
 			/>
 			<hr className="border-background-600" />
-			<SecondaryButton onClick={() => setConfirmingDelete(true)}>
-				<TrashIcon className="inline h-4 w-4 mr-1" />
-				{Messages.menu.delete_data}
-			</SecondaryButton>
-		</div>
-	);
-}
-
-function PreferencesTab() {
-	const moneeeyStore = useMoneeeyStore();
-	return <ConfigTable config={moneeeyStore.config} />;
-}
-
-type ActionState = {
-	content: string;
-	submitTitle?: string;
-	submitFn?: (content: string) => void;
-};
-
-function DataTab() {
-	const Messages = useMessages();
-	const moneeeyStore = useMoneeeyStore();
-	const [action, setAction] = useState<ActionState | undefined>(undefined);
-	const [loading, setLoading] = useState<number | false>(false);
-
-	const onExportData = async () => {
-		setAction(undefined);
-		const update = (newContent: string) => setAction({ content: newContent });
-		update(Messages.settings.backup_loading(0));
-		const data = await moneeeyStore.persistence.exportAll((percentage) => {
-			update(Messages.settings.backup_loading(percentage));
-			setLoading(percentage);
-		});
-		setLoading(false);
-		update(data);
-	};
-
-	const onImportData = () => {
-		setAction(undefined);
-		const submitFn = async (content: string) => {
-			const update = (newContent: string) =>
-				setAction({
-					content: newContent,
-					submitTitle: Messages.util.close,
-					submitFn: noop,
-				});
-			update(Messages.settings.restore_loading(0));
-			await moneeeyStore.persistence.restoreAll(content, (percentage) => {
-				update(Messages.settings.restore_loading(percentage));
-				setLoading(percentage);
-			});
-			setLoading(false);
-			update(Messages.settings.reload_page);
-		};
-		setAction({
-			content: Messages.settings.restore_data_placeholder,
-			submitFn,
-			submitTitle: Messages.settings.import_data,
-		});
-	};
-
-	return (
-		<div className="flex flex-col gap-3 p-2">
 			<Space>
 				<PrimaryButton onClick={onExportData}>
 					{Messages.settings.export_data}
@@ -151,9 +140,13 @@ function DataTab() {
 				<SecondaryButton onClick={onImportData}>
 					{Messages.settings.import_data}
 				</SecondaryButton>
+				<DeleteButton onClick={() => setConfirmingDelete(true)}>
+					<TrashIcon className="inline h-4 w-4 mr-1" />
+					{Messages.menu.delete_data}
+				</DeleteButton>
 			</Space>
 			{action && (
-				<div className="bg-background-900 p-2 flex flex-col gap-2">
+				<div className="flex flex-col gap-2">
 					<Loading progress={loading || 0} loading={Boolean(loading)}>
 						<TextArea
 							testId="importExportOutput"
@@ -163,6 +156,7 @@ function DataTab() {
 							}
 							placeholder={"Data"}
 							rows={16}
+							containerArea
 						/>
 					</Loading>
 					<Space>
@@ -181,6 +175,11 @@ function DataTab() {
 			)}
 		</div>
 	);
+}
+
+function PreferencesTab() {
+	const moneeeyStore = useMoneeeyStore();
+	return <ConfigTable config={moneeeyStore.config} />;
 }
 
 function PassphraseTab() {
@@ -305,11 +304,6 @@ export default function Settings() {
 					key: "preferences",
 					label: Messages.menu.preferences,
 					children: <PreferencesTab />,
-				},
-				{
-					key: "data",
-					label: Messages.menu.data,
-					children: <DataTab />,
 				},
 				{
 					key: "passphrase",

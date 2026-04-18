@@ -11,6 +11,7 @@ export default {
 			colors: {
 				primary: colors.green,
 				secondary: colors.blue,
+				danger: colors.red,
 				background: {
 					50: bgShade(50),
 					100: bgShade(100),
