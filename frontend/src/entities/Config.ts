@@ -22,7 +22,6 @@ export interface IConfig extends IBaseEntity {
 	default_currency: TCurrencyUUID;
 	view_archived: boolean;
 	couchSync?: SyncConfig;
-	moneeeySync?: SyncConfig;
 }
 
 export class ConfigStore extends MappedStore<IConfig> {
@@ -38,12 +37,6 @@ export class ConfigStore extends MappedStore<IConfig> {
 					default_currency: "",
 					view_archived: false,
 					couchSync: {
-						enabled: false,
-						url: "",
-						username: "",
-						password: "",
-					},
-					moneeeySync: {
 						enabled: false,
 						url: "",
 						username: "",
