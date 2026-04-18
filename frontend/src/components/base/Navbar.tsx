@@ -1,3 +1,4 @@
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { compact } from "lodash";
 import type { ReactNode } from "react";
 
@@ -36,7 +37,7 @@ const NavbarItems = ({
 
 		return compact([
 			<LinkButton
-				className={`flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6 ${
+				className={`relative flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6 ${
 					item.isActive ? "opacity-75 !bg-background-900 mn-active-navbar" : ""
 				}`}
 				testId={`${testId}_${item.key}`}
@@ -44,6 +45,11 @@ const NavbarItems = ({
 				key={item.key}
 				title={item.label}
 			>
+				{expanded && item.children && item.children.length > 0 && (
+					<Icon className="!w-3 !h-3 absolute -left-1">
+						<ChevronRightIcon />
+					</Icon>
+				)}
 				{item.icon && <Icon>{item.icon}</Icon>}{" "}
 				{expanded ? item.customLabel || item.label : ""}
 			</LinkButton>,
@@ -70,12 +76,14 @@ const Navbar = (props: NavbarProps & WithDataTestId) => {
 			}`}
 			data-testid={props.testId}
 		>
-			<NavbarItems
-				testId={props.testId}
-				items={props.items}
-				expanded={props.expanded}
-			/>
-			<div className="p-2 self-end">{props.footer}</div>
+			<div className="flex flex-col grow">
+				<NavbarItems
+					testId={props.testId}
+					items={props.items}
+					expanded={props.expanded}
+				/>
+			</div>
+			<div className="flex flex-col pb-4">{props.footer}</div>
 		</nav>
 	);
 };

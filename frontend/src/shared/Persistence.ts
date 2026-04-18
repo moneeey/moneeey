@@ -115,6 +115,13 @@ type PouchDocument = {
 
 type DocumentWatchListener = (doc: PouchDocument) => void;
 
+export function deleteAllData(db: PouchDB.Database) {
+	db.destroy();
+	window.localStorage.clear();
+	window.sessionStorage.clear();
+	window.location.reload();
+}
+
 export default class PersistenceStore {
 	public status: Status = Status.OFFLINE;
 
@@ -292,7 +299,7 @@ export default class PersistenceStore {
 	};
 
 	truncateAll() {
-		this.db.destroy();
+		deleteAllData(this.db);
 	}
 
 	async exportAll(onProgress: (perc: number) => void) {
