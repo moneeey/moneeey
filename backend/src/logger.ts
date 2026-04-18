@@ -6,9 +6,22 @@ interface ILogger {
 	error(message: string, data: object): void;
 }
 
+function replacer(_key: string, value: unknown) {
+	if (value instanceof Error) {
+		const cause = (value as Error & { cause?: unknown }).cause;
+		return {
+			name: value.name,
+			message: value.message,
+			stack: value.stack,
+			...(cause ? { cause } : {}),
+		};
+	}
+	return value;
+}
+
 export const loggerInternals = {
 	emit(level: Level, message: string, data: object, emitter = console) {
-		emitter[level](message, JSON.stringify(data));
+		emitter[level](message, JSON.stringify(data, replacer));
 	},
 };
 
