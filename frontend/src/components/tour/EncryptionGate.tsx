@@ -16,7 +16,12 @@ import {
 import { isWebCryptoAvailable } from "../../shared/encryption/crypto";
 import { hasEncryptionMeta } from "../../shared/encryption/encryptedPouch";
 import useMessages, { type TMessages } from "../../utils/Messages";
-import { OkButton, SecondaryButton } from "../base/Button";
+import {
+	CancelButton,
+	DeleteButton,
+	OkButton,
+	SecondaryButton,
+} from "../base/Button";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
 import SelfHostedSyncForm from "../sync/SelfHostedSyncForm";
 
@@ -38,7 +43,8 @@ type GateState =
 	| { kind: "passkey" }
 	| { kind: "invite"; token: string }
 	| { kind: "self-hosted" }
-	| { kind: "pulling"; label: string };
+	| { kind: "pulling"; label: string }
+	| { kind: "confirm-delete"; returnTo: GateState };
 
 const messageForError = (err: unknown, Messages: TMessages): string => {
 	const code = (err as Error | undefined)?.message as
@@ -429,6 +435,29 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		);
 	}
 
+	if (state.kind === "confirm-delete") {
+		return (
+			<MinimalBasicScreen>
+				<h2 className="text-xl font-semibold text-danger-300">
+					{Messages.menu.delete_data}
+				</h2>
+				<p className="text-sm opacity-80">
+					{Messages.menu.delete_data_confirm}
+				</p>
+				<div className="flex gap-2">
+					<CancelButton onClick={() => setState(state.returnTo)} />
+					<DeleteButton
+						onClick={() => {
+							db.destroy();
+							window.location.reload();
+						}}
+						title={Messages.menu.delete_data}
+					/>
+				</div>
+			</MinimalBasicScreen>
+		);
+	}
+
 	const isSetup = state.kind === "setup";
 	const onSubmit = isSetup ? onSubmitSetup : onSubmitUnlock;
 	return (
@@ -512,6 +541,13 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					}
 				/>
 			</div>
+			{!isSetup && (
+				<SecondaryButton
+					onClick={() => setState({ kind: "confirm-delete", returnTo: state })}
+					title={Messages.menu.delete_data}
+					disabled={busy}
+				/>
+			)}
 		</MinimalBasicScreen>
 	);
 }

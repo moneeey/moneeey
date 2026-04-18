@@ -19,6 +19,8 @@ export type InputProps<T> = WithDataTestId & {
 	readOnly?: boolean;
 	isError?: boolean;
 	containerArea?: boolean;
+	type?: "text" | "password";
+	autoComplete?: string;
 };
 
 type AddonType = string | ReactNode | undefined;
@@ -73,8 +75,11 @@ const Input = ({
 	prefix,
 	suffix,
 	isError,
+	type = "text",
+	autoComplete,
 }: InputProps<string>) => {
 	const [currentValue, setCurrentValue] = useState<string>(value);
+	const immediate = type === "password";
 
 	useEffect(() => {
 		setCurrentValue(value);
@@ -90,13 +95,17 @@ const Input = ({
 		input: (
 			<input
 				data-testid={testId}
-				type="text"
+				type={type}
+				autoComplete={autoComplete}
 				className={`${BaseInputClzz} ${className || ""}`}
 				value={currentValue}
-				onChange={({ target: { value: newValue } }) =>
-					setCurrentValue(newValue)
+				onChange={({ target: { value: newValue } }) => {
+					setCurrentValue(newValue);
+					if (immediate) onChange(newValue);
+				}}
+				onBlur={() =>
+					!immediate && currentValue !== value && onChange(currentValue)
 				}
-				onBlur={() => currentValue !== value && onChange(currentValue)}
 				placeholder={placeholder}
 				disabled={disabled === true || readOnly === true}
 				readOnly={readOnly}

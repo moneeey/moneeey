@@ -18,7 +18,7 @@ import {
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
 
-const MoneeeyLogin = ({
+export const MoneeeyLogin = ({
 	setMessage,
 }: { setMessage: Dispatch<SetStateAction<ReactElement | undefined>> }) => {
 	const Messages = useMessages();
@@ -95,7 +95,7 @@ const MoneeeyLogin = ({
 	);
 };
 
-const InviteSection = () => {
+export const InviteSection = () => {
 	const Messages = useMessages();
 	const [inviteUrl, setInviteUrl] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
@@ -141,7 +141,7 @@ const InviteSection = () => {
 	);
 };
 
-const MoneeeyAccountConfig = observer(() => {
+export const MoneeeyAccountConfig = observer(() => {
 	const Messages = useMessages();
 	const { management } = useMoneeeyStore();
 	const [message, setMessage] = useState(undefined as ReactElement | undefined);
@@ -164,7 +164,7 @@ const MoneeeyAccountConfig = observer(() => {
 	);
 });
 
-const DatabaseConfig = () => {
+export const DatabaseConfig = () => {
 	const Messages = useMessages();
 	const { persistence, config } = useMoneeeyStore();
 	const initialCfg = config.main.couchSync || {

@@ -8,11 +8,7 @@ import {
 	Cog6ToothIcon,
 	CurrencyDollarIcon,
 	EnvelopeIcon,
-	HomeIcon,
 	LockClosedIcon,
-	PlayCircleIcon,
-	QuestionMarkCircleIcon,
-	StopCircleIcon,
 	UsersIcon,
 	WalletIcon,
 	WrenchScrewdriverIcon,
@@ -36,7 +32,6 @@ import ImportRoute from "../routes/ImportRoute";
 import { PayeeSettingsRoute } from "../routes/PayeeSettingsRoute";
 import ReportsRoute from "../routes/ReportsRoute";
 import SettingsRoute from "../routes/SettingsRoute";
-import { NavigationModal } from "../shared/Navigation";
 import { Status } from "../shared/Persistence";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import { StorageKind, getStorage, setStorage } from "../utils/Utils";
@@ -49,9 +44,7 @@ import RouteRenderer, {
 import useMessages from "../utils/Messages";
 
 import DashboardRoute from "../routes/DashboardRouter";
-import SyncRoute from "../routes/SyncRoute";
-import LanguageSelector from "./LanguageSelector";
-import ThemeSwitcher from "./ThemeSwitcher";
+import { LinkButton } from "./base/Button";
 import Icon, { FavIcon } from "./base/Icon";
 import Navbar from "./base/Navbar";
 import { TextNormal, TextSecondary, TextTitle } from "./base/Text";
@@ -117,16 +110,6 @@ const Menu = observer(
 			isActive: activePath === url,
 		});
 
-		const modalLink = (modal: NavigationModal) => ({
-			onClick: () => {
-				navigation.openModal(modal);
-				if (isMobile()) {
-					setExpanded(false);
-				}
-			},
-			isActive: navigation.modal === modal,
-		});
-
 		return (
 			<Navbar
 				key={`${allAccountsKey}@@${allRunningBalances}`}
@@ -134,12 +117,39 @@ const Menu = observer(
 				testId="appMenu"
 				expanded={expanded}
 				footer={
-					expanded ? (
-						<div className="flex flex-col gap-2">
-							<ThemeSwitcher />
-							<LanguageSelector />
-						</div>
-					) : null
+					<>
+						<LinkButton
+							className="flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6"
+							testId="appMenu_sync_status"
+							onClick={() => {
+								navigation.navigate(SettingsRoute.url());
+								if (isMobile()) setExpanded(false);
+							}}
+							title={`${Messages.modal.sync} ${Messages.menu[`sync_${persistence.status}`]}`}
+						>
+							<Icon>
+								{persistence.status === Status.ONLINE ? (
+									<Cog6ToothIcon color="green" />
+								) : (
+									<Cog6ToothIcon color="red" />
+								)}
+							</Icon>{" "}
+							{expanded
+								? `${Messages.modal.sync} ${Messages.menu[`sync_${persistence.status}`]}`
+								: ""}
+						</LinkButton>
+						<LinkButton
+							className="flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6"
+							testId="appMenu_lock"
+							onClick={() => encryption.lock()}
+							title={Messages.menu.lock}
+						>
+							<Icon>
+								<LockClosedIcon />
+							</Icon>{" "}
+							{expanded ? Messages.menu.lock : ""}
+						</LinkButton>
+					</>
 				}
 				items={[
 					{
@@ -245,38 +255,6 @@ const Menu = observer(
 								...routeLink(PayeeSettingsRoute.url()),
 							},
 						],
-					},
-					{
-						key: "sync",
-						label: `${Messages.modal.sync} ${
-							Messages.menu[`sync_${persistence.status}`]
-						}`,
-						icon:
-							persistence.status === Status.ONLINE ? (
-								<PlayCircleIcon color="green" />
-							) : (
-								<StopCircleIcon color="red" />
-							),
-						...routeLink(SyncRoute.url()),
-					},
-					{
-						key: "settings_landing",
-						label: Messages.menu.landing,
-						icon: <HomeIcon />,
-						...routeLink(HomeRoute.url()),
-					},
-					{
-						key: "settings_tour",
-						label: Messages.menu.start_tour,
-						icon: <QuestionMarkCircleIcon />,
-						...modalLink(NavigationModal.LANDING),
-					},
-					{
-						key: "lock",
-						label: Messages.menu.lock,
-						icon: <LockClosedIcon />,
-						onClick: () => encryption.lock(),
-						isActive: false,
 					},
 				]}
 			/>

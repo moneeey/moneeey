@@ -1,44 +1,114 @@
+import { TrashIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
+import LanguageSelector from "../components/LanguageSelector";
 import Loading from "../components/Loading";
+import ThemeSwitcher from "../components/ThemeSwitcher";
 import { PrimaryButton, SecondaryButton } from "../components/base/Button";
-import Drawer from "../components/base/Drawer";
-import { TextArea } from "../components/base/Input";
-import Space, { VerticalSpace } from "../components/base/Space";
+import { Input, TextArea } from "../components/base/Input";
+import MinimalBasicScreen from "../components/base/MinimalBaseScreen";
+import Space from "../components/base/Space";
+import Tabs from "../components/base/Tabs";
 import {
 	MIN_PASSPHRASE_LENGTH,
 	verifyPassphrase,
 } from "../shared/EncryptionStore";
+import { NavigationModal } from "../shared/Navigation";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import ConfigTable from "../tables/ConfigTable";
 import useMessages from "../utils/Messages";
 import { noop } from "../utils/Utils";
+import { DatabaseConfig, MoneeeyAccountConfig } from "./Sync";
 
-type Action = {
-	title: string;
+function ProfileTab() {
+	const Messages = useMessages();
+	const { persistence, navigation } = useMoneeeyStore();
+	const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+	if (confirmingDelete) {
+		return (
+			<div className="fixed inset-0 z-50">
+				<MinimalBasicScreen>
+					<h2 className="text-xl font-semibold text-danger-300">
+						{Messages.menu.delete_data}
+					</h2>
+					<p className="text-sm opacity-80">
+						{Messages.menu.delete_data_confirm}
+					</p>
+					<Space>
+						<SecondaryButton onClick={() => setConfirmingDelete(false)}>
+							{Messages.util.cancel}
+						</SecondaryButton>
+						<PrimaryButton
+							onClick={() => {
+								persistence.truncateAll();
+								window.location.reload();
+							}}
+							className="!bg-danger-300 !text-danger-900"
+						>
+							<TrashIcon className="inline h-4 w-4 mr-1" />
+							{Messages.menu.delete_data}
+						</PrimaryButton>
+					</Space>
+				</MinimalBasicScreen>
+			</div>
+		);
+	}
+
+	return (
+		<div className="flex flex-col gap-6 p-2">
+			<LanguageSelector />
+			<ThemeSwitcher />
+			<SecondaryButton
+				onClick={() => navigation.openModal(NavigationModal.LANDING)}
+				title={Messages.menu.start_tour}
+			/>
+			<hr className="border-background-600" />
+			<span className="white-space-preline">{Messages.sync.intro}</span>
+			<Tabs
+				testId="syncSettings"
+				items={[
+					{
+						key: "moneeeyAccount",
+						label: Messages.sync.moneeey_sync,
+						children: <MoneeeyAccountConfig />,
+					},
+					{
+						key: "database",
+						label: Messages.sync.database_sync,
+						children: <DatabaseConfig />,
+					},
+				]}
+			/>
+			<hr className="border-background-600" />
+			<SecondaryButton onClick={() => setConfirmingDelete(true)}>
+				<TrashIcon className="inline h-4 w-4 mr-1" />
+				{Messages.menu.delete_data}
+			</SecondaryButton>
+		</div>
+	);
+}
+
+function PreferencesTab() {
+	const moneeeyStore = useMoneeeyStore();
+	return <ConfigTable config={moneeeyStore.config} />;
+}
+
+type ActionState = {
 	content: string;
 	submitTitle?: string;
-	submitFn?: (data: Action) => void;
+	submitFn?: (content: string) => void;
 };
 
-export default function Settings() {
+function DataTab() {
 	const Messages = useMessages();
-	const [action, setAction] = useState<Action | undefined>(undefined);
-	const [loading, setLoading] = useState<number | false>(false);
-	const [changingPassphrase, setChangingPassphrase] = useState(false);
-	const [currentPassphrase, setCurrentPassphrase] = useState("");
-	const [newPassphrase, setNewPassphrase] = useState("");
-	const [confirmPassphrase, setConfirmPassphrase] = useState("");
-	const [passphraseError, setPassphraseError] = useState<string | null>(null);
-	const [passphraseBusy, setPassphraseBusy] = useState(false);
 	const moneeeyStore = useMoneeeyStore();
+	const [action, setAction] = useState<ActionState | undefined>(undefined);
+	const [loading, setLoading] = useState<number | false>(false);
 
 	const onExportData = async () => {
-		const update = (newContent: string) =>
-			setAction({
-				title: Messages.settings.export_data,
-				content: newContent,
-			});
+		setAction(undefined);
+		const update = (newContent: string) => setAction({ content: newContent });
 		update(Messages.settings.backup_loading(0));
 		const data = await moneeeyStore.persistence.exportAll((percentage) => {
 			update(Messages.settings.backup_loading(percentage));
@@ -47,18 +117,18 @@ export default function Settings() {
 		setLoading(false);
 		update(data);
 	};
+
 	const onImportData = () => {
-		const update = (newContent: string) =>
-			setAction({
-				title: Messages.settings.import_data,
-				content: newContent,
-				submitTitle: Messages.util.close,
-				submitFn: noop,
-			});
-		const submitFn = async (data: Action) => {
-			const input = data?.content || "";
+		setAction(undefined);
+		const submitFn = async (content: string) => {
+			const update = (newContent: string) =>
+				setAction({
+					content: newContent,
+					submitTitle: Messages.util.close,
+					submitFn: noop,
+				});
 			update(Messages.settings.restore_loading(0));
-			await moneeeyStore.persistence.restoreAll(input, (percentage) => {
+			await moneeeyStore.persistence.restoreAll(content, (percentage) => {
 				update(Messages.settings.restore_loading(percentage));
 				setLoading(percentage);
 			});
@@ -67,33 +137,60 @@ export default function Settings() {
 		};
 		setAction({
 			content: Messages.settings.restore_data_placeholder,
-			title: Messages.settings.import_data,
 			submitFn,
 			submitTitle: Messages.settings.import_data,
 		});
 	};
 
-	const onClearData = () => {
-		setAction({
-			title: Messages.settings.clear_all,
-			content: Messages.settings.clear_data_placeholder,
-			submitTitle: Messages.settings.clear_all,
-			submitFn: (data) => {
-				if (data && data.content === Messages.settings.clear_data_token) {
-					moneeeyStore.persistence.truncateAll();
-					setAction({ ...data, content: Messages.settings.reload_page });
-				}
-			},
-		});
-	};
+	return (
+		<div className="flex flex-col gap-3 p-2">
+			<Space>
+				<PrimaryButton onClick={onExportData}>
+					{Messages.settings.export_data}
+				</PrimaryButton>
+				<SecondaryButton onClick={onImportData}>
+					{Messages.settings.import_data}
+				</SecondaryButton>
+			</Space>
+			{action && (
+				<div className="bg-background-900 p-2 flex flex-col gap-2">
+					<Loading progress={loading || 0} loading={Boolean(loading)}>
+						<TextArea
+							testId="importExportOutput"
+							value={action.content}
+							onChange={(value) =>
+								setAction((prev) => prev && { ...prev, content: value })
+							}
+							placeholder={"Data"}
+							rows={16}
+						/>
+					</Loading>
+					<Space>
+						<SecondaryButton
+							onClick={() => setAction(undefined)}
+							title={Messages.util.close}
+						/>
+						{action.submitFn && (
+							<PrimaryButton
+								onClick={() => action.submitFn?.(action.content)}
+								title={action.submitTitle}
+							/>
+						)}
+					</Space>
+				</div>
+			)}
+		</div>
+	);
+}
 
-	const onChangePassphrase = () => {
-		setCurrentPassphrase("");
-		setNewPassphrase("");
-		setConfirmPassphrase("");
-		setPassphraseError(null);
-		setChangingPassphrase(true);
-	};
+function PassphraseTab() {
+	const Messages = useMessages();
+	const moneeeyStore = useMoneeeyStore();
+	const [currentPassphrase, setCurrentPassphrase] = useState("");
+	const [newPassphrase, setNewPassphrase] = useState("");
+	const [confirmPassphrase, setConfirmPassphrase] = useState("");
+	const [passphraseError, setPassphraseError] = useState<string | null>(null);
+	const [passphraseBusy, setPassphraseBusy] = useState(false);
 
 	const onSubmitPassphraseChange = async () => {
 		if (currentPassphrase.length === 0) {
@@ -118,7 +215,6 @@ export default function Settings() {
 				dataKey,
 				newPassphrase,
 			);
-			// changePassphrase triggers a reload; this line is unreachable.
 		} catch (err) {
 			const code = (err as Error).message;
 			if (code === "passphrase_too_short") {
@@ -131,131 +227,96 @@ export default function Settings() {
 	};
 
 	return (
-		<>
-			<Space className="p-2 scale-75">
-				<PrimaryButton onClick={onExportData}>
-					{Messages.settings.export_data}
-				</PrimaryButton>
-				<SecondaryButton onClick={onImportData}>
-					{Messages.settings.import_data}
-				</SecondaryButton>
-				<SecondaryButton onClick={onClearData}>
-					{Messages.settings.clear_all}
-				</SecondaryButton>
-				<SecondaryButton onClick={onChangePassphrase}>
-					{Messages.menu.change_passphrase}
-				</SecondaryButton>
+		<div className="flex flex-col gap-3 p-2 max-w-md">
+			<p className="text-sm opacity-80">
+				{Messages.encryption.change_description}
+			</p>
+			<Input
+				testId="currentPassphrase"
+				type="password"
+				autoComplete="current-password"
+				placeholder={Messages.encryption.current_passphrase_placeholder}
+				value={currentPassphrase}
+				disabled={passphraseBusy}
+				containerArea
+				onChange={(value) => {
+					setCurrentPassphrase(value);
+					setPassphraseError(null);
+				}}
+			/>
+			<Input
+				testId="newPassphrase"
+				type="password"
+				autoComplete="new-password"
+				placeholder={Messages.encryption.new_passphrase_placeholder}
+				value={newPassphrase}
+				disabled={passphraseBusy}
+				containerArea
+				onChange={(value) => {
+					setNewPassphrase(value);
+					setPassphraseError(null);
+				}}
+			/>
+			<Input
+				testId="newPassphraseConfirm"
+				type="password"
+				autoComplete="new-password"
+				placeholder={Messages.encryption.confirm_placeholder}
+				value={confirmPassphrase}
+				disabled={passphraseBusy}
+				containerArea
+				onChange={(value) => {
+					setConfirmPassphrase(value);
+					setPassphraseError(null);
+				}}
+			/>
+			{passphraseError && (
+				<p
+					className="text-sm text-danger-300"
+					data-testid="changePassphraseError"
+				>
+					{passphraseError}
+				</p>
+			)}
+			<Space>
+				<PrimaryButton
+					onClick={onSubmitPassphraseChange}
+					title={Messages.encryption.change_submit}
+					disabled={passphraseBusy}
+				/>
 			</Space>
-			<VerticalSpace>
-				{changingPassphrase && (
-					<Drawer
-						testId="changePassphraseDrawer"
-						header={Messages.encryption.change_title}
-						footer={
-							<Space>
-								<SecondaryButton
-									onClick={() => setChangingPassphrase(false)}
-									title={Messages.util.close}
-									disabled={passphraseBusy}
-								/>
-								<PrimaryButton
-									onClick={onSubmitPassphraseChange}
-									title={Messages.encryption.change_submit}
-									disabled={passphraseBusy}
-								/>
-							</Space>
-						}
-					>
-						<div className="bg-background-900 p-2 flex flex-col gap-3">
-							<p className="text-sm opacity-80">
-								{Messages.encryption.change_description}
-							</p>
-							<input
-								data-testid="currentPassphrase"
-								type="password"
-								autoComplete="current-password"
-								placeholder={Messages.encryption.current_passphrase_placeholder}
-								value={currentPassphrase}
-								disabled={passphraseBusy}
-								onChange={(event) => {
-									setCurrentPassphrase(event.target.value);
-									setPassphraseError(null);
-								}}
-								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
-							/>
-							<input
-								data-testid="newPassphrase"
-								type="password"
-								autoComplete="new-password"
-								placeholder={Messages.encryption.new_passphrase_placeholder}
-								value={newPassphrase}
-								disabled={passphraseBusy}
-								onChange={(event) => {
-									setNewPassphrase(event.target.value);
-									setPassphraseError(null);
-								}}
-								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
-							/>
-							<input
-								data-testid="newPassphraseConfirm"
-								type="password"
-								autoComplete="new-password"
-								placeholder={Messages.encryption.confirm_placeholder}
-								value={confirmPassphrase}
-								disabled={passphraseBusy}
-								onChange={(event) => {
-									setConfirmPassphrase(event.target.value);
-									setPassphraseError(null);
-								}}
-								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
-							/>
-							{passphraseError && (
-								<p
-									className="text-sm text-danger-300"
-									data-testid="changePassphraseError"
-								>
-									{passphraseError}
-								</p>
-							)}
-						</div>
-					</Drawer>
-				)}
-				{action && (
-					<Drawer
-						testId="accountSettings"
-						header={action.title}
-						footer={
-							<Space>
-								<SecondaryButton
-									onClick={() => setAction(undefined)}
-									title={Messages.util.close}
-								/>
-								{action.submitFn && (
-									<PrimaryButton
-										onClick={() => action.submitFn?.(action)}
-										title={action.submitTitle}
-									/>
-								)}
-							</Space>
-						}
-					>
-						<div className="bg-background-900 p-2">
-							<Loading progress={loading || 0} loading={Boolean(loading)}>
-								<TextArea
-									testId="importExportOutput"
-									value={action.content}
-									onChange={(value) =>
-										setAction((cont) => cont && { ...cont, content: value })
-									}
-									placeholder={"Data"}
-									rows={16}
-								/>
-							</Loading>
-						</div>
-					</Drawer>
-				)}
-				<ConfigTable config={moneeeyStore.config} />
-			</VerticalSpace>
-		</>
+		</div>
+	);
+}
+
+export default function Settings() {
+	const Messages = useMessages();
+
+	return (
+		<Tabs
+			testId="settingsTabs"
+			items={[
+				{
+					key: "profile",
+					label: Messages.menu.profile,
+					children: <ProfileTab />,
+				},
+				{
+					key: "preferences",
+					label: Messages.menu.preferences,
+					children: <PreferencesTab />,
+				},
+				{
+					key: "data",
+					label: Messages.menu.data,
+					children: <DataTab />,
+				},
+				{
+					key: "passphrase",
+					label: Messages.menu.change_passphrase,
+					children: <PassphraseTab />,
+				},
+			]}
+		/>
 	);
 }
