@@ -80,11 +80,11 @@ export const MoneeeyLogin = ({
 				]}
 				footer={
 					<div className="flex gap-2">
-						<SecondaryButton
+						<OkButton
 							onClick={onLogin}
 							title={Messages.encryption.passkey_login}
 						/>
-						<OkButton
+						<SecondaryButton
 							onClick={onRegister}
 							title={Messages.encryption.passkey_register}
 						/>

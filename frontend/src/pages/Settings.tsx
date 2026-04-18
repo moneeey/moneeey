@@ -6,7 +6,6 @@ import Loading from "../components/Loading";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import {
 	DeleteButton,
-	LinkButton,
 	PrimaryButton,
 	SecondaryButton,
 } from "../components/base/Button";
@@ -94,7 +93,7 @@ function ProfileTab() {
 							}}
 							className="!bg-danger-300 !text-danger-900"
 						>
-							<TrashIcon className="inline h-4 w-4 mr-1" />
+							<TrashIcon className="inline-block h-4 w-4 mr-1 align-text-bottom" />
 							{Messages.menu.delete_data}
 						</PrimaryButton>
 					</Space>
@@ -109,7 +108,7 @@ function ProfileTab() {
 			<ThemeSwitcher />
 			<div className="flex flex-col justify-center items-center gap-2">
 				<p>{Messages.menu.start_tour_description}</p>
-				<LinkButton
+				<PrimaryButton
 					onClick={() => navigation.openModal(NavigationModal.LANDING)}
 					title={Messages.menu.start_tour}
 				/>
@@ -140,7 +139,7 @@ function ProfileTab() {
 					{Messages.settings.import_data}
 				</SecondaryButton>
 				<DeleteButton onClick={() => setConfirmingDelete(true)}>
-					<TrashIcon className="inline h-4 w-4 mr-1" />
+					<TrashIcon className="inline-block h-4 w-4 mr-1 align-text-bottom" />
 					{Messages.menu.delete_data}
 				</DeleteButton>
 			</Space>
