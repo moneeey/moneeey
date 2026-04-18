@@ -1,4 +1,4 @@
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { LockOpenIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 
 import type { SyncConfig } from "../../entities/Config";
@@ -531,15 +531,14 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 						disabled={busy}
 					/>
 				)}
-				<OkButton
-					disabled={busy || passphrase.length === 0}
-					onClick={onSubmit}
-					title={
-						isSetup
+				<OkButton disabled={busy || passphrase.length === 0} onClick={onSubmit}>
+					<span className="flex items-center gap-1">
+						{!isSetup && <LockOpenIcon className="h-4 w-4 shrink-0" />}
+						{isSetup
 							? Messages.encryption.setup_submit
-							: Messages.encryption.unlock_submit
-					}
-				/>
+							: Messages.encryption.unlock_submit}
+					</span>
+				</OkButton>
 			</div>
 			{!isSetup && (
 				<DeleteButton
