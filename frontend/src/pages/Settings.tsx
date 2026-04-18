@@ -93,8 +93,10 @@ function ProfileTab() {
 							}}
 							className="!bg-danger-300 !text-danger-900"
 						>
-							<TrashIcon className="inline-block h-4 w-4 mr-1 align-text-bottom" />
-							{Messages.menu.delete_data}
+							<span className="flex items-center gap-1">
+								<TrashIcon className="h-4 w-4 shrink-0" />
+								{Messages.menu.delete_data}
+							</span>
 						</PrimaryButton>
 					</Space>
 				</MinimalBasicScreen>
@@ -139,8 +141,10 @@ function ProfileTab() {
 					{Messages.settings.import_data}
 				</SecondaryButton>
 				<DeleteButton onClick={() => setConfirmingDelete(true)}>
-					<TrashIcon className="inline-block h-4 w-4 mr-1 align-text-bottom" />
-					{Messages.menu.delete_data}
+					<span className="flex items-center gap-1">
+						<TrashIcon className="h-4 w-4 shrink-0" />
+						{Messages.menu.delete_data}
+					</span>
 				</DeleteButton>
 			</Space>
 			{action && (

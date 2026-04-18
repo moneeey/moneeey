@@ -1,3 +1,4 @@
+import { TrashIcon } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 
 import type { SyncConfig } from "../../entities/Config";
@@ -446,10 +447,12 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				</p>
 				<div className="flex gap-2">
 					<CancelButton onClick={() => setState(state.returnTo)} />
-					<DeleteButton
-						onClick={() => deleteAllData(db)}
-						title={Messages.menu.delete_data}
-					/>
+					<DeleteButton onClick={() => deleteAllData(db)}>
+						<span className="flex items-center gap-1">
+							<TrashIcon className="h-4 w-4 shrink-0" />
+							{Messages.menu.delete_data}
+						</span>
+					</DeleteButton>
 				</div>
 			</MinimalBasicScreen>
 		);
@@ -541,9 +544,13 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 			{!isSetup && (
 				<DeleteButton
 					onClick={() => setState({ kind: "confirm-delete", returnTo: state })}
-					title={Messages.menu.delete_data}
 					disabled={busy}
-				/>
+				>
+					<span className="flex items-center gap-1">
+						<TrashIcon className="h-4 w-4 shrink-0" />
+						{Messages.menu.delete_data}
+					</span>
+				</DeleteButton>
 			)}
 		</MinimalBasicScreen>
 	);
