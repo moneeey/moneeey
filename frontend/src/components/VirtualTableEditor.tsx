@@ -278,7 +278,7 @@ const CompactRowLine = ({
 	rowIndex: number;
 	columnsByTitle: Map<string, ColumnDef>;
 }) => (
-	<div className="flex items-center gap-2 leading-tight">
+	<div data-testid="compactLine" className="flex items-center gap-2 leading-tight">
 		{line.map((rawCell, cellIdx) => {
 			const cell = asCompactCellObject(rawCell);
 			const column = columnsByTitle.get(cell.title);
@@ -333,6 +333,7 @@ const CompactContentCell = observer(
 		return (
 			<div
 				style={style}
+				data-testid="compactRow"
 				className={`${bgColor} flex flex-col justify-center gap-0.5 border-b border-background-700 px-2`}
 			>
 				{compactLayout.map((line, lineIdx) => (

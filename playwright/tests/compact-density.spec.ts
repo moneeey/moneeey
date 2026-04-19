@@ -4,37 +4,12 @@ import {
 	budgetEditorSave,
 	clickMenuByTestId,
 	expect,
-	retrieveRowsData,
+	retrieveCompactRowsData,
 	test,
 	updateOnAllTransactions,
 } from "../helpers";
 
 const SETTINGS_MENU_TESTID = "appMenu_subitems_settings_settings_general";
-
-// Matches the compactLayout in TransactionTable for the all-transactions view.
-const COMPACT_ALL_TX_LAYOUT = [
-	["editorDate", "editorMemo"],
-	["editorFrom", "editorFrom_amount"],
-	["editorTo", "editorTo_amount"],
-];
-
-// Matches the compactLayout in TransactionTable for the reference-account view.
-const COMPACT_REFERENCE_LAYOUT = [
-	["editorDate", "editorMemo", "editorRunning"],
-	["editorAccount", "editorAmount"],
-];
-
-// Matches the compactLayout in AccountTable for non-payee accounts.
-const COMPACT_ACCOUNT_LAYOUT = [
-	["editorName", "editorTags"],
-	["editorType", "editorCurrency"],
-];
-
-// Matches the compactLayout in CurrencyTable.
-const COMPACT_CURRENCY_LAYOUT = [
-	["editorName", "editorTags"],
-	["editorShort", "editorPrefix", "editorSuffix", "editorDecimals"],
-];
 
 async function setDensity(
 	page: import("@playwright/test").Page,
@@ -80,7 +55,9 @@ test("Compact all-transactions — header and rows show per-side amounts", async
 	await expect(header).toContainText("To amount");
 
 	const today = new Date().toISOString().slice(0, 10);
-	expect(await retrieveRowsData(page, COMPACT_ALL_TX_LAYOUT, 4)).toEqual([
+	expect(
+		await retrieveCompactRowsData(page, "transactionTable", 4),
+	).toEqual([
 		[
 			`date: ${today} (text-xs text-muted-foreground) | memo:  ()`,
 			`from: Initial balance BRL (min-w-0 grow) | from_amount: 1.234,56 (text-right [&_input]:text-right text-negative)`,
@@ -123,7 +100,9 @@ test("Compact reference-account view — rows show running balance inline", asyn
 	);
 
 	const today = new Date().toISOString().slice(0, 10);
-	expect(await retrieveRowsData(page, COMPACT_REFERENCE_LAYOUT, 2)).toEqual([
+	expect(
+		await retrieveCompactRowsData(page, "transactionTable", 2),
+	).toEqual([
 		[
 			`date: ${today} (text-xs text-muted-foreground) | memo:  () | running: 1.234,56 (text-right [&_input]:text-right text-xs text-muted-foreground text-positive)`,
 			`account: Initial balance BRL () | amount: 1.234,56 (text-right [&_input]:text-right text-positive)`,
@@ -139,17 +118,9 @@ test("Compact account settings — rows show name + currency + type", async ({
 	wizardPage: page,
 }) => {
 	await setDensity(page, "compact");
-	await clickMenuByTestId(
-		page,
-		"appMenu_subitems_settings_settings_accounts",
-	);
+	await clickMenuByTestId(page, "appMenu_subitems_settings_settings_accounts");
 
-	// Wait for at least the 3 wizard accounts + the new-entity row.
-	await expect(page.getByTestId("editorName")).toHaveCount(4, {
-		timeout: 10000,
-	});
-
-	const rows = await retrieveRowsData(page, COMPACT_ACCOUNT_LAYOUT, 4);
+	const rows = await retrieveCompactRowsData(page, "accountTableCHECKING", 4);
 	expect(rows).toEqual([
 		[
 			"name: Banco Moneeey () | tags: Tags ()",
@@ -184,7 +155,7 @@ test("Compact currency settings — header and rows show short/prefix/decimals",
 	await expect(header).toContainText("Name");
 	await expect(header).toContainText("Short");
 
-	const rows = await retrieveRowsData(page, COMPACT_CURRENCY_LAYOUT);
+	const rows = await retrieveCompactRowsData(page, "currencyTable");
 	const brl = rows.find((r) => r.startsWith("name: Brazilian Real"));
 	const btc = rows.find((r) => r.startsWith("name: Bitcoin"));
 	expect(brl).toBe(

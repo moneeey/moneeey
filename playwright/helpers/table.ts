@@ -21,76 +21,119 @@ export const classForTestIdTDs =
 			.trim();
 	};
 
-async function getCellDataString(page: Page, column: string, index: number) {
-	const tagName = await page
-		.getByTestId(column)
-		.first()
-		.evaluate((el) => el.tagName.toLowerCase())
-		.catch(() => "div");
-	const value =
-		tagName === "input"
-			? await Input(page, column, undefined, index).value()
-			: await Select(page, column, index).value();
-
-	const className = await classForTestIdTDs(page, column)(index);
-
-	return `${column.replace("editor", "").toLowerCase()}: ${value} (${className})`;
-}
-
 /**
  * Serializes a single table row's data into a compact string for equality checks.
  * Each column is read as either an input value or a select value depending on
  * its testId, and its normalized CSS class is appended.
- *
- * `columns` may be a flat list (one line, joined with " | ") or a 2D array of
- * lines (matching a CompactLayout) — in the 2D case, each line is joined with
- * " | " and lines are joined with "\n".
  */
 export async function retrieveRowData(
 	page: Page,
-	columns: string[] | string[][],
+	columns: string[],
 	index: number,
 ) {
-	const lines: string[][] = Array.isArray(columns[0])
-		? (columns as string[][])
-		: [columns as string[]];
+	const getCellData = async (column: string) => {
+		const tagName = await page
+			.getByTestId(column)
+			.first()
+			.evaluate((el) => el.tagName.toLowerCase())
+			.catch(() => "div");
+		const value =
+			tagName === "input"
+				? await Input(page, column, undefined, index).value()
+				: await Select(page, column, index).value();
 
-	const renderedLines = await Promise.all(
-		lines.map(async (line) => {
-			const cells = await Promise.all(
-				line.map((column) => getCellDataString(page, column, index)),
-			);
-			return cells.join(" | ");
-		}),
+		const className = await classForTestIdTDs(page, column)(index);
+
+		return `${column.replace("editor", "").toLowerCase()}: ${value} (${className})`;
+	};
+
+	const cellData = await Promise.all(
+		columns.map((column) => getCellData(column)),
 	);
 
-	return renderedLines.join("\n");
+	return cellData.join(" | ");
 }
 
 /**
  * Snapshots all rows of a table as an array of strings, one per row.
  * If expectedCount is provided, waits for that many rows before reading.
- *
- * Pass a 2D `columns` array to mirror a multi-line compact layout — the
- * resulting per-row snapshot uses "\n" between lines.
  */
 export async function retrieveRowsData(
 	page: Page,
-	columns: string[] | string[][],
+	columns: string[],
 	expectedCount?: number,
 ) {
-	const firstColumn = (
-		Array.isArray(columns[0]) ? (columns as string[][])[0][0] : columns[0]
-	) as string;
 	if (expectedCount) {
-		await expect(page.getByTestId(firstColumn)).toHaveCount(expectedCount, {
+		await expect(page.getByTestId(columns[0])).toHaveCount(expectedCount, {
 			timeout: 10000,
 		});
 	}
-	const rows = await page.getByTestId(firstColumn).all();
+	const rows = await page.getByTestId(columns[0]).all();
 	return await Promise.all(
 		Array.from({ length: rows.length }).map((_v, index) =>
 			retrieveRowData(page, columns, index),
 		),
 	);
+}
+
+/**
+ * Walks the rendered compact-mode table by `tableTestId`, discovering rows,
+ * lines and cells from the DOM. Returns one snapshot string per row, with
+ * lines separated by "\n" and cells separated by " | " — mirroring the
+ * structure of the table's compactLayout without the test having to declare it.
+ */
+export async function retrieveCompactRowsData(
+	page: Page,
+	tableTestId: string,
+	expectedCount?: number,
+): Promise<string[]> {
+	const rowLocator = page.locator(
+		`.${tableTestId}-body [data-testid="compactRow"]`,
+	);
+	if (expectedCount !== undefined) {
+		await expect(rowLocator).toHaveCount(expectedCount, { timeout: 10000 });
+	}
+	return await page.evaluate((id) => {
+		const body = document.querySelector(`.${id}-body`);
+		if (!body) return [];
+		const rows = body.querySelectorAll('[data-testid="compactRow"]');
+		return Array.from(rows).map((row) => {
+			const lines = row.querySelectorAll('[data-testid="compactLine"]');
+			return Array.from(lines)
+				.map((line) => {
+					const cells = Array.from(line.children);
+					return cells
+						.map((cell) => {
+							const renderer = cell.querySelector(
+								'[data-testid^="editor"]',
+							) as HTMLElement | null;
+							if (!renderer) return null;
+							const testId = renderer.getAttribute("data-testid") ?? "";
+							const inputContainer = cell.querySelector(
+								`[data-testid="inputContainer${testId}"]`,
+							);
+							const containerParent = (inputContainer?.parentElement ??
+								null) as HTMLElement | null;
+							const className = (containerParent?.className ?? "")
+								.replace(/\s+/g, " ")
+								.replace(/bg-background-/g, "bg---")
+								.trim();
+							let value = "";
+							if (renderer.tagName.toLowerCase() === "input") {
+								value = (renderer as HTMLInputElement).value ?? "";
+							} else {
+								const sv = renderer.querySelector(
+									".mn-select__single-value, .mn-select__placeholder",
+								);
+								value = sv?.textContent ?? "";
+							}
+							const label = testId.replace("editor", "").toLowerCase();
+							return `${label}: ${value} (${className})`;
+						})
+						.filter((s): s is string => s !== null)
+						.join(" | ");
+				})
+				.join("\n");
+		});
+	}, tableTestId);
 }
