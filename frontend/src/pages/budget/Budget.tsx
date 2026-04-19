@@ -1,6 +1,7 @@
 import { observer } from "mobx-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import { Checkbox } from "../../components/base/Input";
 import Space, { VerticalSpace } from "../../components/base/Space";
@@ -9,7 +10,6 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { formatDateMonth, startOfMonthOffset } from "../../utils/Date";
 import useMessages, { type TMessages } from "../../utils/Messages";
 
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import BudgetEditor from "./BudgetEditor";
 import BudgetPeriods from "./BudgetPeriod";
 
@@ -18,39 +18,43 @@ type MonthDateSelectorProps = {
 	date: Date;
 	Messages: TMessages;
 };
+
+const MONTH_OFFSETS = [-2, -1, 0, 1, 2];
+
 const MonthDateSelector = ({
 	setDate,
 	date,
 	Messages,
 }: MonthDateSelectorProps) => (
-	<Space className="justify-center">
-		<SecondaryButton onClick={() => setDate(startOfMonthOffset(date, -1))}>
-			{Messages.budget.prev}
+	<Space className="justify-center flex-wrap">
+		<SecondaryButton
+			onClick={() => setDate(startOfMonthOffset(date, -1))}
+			title={Messages.budget.prev}
+		>
+			<ChevronLeftIcon className="h-4 w-4" />
 		</SecondaryButton>
-		<span>{formatDateMonth(date)}</span>
-		<SecondaryButton onClick={() => setDate(startOfMonthOffset(date, +1))}>
-			{Messages.budget.next}
+		{MONTH_OFFSETS.map((offset) => {
+			const d = startOfMonthOffset(date, offset);
+			const isCurrent = offset === 0;
+			const Btn = isCurrent ? PrimaryButton : SecondaryButton;
+			return (
+				<Btn
+					key={offset}
+					onClick={() => setDate(d)}
+					className={isCurrent ? "font-semibold" : "opacity-70"}
+				>
+					{formatDateMonth(d)}
+				</Btn>
+			);
+		})}
+		<SecondaryButton
+			onClick={() => setDate(startOfMonthOffset(date, +1))}
+			title={Messages.budget.next}
+		>
+			<ChevronRightIcon className="h-4 w-4" />
 		</SecondaryButton>
 	</Space>
 );
-
-export const BudgetHeader = observer(() => {
-	const Messages = useMessages();
-	const { budget, navigation } = useMoneeeyStore();
-	const onNewBudget = () => navigation.updateEditingBudget(budget.factory());
-	return (
-		<Space>
-			<PrimaryButton
-				testId="addNewBudget"
-				onClick={onNewBudget}
-				className="text-sm"
-			>
-				<PlusCircleIcon className="h-5 w-5 text-primary-900 mr-1" />
-				{Messages.budget.new}
-			</PrimaryButton>
-		</Space>
-	);
-});
 
 const Budget = observer(() => {
 	const Messages = useMessages();
@@ -64,20 +68,17 @@ const Budget = observer(() => {
 		navigation.updateEditingBudget(budget);
 
 	return (
-		<VerticalSpace className="overflow-auto pr-2 pb-4">
-			<Space className="justify-between flex-wrap">
-				<Checkbox
-					testId="checkboxViewArchived"
-					value={config.main.view_archived === true}
-					onChange={(view_archived) =>
-						config.merge({ ...config.main, view_archived })
-					}
-					placeholder={Messages.budget.show_archived}
-				>
-					{Messages.budget.show_archived}
-				</Checkbox>
-				<BudgetHeader />
-			</Space>
+		<VerticalSpace className="flex-1 min-h-0 overflow-auto pr-2 pb-4">
+			<Checkbox
+				testId="checkboxViewArchived"
+				value={config.main.view_archived === true}
+				onChange={(view_archived) =>
+					config.merge({ ...config.main, view_archived })
+				}
+				placeholder={Messages.budget.show_archived}
+			>
+				{Messages.budget.show_archived}
+			</Checkbox>
 			<MonthDateSelector
 				date={startingDate}
 				setDate={setStartingDate}

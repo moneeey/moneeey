@@ -8,7 +8,7 @@ export async function completeEncryptionSetup(
 	page: Page,
 	passphrase: string = E2E_PASSPHRASE,
 ) {
-	await page.getByRole("button", { name: "Create new (local only)" }).click();
+	await page.getByRole("button", { name: "Sign up (local only)" }).click();
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
 	await page.getByTestId("encryptionPassphrase").fill(passphrase);
 	await page.getByTestId("encryptionPassphraseConfirm").fill(passphrase);
@@ -86,7 +86,10 @@ export async function budgetEditorSave(
 	tag: string,
 	expectedTags?: string[],
 ) {
-	await page.getByTestId("addNewBudget").first().click();
+	await page
+		.getByTestId(/^addNewBudget_/)
+		.first()
+		.click();
 
 	const budgetEditor = page.getByTestId("budgetEditorDrawer");
 	await Input(page, "budgetName", budgetEditor).change(name);

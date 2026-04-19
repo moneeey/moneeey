@@ -38,6 +38,11 @@
     --notif-warning-fg: 113 63 18;
     --notif-error-bg: 252 165 165;
     --notif-error-fg: 127 29 29;
+    --tag-highlight-bg: 147 197 253;
+    --tag-memo-bg: 253 224 71;
+    --tag-from-bg: 110 231 183;
+    --tag-to-bg: 196 181 253;
+    --tag-fg: 15 23 42;
   }
 
   [data-theme="light"] {
@@ -65,6 +70,11 @@
     --notif-warning-fg: 113 63 18;
     --notif-error-bg: 254 202 202;
     --notif-error-fg: 127 29 29;
+    --tag-highlight-bg: 191 219 254;
+    --tag-memo-bg: 254 240 138;
+    --tag-from-bg: 167 243 208;
+    --tag-to-bg: 221 214 254;
+    --tag-fg: 15 23 42;
   }
 
   body,

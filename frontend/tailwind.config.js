@@ -41,6 +41,13 @@ export default {
 				"notif-warning-fg": "rgb(var(--notif-warning-fg) / <alpha-value>)",
 				"notif-error-bg": "rgb(var(--notif-error-bg) / <alpha-value>)",
 				"notif-error-fg": "rgb(var(--notif-error-fg) / <alpha-value>)",
+				tag: {
+					highlight: "rgb(var(--tag-highlight-bg) / <alpha-value>)",
+					memo: "rgb(var(--tag-memo-bg) / <alpha-value>)",
+					from: "rgb(var(--tag-from-bg) / <alpha-value>)",
+					to: "rgb(var(--tag-to-bg) / <alpha-value>)",
+					fg: "rgb(var(--tag-fg) / <alpha-value>)",
+				},
 			},
 			keyframes: {
 				"fade-in": {

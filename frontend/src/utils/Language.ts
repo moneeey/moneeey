@@ -1495,11 +1495,11 @@ export default {
 			cn: "创建新的本地账户，或登录以同步现有账户。",
 		},
 		create_new_account: {
-			en: "Create new (local only)",
-			pt: "Criar nova (apenas local)",
-			es: "Crear nueva (solo local)",
-			hi: "नया बनाएँ (केवल स्थानीय)",
-			cn: "新建（仅本地）",
+			en: "Sign up (local only)",
+			pt: "Cadastrar (apenas local)",
+			es: "Registrarse (solo local)",
+			hi: "साइन अप करें (केवल स्थानीय)",
+			cn: "注册（仅本地）",
 		},
 		signin_online_account: {
 			en: "Online account (passkey)",
@@ -1530,11 +1530,11 @@ export default {
 			cn: "了解更多关于 passkey 的信息",
 		},
 		passkey_register: {
-			en: "Create account",
-			pt: "Criar conta",
-			es: "Crear cuenta",
-			hi: "खाता बनाएँ",
-			cn: "创建账户",
+			en: "Sign up",
+			pt: "Cadastrar",
+			es: "Registrarse",
+			hi: "साइन अप करें",
+			cn: "注册",
 		},
 		passkey_login: {
 			en: "Sign in",

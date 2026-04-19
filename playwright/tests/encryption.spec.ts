@@ -23,7 +23,7 @@ test.describe("Encryption gate", () => {
 		await pickLanguageEn(page);
 
 		await expect(
-			page.getByRole("button", { name: "Create new (local only)" }),
+			page.getByRole("button", { name: "Sign up (local only)" }),
 		).toBeVisible();
 		await expect(
 			page.getByRole("button", { name: "Online account (passkey)" }),
@@ -49,7 +49,7 @@ test.describe("Encryption gate", () => {
 		seededPage: page,
 	}) => {
 		await pickLanguageEn(page);
-		await page.getByRole("button", { name: "Create new (local only)" }).click();
+		await page.getByRole("button", { name: "Sign up (local only)" }).click();
 
 		await page.getByTestId("encryptionPassphrase").fill("short");
 		await page.getByTestId("encryptionPassphraseConfirm").fill("short");
@@ -65,7 +65,7 @@ test.describe("Encryption gate", () => {
 
 	test("rejects mismatched confirmation", async ({ seededPage: page }) => {
 		await pickLanguageEn(page);
-		await page.getByRole("button", { name: "Create new (local only)" }).click();
+		await page.getByRole("button", { name: "Sign up (local only)" }).click();
 
 		await page
 			.getByTestId("encryptionPassphrase")
