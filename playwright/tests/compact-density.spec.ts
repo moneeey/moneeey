@@ -1,14 +1,39 @@
 import {
 	BudgetRow,
 	OpenMenuItem,
+	REFERENCE_ACCOUNT_COLUMNS,
 	budgetEditorSave,
 	clickMenuByTestId,
 	expect,
+	retrieveRowsData,
 	test,
 	updateOnAllTransactions,
 } from "../helpers";
 
 const SETTINGS_MENU_TESTID = "appMenu_subitems_settings_settings_general";
+
+const COMPACT_ALL_TX_COLUMNS = [
+	"editorDate",
+	"editorMemo",
+	"editorFrom",
+	"editorTo",
+	"editorFrom_amount",
+	"editorTo_amount",
+];
+
+const COMPACT_ACCOUNT_COLUMNS = [
+	"editorName",
+	"editorTags",
+	"editorType",
+	"editorCurrency",
+];
+
+const COMPACT_CURRENCY_COLUMNS = [
+	"editorShort",
+	"editorPrefix",
+	"editorSuffix",
+	"editorDecimals",
+];
 
 async function setDensity(
 	page: import("@playwright/test").Page,
@@ -38,7 +63,7 @@ test("Density switcher — picking compact persists and shows active ring", asyn
 	expect(stored2).toBe("full");
 });
 
-test("Compact all-transactions — header shows from/to and per-side amounts", async ({
+test("Compact all-transactions — header and rows show per-side amounts", async ({
 	wizardPage: page,
 }) => {
 	await setDensity(page, "compact");
@@ -52,23 +77,94 @@ test("Compact all-transactions — header shows from/to and per-side amounts", a
 	await expect(header).toContainText("To");
 	await expect(header).toContainText("From amount");
 	await expect(header).toContainText("To amount");
+
+	const today = new Date().toISOString().slice(0, 10);
+	expect(
+		await retrieveRowsData(page, COMPACT_ALL_TX_COLUMNS, 4),
+	).toEqual([
+		`date: ${today} (text-xs text-muted-foreground) | memo:  () | from: Initial balance BRL (min-w-0 grow) | to: Banco Moneeey (min-w-0 grow) | from_amount: 1.234,56 (text-right [&_input]:text-right text-negative) | to_amount: 1.234,56 (text-right [&_input]:text-right text-positive)`,
+		`date: ${today} (text-xs text-muted-foreground) | memo:  () | from: Initial balance BRL (min-w-0 grow) | to: MoneeeyCard (min-w-0 grow) | from_amount: 2.000 (text-right [&_input]:text-right text-negative) | to_amount: 2.000 (text-right [&_input]:text-right text-positive)`,
+		`date: ${today} (text-xs text-muted-foreground) | memo:  () | from: Initial balance BTC (min-w-0 grow) | to: Bitcoinss (min-w-0 grow) | from_amount: 0,12345678 (text-right [&_input]:text-right text-negative) | to_amount: 0,12345678 (text-right [&_input]:text-right text-positive)`,
+		`date: ${today} (text-xs text-muted-foreground) | memo:  () | from: From (min-w-0 grow) | to: To (min-w-0 grow) | from_amount: 0 (text-right [&_input]:text-right) | to_amount: 0 (text-right [&_input]:text-right)`,
+	]);
 });
 
-test("Compact reference-account view — header shows running balance inline", async ({
+test("Compact reference-account view — rows show running balance inline", async ({
 	wizardPage: page,
 }) => {
 	await setDensity(page, "compact");
+	await OpenMenuItem(page, "BRL Banco Moneeey");
 
-	await page.getByText("BRL Banco Moneeey").first().click();
 	const header = page.locator(".transactionTable-header");
-	await expect(header).toBeVisible();
 	await expect(header).toContainText("Date");
 	await expect(header).toContainText("Account");
 	await expect(header).toContainText("Amount");
 	await expect(header).toContainText("Running");
+
+	// Wait for the running balance computation to complete on the first row.
+	await expect(page.getByTestId("editorRunning").first()).toHaveValue(
+		"1.234,56",
+		{ timeout: 10000 },
+	);
+
+	const today = new Date().toISOString().slice(0, 10);
+	expect(
+		await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 2),
+	).toEqual([
+		`date: ${today} (text-xs text-muted-foreground) | account: Initial balance BRL () | amount: 1.234,56 (text-right [&_input]:text-right text-positive) | running: 1.234,56 (text-right [&_input]:text-right text-xs text-muted-foreground text-positive) | memo:  ()`,
+		`date: ${today} (text-xs text-muted-foreground) | account: Account () | amount: 0 (text-right [&_input]:text-right) | running: 0 (text-right [&_input]:text-right text-xs text-muted-foreground) | memo:  ()`,
+	]);
 });
 
-test("Compact budget — allocate updates remaining via header layout", async ({
+test("Compact account settings — rows show name + currency + type", async ({
+	wizardPage: page,
+}) => {
+	await setDensity(page, "compact");
+	await clickMenuByTestId(
+		page,
+		"appMenu_subitems_settings_settings_accounts",
+	);
+
+	// Wait for at least the 3 wizard accounts + the new-entity row.
+	await expect(page.getByTestId("editorName")).toHaveCount(4, {
+		timeout: 10000,
+	});
+
+	const rows = await retrieveRowsData(page, COMPACT_ACCOUNT_COLUMNS, 4);
+	expect(rows).toEqual([
+		"name: Banco Moneeey () | tags: Tags () | type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
+		"name: Bitcoinss () | tags: Tags () | type: Checking Account (text-xs text-muted-foreground) | currency: BTC Bitcoin (text-xs text-muted-foreground)",
+		"name: MoneeeyCard () | tags: Tags () | type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
+		"name:  () | tags: Tags () | type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
+	]);
+});
+
+test("Compact currency settings — header and rows show short/prefix/decimals", async ({
+	wizardPage: page,
+}) => {
+	await setDensity(page, "compact");
+	await clickMenuByTestId(
+		page,
+		"appMenu_subitems_settings_settings_currencies",
+	);
+
+	const header = page.locator(".currencyTable-header");
+	await expect(header).toBeVisible();
+	await expect(header).toContainText("Name");
+	await expect(header).toContainText("Short");
+
+	const rows = await retrieveRowsData(page, COMPACT_CURRENCY_COLUMNS);
+	const brl = rows.find((r) => r.startsWith("short: BRL"));
+	const btc = rows.find((r) => r.startsWith("short: BTC"));
+	expect(brl).toBe(
+		"short: BRL (text-xs text-muted-foreground) | prefix: R$ (text-xs text-muted-foreground) | suffix:  (text-xs text-muted-foreground) | decimals: 2 (text-xs text-muted-foreground)",
+	);
+	expect(btc).toBe(
+		"short: BTC (text-xs text-muted-foreground) | prefix: ₿ (text-xs text-muted-foreground) | suffix:  (text-xs text-muted-foreground) | decimals: 8 (text-xs text-muted-foreground)",
+	);
+});
+
+test("Compact budget — rows allocate, used and remaining stay in sync", async ({
 	wizardPage: page,
 }) => {
 	await OpenMenuItem(page, "All transactions");
@@ -88,19 +184,4 @@ test("Compact budget — allocate updates remaining via header layout", async ({
 	await row.allocate("100");
 	await row.expectUsed("30");
 	await row.expectRemaining("70");
-});
-
-test("Compact currency settings — name and short stay editable", async ({
-	wizardPage: page,
-}) => {
-	await setDensity(page, "compact");
-	await clickMenuByTestId(
-		page,
-		"appMenu_subitems_settings_settings_currencies",
-	);
-
-	const header = page.locator(".currencyTable-header");
-	await expect(header).toBeVisible();
-	await expect(header).toContainText("Name");
-	await expect(header).toContainText("Short");
 });

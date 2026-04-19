@@ -32,14 +32,15 @@ export async function retrieveRowData(
 	index: number,
 ) {
 	const getCellData = async (column: string) => {
-		const isValueColumn =
-			column.includes("Amount") ||
-			column.includes("Running") ||
-			column.includes("Memo") ||
-			column.includes("Date");
-		const value = isValueColumn
-			? await Input(page, column, undefined, index).value()
-			: await Select(page, column, index).value();
+		const tagName = await page
+			.getByTestId(column)
+			.first()
+			.evaluate((el) => el.tagName.toLowerCase())
+			.catch(() => "div");
+		const value =
+			tagName === "input"
+				? await Input(page, column, undefined, index).value()
+				: await Select(page, column, index).value();
 
 		const className = await classForTestIdTDs(page, column)(index);
 
