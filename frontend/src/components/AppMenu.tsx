@@ -36,9 +36,7 @@ import { Status } from "../shared/Persistence";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import { StorageKind, getStorage, setStorage } from "../utils/Utils";
 
-import RouteRenderer, {
-	RouteContentRender,
-} from "../routes/RouteRenderer";
+import RouteRenderer, { RouteContentRender } from "../routes/RouteRenderer";
 
 import useMessages from "../utils/Messages";
 
@@ -284,7 +282,10 @@ const Header = observer(
 					onKeyDown={toggleMenu}
 				>
 					<TextTitle className="flex flex-row items-center gap-1 text-2xl pl-2">
-						<Icon size="lg" className="p-1 rounded hover:ring-1 ring-secondary-200">
+						<Icon
+							size="lg"
+							className="p-1 rounded hover:ring-1 ring-secondary-200"
+						>
 							<Bars3Icon />
 						</Icon>
 						<div className="p-2 flex flex-row gap-2">

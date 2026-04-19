@@ -26,10 +26,7 @@ export const BaseFormEditor = ({
 	items,
 	footer,
 }: BaseFormEditor) => (
-	<VerticalSpace
-		className={`p-2 ${className || ""}`}
-		testId={testId}
-	>
+	<VerticalSpace className={`p-2 ${className || ""}`} testId={testId}>
 		{items.map((item) => (
 			<div key={item.label}>
 				<TextNormal>{item.label}</TextNormal>

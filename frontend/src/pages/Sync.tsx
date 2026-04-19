@@ -192,9 +192,7 @@ export const DatabaseConfig = () => {
 
 	return (
 		<VerticalSpace>
-			<p className="text-sm opacity-80">
-				{Messages.sync.couchdb_description}
-			</p>
+			<p className="text-sm opacity-80">{Messages.sync.couchdb_description}</p>
 			<a
 				href="https://couchdb.apache.org/"
 				target="_blank"

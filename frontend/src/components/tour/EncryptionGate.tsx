@@ -531,7 +531,10 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 						title={Messages.util.cancel}
 						disabled={busy}
 					/>
-					<OkButton disabled={busy || passphrase.length === 0} onClick={onSubmit}>
+					<OkButton
+						disabled={busy || passphrase.length === 0}
+						onClick={onSubmit}
+					>
 						<span className="flex items-center gap-1">
 							{Messages.encryption.setup_submit}
 						</span>
@@ -540,7 +543,9 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 			) : (
 				<div className="flex justify-between w-full max-w-sm">
 					<DeleteButton
-						onClick={() => setState({ kind: "confirm-delete", returnTo: state })}
+						onClick={() =>
+							setState({ kind: "confirm-delete", returnTo: state })
+						}
 						disabled={busy}
 					>
 						<span className="flex items-center gap-1">
@@ -548,7 +553,10 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 							{Messages.menu.delete_data}
 						</span>
 					</DeleteButton>
-					<OkButton disabled={busy || passphrase.length === 0} onClick={onSubmit}>
+					<OkButton
+						disabled={busy || passphrase.length === 0}
+						onClick={onSubmit}
+					>
 						<span className="flex items-center gap-1">
 							<LockOpenIcon className="h-4 w-4 shrink-0" />
 							{Messages.encryption.unlock_submit}

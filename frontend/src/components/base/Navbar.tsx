@@ -83,7 +83,9 @@ const Navbar = (props: NavbarProps & WithDataTestId) => {
 			)}
 			<nav
 				className={`flex flex-col bottom-0 left-0 top-12 md:top-0 pt-2 bg-background-800 transition-transform duration-200 w-72 md:w-auto fixed z-40 md:static md:translate-x-0 ${
-					props.expanded ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+					props.expanded
+						? "translate-x-0"
+						: "-translate-x-full md:translate-x-0"
 				} ${props.className || ""}`}
 				data-testid={props.testId}
 			>

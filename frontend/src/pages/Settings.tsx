@@ -1,7 +1,4 @@
-import {
-	QuestionMarkCircleIcon,
-	TrashIcon,
-} from "@heroicons/react/24/outline";
+import { QuestionMarkCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
 import LanguageSelector from "../components/LanguageSelector";

@@ -25,6 +25,8 @@ const Tag = ({ title, color, onClick, onMouseOver, onMouseOut }: TagProps) => {
 			onClick={onClick}
 			onMouseOver={onMouseOver}
 			onMouseOut={onMouseOut}
+			onFocus={onMouseOver}
+			onBlur={onMouseOut}
 			onKeyDown={
 				interactive
 					? (event) => {
