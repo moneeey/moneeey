@@ -48,7 +48,7 @@ export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
 export const TabsContent = observer((props: TabsProps & WithDataTestId) => {
 	const { current } = useSelectedIndex(props);
 	return (
-		<div className="flex-1 min-h-0 overflow-y-auto">
+		<div className="flex-1 min-h-0 flex flex-col overflow-y-auto">
 			{props.items[current]?.children}
 		</div>
 	);
