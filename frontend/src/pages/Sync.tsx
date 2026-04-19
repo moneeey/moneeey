@@ -8,6 +8,7 @@ import {
 import { BaseFormEditor } from "../components/FormEditor";
 import { Status } from "../components/Status";
 import { OkButton, SecondaryButton } from "../components/base/Button";
+import { Input } from "../components/base/Input";
 import Tabs from "../components/base/Tabs";
 import SelfHostedSyncForm from "../components/sync/SelfHostedSyncForm";
 import {
@@ -64,16 +65,14 @@ export const MoneeeyLogin = ({
 					{
 						label: Messages.login.email,
 						editor: (
-							<input
-								data-testid="email"
+							<Input
+								testId="email"
 								type="email"
 								autoComplete="username webauthn"
 								value={state.email}
 								placeholder={Messages.login.email}
-								onChange={(event) =>
-									setState({ ...state, email: event.target.value })
-								}
-								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+								containerArea
+								onChange={(value) => setState({ ...state, email: value })}
 							/>
 						),
 					},
@@ -124,10 +123,13 @@ export const InviteSection = () => {
 			<OkButton onClick={onGenerate} title={Messages.sync.invite_create} />
 			{inviteUrl && (
 				<>
-					<input
+					<Input
+						testId="inviteUrl"
 						readOnly
 						value={inviteUrl}
-						className="w-full rounded bg-background-800 p-2 outline-none"
+						placeholder=""
+						containerArea
+						onChange={() => {}}
 					/>
 					<SecondaryButton
 						onClick={onCopy}

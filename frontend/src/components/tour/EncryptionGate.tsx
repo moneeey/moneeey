@@ -23,6 +23,7 @@ import {
 	OkButton,
 	SecondaryButton,
 } from "../base/Button";
+import { Input } from "../base/Input";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
 import SelfHostedSyncForm from "../sync/SelfHostedSyncForm";
 
@@ -315,18 +316,18 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					{Messages.encryption.passkey_description}
 				</p>
 				<div className="flex flex-col gap-4 w-full max-w-sm">
-					<input
-						data-testid="passkeyEmail"
+					<Input
+						testId="passkeyEmail"
 						type="email"
 						autoComplete="username webauthn"
 						placeholder={Messages.login.email}
 						value={email}
 						disabled={busy}
-						onChange={(event) => {
-							setEmail(event.target.value);
+						containerArea
+						onChange={(value) => {
+							setEmail(value);
 							setError(null);
 						}}
-						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 					/>
 				</div>
 				<a
@@ -373,18 +374,18 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					{Messages.encryption.invite_description}
 				</p>
 				<div className="flex flex-col gap-4 w-full max-w-sm">
-					<input
-						data-testid="inviteEmail"
+					<Input
+						testId="inviteEmail"
 						type="email"
 						autoComplete="username webauthn"
 						placeholder={Messages.login.email}
 						value={email}
 						disabled={busy}
-						onChange={(event) => {
-							setEmail(event.target.value);
+						containerArea
+						onChange={(value) => {
+							setEmail(value);
 							setError(null);
 						}}
-						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 					/>
 				</div>
 				{error && (
@@ -477,44 +478,44 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					{Messages.encryption.setup_warning}
 				</p>
 			)}
-			<div className="flex flex-col gap-4 w-full max-w-sm">
-				<input
-					data-testid="encryptionPassphrase"
+			<form
+				className="flex flex-col gap-4 w-full max-w-sm"
+				onSubmit={(event) => {
+					event.preventDefault();
+					if (isSetup && confirm.length === 0) return;
+					onSubmit();
+				}}
+			>
+				<Input
+					testId="encryptionPassphrase"
 					type="password"
 					autoComplete={isSetup ? "new-password" : "current-password"}
 					placeholder={Messages.encryption.passphrase_placeholder}
 					value={passphrase}
 					disabled={busy}
-					onChange={(event) => {
-						setPassphrase(event.target.value);
+					containerArea
+					onChange={(value) => {
+						setPassphrase(value);
 						setError(null);
 					}}
-					onKeyDown={(event) => {
-						if (event.key !== "Enter") return;
-						if (isSetup && confirm.length === 0) return;
-						onSubmit();
-					}}
-					className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 				/>
 				{isSetup && (
-					<input
-						data-testid="encryptionPassphraseConfirm"
+					<Input
+						testId="encryptionPassphraseConfirm"
 						type="password"
 						autoComplete="new-password"
 						placeholder={Messages.encryption.confirm_placeholder}
 						value={confirm}
 						disabled={busy}
-						onChange={(event) => {
-							setConfirm(event.target.value);
+						containerArea
+						onChange={(value) => {
+							setConfirm(value);
 							setError(null);
 						}}
-						onKeyDown={(event) => {
-							if (event.key === "Enter") onSubmit();
-						}}
-						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 					/>
 				)}
-			</div>
+				<button type="submit" hidden />
+			</form>
 			{error && (
 				<p className="text-sm text-danger-300" data-testid="encryptionError">
 					{error}

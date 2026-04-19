@@ -19,7 +19,7 @@ export type InputProps<T> = WithDataTestId & {
 	readOnly?: boolean;
 	isError?: boolean;
 	containerArea?: boolean;
-	type?: "text" | "password";
+	type?: "text" | "password" | "email";
 	autoComplete?: string;
 };
 
@@ -79,11 +79,15 @@ const Input = ({
 	autoComplete,
 }: InputProps<string>) => {
 	const [currentValue, setCurrentValue] = useState<string>(value);
-	const immediate = type === "password";
+	const immediate = type === "password" || type === "email";
 
 	useEffect(() => {
 		setCurrentValue(value);
 	}, [value]);
+
+	const commit = () => {
+		if (!immediate && currentValue !== value) onChange(currentValue);
+	};
 
 	return InputContainer({
 		prefix,
@@ -103,9 +107,10 @@ const Input = ({
 					setCurrentValue(newValue);
 					if (immediate) onChange(newValue);
 				}}
-				onBlur={() =>
-					!immediate && currentValue !== value && onChange(currentValue)
-				}
+				onBlur={commit}
+				onKeyDown={(event) => {
+					if (event.key === "Enter") commit();
+				}}
 				placeholder={placeholder}
 				disabled={disabled === true || readOnly === true}
 				readOnly={readOnly}
