@@ -1,5 +1,5 @@
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
-import { map, range } from "lodash";
+import { map } from "lodash";
 import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
 
@@ -19,6 +19,7 @@ import {
 } from "../../utils/Date";
 import useMessages from "../../utils/Messages";
 import useTableDensity from "../../utils/useTableDensity";
+import { MONTH_OFFSETS } from "./Budget";
 
 interface PeriodProps {
 	startingDate: Date;
@@ -28,8 +29,6 @@ interface PeriodProps {
 
 const archivedRowClass = (envelope: BudgetEnvelope): string =>
 	envelope.budget?.archived ? "archived-row opacity-50 italic" : "";
-
-const SHOW_MONTHS = 6;
 
 const BudgetPeriods = observer(
 	({ startingDate, setEditing, viewArchived }: PeriodProps) => {
@@ -46,10 +45,10 @@ const BudgetPeriods = observer(
 		const heightEm = Math.min(48, 6 + rowEm * budgetAmount);
 
 		return (
-			<div className="flex flex-row flex-wrap gap-4">
-				{map(range(0, SHOW_MONTHS), (offset) => (
+			<div className="flex flex-row flex-wrap gap-4 shrink-0">
+				{map(MONTH_OFFSETS, (offset) => (
 					<div
-						className="grow w-full md:w-[26em] md:max-w-[calc(50%-0.5rem)] pb-4"
+						className="grow w-full lg:w-[26em] lg:max-w-[calc(50%-0.5rem)] pb-4 shrink-0"
 						style={{ height: `${heightEm}em` }}
 						key={`budgetPeriod_${viewArchived}_${formatDate(
 							startOfMonthOffset(startingDate, offset),

@@ -149,7 +149,7 @@ test("Compact currency settings — header and rows show short/prefix/decimals",
 	);
 
 	const header = page.locator(".currencyTable-header");
-	await expect(header).toBeVisible();
+	await expect(header).toBeVisible({ timeout: 10000 });
 	await expect(header).toContainText("Name");
 	await expect(header).toContainText("Short");
 

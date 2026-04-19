@@ -85,7 +85,7 @@ export function Select(page: Page, testId: string, index = 0) {
 
 /** Wraps a text input by testId with change/read/assert helpers. */
 export function Input(
-	page: Page,
+	page: Page | Locator,
 	testId: string,
 	container?: Locator,
 	index = 0,

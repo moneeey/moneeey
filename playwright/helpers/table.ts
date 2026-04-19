@@ -1,4 +1,4 @@
-import { type Page, expect } from "@playwright/test";
+import { type Locator, type Page, expect } from "@playwright/test";
 import { Input, Select } from "./page-objects";
 
 /**
@@ -7,7 +7,7 @@ import { Input, Select } from "./page-objects";
  * `bg-background-*` is shortened to `bg---*` for compactness.
  */
 export const classForTestIdTDs =
-	(page: Page, testId: string) => async (index: number) => {
+	(page: Page | Locator, testId: string) => async (index: number) => {
 		const className =
 			(await page
 				.getByTestId(`inputContainer${testId}`)
