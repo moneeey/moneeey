@@ -1,6 +1,7 @@
+import { ArrowDownIcon, ArrowUpIcon } from "@heroicons/react/24/outline";
 import { compact, map } from "lodash";
 import { useCallback } from "react";
-import TableEditor from "../../components/TableEditor";
+import TableEditor, { type CompactLayout } from "../../components/TableEditor";
 import { PrimaryButton, SecondaryButton } from "../../components/base/Button";
 import Space, { VerticalSpace } from "../../components/base/Space";
 import { TextDanger, TextNormal } from "../../components/base/Text";
@@ -79,6 +80,21 @@ function ImportProcessResultTable({
 			...accounts.allActive,
 		]);
 
+	const arrowDown = <ArrowDownIcon className="h-4 w-4 text-negative" />;
+	const arrowUp = <ArrowUpIcon className="h-4 w-4 text-positive" />;
+
+	const compactLayout: CompactLayout = [
+		[
+			{ title: Messages.util.date, muted: true },
+			{ title: Messages.transactions.memo, muted: true, flex: 3 },
+		],
+		[
+			{ title: Messages.transactions.from_account, icon: arrowDown, flex: 2 },
+			{ title: Messages.transactions.to_account, icon: arrowUp, flex: 2 },
+			{ title: Messages.transactions.amount, align: "right" },
+		],
+	];
+
 	return (
 		<TableEditor
 			key={"importResultTransactions"}
@@ -87,6 +103,7 @@ function ImportProcessResultTable({
 			store={result.localTransactions}
 			schemaFilter={() => true}
 			factory={result.localTransactions.factory}
+			compactLayout={compactLayout}
 			schema={[
 				{
 					title: Messages.util.date,

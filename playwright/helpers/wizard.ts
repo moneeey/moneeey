@@ -86,7 +86,10 @@ export async function budgetEditorSave(
 	tag: string,
 	expectedTags?: string[],
 ) {
-	await page.getByTestId(/^addNewBudget_/).first().click();
+	await page
+		.getByTestId(/^addNewBudget_/)
+		.first()
+		.click();
 
 	const budgetEditor = page.getByTestId("budgetEditorDrawer");
 	await Input(page, "budgetName", budgetEditor).change(name);
