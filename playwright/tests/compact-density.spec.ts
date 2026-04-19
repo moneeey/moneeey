@@ -1,7 +1,6 @@
 import {
 	BudgetRow,
 	OpenMenuItem,
-	REFERENCE_ACCOUNT_COLUMNS,
 	budgetEditorSave,
 	clickMenuByTestId,
 	expect,
@@ -12,27 +11,29 @@ import {
 
 const SETTINGS_MENU_TESTID = "appMenu_subitems_settings_settings_general";
 
-const COMPACT_ALL_TX_COLUMNS = [
-	"editorDate",
-	"editorMemo",
-	"editorFrom",
-	"editorTo",
-	"editorFrom_amount",
-	"editorTo_amount",
+// Matches the compactLayout in TransactionTable for the all-transactions view.
+const COMPACT_ALL_TX_LAYOUT = [
+	["editorDate", "editorMemo"],
+	["editorFrom", "editorFrom_amount"],
+	["editorTo", "editorTo_amount"],
 ];
 
-const COMPACT_ACCOUNT_COLUMNS = [
-	"editorName",
-	"editorTags",
-	"editorType",
-	"editorCurrency",
+// Matches the compactLayout in TransactionTable for the reference-account view.
+const COMPACT_REFERENCE_LAYOUT = [
+	["editorDate", "editorMemo", "editorRunning"],
+	["editorAccount", "editorAmount"],
 ];
 
-const COMPACT_CURRENCY_COLUMNS = [
-	"editorShort",
-	"editorPrefix",
-	"editorSuffix",
-	"editorDecimals",
+// Matches the compactLayout in AccountTable for non-payee accounts.
+const COMPACT_ACCOUNT_LAYOUT = [
+	["editorName", "editorTags"],
+	["editorType", "editorCurrency"],
+];
+
+// Matches the compactLayout in CurrencyTable.
+const COMPACT_CURRENCY_LAYOUT = [
+	["editorName", "editorTags"],
+	["editorShort", "editorPrefix", "editorSuffix", "editorDecimals"],
 ];
 
 async function setDensity(
@@ -79,13 +80,27 @@ test("Compact all-transactions — header and rows show per-side amounts", async
 	await expect(header).toContainText("To amount");
 
 	const today = new Date().toISOString().slice(0, 10);
-	expect(
-		await retrieveRowsData(page, COMPACT_ALL_TX_COLUMNS, 4),
-	).toEqual([
-		`date: ${today} (text-xs text-muted-foreground) | memo:  () | from: Initial balance BRL (min-w-0 grow) | to: Banco Moneeey (min-w-0 grow) | from_amount: 1.234,56 (text-right [&_input]:text-right text-negative) | to_amount: 1.234,56 (text-right [&_input]:text-right text-positive)`,
-		`date: ${today} (text-xs text-muted-foreground) | memo:  () | from: Initial balance BRL (min-w-0 grow) | to: MoneeeyCard (min-w-0 grow) | from_amount: 2.000 (text-right [&_input]:text-right text-negative) | to_amount: 2.000 (text-right [&_input]:text-right text-positive)`,
-		`date: ${today} (text-xs text-muted-foreground) | memo:  () | from: Initial balance BTC (min-w-0 grow) | to: Bitcoinss (min-w-0 grow) | from_amount: 0,12345678 (text-right [&_input]:text-right text-negative) | to_amount: 0,12345678 (text-right [&_input]:text-right text-positive)`,
-		`date: ${today} (text-xs text-muted-foreground) | memo:  () | from: From (min-w-0 grow) | to: To (min-w-0 grow) | from_amount: 0 (text-right [&_input]:text-right) | to_amount: 0 (text-right [&_input]:text-right)`,
+	expect(await retrieveRowsData(page, COMPACT_ALL_TX_LAYOUT, 4)).toEqual([
+		[
+			`date: ${today} (text-xs text-muted-foreground) | memo:  ()`,
+			`from: Initial balance BRL (min-w-0 grow) | from_amount: 1.234,56 (text-right [&_input]:text-right text-negative)`,
+			`to: Banco Moneeey (min-w-0 grow) | to_amount: 1.234,56 (text-right [&_input]:text-right text-positive)`,
+		].join("\n"),
+		[
+			`date: ${today} (text-xs text-muted-foreground) | memo:  ()`,
+			`from: Initial balance BRL (min-w-0 grow) | from_amount: 2.000 (text-right [&_input]:text-right text-negative)`,
+			`to: MoneeeyCard (min-w-0 grow) | to_amount: 2.000 (text-right [&_input]:text-right text-positive)`,
+		].join("\n"),
+		[
+			`date: ${today} (text-xs text-muted-foreground) | memo:  ()`,
+			`from: Initial balance BTC (min-w-0 grow) | from_amount: 0,12345678 (text-right [&_input]:text-right text-negative)`,
+			`to: Bitcoinss (min-w-0 grow) | to_amount: 0,12345678 (text-right [&_input]:text-right text-positive)`,
+		].join("\n"),
+		[
+			`date: ${today} (text-xs text-muted-foreground) | memo:  ()`,
+			`from: From (min-w-0 grow) | from_amount: 0 (text-right [&_input]:text-right)`,
+			`to: To (min-w-0 grow) | to_amount: 0 (text-right [&_input]:text-right)`,
+		].join("\n"),
 	]);
 });
 
@@ -108,11 +123,15 @@ test("Compact reference-account view — rows show running balance inline", asyn
 	);
 
 	const today = new Date().toISOString().slice(0, 10);
-	expect(
-		await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 2),
-	).toEqual([
-		`date: ${today} (text-xs text-muted-foreground) | account: Initial balance BRL () | amount: 1.234,56 (text-right [&_input]:text-right text-positive) | running: 1.234,56 (text-right [&_input]:text-right text-xs text-muted-foreground text-positive) | memo:  ()`,
-		`date: ${today} (text-xs text-muted-foreground) | account: Account () | amount: 0 (text-right [&_input]:text-right) | running: 0 (text-right [&_input]:text-right text-xs text-muted-foreground) | memo:  ()`,
+	expect(await retrieveRowsData(page, COMPACT_REFERENCE_LAYOUT, 2)).toEqual([
+		[
+			`date: ${today} (text-xs text-muted-foreground) | memo:  () | running: 1.234,56 (text-right [&_input]:text-right text-xs text-muted-foreground text-positive)`,
+			`account: Initial balance BRL () | amount: 1.234,56 (text-right [&_input]:text-right text-positive)`,
+		].join("\n"),
+		[
+			`date: ${today} (text-xs text-muted-foreground) | memo:  () | running: 0 (text-right [&_input]:text-right text-xs text-muted-foreground)`,
+			`account: Account () | amount: 0 (text-right [&_input]:text-right)`,
+		].join("\n"),
 	]);
 });
 
@@ -130,12 +149,24 @@ test("Compact account settings — rows show name + currency + type", async ({
 		timeout: 10000,
 	});
 
-	const rows = await retrieveRowsData(page, COMPACT_ACCOUNT_COLUMNS, 4);
+	const rows = await retrieveRowsData(page, COMPACT_ACCOUNT_LAYOUT, 4);
 	expect(rows).toEqual([
-		"name: Banco Moneeey () | tags: Tags () | type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
-		"name: Bitcoinss () | tags: Tags () | type: Checking Account (text-xs text-muted-foreground) | currency: BTC Bitcoin (text-xs text-muted-foreground)",
-		"name: MoneeeyCard () | tags: Tags () | type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
-		"name:  () | tags: Tags () | type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
+		[
+			"name: Banco Moneeey () | tags: Tags ()",
+			"type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
+		].join("\n"),
+		[
+			"name: Bitcoinss () | tags: Tags ()",
+			"type: Checking Account (text-xs text-muted-foreground) | currency: BTC Bitcoin (text-xs text-muted-foreground)",
+		].join("\n"),
+		[
+			"name: MoneeeyCard () | tags: Tags ()",
+			"type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
+		].join("\n"),
+		[
+			"name:  () | tags: Tags ()",
+			"type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
+		].join("\n"),
 	]);
 });
 
@@ -153,14 +184,20 @@ test("Compact currency settings — header and rows show short/prefix/decimals",
 	await expect(header).toContainText("Name");
 	await expect(header).toContainText("Short");
 
-	const rows = await retrieveRowsData(page, COMPACT_CURRENCY_COLUMNS);
-	const brl = rows.find((r) => r.startsWith("short: BRL"));
-	const btc = rows.find((r) => r.startsWith("short: BTC"));
+	const rows = await retrieveRowsData(page, COMPACT_CURRENCY_LAYOUT);
+	const brl = rows.find((r) => r.startsWith("name: Brazilian Real"));
+	const btc = rows.find((r) => r.startsWith("name: Bitcoin"));
 	expect(brl).toBe(
-		"short: BRL (text-xs text-muted-foreground) | prefix: R$ (text-xs text-muted-foreground) | suffix:  (text-xs text-muted-foreground) | decimals: 2 (text-xs text-muted-foreground)",
+		[
+			"name: Brazilian Real () | tags: Tags ()",
+			"short: BRL (text-xs text-muted-foreground) | prefix: R$ (text-xs text-muted-foreground) | suffix:  (text-xs text-muted-foreground) | decimals: 2 (text-xs text-muted-foreground)",
+		].join("\n"),
 	);
 	expect(btc).toBe(
-		"short: BTC (text-xs text-muted-foreground) | prefix: ₿ (text-xs text-muted-foreground) | suffix:  (text-xs text-muted-foreground) | decimals: 8 (text-xs text-muted-foreground)",
+		[
+			"name: Bitcoin () | tags: Tags ()",
+			"short: BTC (text-xs text-muted-foreground) | prefix: ₿ (text-xs text-muted-foreground) | suffix:  (text-xs text-muted-foreground) | decimals: 8 (text-xs text-muted-foreground)",
+		].join("\n"),
 	);
 });
 
