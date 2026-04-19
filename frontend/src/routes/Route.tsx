@@ -35,8 +35,4 @@ export default abstract class Route<IParameters extends IRouteParameters> {
 	}
 
 	abstract render({ parameters }: { parameters: IParameters }): ReactNode;
-
-	header(_params: { parameters: IParameters }): null | ReactNode {
-		return null;
-	}
 }

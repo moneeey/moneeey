@@ -15,6 +15,7 @@ type ButtonProps = Partial<WithDataTestId> & {
 	children?: string | ReactNode | ReactNode[];
 	className?: string;
 	disabled?: boolean;
+	compact?: boolean;
 };
 
 type WithButtonKind = {
@@ -24,7 +25,7 @@ type WithButtonKind = {
 const styles: Record<ButtonType, string> = {
 	primary: "bg-primary-300 text-primary-900 hover:opacity-75",
 	secondary: "bg-secondary-300 text-secondary-900 hover:opacity-75",
-	link: "bg-transparent border-0 underline hover:opacity-75",
+	link: "border-0 underline hover:opacity-75",
 	danger: "bg-danger-300 text-danger-900 hover:opacity-75",
 };
 
@@ -37,7 +38,7 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind) =>
 				{...omit(props, ["testId"])}
 				data-testid={props.testId || base.testId}
 				disabled={props.disabled}
-				className={`flex whitespace-nowrap rounded p-1 outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 ${styles[kind]} ${
+				className={`flex whitespace-nowrap rounded ${props.compact ? "" : "p-1"} outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 ${styles[kind]} ${
 					props.className || ""
 				} ${props.disabled ? "opacity-20 hover:opacity-25" : ""}`}
 			>

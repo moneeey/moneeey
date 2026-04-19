@@ -29,16 +29,6 @@ export const RouteContentRender = observer(({ route }: RouteRender) => {
 	return <>{route.render({ parameters })}</>;
 });
 
-export const RouteHeaderRender = observer(({ route }: RouteRender) => {
-	const parameters = _.reduce(
-		useParams(),
-		(accum, value, key) => ({ ...accum, [key]: value }),
-		{},
-	);
-
-	return <>{route.header({ parameters })}</>;
-});
-
 const RouteRenderer = observer(
 	<IParameters extends IRouteParameters>({
 		root_route,

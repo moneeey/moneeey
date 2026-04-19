@@ -14,11 +14,10 @@ async function pickLanguageEn(page: import("@playwright/test").Page) {
 	await page.getByTestId("ok-button").click();
 }
 
-test("Profile tab — language, theme, tour, delete data cancel flow", async ({
+test("Settings — language, theme, tour, delete data cancel flow", async ({
 	wizardPage: page,
 }) => {
 	await clickMenuByTestId(page, SETTINGS_MENU_TESTID);
-	await page.getByTestId("settingsTabs_profile").click();
 
 	await expect(page.getByTestId("languageSelector_en")).toBeVisible();
 	await expect(page.getByTestId("languageSelector_pt")).toBeVisible();
@@ -27,26 +26,25 @@ test("Profile tab — language, theme, tour, delete data cancel flow", async ({
 	await expect(page.getByTestId("themeSwitcher_auto")).toBeVisible();
 
 	await page.getByTestId("languageSelector_pt").click();
-	await expect(page.getByTestId("settingsTabs_profile")).toContainText(
-		"Perfil",
-	);
+	await expect(page.getByTestId("settingsTabs_data")).toContainText("Dados");
 	await page.getByTestId("languageSelector_en").click();
 
 	await page.getByRole("button", { name: /tour/i }).click();
 	await expect(page.getByTestId("nm-modal-card")).toBeVisible();
 	await page.getByTestId("nm-modal-card").getByTestId("close").click();
 
+	await page.getByTestId("settingsTabs_data").click();
 	await page.getByRole("button", { name: /delete data/i }).click();
 	await expect(page.getByText(/permanently delete/i)).toBeVisible();
 	await page.getByRole("button", { name: /cancel/i }).click();
-	await expect(page.getByTestId("settingsTabs_profile")).toBeVisible();
+	await expect(page.getByTestId("settingsTabs_data")).toBeVisible();
 });
 
-test("Profile tab — delete data confirmation destroys database", async ({
+test("Settings — delete data confirmation destroys database", async ({
 	wizardPage: page,
 }) => {
 	await clickMenuByTestId(page, SETTINGS_MENU_TESTID);
-	await page.getByTestId("settingsTabs_profile").click();
+	await page.getByTestId("settingsTabs_data").click();
 
 	await page.getByRole("button", { name: /delete data/i }).click();
 	await page
@@ -62,7 +60,7 @@ test("Menu footer — sync status navigates to settings, lock returns to unlock"
 	wizardPage: page,
 }) => {
 	await clickMenuByTestId(page, "appMenu_sync_status");
-	await expect(page.getByTestId("settingsTabs_profile")).toBeVisible();
+	await expect(page.getByTestId("languageSelector_en")).toBeVisible();
 
 	await clickMenuByTestId(page, "appMenu_lock");
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();

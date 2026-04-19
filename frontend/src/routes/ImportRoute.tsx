@@ -11,12 +11,13 @@ class ImportRouter extends Route<IImportRoute> {
 		this.parent?.addChild(this);
 	}
 
-	header() {
-		return <ImportHeader />;
-	}
-
 	render() {
-		return <Import />;
+		return (
+			<>
+				<ImportHeader />
+				<Import />
+			</>
+		);
 	}
 }
 

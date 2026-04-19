@@ -36,10 +36,7 @@ import { Status } from "../shared/Persistence";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import { StorageKind, getStorage, setStorage } from "../utils/Utils";
 
-import RouteRenderer, {
-	RouteContentRender,
-	RouteHeaderRender,
-} from "../routes/RouteRenderer";
+import RouteRenderer, { RouteContentRender } from "../routes/RouteRenderer";
 
 import useMessages from "../utils/Messages";
 
@@ -116,10 +113,12 @@ const Menu = observer(
 				className="px-2"
 				testId="appMenu"
 				expanded={expanded}
+				onCollapse={() => setExpanded(false)}
 				footer={
 					<>
 						<LinkButton
-							className="flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6"
+							compact
+							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-11 md:h-6"
 							testId="appMenu_sync_status"
 							onClick={() => {
 								navigation.navigate(SettingsRoute.url());
@@ -139,7 +138,8 @@ const Menu = observer(
 								: ""}
 						</LinkButton>
 						<LinkButton
-							className="flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6"
+							compact
+							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-11 md:h-6"
 							testId="appMenu_lock"
 							onClick={() => encryption.lock()}
 							title={Messages.menu.lock}
@@ -264,11 +264,9 @@ const Menu = observer(
 
 const Header = observer(
 	({
-		children,
 		setExpanded,
 		expanded,
 	}: {
-		children: ReactNode;
 		setExpanded: Dispatch<SetStateAction<boolean>>;
 		expanded: boolean;
 	}) => {
@@ -276,7 +274,7 @@ const Header = observer(
 		const toggleMenu = () => setExpanded((value) => !value);
 
 		return (
-			<header className="sticky left-0 right-0 top-0 z-30  bg-background-800 flex flex-row flex-wrap justify-between">
+			<header className="sticky left-0 right-0 top-0 z-50 h-12 bg-background-800 flex flex-row items-center">
 				<div
 					data-expanded={expanded}
 					data-testid="toggleMenu"
@@ -284,7 +282,10 @@ const Header = observer(
 					onKeyDown={toggleMenu}
 				>
 					<TextTitle className="flex flex-row items-center gap-1 text-2xl pl-2">
-						<Icon className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200">
+						<Icon
+							size="lg"
+							className="p-1 rounded hover:ring-1 ring-secondary-200"
+						>
 							<Bars3Icon />
 						</Icon>
 						<div className="p-2 flex flex-row gap-2">
@@ -293,7 +294,6 @@ const Header = observer(
 						</div>
 					</TextTitle>
 				</div>
-				{children}
 			</header>
 		);
 	},
@@ -310,7 +310,7 @@ const Content = ({
 }) => (
 	<section className="flex grow flex-row">
 		<Menu setExpanded={setExpanded} expanded={expanded} />
-		<section className="flex max-h-[calc(100vh-3em)] grow flex-col p-2 md:p-4">
+		<section className="flex grow flex-col p-2 md:p-4 min-h-0">
 			{children}
 		</section>
 	</section>
@@ -333,9 +333,7 @@ export default observer(function AppMenu() {
 			<RouteRenderer root_route={HomeRoute}>
 				{({ route }) => (
 					<>
-						<Header expanded={expanded} setExpanded={setExpanded}>
-							<RouteHeaderRender route={route} />
-						</Header>
+						<Header expanded={expanded} setExpanded={setExpanded} />
 						<Content expanded={expanded} setExpanded={setExpanded}>
 							<RouteContentRender route={route} />
 						</Content>

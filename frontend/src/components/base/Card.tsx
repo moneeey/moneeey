@@ -19,7 +19,7 @@ const Card = ({
 	<article className={`${className || ""}`} data-testid={testId}>
 		<header>{header}</header>
 		<article className="h-full">{children}</article>
-		<footer className="mt-4">{footer}</footer>
+		{footer && <footer className="mt-4">{footer}</footer>}
 	</article>
 );
 

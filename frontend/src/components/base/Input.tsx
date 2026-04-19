@@ -8,6 +8,9 @@ import type { WithDataTestId } from "./Common";
 export const BaseInputClzz: ClassNameType =
 	"w-full color-inherit bg-transparent outline-none" as const;
 
+const OuterShellClzz: ClassNameType =
+	"w-full color-inherit outline-none" as const;
+
 export type InputProps<T> = WithDataTestId & {
 	className?: string;
 	onChange: (value: T) => void;
@@ -19,7 +22,7 @@ export type InputProps<T> = WithDataTestId & {
 	readOnly?: boolean;
 	isError?: boolean;
 	containerArea?: boolean;
-	type?: "text" | "password";
+	type?: "text" | "password" | "email";
 	autoComplete?: string;
 };
 
@@ -47,13 +50,13 @@ export const InputContainer = ({
 	return (
 		<div
 			data-testid={`inputContainer${testId}`}
-			className={`${baseClassname || BaseInputClzz} flex h-full focus-within:ring-1 focus-within:ring-inset ${
+			className={`${baseClassname || OuterShellClzz} flex h-full focus-within:ring-1 focus-within:ring-inset ${
 				isError
 					? "border border-red-400 focus-within:ring-red-400"
 					: "focus-within:ring-primary-500"
 			}
       ${readOnly ? "opacity-85" : ""}
-      ${containerArea ? "!bg-background-800 rounded-md p-2" : ""}
+      ${containerArea ? "bg-background-900 rounded-md p-2" : ""}
 `}
 		>
 			{prefix}
@@ -79,11 +82,15 @@ const Input = ({
 	autoComplete,
 }: InputProps<string>) => {
 	const [currentValue, setCurrentValue] = useState<string>(value);
-	const immediate = type === "password";
+	const immediate = type === "password" || type === "email";
 
 	useEffect(() => {
 		setCurrentValue(value);
 	}, [value]);
+
+	const commit = () => {
+		if (!immediate && currentValue !== value) onChange(currentValue);
+	};
 
 	return InputContainer({
 		prefix,
@@ -103,9 +110,10 @@ const Input = ({
 					setCurrentValue(newValue);
 					if (immediate) onChange(newValue);
 				}}
-				onBlur={() =>
-					!immediate && currentValue !== value && onChange(currentValue)
-				}
+				onBlur={commit}
+				onKeyDown={(event) => {
+					if (event.key === "Enter") commit();
+				}}
 				placeholder={placeholder}
 				disabled={disabled === true || readOnly === true}
 				readOnly={readOnly}

@@ -4,19 +4,29 @@ import useMessages from "../../utils/Messages";
 
 import type { WithDataTestId } from "./Common";
 
+type IconSize = "sm" | "md" | "lg";
+
+const SIZES: Record<IconSize, string> = {
+	sm: "h-3 w-3",
+	md: "h-4 w-4",
+	lg: "h-8 w-8",
+};
+
 export default function Icon({
 	children,
 	className,
 	testId,
 	onClick,
+	size = "md",
 }: {
 	children: ReactNode | ReactNode[];
 	className?: string;
 	onClick?: () => void;
+	size?: IconSize;
 } & Partial<WithDataTestId>) {
 	return (
 		<div
-			className={`h-4 w-4 ${className || ""}`}
+			className={`${SIZES[size]} ${className || ""}`}
 			data-testid={testId}
 			onClick={onClick}
 			onKeyDown={onClick}

@@ -23,6 +23,7 @@ import {
 	OkButton,
 	SecondaryButton,
 } from "../base/Button";
+import { Input } from "../base/Input";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
 import SelfHostedSyncForm from "../sync/SelfHostedSyncForm";
 
@@ -276,7 +277,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				<p className="text-sm opacity-80">
 					{Messages.encryption.choose_description}
 				</p>
-				<div className="flex flex-col gap-3 w-full max-w-sm">
+				<div className="flex flex-col gap-4 w-full max-w-sm">
 					<OkButton
 						onClick={goSetup}
 						title={Messages.encryption.create_new_account}
@@ -314,19 +315,19 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				<p className="text-sm opacity-80">
 					{Messages.encryption.passkey_description}
 				</p>
-				<div className="flex flex-col gap-3 w-full max-w-sm">
-					<input
-						data-testid="passkeyEmail"
+				<div className="flex flex-col gap-4 w-full max-w-sm">
+					<Input
+						testId="passkeyEmail"
 						type="email"
 						autoComplete="username webauthn"
 						placeholder={Messages.login.email}
 						value={email}
 						disabled={busy}
-						onChange={(event) => {
-							setEmail(event.target.value);
+						containerArea
+						onChange={(value) => {
+							setEmail(value);
 							setError(null);
 						}}
-						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 					/>
 				</div>
 				<a
@@ -372,19 +373,19 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				<p className="text-sm opacity-80">
 					{Messages.encryption.invite_description}
 				</p>
-				<div className="flex flex-col gap-3 w-full max-w-sm">
-					<input
-						data-testid="inviteEmail"
+				<div className="flex flex-col gap-4 w-full max-w-sm">
+					<Input
+						testId="inviteEmail"
 						type="email"
 						autoComplete="username webauthn"
 						placeholder={Messages.login.email}
 						value={email}
 						disabled={busy}
-						onChange={(event) => {
-							setEmail(event.target.value);
+						containerArea
+						onChange={(value) => {
+							setEmail(value);
 							setError(null);
 						}}
-						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 					/>
 				</div>
 				{error && (
@@ -477,44 +478,44 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					{Messages.encryption.setup_warning}
 				</p>
 			)}
-			<div className="flex flex-col gap-3 w-full max-w-sm">
-				<input
-					data-testid="encryptionPassphrase"
+			<form
+				className="flex flex-col gap-4 w-full max-w-sm"
+				onSubmit={(event) => {
+					event.preventDefault();
+					if (isSetup && confirm.length === 0) return;
+					onSubmit();
+				}}
+			>
+				<Input
+					testId="encryptionPassphrase"
 					type="password"
 					autoComplete={isSetup ? "new-password" : "current-password"}
 					placeholder={Messages.encryption.passphrase_placeholder}
 					value={passphrase}
 					disabled={busy}
-					onChange={(event) => {
-						setPassphrase(event.target.value);
+					containerArea
+					onChange={(value) => {
+						setPassphrase(value);
 						setError(null);
 					}}
-					onKeyDown={(event) => {
-						if (event.key !== "Enter") return;
-						if (isSetup && confirm.length === 0) return;
-						onSubmit();
-					}}
-					className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 				/>
 				{isSetup && (
-					<input
-						data-testid="encryptionPassphraseConfirm"
+					<Input
+						testId="encryptionPassphraseConfirm"
 						type="password"
 						autoComplete="new-password"
 						placeholder={Messages.encryption.confirm_placeholder}
 						value={confirm}
 						disabled={busy}
-						onChange={(event) => {
-							setConfirm(event.target.value);
+						containerArea
+						onChange={(value) => {
+							setConfirm(value);
 							setError(null);
 						}}
-						onKeyDown={(event) => {
-							if (event.key === "Enter") onSubmit();
-						}}
-						className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
 					/>
 				)}
-			</div>
+				<button type="submit" hidden />
+			</form>
 			{error && (
 				<p className="text-sm text-danger-300" data-testid="encryptionError">
 					{error}
@@ -523,33 +524,45 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 			{busy && (
 				<p className="text-sm opacity-80">{Messages.encryption.unlocking}</p>
 			)}
-			<div className="flex gap-2">
-				{isSetup && (
+			{isSetup ? (
+				<div className="flex gap-2">
 					<SecondaryButton
 						onClick={goChoose}
 						title={Messages.util.cancel}
 						disabled={busy}
 					/>
-				)}
-				<OkButton disabled={busy || passphrase.length === 0} onClick={onSubmit}>
-					<span className="flex items-center gap-1">
-						{!isSetup && <LockOpenIcon className="h-4 w-4 shrink-0" />}
-						{isSetup
-							? Messages.encryption.setup_submit
-							: Messages.encryption.unlock_submit}
-					</span>
-				</OkButton>
-			</div>
-			{!isSetup && (
-				<DeleteButton
-					onClick={() => setState({ kind: "confirm-delete", returnTo: state })}
-					disabled={busy}
-				>
-					<span className="flex items-center gap-1">
-						<TrashIcon className="h-4 w-4 shrink-0" />
-						{Messages.menu.delete_data}
-					</span>
-				</DeleteButton>
+					<OkButton
+						disabled={busy || passphrase.length === 0}
+						onClick={onSubmit}
+					>
+						<span className="flex items-center gap-1">
+							{Messages.encryption.setup_submit}
+						</span>
+					</OkButton>
+				</div>
+			) : (
+				<div className="flex justify-between w-full max-w-sm">
+					<DeleteButton
+						onClick={() =>
+							setState({ kind: "confirm-delete", returnTo: state })
+						}
+						disabled={busy}
+					>
+						<span className="flex items-center gap-1">
+							<TrashIcon className="h-4 w-4 shrink-0" />
+							{Messages.menu.delete_data}
+						</span>
+					</DeleteButton>
+					<OkButton
+						disabled={busy || passphrase.length === 0}
+						onClick={onSubmit}
+					>
+						<span className="flex items-center gap-1">
+							<LockOpenIcon className="h-4 w-4 shrink-0" />
+							{Messages.encryption.unlock_submit}
+						</span>
+					</OkButton>
+				</div>
 			)}
 		</MinimalBasicScreen>
 	);

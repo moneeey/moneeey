@@ -8,6 +8,8 @@ import {
 import { BaseFormEditor } from "../components/FormEditor";
 import { Status } from "../components/Status";
 import { OkButton, SecondaryButton } from "../components/base/Button";
+import { Input } from "../components/base/Input";
+import { VerticalSpace } from "../components/base/Space";
 import Tabs from "../components/base/Tabs";
 import SelfHostedSyncForm from "../components/sync/SelfHostedSyncForm";
 import {
@@ -46,7 +48,7 @@ export const MoneeeyLogin = ({
 	};
 
 	return (
-		<>
+		<VerticalSpace>
 			<p className="text-sm opacity-80">
 				{Messages.encryption.passkey_description}
 			</p>
@@ -64,16 +66,13 @@ export const MoneeeyLogin = ({
 					{
 						label: Messages.login.email,
 						editor: (
-							<input
-								data-testid="email"
+							<Input
+								testId="email"
 								type="email"
 								autoComplete="username webauthn"
 								value={state.email}
 								placeholder={Messages.login.email}
-								onChange={(event) =>
-									setState({ ...state, email: event.target.value })
-								}
-								className="w-full rounded bg-background-800 p-2 outline-none focus:ring-2 focus:ring-primary-500"
+								onChange={(value) => setState({ ...state, email: value })}
 							/>
 						),
 					},
@@ -91,7 +90,7 @@ export const MoneeeyLogin = ({
 					</div>
 				}
 			/>
-		</>
+		</VerticalSpace>
 	);
 };
 
@@ -124,10 +123,13 @@ export const InviteSection = () => {
 			<OkButton onClick={onGenerate} title={Messages.sync.invite_create} />
 			{inviteUrl && (
 				<>
-					<input
+					<Input
+						testId="inviteUrl"
 						readOnly
 						value={inviteUrl}
-						className="w-full rounded bg-background-800 p-2 outline-none"
+						placeholder=""
+						containerArea
+						onChange={() => {}}
 					/>
 					<SecondaryButton
 						onClick={onCopy}
@@ -150,7 +152,7 @@ export const MoneeeyAccountConfig = observer(() => {
 	const onLogout = () => management.logout();
 
 	return (
-		<>
+		<VerticalSpace>
 			{message}
 			{loggedIn ? (
 				<>
@@ -160,7 +162,7 @@ export const MoneeeyAccountConfig = observer(() => {
 			) : (
 				<MoneeeyLogin setMessage={setMessage} />
 			)}
-		</>
+		</VerticalSpace>
 	);
 });
 
@@ -189,7 +191,16 @@ export const DatabaseConfig = () => {
 	};
 
 	return (
-		<div className="flex flex-col gap-2">
+		<VerticalSpace>
+			<p className="text-sm opacity-80">{Messages.sync.couchdb_description}</p>
+			<a
+				href="https://couchdb.apache.org/"
+				target="_blank"
+				rel="noreferrer noopener"
+				className="text-xs underline opacity-70 hover:opacity-100"
+			>
+				{Messages.sync.couchdb_learn_more}
+			</a>
 			<SelfHostedSyncForm
 				initial={initialCfg}
 				submitTitle={Messages.sync.start}
@@ -198,7 +209,7 @@ export const DatabaseConfig = () => {
 			{initialCfg.enabled && (
 				<OkButton onClick={onStop} title={Messages.sync.stop} />
 			)}
-		</div>
+		</VerticalSpace>
 	);
 };
 

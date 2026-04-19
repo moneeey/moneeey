@@ -33,6 +33,14 @@ export default {
 				warning: colors.yellow,
 				success: colors.green,
 				info: colors.blue,
+				"notif-success-bg": "rgb(var(--notif-success-bg) / <alpha-value>)",
+				"notif-success-fg": "rgb(var(--notif-success-fg) / <alpha-value>)",
+				"notif-info-bg": "rgb(var(--notif-info-bg) / <alpha-value>)",
+				"notif-info-fg": "rgb(var(--notif-info-fg) / <alpha-value>)",
+				"notif-warning-bg": "rgb(var(--notif-warning-bg) / <alpha-value>)",
+				"notif-warning-fg": "rgb(var(--notif-warning-fg) / <alpha-value>)",
+				"notif-error-bg": "rgb(var(--notif-error-bg) / <alpha-value>)",
+				"notif-error-fg": "rgb(var(--notif-error-fg) / <alpha-value>)",
 			},
 			keyframes: {
 				"fade-in": {

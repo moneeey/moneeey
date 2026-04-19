@@ -23,6 +23,7 @@ interface NavbarProps {
 	footer: ReactNode;
 	className?: string;
 	expanded: boolean;
+	onCollapse?: () => void;
 }
 
 const NavbarItems = ({
@@ -37,8 +38,9 @@ const NavbarItems = ({
 
 		return compact([
 			<LinkButton
-				className={`relative flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6 ${
-					item.isActive ? "opacity-75 !bg-background-900 mn-active-navbar" : ""
+				compact
+				className={`relative flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-11 md:h-6 ${
+					item.isActive ? "opacity-75 bg-background-900 mn-active-navbar" : ""
 				}`}
 				testId={`${testId}_${item.key}`}
 				onClick={item.onClick || (() => ({}))}
@@ -46,7 +48,7 @@ const NavbarItems = ({
 				title={item.label}
 			>
 				{expanded && item.children && item.children.length > 0 && (
-					<Icon className="!w-3 !h-3 absolute -left-1">
+					<Icon size="sm" className="absolute -left-1">
 						<ChevronRightIcon />
 					</Icon>
 				)}
@@ -70,21 +72,33 @@ const NavbarItems = ({
 
 const Navbar = (props: NavbarProps & WithDataTestId) => {
 	return (
-		<nav
-			className={`flex flex-col bottom-0 left-0 top-0 pt-2 bg-background-800 ${
-				props.className || ""
-			}`}
-			data-testid={props.testId}
-		>
-			<div className="flex flex-col grow">
-				<NavbarItems
-					testId={props.testId}
-					items={props.items}
-					expanded={props.expanded}
+		<>
+			{props.expanded && (
+				<button
+					type="button"
+					aria-label="Close menu"
+					className="md:hidden fixed inset-0 z-30 bg-black/50"
+					onClick={props.onCollapse}
 				/>
-			</div>
-			<div className="flex flex-col pb-4">{props.footer}</div>
-		</nav>
+			)}
+			<nav
+				className={`flex flex-col bottom-0 left-0 top-12 md:top-0 pt-2 bg-background-800 transition-transform duration-200 w-72 md:w-auto fixed z-40 md:static md:translate-x-0 ${
+					props.expanded
+						? "translate-x-0"
+						: "-translate-x-full md:translate-x-0"
+				} ${props.className || ""}`}
+				data-testid={props.testId}
+			>
+				<div className="flex flex-col grow">
+					<NavbarItems
+						testId={props.testId}
+						items={props.items}
+						expanded={props.expanded}
+					/>
+				</div>
+				<div className="flex flex-col pb-4">{props.footer}</div>
+			</nav>
+		</>
 	);
 };
 

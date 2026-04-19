@@ -4,7 +4,6 @@ import { observer } from "mobx-react-lite";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { LinkButton } from "./Button";
 import type { WithDataTestId } from "./Common";
-import Space from "./Space";
 
 interface TabItem {
 	key: string;
@@ -30,18 +29,18 @@ export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
 	const { current, update } = useSelectedIndex(props);
 	return (
 		<nav data-testid={props.testId}>
-			<Space className="overflow-auto m-1 max-w-max">
+			<div className="flex flex-col md:flex-row md:flex-wrap gap-2 md:gap-4 md:items-center">
 				{props.items.map((item, idx) => (
 					<LinkButton
 						key={item.key}
 						onClick={() => update(idx)}
 						testId={`${props.testId}_${item.key}`}
-						className={idx === current ? "!bg-background-700" : ""}
+						className={idx === current ? "bg-background-700" : ""}
 					>
 						{item.label}
 					</LinkButton>
 				))}
-			</Space>
+			</div>
 		</nav>
 	);
 });
@@ -53,7 +52,7 @@ export const TabsContent = observer((props: TabsProps & WithDataTestId) => {
 
 const Tabs = (props: TabsProps & WithDataTestId) => {
 	return (
-		<section key={`Tabs_${props.testId}`} className="flex grow flex-col p-0.5">
+		<section key={`Tabs_${props.testId}`} className="flex grow flex-col">
 			<TabsHeader {...props} />
 			<TabsContent {...props} />
 		</section>
