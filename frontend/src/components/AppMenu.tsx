@@ -116,6 +116,7 @@ const Menu = observer(
 				className="px-2"
 				testId="appMenu"
 				expanded={expanded}
+				onCollapse={() => setExpanded(false)}
 				footer={
 					<>
 						<LinkButton
@@ -266,11 +267,9 @@ const Menu = observer(
 
 const Header = observer(
 	({
-		children,
 		setExpanded,
 		expanded,
 	}: {
-		children: ReactNode;
 		setExpanded: Dispatch<SetStateAction<boolean>>;
 		expanded: boolean;
 	}) => {
@@ -278,7 +277,7 @@ const Header = observer(
 		const toggleMenu = () => setExpanded((value) => !value);
 
 		return (
-			<header className="sticky left-0 right-0 top-0 z-30 bg-background-800 flex flex-row flex-wrap justify-between">
+			<header className="sticky left-0 right-0 top-0 z-50 h-12 bg-background-800 flex flex-row items-center">
 				<div
 					data-expanded={expanded}
 					data-testid="toggleMenu"
@@ -295,7 +294,6 @@ const Header = observer(
 						</div>
 					</TextTitle>
 				</div>
-				{children}
 			</header>
 		);
 	},
@@ -335,9 +333,12 @@ export default observer(function AppMenu() {
 			<RouteRenderer root_route={HomeRoute}>
 				{({ route }) => (
 					<>
-						<Header expanded={expanded} setExpanded={setExpanded}>
-							<RouteHeaderRender route={route} />
-						</Header>
+						<div className="grid grid-cols-1 md:grid-cols-[auto_1fr]">
+							<Header expanded={expanded} setExpanded={setExpanded} />
+							<div className="sticky top-12 md:top-0 z-20 bg-background-800">
+								<RouteHeaderRender route={route} />
+							</div>
+						</div>
 						<Content expanded={expanded} setExpanded={setExpanded}>
 							<RouteContentRender route={route} />
 						</Content>

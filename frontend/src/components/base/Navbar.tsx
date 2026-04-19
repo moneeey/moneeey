@@ -23,6 +23,7 @@ interface NavbarProps {
 	footer: ReactNode;
 	className?: string;
 	expanded: boolean;
+	onCollapse?: () => void;
 }
 
 const NavbarItems = ({
@@ -71,21 +72,31 @@ const NavbarItems = ({
 
 const Navbar = (props: NavbarProps & WithDataTestId) => {
 	return (
-		<nav
-			className={`flex flex-col bottom-0 left-0 top-0 pt-2 bg-background-800 ${
-				props.className || ""
-			}`}
-			data-testid={props.testId}
-		>
-			<div className="flex flex-col grow">
-				<NavbarItems
-					testId={props.testId}
-					items={props.items}
-					expanded={props.expanded}
+		<>
+			{props.expanded && (
+				<button
+					type="button"
+					aria-label="Close menu"
+					className="md:hidden fixed inset-x-0 bottom-0 top-12 z-30 bg-black/50"
+					onClick={props.onCollapse}
 				/>
-			</div>
-			<div className="flex flex-col pb-4">{props.footer}</div>
-		</nav>
+			)}
+			<nav
+				className={`flex flex-col bottom-0 left-0 top-12 md:top-0 pt-2 bg-background-800 transition-transform duration-200 w-72 md:w-auto fixed z-40 md:static md:translate-x-0 ${
+					props.expanded ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+				} ${props.className || ""}`}
+				data-testid={props.testId}
+			>
+				<div className="flex flex-col grow">
+					<NavbarItems
+						testId={props.testId}
+						items={props.items}
+						expanded={props.expanded}
+					/>
+				</div>
+				<div className="flex flex-col pb-4">{props.footer}</div>
+			</nav>
+		</>
 	);
 };
 

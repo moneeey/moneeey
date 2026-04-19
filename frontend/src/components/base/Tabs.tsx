@@ -30,7 +30,7 @@ export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
 	const { current, update } = useSelectedIndex(props);
 	return (
 		<nav data-testid={props.testId}>
-			<Space className="overflow-auto max-w-max">
+			<Space className="flex-wrap">
 				{props.items.map((item, idx) => (
 					<LinkButton
 						key={item.key}
