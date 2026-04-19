@@ -14,15 +14,14 @@ export class PayeeSettingsRouter extends Route<IPayeeSettingsRoute> {
 
 	render() {
 		return (
-			<AccountTable
-				kind={AccountKind.PAYEE}
-				schemaFilter={(row) => row.kind === AccountKind.PAYEE}
-			/>
+			<>
+				<AccountTableHeader />
+				<AccountTable
+					kind={AccountKind.PAYEE}
+					schemaFilter={(row) => row.kind === AccountKind.PAYEE}
+				/>
+			</>
 		);
-	}
-
-	header() {
-		return <AccountTableHeader />;
 	}
 }
 

@@ -11,12 +11,13 @@ class ReportsRouter extends Route<IReportsRoute> {
 		this.parent?.addChild(this);
 	}
 
-	header() {
-		return <ReportsHeader />;
-	}
-
 	render() {
-		return <Reports />;
+		return (
+			<>
+				<ReportsHeader />
+				<Reports />
+			</>
+		);
 	}
 }
 

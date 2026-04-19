@@ -38,7 +38,6 @@ import { StorageKind, getStorage, setStorage } from "../utils/Utils";
 
 import RouteRenderer, {
 	RouteContentRender,
-	RouteHeaderRender,
 } from "../routes/RouteRenderer";
 
 import useMessages from "../utils/Messages";
@@ -333,12 +332,7 @@ export default observer(function AppMenu() {
 			<RouteRenderer root_route={HomeRoute}>
 				{({ route }) => (
 					<>
-						<div className="grid grid-cols-1 md:grid-cols-[auto_1fr]">
-							<Header expanded={expanded} setExpanded={setExpanded} />
-							<div className="sticky top-12 md:top-0 z-20 bg-background-800">
-								<RouteHeaderRender route={route} />
-							</div>
-						</div>
+						<Header expanded={expanded} setExpanded={setExpanded} />
 						<Content expanded={expanded} setExpanded={setExpanded}>
 							<RouteContentRender route={route} />
 						</Content>

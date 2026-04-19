@@ -77,7 +77,7 @@ const Navbar = (props: NavbarProps & WithDataTestId) => {
 				<button
 					type="button"
 					aria-label="Close menu"
-					className="md:hidden fixed inset-x-0 bottom-0 top-12 z-30 bg-black/50"
+					className="md:hidden fixed inset-0 z-30 bg-black/50"
 					onClick={props.onCollapse}
 				/>
 			)}

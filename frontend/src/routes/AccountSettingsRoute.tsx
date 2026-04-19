@@ -14,15 +14,14 @@ export class AccountSettingsRouter extends Route<IAccountSettingsRoute> {
 
 	render() {
 		return (
-			<AccountTable
-				kind={AccountKind.CHECKING}
-				schemaFilter={(row) => row.kind !== AccountKind.PAYEE}
-			/>
+			<>
+				<AccountTableHeader />
+				<AccountTable
+					kind={AccountKind.CHECKING}
+					schemaFilter={(row) => row.kind !== AccountKind.PAYEE}
+				/>
+			</>
 		);
-	}
-
-	header() {
-		return <AccountTableHeader />;
 	}
 }
 

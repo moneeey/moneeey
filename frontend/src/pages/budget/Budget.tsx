@@ -65,21 +65,24 @@ const Budget = observer(() => {
 
 	return (
 		<VerticalSpace className="overflow-auto pr-2 pb-4">
+			<Space className="justify-between flex-wrap">
+				<Checkbox
+					testId="checkboxViewArchived"
+					value={config.main.view_archived === true}
+					onChange={(view_archived) =>
+						config.merge({ ...config.main, view_archived })
+					}
+					placeholder={Messages.budget.show_archived}
+				>
+					{Messages.budget.show_archived}
+				</Checkbox>
+				<BudgetHeader />
+			</Space>
 			<MonthDateSelector
 				date={startingDate}
 				setDate={setStartingDate}
 				Messages={Messages}
 			/>
-			<Checkbox
-				testId="checkboxViewArchived"
-				value={config.main.view_archived === true}
-				onChange={(view_archived) =>
-					config.merge({ ...config.main, view_archived })
-				}
-				placeholder={Messages.budget.show_archived}
-			>
-				{Messages.budget.show_archived}
-			</Checkbox>
 			<BudgetPeriods
 				startingDate={startingDate}
 				setEditing={setEditing}
