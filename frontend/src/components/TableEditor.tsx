@@ -5,10 +5,17 @@ import { useCallback, useMemo, useState } from "react";
 import type { IBaseEntity } from "../shared/Entity";
 import type MappedStore from "../shared/MappedStore";
 
-import VirtualTable, { type Row, type ColumnDef } from "./VirtualTableEditor";
+import VirtualTable, {
+	type ColumnDef,
+	type CompactCell,
+	type CompactLayout,
+	type Row,
+} from "./VirtualTableEditor";
 
 import type { WithDataTestId } from "./base/Common";
-import type { FieldDef } from "./editor/FieldDef";
+import { type FieldDef, FieldVisibility } from "./editor/FieldDef";
+
+export type { CompactCell, CompactLayout };
 
 interface TableEditorProps<T extends IBaseEntity> extends WithDataTestId {
 	store: MappedStore<T>;
@@ -16,6 +23,7 @@ interface TableEditorProps<T extends IBaseEntity> extends WithDataTestId {
 	schemaFilter?: (row: T) => boolean;
 	factory: (id?: string) => T;
 	creatable?: boolean;
+	compactLayout?: CompactLayout;
 }
 
 export default observer(
@@ -26,6 +34,7 @@ export default observer(
 		factory,
 		creatable,
 		testId,
+		compactLayout,
 	}: TableEditorProps<T>) => {
 		const [newEntityId, setNewEntityId] = useState(() =>
 			store.getUuid(store.factory()),
@@ -59,12 +68,14 @@ export default observer(
 
 		const columns = useMemo((): ColumnDef[] => {
 			return schema.map((field, index) => {
-				const { title, defaultSortOrder, width, customClass } = field;
+				const { title, defaultSortOrder, width, customClass, visibility } =
+					field;
 
 				return {
 					title,
 					index,
 					width,
+					visibility: visibility ?? FieldVisibility.Both,
 					customClass: !customClass
 						? undefined
 						: ({ entityId }: Row, rowIndex: number) => {
@@ -111,6 +122,7 @@ export default observer(
 				columns={columns}
 				rows={entities}
 				isNewEntity={isNewEntity}
+				compactLayout={compactLayout}
 			/>
 		);
 	},

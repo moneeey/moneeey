@@ -53,11 +53,6 @@ const AccountTransactions = observer(
 		};
 		const referenceAccount = account_uuid;
 
-		console.log(
-			"AccountTransactions render runningBalanceVersion",
-			runningBalanceVersion,
-		);
-
 		return (
 			<TransactionTable
 				tableId={`accountTransactions${account_uuid}_${account_name}__${globalSearchTags.join("_")}_${runningBalanceVersion}`}
@@ -82,7 +77,7 @@ const GlobalSearcher = observer(({ account_name }: AccountTransactionProps) => {
 	const Messages = useMessages();
 	const context = account?.name ?? Messages.menu.all_transactions;
 	return (
-		<Space className="bg-background-700 py-1 px-2 md:w-1/2">
+		<Space className="bg-background-700 py-1 px-2">
 			<MultiSelect
 				testId="globalSearch"
 				placeholder={`${Messages.menu.search} ${context.toLowerCase()}`}

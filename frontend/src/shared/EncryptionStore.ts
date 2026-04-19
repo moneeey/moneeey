@@ -27,7 +27,6 @@ export default class EncryptionStore {
 	}
 
 	lock() {
-		this.logger.info("locking");
 		window.location.reload();
 	}
 

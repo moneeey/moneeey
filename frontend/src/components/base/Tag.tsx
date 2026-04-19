@@ -19,7 +19,7 @@ const Tag = ({ title, color, onClick, onMouseOver, onMouseOut }: TagProps) => {
 	const interactive = Boolean(onClick);
 	return (
 		<span
-			className={`m-0 mr-1 p-1 ${interactive ? "cursor-pointer hover:opacity-75" : ""}`}
+			className={`m-0 mr-1 inline-block px-1 text-xs leading-tight align-middle ${interactive ? "cursor-pointer hover:opacity-75" : ""}`}
 			role={interactive ? "button" : undefined}
 			tabIndex={interactive ? 0 : undefined}
 			onClick={onClick}

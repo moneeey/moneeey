@@ -808,6 +808,34 @@ export default {
 			hi: "थीम चुनें",
 			cn: "选择主题",
 		},
+		select_table_density: {
+			en: "Table layout",
+			pt: "Layout da tabela",
+			es: "Diseño de tabla",
+			hi: "तालिका लेआउट",
+			cn: "表格布局",
+		},
+		table_density_compact: {
+			en: "Compact",
+			pt: "Compacto",
+			es: "Compacto",
+			hi: "संक्षिप्त",
+			cn: "紧凑",
+		},
+		table_density_full: {
+			en: "Full",
+			pt: "Completo",
+			es: "Completo",
+			hi: "पूर्ण",
+			cn: "完整",
+		},
+		table_density_auto: {
+			en: "Auto",
+			pt: "Automático",
+			es: "Automático",
+			hi: "स्वचालित",
+			cn: "自动",
+		},
 	},
 	budget: {
 		budget: {
@@ -1074,6 +1102,20 @@ export default {
 			es: "Hacia",
 			hi: "को",
 			cn: "到",
+		},
+		from_amount: {
+			en: "From amount",
+			pt: "Valor origem",
+			es: "Monto origen",
+			hi: "भेजी राशि",
+			cn: "源金额",
+		},
+		to_amount: {
+			en: "To amount",
+			pt: "Valor destino",
+			es: "Monto destino",
+			hi: "प्राप्त राशि",
+			cn: "目标金额",
 		},
 		running_balance: {
 			en: "Running",

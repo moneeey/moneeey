@@ -18,7 +18,7 @@ const RecentTransactions = observer(() => {
 	const referenceAccount = "";
 
 	return (
-		<div className="h-44">
+		<div className="h-[32rem]">
 			<b>{Messages.dashboard.recent_transactions}</b>
 			<TransactionTable
 				tableId="recentTransactions"

@@ -2,7 +2,7 @@ import { map, range } from "lodash";
 import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
 
-import TableEditor from "../../components/TableEditor";
+import TableEditor, { type CompactLayout } from "../../components/TableEditor";
 import Card from "../../components/base/Card";
 import { TextTitle } from "../../components/base/Text";
 import CurrencyAmountField from "../../components/editor/CurrencyAmountField";
@@ -16,6 +16,7 @@ import {
 	startOfMonthOffset,
 } from "../../utils/Date";
 import useMessages from "../../utils/Messages";
+import useTableDensity from "../../utils/useTableDensity";
 
 interface PeriodProps {
 	startingDate: Date;
@@ -31,6 +32,7 @@ const SHOW_MONTHS = 6;
 const BudgetPeriods = observer(
 	({ startingDate, setEditing, viewArchived }: PeriodProps) => {
 		const { budget } = useMoneeeyStore();
+		const density = useTableDensity();
 		const budgetIds = budget.ids.join("_");
 		const budgetArchives = budget.all
 			.map(({ archived }) => String(archived))
@@ -38,7 +40,8 @@ const BudgetPeriods = observer(
 		const budgetAmount = viewArchived
 			? budget.ids.length
 			: budget.all.filter((b) => !b.archived).length;
-		const heightEm = Math.min(32, 6 + 1.6 * budgetAmount);
+		const rowEm = density === "compact" ? 4 : 1.6;
+		const heightEm = Math.min(48, 6 + rowEm * budgetAmount);
 
 		return (
 			<div className="flex flex-row flex-wrap gap-4">
@@ -72,6 +75,22 @@ const BudgetPeriod = observer(
 			budget.seedEnvelopes(starting);
 		}, [budget, starting]);
 
+		const compactLayout: CompactLayout = [
+			[
+				{ title: Messages.budget.budget, flex: 2 },
+				{ title: Messages.budget.allocated, flex: 1, align: "right" },
+			],
+			[
+				{ title: Messages.budget.used, muted: true, flex: 2 },
+				{
+					title: Messages.budget.remaining,
+					muted: true,
+					flex: 1,
+					align: "right",
+				},
+			],
+		];
+
 		return (
 			<Card
 				className="h-full w-full"
@@ -87,6 +106,7 @@ const BudgetPeriod = observer(
 					store={budget.envelopes}
 					factory={budget.envelopes.factory}
 					creatable={false}
+					compactLayout={compactLayout}
 					schemaFilter={(b) => {
 						if (b.starting !== starting) return false;
 						if (!b.budget) return false;

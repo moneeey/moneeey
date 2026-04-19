@@ -113,9 +113,6 @@ export default class NavigationStore {
 	}
 
 	navigate(url: string) {
-		if (url) {
-			this.logger.info("navigate", { url });
-		}
 		this.navigateToUrl = url;
 	}
 
