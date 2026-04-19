@@ -120,7 +120,7 @@ const Menu = observer(
 					<>
 						<LinkButton
 							compact
-							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6"
+							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-11 md:h-6"
 							testId="appMenu_sync_status"
 							onClick={() => {
 								navigation.navigate(SettingsRoute.url());
@@ -141,7 +141,7 @@ const Menu = observer(
 						</LinkButton>
 						<LinkButton
 							compact
-							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6"
+							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-11 md:h-6"
 							testId="appMenu_lock"
 							onClick={() => encryption.lock()}
 							title={Messages.menu.lock}

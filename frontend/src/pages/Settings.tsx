@@ -272,9 +272,7 @@ export default function Settings() {
 
 	return (
 		<div className="bg-background-800 h-full flex flex-col">
-			<div className="flex flex-col gap-4 p-2 items-center border-b border-background-600">
-				<LanguageSelector />
-				<ThemeSwitcher />
+			<div className="flex flex-col gap-2 px-2 pt-2 pb-4 items-center border-b border-background-600">
 				<LinkButton
 					onClick={() => navigation.openModal(NavigationModal.LANDING)}
 					title={Messages.menu.start_tour_description}
@@ -284,6 +282,8 @@ export default function Settings() {
 						{Messages.menu.start_tour}
 					</span>
 				</LinkButton>
+				<LanguageSelector />
+				<ThemeSwitcher />
 			</div>
 			<Tabs
 				testId="settingsTabs"
