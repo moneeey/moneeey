@@ -192,7 +192,18 @@ export const DatabaseConfig = () => {
 	};
 
 	return (
-		<div className="flex flex-col gap-2">
+		<VerticalSpace>
+			<p className="text-sm opacity-80">
+				{Messages.sync.couchdb_description}
+			</p>
+			<a
+				href="https://couchdb.apache.org/"
+				target="_blank"
+				rel="noreferrer noopener"
+				className="text-xs underline opacity-70 hover:opacity-100"
+			>
+				{Messages.sync.couchdb_learn_more}
+			</a>
 			<SelfHostedSyncForm
 				initial={initialCfg}
 				submitTitle={Messages.sync.start}
@@ -201,7 +212,7 @@ export const DatabaseConfig = () => {
 			{initialCfg.enabled && (
 				<OkButton onClick={onStop} title={Messages.sync.stop} />
 			)}
-		</div>
+		</VerticalSpace>
 	);
 };
 
