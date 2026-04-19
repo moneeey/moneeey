@@ -46,14 +46,12 @@ const txtImportFromLines = ({
 	const { importer } = moneeeyStore;
 	onProgress(10);
 	const { tokenMap } = importer;
-	logger.info("tokenMap", tokenMap);
 	onProgress(20);
 
 	const samples = shuffle(lines)
 		.filter((line) => /\d/.test(line))
 		.slice(0, 50);
 	const mostCommonDateFormat = findMostCommonDateFormat(samples);
-	logger.info("mostCommonDateFormat", { mostCommonDateFormat, samples });
 	onProgress(20);
 
 	return asyncProcess<string, ImportResult>(
@@ -83,17 +81,6 @@ const txtImportFromLines = ({
 						referenceAccount,
 						other_account,
 						importer,
-					});
-					logger.info("process line", {
-						line,
-						value,
-						date,
-						other,
-						other_account,
-						query: other,
-						recommendedAccounts: accounts,
-						transaction,
-						existing,
 					});
 					stt.localTransactions.merge(transaction);
 					stt.recommendedAccounts[transaction.transaction_uuid] = accounts.map(

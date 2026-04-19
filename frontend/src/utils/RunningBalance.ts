@@ -43,7 +43,6 @@ export default class RunningBalance {
 			items,
 			(chunk, state) => {
 				if (forVersion !== this.version) {
-					this.logger.info("calculateTransactionRunningBalances aborted");
 					state.aborted = true;
 
 					return;
@@ -69,9 +68,6 @@ export default class RunningBalance {
 						item,
 						item.to_account,
 						item.to_value,
-					);
-					this.logger.log(
-						`calculateTransactionRunningBalances transaction=${item.transaction_uuid}: from=${item.from_account}, to=${item.to_account}, from_balance=${from_balance}, to_balance=${to_balance}`,
 					);
 					state.transactionBalance.set(item.transaction_uuid, {
 						from_balance,
