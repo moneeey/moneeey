@@ -12,10 +12,10 @@ export interface StatusProps {
 }
 
 const styles: Record<StatusType, string> = {
-	success: "bg-success-300 text-success-900",
-	info: "bg-info-300 text-info-900",
-	warning: "bg-warning-300 text-warning-900",
-	error: "bg-error-300 text-error-900",
+	success: "bg-notif-success-bg text-notif-success-fg",
+	info: "bg-notif-info-bg text-notif-info-fg",
+	warning: "bg-notif-warning-bg text-notif-warning-fg",
+	error: "bg-notif-error-bg text-notif-error-fg",
 };
 
 export const Status = ({ type, children, onDismiss }: StatusProps) => {

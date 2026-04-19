@@ -30,6 +30,14 @@
     --text-positive: 134 239 172;
     --text-negative: 252 165 165;
     --blink-color: 250 204 21;
+    --notif-success-bg: 134 239 172;
+    --notif-success-fg: 20 83 45;
+    --notif-info-bg: 147 197 253;
+    --notif-info-fg: 30 58 138;
+    --notif-warning-bg: 253 224 71;
+    --notif-warning-fg: 113 63 18;
+    --notif-error-bg: 252 165 165;
+    --notif-error-fg: 127 29 29;
   }
 
   [data-theme="light"] {
@@ -49,6 +57,14 @@
     --text-positive: 22 101 52;
     --text-negative: 153 27 27;
     --blink-color: 37 99 235;
+    --notif-success-bg: 187 247 208;
+    --notif-success-fg: 20 83 45;
+    --notif-info-bg: 191 219 254;
+    --notif-info-fg: 30 58 138;
+    --notif-warning-bg: 254 240 138;
+    --notif-warning-fg: 113 63 18;
+    --notif-error-bg: 254 202 202;
+    --notif-error-fg: 127 29 29;
   }
 
   body,
