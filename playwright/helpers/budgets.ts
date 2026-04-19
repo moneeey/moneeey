@@ -9,12 +9,10 @@ export function BudgetRow(page: Page, index: number, date: Date = new Date()) {
 	const card = page.getByTestId(`budget_period_${formatDateMonth(date)}`);
 	return {
 		async allocate(value: string, expectedValue = value) {
-			await Input(
-				card,
-				"editorAllocated",
-				undefined,
-				index,
-			).change(value, expectedValue);
+			await Input(card, "editorAllocated", undefined, index).change(
+				value,
+				expectedValue,
+			);
 		},
 		async expectAllocated(value: string) {
 			await expect(card.getByTestId("editorAllocated").nth(index)).toHaveValue(
@@ -29,9 +27,10 @@ export function BudgetRow(page: Page, index: number, date: Date = new Date()) {
 			);
 		},
 		async expectRemaining(value: string, className?: string) {
-			await expect(
-				card.getByTestId("editorRemaining").nth(index),
-			).toHaveValue(value, { timeout: TIMEOUTS.compute });
+			await expect(card.getByTestId("editorRemaining").nth(index)).toHaveValue(
+				value,
+				{ timeout: TIMEOUTS.compute },
+			);
 			if (className !== undefined) {
 				const cls = classForTestIdTDs(card, "editorRemaining");
 				expect(await cls(index)).toEqual(className);
