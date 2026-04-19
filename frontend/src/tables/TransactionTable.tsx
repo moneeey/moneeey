@@ -295,7 +295,7 @@ export default observer(
 			? [
 					[
 						{ title: Messages.util.date, muted: true },
-						{ title: Messages.transactions.memo, flex: 1 },
+						{ title: Messages.transactions.memo },
 						{
 							title: Messages.transactions.running_balance,
 							muted: true,
@@ -310,7 +310,7 @@ export default observer(
 			: [
 					[
 						{ title: Messages.util.date, muted: true },
-						{ title: Messages.transactions.memo, flex: 1 },
+						{ title: Messages.transactions.memo },
 					],
 					[
 						{
@@ -321,7 +321,6 @@ export default observer(
 						{
 							title: Messages.transactions.from_amount,
 							align: "right",
-							flex: 1,
 						},
 					],
 					[
@@ -333,7 +332,6 @@ export default observer(
 						{
 							title: Messages.transactions.to_amount,
 							align: "right",
-							flex: 1,
 						},
 					],
 				];

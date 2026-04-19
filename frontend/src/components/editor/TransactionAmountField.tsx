@@ -66,12 +66,11 @@ export default function <TEntity>({
 				});
 
 				if (side === "from") {
-					const effectiveEntity = sameCurrency ? from : from;
 					const effectiveCommit = sameCurrency ? unifiedCommit : fromCommit;
 					return (
 						<fromField.render
 							rev={rev}
-							entity={effectiveEntity}
+							entity={from}
 							field={renderField}
 							isError={isError}
 							commit={effectiveCommit}
@@ -80,6 +79,8 @@ export default function <TEntity>({
 				}
 
 				if (side === "to") {
+					// Same-currency renders the unified `from` entity (to==from by value);
+					// different-currency shows the independent `to` value.
 					const effectiveEntity = sameCurrency ? from : to;
 					const effectiveCommit = sameCurrency ? unifiedCommit : toCommit;
 					return (

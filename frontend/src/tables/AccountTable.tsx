@@ -116,25 +116,16 @@ const AccountTable = observer(
 			},
 		];
 
-		const isPayee = kind === AccountKind.PAYEE;
-		const compactLayout: CompactLayout = isPayee
-			? [
-					[
-						{ title: Messages.util.name, flex: 1 },
-						{ title: Messages.util.tags, flex: 1 },
-					],
-					[{ title: Messages.util.currency, muted: true, flex: 1 }],
-				]
-			: [
-					[
-						{ title: Messages.util.name, flex: 1 },
-						{ title: Messages.util.tags, flex: 1 },
-					],
-					[
-						{ title: Messages.account.account_kind, muted: true, flex: 1 },
-						{ title: Messages.util.currency, muted: true, flex: 1 },
-					],
-				];
+		const compactLayout: CompactLayout = [
+			[
+				{ title: Messages.util.name },
+				{ title: Messages.util.tags },
+			],
+			[
+				{ title: Messages.account.account_kind, muted: true },
+				{ title: Messages.util.currency, muted: true },
+			],
+		];
 
 		return (
 			<>

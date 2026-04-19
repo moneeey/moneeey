@@ -97,6 +97,8 @@ const Menu = observer(
 
 		const allRunningBalances = Array.from(runningBalances.values()).join("_");
 
+		// Menu collapsing follows table density: tablets and phones (auto density
+		// → compact) collapse on navigation; users who forced "full" keep the menu open.
 		const routeLink = (url: string) => ({
 			onClick: () => {
 				navigation.navigate(url);

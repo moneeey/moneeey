@@ -3,10 +3,11 @@ import {
 	ComputerDesktopIcon,
 	TableCellsIcon,
 } from "@heroicons/react/24/outline";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 import useMessages from "../utils/Messages";
 import {
+	TABLE_DENSITY_CHANGE_EVENT,
 	type TableDensityMode,
 	getTableDensityMode,
 	setTableDensityMode,
@@ -15,6 +16,13 @@ import {
 export default function TableDensitySwitcher() {
 	const Messages = useMessages();
 	const [mode, setMode] = useState<TableDensityMode>(getTableDensityMode);
+
+	useEffect(() => {
+		const onChange = () => setMode(getTableDensityMode());
+		window.addEventListener(TABLE_DENSITY_CHANGE_EVENT, onChange);
+		return () =>
+			window.removeEventListener(TABLE_DENSITY_CHANGE_EVENT, onChange);
+	}, []);
 
 	const selectMode = (newMode: TableDensityMode) => {
 		setMode(newMode);

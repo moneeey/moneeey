@@ -78,14 +78,14 @@ const CurrencyTable = observer(() => {
 
 	const compactLayout: CompactLayout = [
 		[
-			{ title: Messages.util.name, flex: 1 },
-			{ title: Messages.util.tags, flex: 1 },
+			{ title: Messages.util.name },
+			{ title: Messages.util.tags },
 		],
 		[
-			{ title: Messages.currencies.short, muted: true, flex: 1 },
-			{ title: Messages.currencies.prefix, muted: true, flex: 1 },
-			{ title: Messages.currencies.suffix, muted: true, flex: 1 },
-			{ title: Messages.currencies.decimals, muted: true, flex: 1 },
+			{ title: Messages.currencies.short, muted: true },
+			{ title: Messages.currencies.prefix, muted: true },
+			{ title: Messages.currencies.suffix, muted: true },
+			{ title: Messages.currencies.decimals, muted: true },
 		],
 	];
 

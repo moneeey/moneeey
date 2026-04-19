@@ -1,6 +1,8 @@
 import {
 	BudgetRow,
+	Input,
 	OpenMenuItem,
+	Select,
 	budgetEditorSave,
 	clickMenuByTestId,
 	expect,
@@ -192,4 +194,31 @@ test("Compact budget — rows allocate, used and remaining stay in sync", async 
 	await row.allocate("100");
 	await row.expectUsed("30");
 	await row.expectRemaining("70");
+});
+
+test("Compact multi-currency — from and to amounts edit independently", async ({
+	wizardPage: page,
+}) => {
+	// Firefox CI needs extra headroom for react-select + row-remount cascades.
+	test.setTimeout(90_000);
+
+	// Pick accounts with different currencies while still in full mode so the
+	// editor* selects resolve; afterwards we switch to compact where the
+	// TransactionAmountField splits into editorFrom_amount and editorTo_amount.
+	await OpenMenuItem(page, "All transactions");
+	await Select(page, "editorFrom", 3).chooseOrCreate("Banco Moneeey"); // BRL
+	await Select(page, "editorTo", 3).chooseOrCreate("Bitcoinss"); // BTC
+
+	await setDensity(page, "compact");
+	await OpenMenuItem(page, "All transactions");
+
+	// Row 3 is the cross-currency transaction; row 4 is the empty new-entity row.
+	const fromAmount = Input(page, "editorFrom_amount", undefined, 3);
+	const toAmount = Input(page, "editorTo_amount", undefined, 3);
+	await fromAmount.change("250", "250");
+	await toAmount.change("0,00500000", "0,005");
+
+	// The two sides keep their own values because the currencies differ.
+	await fromAmount.toHaveValue("250");
+	await toAmount.toHaveValue("0,005");
 });

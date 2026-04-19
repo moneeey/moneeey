@@ -95,7 +95,7 @@ export async function retrieveRowsData(
 				const body = document.querySelector(`.${id}-body`);
 				if (!body) return 0;
 				const compactRows = body.querySelectorAll(
-					'[data-testid="compactRow"]',
+					`[data-testid="${id}-compactRow"]`,
 				);
 				if (compactRows.length > 0) return compactRows.length;
 				const cells = body.querySelectorAll('[data-testid="rowCell"]');
@@ -142,10 +142,14 @@ export async function retrieveRowsData(
 			return `${label}: ${value} (${className})`;
 		};
 
-		const compactRows = body.querySelectorAll('[data-testid="compactRow"]');
+		const compactRows = body.querySelectorAll(
+			`[data-testid="${id}-compactRow"]`,
+		);
 		if (compactRows.length > 0) {
 			return Array.from(compactRows).map((row) => {
-				const lines = row.querySelectorAll('[data-testid="compactLine"]');
+				const lines = row.querySelectorAll(
+					`[data-testid="${id}-compactLine"]`,
+				);
 				return Array.from(lines)
 					.map((line) =>
 						Array.from(line.children)
