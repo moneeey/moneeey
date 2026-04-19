@@ -1110,6 +1110,20 @@ export default {
 			hi: "को",
 			cn: "到",
 		},
+		from_amount: {
+			en: "From amount",
+			pt: "Valor origem",
+			es: "Monto origen",
+			hi: "भेजी राशि",
+			cn: "源金额",
+		},
+		to_amount: {
+			en: "To amount",
+			pt: "Valor destino",
+			es: "Monto destino",
+			hi: "प्राप्त राशि",
+			cn: "目标金额",
+		},
 		running_balance: {
 			en: "Running",
 			pt: "Saldo em execução",

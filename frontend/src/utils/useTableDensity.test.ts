@@ -30,7 +30,9 @@ describe("useTableDensity", () => {
 			expect(resolveTableDensity("auto", TABLE_DENSITY_BREAKPOINT - 1)).toBe(
 				"compact",
 			);
-			expect(resolveTableDensity("auto", TABLE_DENSITY_BREAKPOINT)).toBe("full");
+			expect(resolveTableDensity("auto", TABLE_DENSITY_BREAKPOINT)).toBe(
+				"full",
+			);
 			expect(resolveTableDensity("auto", TABLE_DENSITY_BREAKPOINT + 100)).toBe(
 				"full",
 			);

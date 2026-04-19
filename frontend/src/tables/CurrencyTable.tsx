@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 
-import TableEditor from "../components/TableEditor";
+import TableEditor, { type CompactLayout } from "../components/TableEditor";
 import type { FieldDef } from "../components/editor/FieldDef";
 import NumberField from "../components/editor/NumberField";
 import TagField from "../components/editor/TagField";
@@ -8,7 +8,6 @@ import TextField from "../components/editor/TextField";
 import type { ICurrency } from "../entities/Currency";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
-import DefaultMobileRow from "./mobile/DefaultMobileRow";
 
 const CurrencyTable = observer(() => {
 	const Messages = useMessages();
@@ -77,19 +76,25 @@ const CurrencyTable = observer(() => {
 		},
 	];
 
+	const compactLayout: CompactLayout = [
+		[{ title: Messages.util.name, flex: 1 }],
+		[
+			{ title: Messages.currencies.short, muted: true, flex: 1 },
+			{ title: Messages.currencies.prefix, muted: true, flex: 1 },
+			{ title: Messages.currencies.suffix, muted: true, flex: 1 },
+			{ title: Messages.currencies.decimals, muted: true, flex: 1 },
+		],
+		[{ title: Messages.util.tags, muted: true }],
+	];
+
 	return (
 		<TableEditor
 			testId="currencyTable"
 			store={currencies}
 			factory={currencies.factory}
 			schema={schema}
-			mobileRender={(ctx) => (
-				<DefaultMobileRow
-					{...ctx}
-					schema={schema}
-					titleField={Messages.util.name}
-				/>
-			)}
+			compactLayout={compactLayout}
+			compactRowHeight={96}
 		/>
 	);
 });

@@ -3,6 +3,12 @@ export type FieldAcessor<TEntity, TValue> = {
 	delta(value: TValue, entity: TEntity): Partial<TEntity>;
 };
 
+export enum FieldVisibility {
+	OnlyOnDesktop = "onlyOnDesktop",
+	OnlyOnMobile = "onlyOnMobile",
+	Both = "both",
+}
+
 export type FieldRenderProps<TEntity> = {
 	rev: string;
 	entity: TEntity;
@@ -27,6 +33,7 @@ export type FieldDef<TEntity> = {
 	required?: boolean;
 	defaultSortOrder?: "descend" | "ascend";
 	width: number;
+	visibility?: FieldVisibility;
 
 	sorter(a: TEntity, b: TEntity, asc: boolean): number;
 	render(props: FieldRenderProps<TEntity>): JSX.Element;

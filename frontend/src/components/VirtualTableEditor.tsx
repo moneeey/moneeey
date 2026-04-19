@@ -15,11 +15,13 @@ import {
 } from "react-window";
 
 import { observer } from "mobx-react-lite";
+import type { ReactNode } from "react";
 import useMessages from "../utils/Messages";
 import useTableDensity from "../utils/useTableDensity";
 import type { WithDataTestId } from "./base/Common";
 import Icon from "./base/Icon";
 import Select from "./base/Select";
+import { FieldVisibility } from "./editor/FieldDef";
 
 const VirtualizedGrid =
 	GenericVirtualizedGrid as unknown as ComponentType<VariableSizeGridProps>;
@@ -40,10 +42,24 @@ export type ColumnDef = {
 	title: string;
 	index: number;
 	defaultSortOrder?: SortOrder;
+	visibility?: FieldVisibility;
 	sorter?: (a: Row, b: Row, asc: boolean) => number;
 	render: (row: Row) => JSX.Element;
 	customClass?: (row: Row, rowIndex: number) => string;
 };
+
+export type CompactCellObject = {
+	title: string;
+	align?: "left" | "right";
+	muted?: boolean;
+	icon?: ReactNode;
+	className?: string;
+	flex?: number;
+};
+
+export type CompactCell = string | CompactCellObject;
+
+export type CompactLayout = CompactCell[][];
 
 type SortColumn = {
 	order: SortOrder;
@@ -54,7 +70,7 @@ type VirtualTableProps = {
 	columns: ColumnDef[];
 	rows: Row[];
 	isNewEntity?: (row: Row) => boolean;
-	compactRender?: (row: Row) => JSX.Element;
+	compactLayout?: CompactLayout;
 	compactRowHeight?: number;
 };
 
@@ -245,17 +261,70 @@ const VirtualTableGrid = ({
 	);
 };
 
+const asCompactCellObject = (cell: CompactCell): CompactCellObject =>
+	typeof cell === "string" ? { title: cell } : cell;
+
+const defaultCompactLayout = (columns: ColumnDef[]): CompactLayout =>
+	columns
+		.filter((col) => col.visibility !== FieldVisibility.OnlyOnDesktop)
+		.map((col) => [{ title: col.title }]);
+
+const CompactRowLine = ({
+	line,
+	row,
+	rowIndex,
+	columnsByTitle,
+}: {
+	line: CompactCell[];
+	row: Row;
+	rowIndex: number;
+	columnsByTitle: Map<string, ColumnDef>;
+}) => (
+	<div className="flex items-center gap-2">
+		{line.map((rawCell, cellIdx) => {
+			const cell = asCompactCellObject(rawCell);
+			const column = columnsByTitle.get(cell.title);
+			if (!column) return null;
+			const Renderer = column.render;
+			const columnClass = column.customClass
+				? column.customClass(row, rowIndex)
+				: "";
+			const alignClass = cell.align === "right" ? "ml-auto text-right" : "";
+			const mutedClass = cell.muted ? "text-xs text-muted-foreground" : "";
+			const flexStyle = cell.flex !== undefined ? { flex: cell.flex } : {};
+			return (
+				<div
+					key={`${cell.title}_${cellIdx}`}
+					style={flexStyle}
+					className={`min-w-0 ${alignClass} ${mutedClass} ${columnClass} ${cell.className ?? ""}`}
+				>
+					{cell.icon ? (
+						<span className="inline-flex items-center gap-1">
+							<span className="shrink-0">{cell.icon}</span>
+							<Renderer entityId={row.entityId} />
+						</span>
+					) : (
+						<Renderer entityId={row.entityId} />
+					)}
+				</div>
+			);
+		})}
+	</div>
+);
+
 const CompactContentCell = observer(
 	({
 		row,
 		rowIndex,
 		style,
-		compactRender,
+		compactLayout,
+		columnsByTitle,
 	}: {
 		row: Row | undefined;
 		rowIndex: number;
 		style: object;
-		compactRender: (row: Row) => JSX.Element;
+		compactLayout: CompactLayout;
+		columnsByTitle: Map<string, ColumnDef>;
 	}) => {
 		if (!row) return <div style={style} />;
 		const bgColor =
@@ -263,9 +332,17 @@ const CompactContentCell = observer(
 		return (
 			<div
 				style={style}
-				className={`${bgColor} border-b border-background-700 px-2`}
+				className={`${bgColor} border-b border-background-700 px-2 py-1`}
 			>
-				{compactRender(row)}
+				{compactLayout.map((line, lineIdx) => (
+					<CompactRowLine
+						key={`line_${lineIdx}_${row.entityId}`}
+						line={line}
+						row={row}
+						rowIndex={rowIndex}
+						columnsByTitle={columnsByTitle}
+					/>
+				))}
 			</div>
 		);
 	},
@@ -277,7 +354,7 @@ const CompactVirtualTableGrid = ({
 	height,
 	rows,
 	rowHeight,
-	compactRender,
+	compactLayout,
 	sort,
 	setSort,
 	columns,
@@ -286,7 +363,7 @@ const CompactVirtualTableGrid = ({
 	height: number;
 	rows: Row[];
 	rowHeight: number;
-	compactRender: (row: Row) => JSX.Element;
+	compactLayout: CompactLayout;
 	setSort: Dispatch<SetStateAction<SortColumn>>;
 	sort: SortColumn;
 	columns: ColumnDef[];
@@ -294,6 +371,11 @@ const CompactVirtualTableGrid = ({
 	const Messages = useMessages();
 	const sortableColumns = useMemo(
 		() => columns.filter((col) => col.sorter),
+		[columns],
+	);
+
+	const columnsByTitle = useMemo(
+		() => new Map(columns.map((col) => [col.title, col])),
 		[columns],
 	);
 
@@ -343,7 +425,8 @@ const CompactVirtualTableGrid = ({
 						row={rows[rowIndex]}
 						rowIndex={rowIndex}
 						style={style}
-						compactRender={compactRender}
+						compactLayout={compactLayout}
+						columnsByTitle={columnsByTitle}
 					/>
 				)}
 			</VirtualizedGrid>
@@ -356,11 +439,22 @@ const VirtualTable = function VirtualTableRenderer({
 	rows,
 	testId,
 	isNewEntity,
-	compactRender,
+	compactLayout,
 	compactRowHeight = COMPACT_ROW_HEIGHT,
 }: VirtualTableProps & WithDataTestId) {
 	const density = useTableDensity();
-	const isCompact = density === "compact" && Boolean(compactRender);
+	const isCompact = density === "compact";
+
+	const desktopColumns = useMemo(
+		() =>
+			columns.filter((col) => col.visibility !== FieldVisibility.OnlyOnMobile),
+		[columns],
+	);
+
+	const resolvedCompactLayout = useMemo(
+		() => compactLayout ?? defaultCompactLayout(columns),
+		[compactLayout, columns],
+	);
 
 	const [sort, setSort] = useState(() => {
 		const column =
@@ -388,7 +482,7 @@ const VirtualTable = function VirtualTableRenderer({
 	return (
 		<AutoSizer>
 			{({ width, height }: { width: number; height: number }) =>
-				isCompact && compactRender ? (
+				isCompact ? (
 					<CompactVirtualTableGrid
 						key={`compact_${width}_${height}`}
 						testId={testId}
@@ -396,7 +490,7 @@ const VirtualTable = function VirtualTableRenderer({
 						height={height}
 						rows={sortedRows}
 						rowHeight={compactRowHeight}
-						compactRender={compactRender}
+						compactLayout={resolvedCompactLayout}
 						sort={sort}
 						setSort={setSort}
 						columns={columns}
@@ -407,7 +501,7 @@ const VirtualTable = function VirtualTableRenderer({
 						testId={testId}
 						width={width}
 						height={height}
-						columns={columns}
+						columns={desktopColumns}
 						rows={sortedRows}
 						setSort={setSort}
 						sort={sort}

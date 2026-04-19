@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 
-import TableEditor from "../components/TableEditor";
+import TableEditor, { type CompactLayout } from "../components/TableEditor";
 import { PrimaryButton, SecondaryButton } from "../components/base/Button";
 import Space from "../components/base/Space";
 import AccountKindField from "../components/editor/AccountKindField";
@@ -14,7 +14,6 @@ import type { AccountKind, IAccount } from "../entities/Account";
 import { NavigationModal } from "../shared/Navigation";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
-import DefaultMobileRow from "./mobile/DefaultMobileRow";
 
 interface AccountSettingsProps {
 	kind: AccountKind;
@@ -117,6 +116,15 @@ const AccountTable = observer(
 			},
 		];
 
+		const compactLayout: CompactLayout = [
+			[{ title: Messages.util.name, flex: 1 }],
+			[
+				{ title: Messages.util.currency, muted: true, flex: 1 },
+				{ title: Messages.account.account_kind, muted: true, flex: 1 },
+			],
+			[{ title: Messages.util.tags, muted: true }],
+		];
+
 		return (
 			<>
 				<div className="h-full grow" key={`accountTable${kind}`}>
@@ -127,13 +135,8 @@ const AccountTable = observer(
 						schemaFilter={schemaFilter}
 						factory={(id?: string) => ({ ...accounts.factory(id), kind })}
 						schema={schema}
-						mobileRender={(ctx) => (
-							<DefaultMobileRow
-								{...ctx}
-								schema={schema}
-								titleField={Messages.util.name}
-							/>
-						)}
+						compactLayout={compactLayout}
+						compactRowHeight={96}
 					/>
 				</div>
 			</>

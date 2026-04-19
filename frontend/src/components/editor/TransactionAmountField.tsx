@@ -10,56 +10,100 @@ import type {
 	FieldRenderProps,
 } from "./FieldDef";
 
+type TransactionAmountValue = {
+	to: { amount: number; currency?: ICurrency };
+	from: { amount: number; currency?: ICurrency };
+};
+
+type TransactionAmountOptions<TEntity> = FieldAcessor<
+	TEntity,
+	TransactionAmountValue
+> & {
+	side?: "from" | "to";
+};
+
 export default function <TEntity>({
 	read,
 	delta,
-}: FieldAcessor<
-	TEntity,
-	{
-		to: { amount: number; currency?: ICurrency };
-		from: { amount: number; currency?: ICurrency };
-	}
->): FieldDefHelper<TEntity> {
+	side,
+}: TransactionAmountOptions<TEntity>): FieldDefHelper<TEntity> {
 	return {
 		render: observer(
 			({ entity, commit, field, isError, rev }: FieldRenderProps<TEntity>) => {
 				const { to, from } = read(entity);
 				const renderField = field as unknown as FieldDef<CurrencyAmount>;
 
-				if (
+				const sameCurrency =
 					to.currency?.currency_uuid === from.currency?.currency_uuid ||
 					!to.currency ||
-					!from.currency
-				) {
-					const fromToField = CurrencyAmountField<CurrencyAmount>({
-						read: (entityy) => entityy,
-						delta: (update) => update,
+					!from.currency;
+
+				const unifiedCommit = (amount: CurrencyAmount) =>
+					commit({
+						...entity,
+						...delta({ to: amount, from: amount }, entity),
 					});
 
+				const fromCommit = (amount: CurrencyAmount) =>
+					commit({
+						...entity,
+						...delta({ to, from: amount }, entity),
+					});
+
+				const toCommit = (amount: CurrencyAmount) =>
+					commit({
+						...entity,
+						...delta({ to: amount, from }, entity),
+					});
+
+				const fromField = CurrencyAmountField<CurrencyAmount>({
+					read: (e) => e,
+					delta: (u) => u,
+				});
+				const toField = CurrencyAmountField<CurrencyAmount>({
+					read: (e) => e,
+					delta: (u) => u,
+				});
+
+				if (side === "from") {
+					const effectiveEntity = sameCurrency ? from : from;
+					const effectiveCommit = sameCurrency ? unifiedCommit : fromCommit;
 					return (
-						<fromToField.render
+						<fromField.render
 							rev={rev}
-							entity={from}
+							entity={effectiveEntity}
 							field={renderField}
 							isError={isError}
-							commit={(amount: CurrencyAmount) =>
-								commit({
-									...entity,
-									...delta({ to: amount, from: amount }, entity),
-								})
-							}
+							commit={effectiveCommit}
 						/>
 					);
 				}
 
-				const fromField = CurrencyAmountField<CurrencyAmount>({
-					read: (entityy) => entityy,
-					delta: (update) => update,
-				});
-				const toField = CurrencyAmountField<CurrencyAmount>({
-					read: (entityy) => entityy,
-					delta: (update) => update,
-				});
+				if (side === "to") {
+					const effectiveEntity = sameCurrency ? from : to;
+					const effectiveCommit = sameCurrency ? unifiedCommit : toCommit;
+					return (
+						<toField.render
+							rev={rev}
+							entity={effectiveEntity}
+							field={renderField}
+							isError={isError}
+							commit={effectiveCommit}
+						/>
+					);
+				}
+
+				if (sameCurrency) {
+					return (
+						<fromField.render
+							rev={rev}
+							entity={from}
+							field={renderField}
+							isError={isError}
+							commit={unifiedCommit}
+						/>
+					);
+				}
 
 				return (
 					<div className="flex flex-row">
@@ -68,18 +112,14 @@ export default function <TEntity>({
 							entity={from}
 							field={renderField}
 							isError={isError}
-							commit={(amount: CurrencyAmount) =>
-								commit({ ...entity, ...delta({ to, from: amount }, entity) })
-							}
+							commit={fromCommit}
 						/>
 						<toField.render
 							rev={rev}
 							entity={to}
 							field={renderField}
 							isError={isError}
-							commit={(amount: CurrencyAmount) =>
-								commit({ ...entity, ...delta({ to: amount, from }, entity) })
-							}
+							commit={toCommit}
 						/>
 					</div>
 				);
