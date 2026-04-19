@@ -274,17 +274,38 @@ export async function redeemInvite(
 	return invite.database;
 }
 
-export async function generateDatabaseName(email: string): Promise<string> {
-	return `pk${await sha384(`passkey:${email}`)}`;
+const DB_ID_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
+const DB_ID_REJECT_THRESHOLD =
+	Math.floor(256 / DB_ID_ALPHABET.length) * DB_ID_ALPHABET.length;
+const DB_NAME_ATTEMPTS = 5;
+
+export function generateShortDbId(length = 21): string {
+	const out: string[] = [];
+	const buf = new Uint8Array(length * 2);
+	while (out.length < length) {
+		crypto.getRandomValues(buf);
+		for (let i = 0; i < buf.length && out.length < length; i++) {
+			const byte = buf[i];
+			if (byte >= DB_ID_REJECT_THRESHOLD) continue;
+			out.push(DB_ID_ALPHABET[byte % DB_ID_ALPHABET.length]);
+		}
+	}
+	return out.join("");
 }
 
 export async function createUserWithDatabase(
 	email: string,
 	credential: StoredCredential,
 ): Promise<UserDocument> {
-	const database = await generateDatabaseName(email);
-	await couchdbInternals.prepareUserDatabase(database, email);
-	return createUser(email, database, credential);
+	for (let attempt = 1; attempt <= DB_NAME_ATTEMPTS; attempt++) {
+		const database = `db${generateShortDbId(21)}`;
+		const created = await couchdbInternals.createUserDatabase(database, email);
+		if (created) {
+			return createUser(email, database, credential);
+		}
+		logger.warn("db name collision, retrying", { database, attempt });
+	}
+	throw new Error("failed to allocate user database after retries");
 }
 
 export async function createUserForInvite(

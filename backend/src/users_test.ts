@@ -2,8 +2,12 @@ import { couchdbInternals } from "./couchdb.ts";
 import { assert, withSpying } from "./test.ts";
 import {
 	type InviteDocument,
+	type StoredCredential,
+	type UserDocument,
 	createInvite,
+	createUserWithDatabase,
 	ensureUsersDbExists,
+	generateShortDbId,
 } from "./users.ts";
 
 const USERS_DB = "moneeey_users";
@@ -112,6 +116,123 @@ Deno.test(async function createInviteEnforcesQuota() {
 			assert.assertEquals(thrown?.message, "invite_quota_exceeded");
 		},
 	});
+});
+
+const fakeCredential: StoredCredential = {
+	credentialId: "cred-1",
+	publicKey: "pk",
+	counter: 0,
+	createdAt: new Date().toISOString(),
+};
+
+Deno.test(async function createUserWithDatabasePersistsShortName() {
+	await withSpying({
+		object: couchdbInternals,
+		method: "createUserDatabase",
+		action: async (createDbStub) => {
+			createDbStub.resolves(true);
+			await withSpying({
+				object: couchdbInternals,
+				method: "dbApi",
+				action: async (apiStub) => {
+					apiStub.resolves({
+						status: 201,
+						json: () => Promise.resolve({ rev: "1-x" }),
+					});
+					const user = await createUserWithDatabase(
+						"u@test.com",
+						fakeCredential,
+					);
+					assert.assertEquals(createDbStub.callCount, 1);
+					assert.assertEquals(user.database.length, 23);
+					assert.assertEquals(user.database.startsWith("db"), true);
+					assert.assertMatch(user.database, /^db[a-z0-9]{21}$/);
+					assert.assertEquals(createDbStub.firstCall.args[0], user.database);
+					assert.assertEquals(createDbStub.firstCall.args[1], "u@test.com");
+					const putCall = apiStub.getCall(0);
+					assert.assertEquals(putCall.args[0], "PUT");
+					const body = putCall.args[2] as UserDocument;
+					assert.assertEquals(body.database, user.database);
+				},
+			});
+		},
+	});
+});
+
+Deno.test(async function createUserWithDatabaseRetriesOnCollision() {
+	await withSpying({
+		object: couchdbInternals,
+		method: "createUserDatabase",
+		action: async (createDbStub) => {
+			createDbStub.onCall(0).resolves(false);
+			createDbStub.onCall(1).resolves(false);
+			createDbStub.onCall(2).resolves(true);
+			await withSpying({
+				object: couchdbInternals,
+				method: "dbApi",
+				action: async (apiStub) => {
+					apiStub.resolves({
+						status: 201,
+						json: () => Promise.resolve({ rev: "1-x" }),
+					});
+					const user = await createUserWithDatabase(
+						"u@test.com",
+						fakeCredential,
+					);
+					assert.assertEquals(createDbStub.callCount, 3);
+					const thirdAttempt = createDbStub.getCall(2).args[0] as string;
+					assert.assertEquals(user.database, thirdAttempt);
+					const first = createDbStub.getCall(0).args[0] as string;
+					const second = createDbStub.getCall(1).args[0] as string;
+					assert.assertNotEquals(first, second);
+					assert.assertNotEquals(second, thirdAttempt);
+				},
+			});
+		},
+	});
+});
+
+Deno.test(async function createUserWithDatabaseThrowsAfterExhaustion() {
+	await withSpying({
+		object: couchdbInternals,
+		method: "createUserDatabase",
+		action: async (createDbStub) => {
+			createDbStub.resolves(false);
+			await withSpying({
+				object: couchdbInternals,
+				method: "dbApi",
+				action: async (apiStub) => {
+					apiStub.resolves({
+						status: 201,
+						json: () => Promise.resolve({ rev: "1-x" }),
+					});
+					let thrown: Error | undefined;
+					try {
+						await createUserWithDatabase("u@test.com", fakeCredential);
+					} catch (err) {
+						thrown = err as Error;
+					}
+					assert.assertEquals(
+						thrown?.message,
+						"failed to allocate user database after retries",
+					);
+					assert.assertEquals(createDbStub.callCount, 5);
+					assert.assertEquals(apiStub.callCount, 0);
+				},
+			});
+		},
+	});
+});
+
+Deno.test(function generateShortDbIdProducesExpectedShape() {
+	const id = generateShortDbId(21);
+	assert.assertEquals(id.length, 21);
+	assert.assertMatch(id, /^[a-z0-9]{21}$/);
+	const other = generateShortDbId(21);
+	assert.assertNotEquals(id, other);
+	const short = generateShortDbId(8);
+	assert.assertEquals(short.length, 8);
+	assert.assertMatch(short, /^[a-z0-9]{8}$/);
 });
 
 Deno.test(async function createInviteAllowsBelowQuota() {

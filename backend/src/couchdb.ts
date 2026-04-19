@@ -60,6 +60,27 @@ export async function prepareUserDatabase(dbName: string, email: string) {
 	}
 }
 
+export async function createUserDatabase(
+	dbName: string,
+	email: string,
+): Promise<boolean> {
+	const resp = await dbCreate(dbName);
+	if (!resp) {
+		throw new Error(`createUserDatabase network error for ${dbName}`);
+	}
+	if (resp.status === 201 || resp.status === 202) {
+		await dbSecurityApply(dbName, [email]);
+		return true;
+	}
+	if (resp.status === 412 || resp.status === 409) {
+		return false;
+	}
+	const body = await resp.text();
+	throw new Error(
+		`createUserDatabase failed for ${dbName}: ${resp.status} ${body}`,
+	);
+}
+
 export const couchdbInternals = {
 	dbApi,
 	dbExists,
@@ -67,4 +88,5 @@ export const couchdbInternals = {
 	dbSecurityApply,
 	dbSecurityAddMember,
 	prepareUserDatabase,
+	createUserDatabase,
 };
