@@ -293,25 +293,27 @@ export default function Settings() {
 	const Messages = useMessages();
 
 	return (
-		<Tabs
-			testId="settingsTabs"
-			items={[
-				{
-					key: "profile",
-					label: Messages.menu.profile,
-					children: <ProfileTab />,
-				},
-				{
-					key: "preferences",
-					label: Messages.menu.preferences,
-					children: <PreferencesTab />,
-				},
-				{
-					key: "passphrase",
-					label: Messages.menu.change_passphrase,
-					children: <PassphraseTab />,
-				},
-			]}
-		/>
+		<div className="bg-background-800 h-full">
+			<Tabs
+				testId="settingsTabs"
+				items={[
+					{
+						key: "profile",
+						label: Messages.menu.profile,
+						children: <ProfileTab />,
+					},
+					{
+						key: "preferences",
+						label: Messages.menu.preferences,
+						children: <PreferencesTab />,
+					},
+					{
+						key: "passphrase",
+						label: Messages.menu.change_passphrase,
+						children: <PassphraseTab />,
+					},
+				]}
+			/>
+		</div>
 	);
 }

@@ -27,7 +27,7 @@ export const BaseFormEditor = ({
 	footer,
 }: BaseFormEditor) => (
 	<VerticalSpace
-		className={`bg-background-800 p-4 ${className || ""}`}
+		className={`p-2 ${className || ""}`}
 		testId={testId}
 	>
 		{items.map((item) => (

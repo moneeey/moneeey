@@ -72,7 +72,6 @@ export const MoneeeyLogin = ({
 								autoComplete="username webauthn"
 								value={state.email}
 								placeholder={Messages.login.email}
-								containerArea
 								onChange={(value) => setState({ ...state, email: value })}
 							/>
 						),
