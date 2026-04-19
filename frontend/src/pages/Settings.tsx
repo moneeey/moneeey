@@ -87,17 +87,16 @@ function ProfileTab() {
 						<SecondaryButton onClick={() => setConfirmingDelete(false)}>
 							{Messages.util.cancel}
 						</SecondaryButton>
-						<PrimaryButton
+						<DeleteButton
 							onClick={() => {
 								persistence.truncateAll();
 							}}
-							className="!bg-danger-300 !text-danger-900"
 						>
 							<span className="flex items-center gap-1">
 								<TrashIcon className="h-4 w-4 shrink-0" />
 								{Messages.menu.delete_data}
 							</span>
-						</PrimaryButton>
+						</DeleteButton>
 					</Space>
 				</MinimalBasicScreen>
 			</div>

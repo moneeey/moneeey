@@ -38,7 +38,7 @@ const NavbarItems = ({
 		return compact([
 			<LinkButton
 				className={`relative flex items-center gap-1 !py-0.5 !px-2 no-underline hover:bg-background-900 hover:opacity-75 h-6 ${
-					item.isActive ? "opacity-75 !bg-background-900 mn-active-navbar" : ""
+					item.isActive ? "opacity-75 bg-background-900 mn-active-navbar" : ""
 				}`}
 				testId={`${testId}_${item.key}`}
 				onClick={item.onClick || (() => ({}))}
