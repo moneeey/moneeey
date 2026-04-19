@@ -294,7 +294,8 @@ export default observer(
 		const compactLayout: CompactLayout = hasReference
 			? [
 					[
-						{ title: Messages.util.date, muted: true, flex: 1 },
+						{ title: Messages.util.date, muted: true },
+						{ title: Messages.transactions.memo, flex: 1 },
 						{
 							title: Messages.transactions.running_balance,
 							muted: true,
@@ -303,12 +304,14 @@ export default observer(
 					],
 					[
 						{ title: Messages.transactions.account, flex: 2 },
-						{ title: Messages.transactions.memo, flex: 2 },
 						{ title: Messages.transactions.amount, align: "right" },
 					],
 				]
 			: [
-					[{ title: Messages.util.date, muted: true }],
+					[
+						{ title: Messages.util.date, muted: true },
+						{ title: Messages.transactions.memo, flex: 1 },
+					],
 					[
 						{
 							title: Messages.transactions.from_account,
@@ -325,7 +328,6 @@ export default observer(
 						},
 						{ title: Messages.transactions.to_amount, align: "right" },
 					],
-					[{ title: Messages.transactions.memo }],
 				];
 
 		return (
@@ -337,7 +339,7 @@ export default observer(
 				schemaFilter={schemaFilter}
 				factory={transactions.factory}
 				compactLayout={compactLayout}
-				compactRowHeight={hasReference ? 60 : 108}
+				compactRowHeight={hasReference ? 60 : 90}
 				schema={schema}
 			/>
 		);

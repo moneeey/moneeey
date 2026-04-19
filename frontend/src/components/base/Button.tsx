@@ -34,8 +34,8 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind) =>
 		return (
 			<button
 				type="button"
-				{...omit(base, ["testId"])}
-				{...omit(props, ["testId"])}
+				{...omit(base, ["testId", "compact"])}
+				{...omit(props, ["testId", "compact"])}
 				data-testid={props.testId || base.testId}
 				disabled={props.disabled}
 				className={`flex whitespace-nowrap rounded ${props.compact ? "" : "p-1"} outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 ${styles[kind]} ${
