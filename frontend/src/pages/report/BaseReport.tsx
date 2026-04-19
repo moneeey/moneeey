@@ -167,7 +167,7 @@ const BaseChart = ({
 	}));
 
 	return (
-		<ResponsiveContainer width="100%" height="100%" minHeight="42em">
+		<ResponsiveContainer width="100%" height="100%" minHeight="24em">
 			<Chart
 				width={0}
 				height={0}
