@@ -9,6 +9,7 @@ import { BaseFormEditor } from "../components/FormEditor";
 import { Status } from "../components/Status";
 import { OkButton, SecondaryButton } from "../components/base/Button";
 import { Input } from "../components/base/Input";
+import { VerticalSpace } from "../components/base/Space";
 import Tabs from "../components/base/Tabs";
 import SelfHostedSyncForm from "../components/sync/SelfHostedSyncForm";
 import {
@@ -47,7 +48,7 @@ export const MoneeeyLogin = ({
 	};
 
 	return (
-		<>
+		<VerticalSpace>
 			<p className="text-sm opacity-80">
 				{Messages.encryption.passkey_description}
 			</p>
@@ -90,7 +91,7 @@ export const MoneeeyLogin = ({
 					</div>
 				}
 			/>
-		</>
+		</VerticalSpace>
 	);
 };
 
@@ -152,7 +153,7 @@ export const MoneeeyAccountConfig = observer(() => {
 	const onLogout = () => management.logout();
 
 	return (
-		<>
+		<VerticalSpace>
 			{message}
 			{loggedIn ? (
 				<>
@@ -162,7 +163,7 @@ export const MoneeeyAccountConfig = observer(() => {
 			) : (
 				<MoneeeyLogin setMessage={setMessage} />
 			)}
-		</>
+		</VerticalSpace>
 	);
 });
 
