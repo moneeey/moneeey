@@ -286,7 +286,7 @@ const Header = observer(
 					onKeyDown={toggleMenu}
 				>
 					<TextTitle className="flex flex-row items-center gap-1 text-2xl pl-2">
-						<Icon className="!h-8 !w-8 p-1 rounded hover:ring-1 ring-secondary-200">
+						<Icon size="lg" className="p-1 rounded hover:ring-1 ring-secondary-200">
 							<Bars3Icon />
 						</Icon>
 						<div className="p-2 flex flex-row gap-2">

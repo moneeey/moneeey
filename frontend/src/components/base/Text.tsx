@@ -31,7 +31,7 @@ const BaseText = (
 		);
 	};
 
-const TextTitle = BaseText("text-xl", "h1");
+const TextTitle = BaseText("text-xl m-0", "h1");
 const TextSubtitle = BaseText("", "h2");
 const TextParagraph = BaseText("", "p");
 const TextNormal = BaseText("", "span");

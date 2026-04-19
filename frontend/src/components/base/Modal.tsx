@@ -51,9 +51,7 @@ const Modal = observer(
 			<Card
 				header={
 					<div className="flex justify-between align-middle">
-						<TextTitle testId="nm-modal-title" className="m-0">
-							{title}
-						</TextTitle>
+						<TextTitle testId="nm-modal-title">{title}</TextTitle>
 						<Icon className="m-1 mr-4 cursor-pointer hover:opacity-75">
 							<XCircleIcon onClick={onCloseFn} />
 						</Icon>

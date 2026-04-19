@@ -47,7 +47,7 @@ const NavbarItems = ({
 				title={item.label}
 			>
 				{expanded && item.children && item.children.length > 0 && (
-					<Icon className="!w-3 !h-3 absolute -left-1">
+					<Icon size="sm" className="absolute -left-1">
 						<ChevronRightIcon />
 					</Icon>
 				)}
