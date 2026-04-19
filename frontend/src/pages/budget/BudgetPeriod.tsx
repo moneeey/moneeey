@@ -35,21 +35,17 @@ const BudgetPeriods = observer(
 		const budgetArchives = budget.all
 			.map(({ archived }) => String(archived))
 			.join("_");
-		const budgetAmount = budget.ids.length;
-		const height =
-			budgetAmount < 4
-				? "h-[10em]"
-				: budgetAmount < 8
-					? "h-[16em]"
-					: budgetAmount < 12
-						? "h-[22em]"
-						: "h-[28em]";
+		const budgetAmount = viewArchived
+			? budget.ids.length
+			: budget.all.filter((b) => !b.archived).length;
+		const heightEm = Math.min(32, 6 + 1.6 * budgetAmount);
 
 		return (
 			<div className="flex flex-row flex-wrap gap-4">
 				{map(range(0, SHOW_MONTHS), (offset) => (
 					<div
-						className={`grow w-full md:w-[26em] md:max-w-[calc(50%-0.5rem)] ${height} pb-4`}
+						className="grow w-full md:w-[26em] md:max-w-[calc(50%-0.5rem)] pb-4"
+						style={{ height: `${heightEm}em` }}
 						key={`budgetPeriod_${viewArchived}_${formatDate(
 							startOfMonthOffset(startingDate, offset),
 						)}_${budgetIds}_${budgetArchives}`}
