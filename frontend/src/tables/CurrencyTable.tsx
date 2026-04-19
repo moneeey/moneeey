@@ -77,10 +77,7 @@ const CurrencyTable = observer(() => {
 	];
 
 	const compactLayout: CompactLayout = [
-		[
-			{ title: Messages.util.name },
-			{ title: Messages.util.tags },
-		],
+		[{ title: Messages.util.name }, { title: Messages.util.tags }],
 		[
 			{ title: Messages.currencies.short, muted: true },
 			{ title: Messages.currencies.prefix, muted: true },

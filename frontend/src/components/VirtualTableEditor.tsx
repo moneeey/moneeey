@@ -12,8 +12,8 @@ import {
 } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import {
-	FixedSizeList as GenericFixedSizeList,
 	type FixedSizeListProps,
+	FixedSizeList as GenericFixedSizeList,
 	VariableSizeGrid as GenericVirtualizedGrid,
 	type VariableSizeGridProps,
 } from "react-window";
@@ -425,10 +425,7 @@ const CompactHeaderLine = ({
 	sort: SortColumn;
 	setSort: Dispatch<SetStateAction<SortColumn>>;
 }) => (
-	<div
-		className="flex items-center gap-2"
-		style={{ height: lineHeight }}
-	>
+	<div className="flex items-center gap-2" style={{ height: lineHeight }}>
 		{line.map((rawCell, cellIdx) => {
 			const cell = asCompactCellObject(rawCell);
 			const column = columnsByTitle.get(cell.title);

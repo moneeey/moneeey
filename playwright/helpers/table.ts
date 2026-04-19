@@ -100,10 +100,10 @@ export async function retrieveRowsData(
 				if (compactRows.length > 0) return compactRows.length;
 				const cells = body.querySelectorAll('[data-testid="rowCell"]');
 				const indices = new Set<string>();
-				cells.forEach((c) => {
+				for (const c of Array.from(cells)) {
 					const idx = c.getAttribute("data-row-index");
 					if (idx !== null) indices.add(idx);
-				});
+				}
 				return indices.size;
 			}, tableTestId);
 			expect(count).toBe(expectedCount);
@@ -147,9 +147,7 @@ export async function retrieveRowsData(
 		);
 		if (compactRows.length > 0) {
 			return Array.from(compactRows).map((row) => {
-				const lines = row.querySelectorAll(
-					`[data-testid="${id}-compactLine"]`,
-				);
+				const lines = row.querySelectorAll(`[data-testid="${id}-compactLine"]`);
 				return Array.from(lines)
 					.map((line) =>
 						Array.from(line.children)
@@ -165,12 +163,12 @@ export async function retrieveRowsData(
 			body.querySelectorAll('[data-testid="rowCell"]'),
 		) as HTMLElement[];
 		const rowsMap = new Map<number, HTMLElement[]>();
-		cells.forEach((cell) => {
+		for (const cell of cells) {
 			const idx = Number(cell.getAttribute("data-row-index"));
-			if (Number.isNaN(idx)) return;
+			if (Number.isNaN(idx)) continue;
 			if (!rowsMap.has(idx)) rowsMap.set(idx, []);
 			rowsMap.get(idx)?.push(cell);
-		});
+		}
 		const sortedIndices = Array.from(rowsMap.keys()).sort((a, b) => a - b);
 		return sortedIndices.map((idx) => {
 			const rowCells = rowsMap.get(idx) ?? [];

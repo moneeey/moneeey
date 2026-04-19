@@ -10,7 +10,7 @@ import DateField from "../components/editor/DateField";
 import type { FieldDef } from "../components/editor/FieldDef";
 import TagField from "../components/editor/TagField";
 import TextField from "../components/editor/TextField";
-import { AccountKind, type IAccount } from "../entities/Account";
+import type { AccountKind, IAccount } from "../entities/Account";
 import { NavigationModal } from "../shared/Navigation";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
@@ -117,10 +117,7 @@ const AccountTable = observer(
 		];
 
 		const compactLayout: CompactLayout = [
-			[
-				{ title: Messages.util.name },
-				{ title: Messages.util.tags },
-			],
+			[{ title: Messages.util.name }, { title: Messages.util.tags }],
 			[
 				{ title: Messages.account.account_kind, muted: true },
 				{ title: Messages.util.currency, muted: true },
