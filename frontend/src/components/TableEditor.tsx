@@ -24,7 +24,6 @@ interface TableEditorProps<T extends IBaseEntity> extends WithDataTestId {
 	factory: (id?: string) => T;
 	creatable?: boolean;
 	compactLayout?: CompactLayout;
-	compactRowHeight?: number;
 }
 
 export default observer(
@@ -36,7 +35,6 @@ export default observer(
 		creatable,
 		testId,
 		compactLayout,
-		compactRowHeight,
 	}: TableEditorProps<T>) => {
 		const [newEntityId, setNewEntityId] = useState(() =>
 			store.getUuid(store.factory()),
@@ -125,7 +123,6 @@ export default observer(
 				rows={entities}
 				isNewEntity={isNewEntity}
 				compactLayout={compactLayout}
-				compactRowHeight={compactRowHeight}
 			/>
 		);
 	},

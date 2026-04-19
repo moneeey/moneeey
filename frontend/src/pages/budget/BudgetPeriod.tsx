@@ -2,9 +2,7 @@ import { map, range } from "lodash";
 import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
 
-import TableEditor, {
-	type CompactLayout,
-} from "../../components/TableEditor";
+import TableEditor, { type CompactLayout } from "../../components/TableEditor";
 import Card from "../../components/base/Card";
 import { TextTitle } from "../../components/base/Text";
 import CurrencyAmountField from "../../components/editor/CurrencyAmountField";
@@ -84,7 +82,12 @@ const BudgetPeriod = observer(
 			],
 			[
 				{ title: Messages.budget.used, muted: true, flex: 2 },
-				{ title: Messages.budget.remaining, muted: true, flex: 1, align: "right" },
+				{
+					title: Messages.budget.remaining,
+					muted: true,
+					flex: 1,
+					align: "right",
+				},
 			],
 		];
 
@@ -104,7 +107,6 @@ const BudgetPeriod = observer(
 					factory={budget.envelopes.factory}
 					creatable={false}
 					compactLayout={compactLayout}
-					compactRowHeight={60}
 					schemaFilter={(b) => {
 						if (b.starting !== starting) return false;
 						if (!b.budget) return false;

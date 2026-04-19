@@ -318,7 +318,11 @@ export default observer(
 							icon: arrowDown,
 							flex: 2,
 						},
-						{ title: Messages.transactions.from_amount, align: "right" },
+						{
+							title: Messages.transactions.from_amount,
+							align: "right",
+							flex: 1,
+						},
 					],
 					[
 						{
@@ -326,7 +330,11 @@ export default observer(
 							icon: arrowUp,
 							flex: 2,
 						},
-						{ title: Messages.transactions.to_amount, align: "right" },
+						{
+							title: Messages.transactions.to_amount,
+							align: "right",
+							flex: 1,
+						},
 					],
 				];
 
@@ -339,7 +347,6 @@ export default observer(
 				schemaFilter={schemaFilter}
 				factory={transactions.factory}
 				compactLayout={compactLayout}
-				compactRowHeight={hasReference ? 60 : 90}
 				schema={schema}
 			/>
 		);

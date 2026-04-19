@@ -26,7 +26,7 @@ const VirtualizedGrid =
 
 const SCROLLBAR_WIDTH = 24;
 const ROW_HEIGHT = 24;
-const COMPACT_ROW_HEIGHT = 72;
+const COMPACT_ROW_LINE_HEIGHT = 30;
 const COMPACT_HEADER_LINE_HEIGHT = 20;
 const COMPACT_HEADER_VERTICAL_PADDING = 8;
 
@@ -70,7 +70,6 @@ type VirtualTableProps = {
 	rows: Row[];
 	isNewEntity?: (row: Row) => boolean;
 	compactLayout?: CompactLayout;
-	compactRowHeight?: number;
 };
 
 type GridRenderCell = {
@@ -473,7 +472,6 @@ const VirtualTable = function VirtualTableRenderer({
 	testId,
 	isNewEntity,
 	compactLayout,
-	compactRowHeight = COMPACT_ROW_HEIGHT,
 }: VirtualTableProps & WithDataTestId) {
 	const density = useTableDensity();
 	const isCompact = density === "compact";
@@ -488,6 +486,9 @@ const VirtualTable = function VirtualTableRenderer({
 		() => compactLayout ?? defaultCompactLayout(columns),
 		[compactLayout, columns],
 	);
+
+	const compactRowHeight =
+		resolvedCompactLayout.length * COMPACT_ROW_LINE_HEIGHT;
 
 	const [sort, setSort] = useState(() => {
 		const column =
