@@ -13,7 +13,7 @@ import { TextTitle } from "./Text";
 interface ModalProps {
 	fullScreen?: boolean;
 	title: string;
-	footer: ReactNode;
+	footer?: ReactNode;
 	onClose?: () => void;
 	isOpen?: boolean;
 	modalId?: NavigationModal;

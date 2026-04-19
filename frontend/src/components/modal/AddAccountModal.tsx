@@ -12,7 +12,6 @@ export default function AddAccountModal() {
 		<Modal
 			modalId={NavigationModal.ADD_ACCOUNT}
 			title={Messages.new_account.name}
-			footer={<div />}
 			onClose={() => {
 				if (!isEmpty(accounts.all)) {
 					navigation.closeModal();
