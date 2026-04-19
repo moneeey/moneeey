@@ -35,6 +35,7 @@ import SettingsRoute from "../routes/SettingsRoute";
 import { Status } from "../shared/Persistence";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import { StorageKind, getStorage, setStorage } from "../utils/Utils";
+import useTableDensity from "../utils/useTableDensity";
 
 import RouteRenderer, { RouteContentRender } from "../routes/RouteRenderer";
 
@@ -55,6 +56,7 @@ const Menu = observer(
 		expanded: boolean;
 	}) => {
 		const Messages = useMessages();
+		const density = useTableDensity();
 		const {
 			navigation,
 			accounts,
@@ -95,12 +97,10 @@ const Menu = observer(
 
 		const allRunningBalances = Array.from(runningBalances.values()).join("_");
 
-		const isMobile = () => window.innerWidth < 768;
-
 		const routeLink = (url: string) => ({
 			onClick: () => {
 				navigation.navigate(url);
-				if (isMobile()) {
+				if (density === "compact") {
 					setExpanded(false);
 				}
 			},
@@ -122,7 +122,7 @@ const Menu = observer(
 							testId="appMenu_sync_status"
 							onClick={() => {
 								navigation.navigate(SettingsRoute.url());
-								if (isMobile()) setExpanded(false);
+								if (density === "compact") setExpanded(false);
 							}}
 							title={`${Messages.modal.sync} ${Messages.menu[`sync_${persistence.status}`]}`}
 						>

@@ -15,14 +15,19 @@ import {
 } from "react-window";
 
 import { observer } from "mobx-react-lite";
+import useMessages from "../utils/Messages";
+import useTableDensity from "../utils/useTableDensity";
 import type { WithDataTestId } from "./base/Common";
 import Icon from "./base/Icon";
+import Select from "./base/Select";
 
 const VirtualizedGrid =
 	GenericVirtualizedGrid as unknown as ComponentType<VariableSizeGridProps>;
 
 const SCROLLBAR_WIDTH = 24;
 const ROW_HEIGHT = 24;
+const COMPACT_ROW_HEIGHT = 80;
+const COMPACT_HEADER_HEIGHT = 40;
 
 export type Row = {
 	entityId: string;
@@ -49,6 +54,8 @@ type VirtualTableProps = {
 	columns: ColumnDef[];
 	rows: Row[];
 	isNewEntity?: (row: Row) => boolean;
+	compactRender?: (row: Row) => JSX.Element;
+	compactRowHeight?: number;
 };
 
 type GridRenderCell = {
@@ -238,12 +245,123 @@ const VirtualTableGrid = ({
 	);
 };
 
+const CompactContentCell = observer(
+	({
+		row,
+		rowIndex,
+		style,
+		compactRender,
+	}: {
+		row: Row | undefined;
+		rowIndex: number;
+		style: object;
+		compactRender: (row: Row) => JSX.Element;
+	}) => {
+		if (!row) return <div style={style} />;
+		const bgColor =
+			rowIndex % 2 === 0 ? "bg-background-800" : "bg-background-600";
+		return (
+			<div
+				style={style}
+				className={`${bgColor} border-b border-background-700 px-2`}
+			>
+				{compactRender(row)}
+			</div>
+		);
+	},
+);
+
+const CompactVirtualTableGrid = ({
+	testId,
+	width,
+	height,
+	rows,
+	rowHeight,
+	compactRender,
+	sort,
+	setSort,
+	columns,
+}: {
+	width: number;
+	height: number;
+	rows: Row[];
+	rowHeight: number;
+	compactRender: (row: Row) => JSX.Element;
+	setSort: Dispatch<SetStateAction<SortColumn>>;
+	sort: SortColumn;
+	columns: ColumnDef[];
+} & WithDataTestId) => {
+	const Messages = useMessages();
+	const sortableColumns = useMemo(
+		() => columns.filter((col) => col.sorter),
+		[columns],
+	);
+
+	const sortOptions = sortableColumns.flatMap((col) => [
+		{ label: `${col.title} ↑`, value: `${col.index}:ascend` },
+		{ label: `${col.title} ↓`, value: `${col.index}:descend` },
+	]);
+
+	const sortValue = `${sort.column.index}:${sort.order}`;
+
+	return (
+		<>
+			<div
+				className={`flex items-center gap-2 bg-background-700 px-2 ${testId}-header`}
+				style={{ height: COMPACT_HEADER_HEIGHT }}
+			>
+				<Select
+					testId={`${testId}-sort`}
+					placeholder={Messages.settings.sort_by}
+					value={sortValue}
+					options={sortOptions}
+					onChange={(value) => {
+						const [rawIndex, rawOrder] = value.split(":");
+						const nextIndex = Number(rawIndex);
+						if (Number.isNaN(nextIndex)) return;
+						const nextColumn = columns.find((col) => col.index === nextIndex);
+						if (!nextColumn) return;
+						setSort({
+							column: nextColumn,
+							order: rawOrder === "descend" ? "descend" : "ascend",
+						});
+					}}
+				/>
+			</div>
+			<VirtualizedGrid
+				className={`bg-background-800 pb-2 ${testId}-body`}
+				height={height - COMPACT_HEADER_HEIGHT}
+				width={width}
+				rowCount={rows.length}
+				columnCount={1}
+				rowHeight={() => rowHeight}
+				columnWidth={() => width}
+				itemKey={({ rowIndex }) => `${rows[rowIndex]?.entityId ?? rowIndex}`}
+			>
+				{({ rowIndex, style }) => (
+					<CompactContentCell
+						row={rows[rowIndex]}
+						rowIndex={rowIndex}
+						style={style}
+						compactRender={compactRender}
+					/>
+				)}
+			</VirtualizedGrid>
+		</>
+	);
+};
+
 const VirtualTable = function VirtualTableRenderer({
 	columns,
 	rows,
 	testId,
 	isNewEntity,
+	compactRender,
+	compactRowHeight = COMPACT_ROW_HEIGHT,
 }: VirtualTableProps & WithDataTestId) {
+	const density = useTableDensity();
+	const isCompact = density === "compact" && Boolean(compactRender);
+
 	const [sort, setSort] = useState(() => {
 		const column =
 			columns.find((col) => Boolean(col.defaultSortOrder)) || columns[0];
@@ -269,18 +387,33 @@ const VirtualTable = function VirtualTableRenderer({
 
 	return (
 		<AutoSizer>
-			{({ width, height }: { width: number; height: number }) => (
-				<VirtualTableGrid
-					key={`${width}_${height}`}
-					testId={testId}
-					width={width}
-					height={height}
-					columns={columns}
-					rows={sortedRows}
-					setSort={setSort}
-					sort={sort}
-				/>
-			)}
+			{({ width, height }: { width: number; height: number }) =>
+				isCompact && compactRender ? (
+					<CompactVirtualTableGrid
+						key={`compact_${width}_${height}`}
+						testId={testId}
+						width={width}
+						height={height}
+						rows={sortedRows}
+						rowHeight={compactRowHeight}
+						compactRender={compactRender}
+						sort={sort}
+						setSort={setSort}
+						columns={columns}
+					/>
+				) : (
+					<VirtualTableGrid
+						key={`${width}_${height}`}
+						testId={testId}
+						width={width}
+						height={height}
+						columns={columns}
+						rows={sortedRows}
+						setSort={setSort}
+						sort={sort}
+					/>
+				)
+			}
 		</AutoSizer>
 	);
 };

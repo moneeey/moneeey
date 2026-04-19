@@ -10,12 +10,21 @@ import VirtualTable, { type Row, type ColumnDef } from "./VirtualTableEditor";
 import type { WithDataTestId } from "./base/Common";
 import type { FieldDef } from "./editor/FieldDef";
 
+export type MobileFieldRenderer = (title: string) => JSX.Element;
+
+export interface MobileRenderContext<T> {
+	entity: T;
+	renderField: MobileFieldRenderer;
+}
+
 interface TableEditorProps<T extends IBaseEntity> extends WithDataTestId {
 	store: MappedStore<T>;
 	schema: FieldDef<T>[];
 	schemaFilter?: (row: T) => boolean;
 	factory: (id?: string) => T;
 	creatable?: boolean;
+	mobileRender?: (ctx: MobileRenderContext<T>) => JSX.Element;
+	mobileRowHeight?: number;
 }
 
 export default observer(
@@ -26,6 +35,8 @@ export default observer(
 		factory,
 		creatable,
 		testId,
+		mobileRender,
+		mobileRowHeight,
 	}: TableEditorProps<T>) => {
 		const [newEntityId, setNewEntityId] = useState(() =>
 			store.getUuid(store.factory()),
@@ -104,6 +115,35 @@ export default observer(
 			[newEntityId],
 		);
 
+		const compactRender = useMemo(
+			() =>
+				mobileRender
+					? ({ entityId }: Row) => {
+							const entity = (store.byUuid(entityId) ??
+								store.factory(entityId)) as T;
+							const renderField: MobileFieldRenderer = (title: string) => {
+								const field = schema.find((f) => f.title === title);
+								if (!field) return <></>;
+								const isError = !field.validate(entity).valid;
+								const withRev = entity as unknown as { _rev?: string };
+								return (
+									<field.render
+										rev={withRev._rev || ""}
+										entity={entity}
+										field={field}
+										isError={isError}
+										commit={(updated) =>
+											field.validate(updated).valid && store.merge(updated)
+										}
+									/>
+								);
+							};
+							return mobileRender({ entity, renderField });
+						}
+					: undefined,
+			[mobileRender, store, schema],
+		);
+
 		return (
 			<VirtualTable
 				testId={testId}
@@ -111,6 +151,8 @@ export default observer(
 				columns={columns}
 				rows={entities}
 				isNewEntity={isNewEntity}
+				compactRender={compactRender}
+				compactRowHeight={mobileRowHeight}
 			/>
 		);
 	},

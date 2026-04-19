@@ -14,6 +14,7 @@ import type TransactionStore from "../entities/Transaction";
 import type { ITransaction } from "../entities/Transaction";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
+import MobileTransactionRow from "./mobile/MobileTransactionRow";
 
 interface TransactionSettingsProps {
 	creatable?: boolean;
@@ -94,6 +95,14 @@ export default observer(
 				store={transactions}
 				schemaFilter={schemaFilter}
 				factory={transactions.factory}
+				mobileRender={({ entity }) => (
+					<MobileTransactionRow
+						entity={entity}
+						referenceAccount={
+							isEmpty(referenceAccount) ? undefined : referenceAccount
+						}
+					/>
+				)}
 				schema={[
 					{
 						title: Messages.util.date,

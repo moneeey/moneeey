@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import LanguageSelector from "../components/LanguageSelector";
 import Loading from "../components/Loading";
+import TableDensitySwitcher from "../components/TableDensitySwitcher";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import {
 	DeleteButton,
@@ -280,6 +281,7 @@ export default function Settings() {
 					</span>
 				</LinkButton>
 				<LanguageSelector />
+				<TableDensitySwitcher />
 				<ThemeSwitcher />
 			</div>
 			<Tabs
