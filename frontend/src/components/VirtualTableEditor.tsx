@@ -288,7 +288,8 @@ const CompactRowLine = ({
 			const columnClass = column.customClass
 				? column.customClass(row, rowIndex)
 				: "";
-			const alignClass = cell.align === "right" ? "text-right" : "";
+			const alignClass =
+				cell.align === "right" ? "text-right [&_input]:text-right" : "";
 			const mutedClass = cell.muted ? "text-xs text-muted-foreground" : "";
 			const flexValue = cell.flex ?? 1;
 			return (

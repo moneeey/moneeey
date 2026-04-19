@@ -10,7 +10,7 @@ import DateField from "../components/editor/DateField";
 import type { FieldDef } from "../components/editor/FieldDef";
 import TagField from "../components/editor/TagField";
 import TextField from "../components/editor/TextField";
-import type { AccountKind, IAccount } from "../entities/Account";
+import { AccountKind, type IAccount } from "../entities/Account";
 import { NavigationModal } from "../shared/Navigation";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
@@ -116,14 +116,25 @@ const AccountTable = observer(
 			},
 		];
 
-		const compactLayout: CompactLayout = [
-			[{ title: Messages.util.name, flex: 1 }],
-			[
-				{ title: Messages.util.currency, muted: true, flex: 1 },
-				{ title: Messages.account.account_kind, muted: true, flex: 1 },
-			],
-			[{ title: Messages.util.tags, muted: true }],
-		];
+		const isPayee = kind === AccountKind.PAYEE;
+		const compactLayout: CompactLayout = isPayee
+			? [
+					[
+						{ title: Messages.util.name, flex: 1 },
+						{ title: Messages.util.tags, flex: 1 },
+					],
+					[{ title: Messages.util.currency, muted: true, flex: 1 }],
+				]
+			: [
+					[
+						{ title: Messages.util.name, flex: 1 },
+						{ title: Messages.util.tags, flex: 1 },
+					],
+					[
+						{ title: Messages.account.account_kind, muted: true, flex: 1 },
+						{ title: Messages.util.currency, muted: true, flex: 1 },
+					],
+				];
 
 		return (
 			<>
@@ -136,7 +147,7 @@ const AccountTable = observer(
 						factory={(id?: string) => ({ ...accounts.factory(id), kind })}
 						schema={schema}
 						compactLayout={compactLayout}
-						compactRowHeight={84}
+						compactRowHeight={60}
 					/>
 				</div>
 			</>

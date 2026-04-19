@@ -77,14 +77,16 @@ const CurrencyTable = observer(() => {
 	];
 
 	const compactLayout: CompactLayout = [
-		[{ title: Messages.util.name, flex: 1 }],
+		[
+			{ title: Messages.util.name, flex: 1 },
+			{ title: Messages.util.tags, flex: 1 },
+		],
 		[
 			{ title: Messages.currencies.short, muted: true, flex: 1 },
 			{ title: Messages.currencies.prefix, muted: true, flex: 1 },
 			{ title: Messages.currencies.suffix, muted: true, flex: 1 },
 			{ title: Messages.currencies.decimals, muted: true, flex: 1 },
 		],
-		[{ title: Messages.util.tags, muted: true }],
 	];
 
 	return (
@@ -94,7 +96,7 @@ const CurrencyTable = observer(() => {
 			factory={currencies.factory}
 			schema={schema}
 			compactLayout={compactLayout}
-			compactRowHeight={84}
+			compactRowHeight={60}
 		/>
 	);
 });

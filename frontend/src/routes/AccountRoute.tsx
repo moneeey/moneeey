@@ -53,11 +53,6 @@ const AccountTransactions = observer(
 		};
 		const referenceAccount = account_uuid;
 
-		console.log(
-			"AccountTransactions render runningBalanceVersion",
-			runningBalanceVersion,
-		);
-
 		return (
 			<TransactionTable
 				tableId={`accountTransactions${account_uuid}_${account_name}__${globalSearchTags.join("_")}_${runningBalanceVersion}`}

@@ -7,7 +7,7 @@ export type TableDensity = "compact" | "full";
 
 export const TABLE_DENSITY_STORAGE_KEY = "tableDensity";
 export const TABLE_DENSITY_CHANGE_EVENT = "tableDensityChange";
-export const TABLE_DENSITY_BREAKPOINT = 768;
+export const TABLE_DENSITY_BREAKPOINT = 1024;
 
 const isTableDensityMode = (value: string): value is TableDensityMode =>
 	value === "compact" || value === "full" || value === "auto";
