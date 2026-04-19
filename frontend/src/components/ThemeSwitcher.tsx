@@ -52,7 +52,7 @@ export default function ThemeSwitcher() {
 		return (
 			<i
 				data-testid={`themeSwitcher_${value}`}
-				className={`inline-block h-6 w-6 rounded-xl hover:ring-4 ring-secondary-500 p-0.5 ${
+				className={`inline-block h-6 w-6 rounded-xl hover:ring-4 ring-secondary-500 ${
 					isActive ? "ring-4" : ""
 				}`}
 				onClick={() => selectMode(value)}

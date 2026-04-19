@@ -34,7 +34,7 @@ const FeatureBalloon = ({ title, description, delay }: FeatureBalloonProps) => {
 	return (
 		<div
 			style={{ animationDelay: `${delay}s` }}
-			className="bg-background-600 rounded-lg shadow-lg p-6 max-w-sm hover:shadow-xl transition-all duration-300 animate-fade-in-up opacity-0 border border-primary-300 hover:border-primary-500"
+			className="bg-background-600 rounded-lg shadow-lg p-4 max-w-sm hover:shadow-xl transition-all duration-300 animate-fade-in-up opacity-0 border border-primary-300 hover:border-primary-500"
 		>
 			<h3 className="text-xl font-semibold text-primary-600 mb-2">{title}</h3>
 			<p className="text-muted">{description}</p>
@@ -88,7 +88,7 @@ export default function LandingPage() {
 					<LanguageSelector />
 				</div>
 
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
 					{featureList.map((feature) => (
 						<FeatureBalloon
 							key={feature.key}
@@ -100,7 +100,7 @@ export default function LandingPage() {
 				</div>
 
 				<div
-					className="flex  justify-center  animate-fade-in space-y-8"
+					className="flex justify-center animate-fade-in"
 					style={{ animationDelay: "0.7s" }}
 				>
 					<OkButton

@@ -228,7 +228,7 @@ function PassphraseTab() {
 	};
 
 	return (
-		<div className="flex flex-col gap-3 p-2 max-w-md">
+		<div className="flex flex-col gap-4 p-2 max-w-md">
 			<p className="text-sm opacity-80">
 				{Messages.encryption.change_description}
 			</p>

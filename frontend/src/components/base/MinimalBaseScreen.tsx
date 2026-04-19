@@ -8,7 +8,7 @@ export default function MinimalBasicScreen({
 	const Messages = useMessages();
 	return (
 		<div className="fixed inset-0 bg-background-600 overflow-y-auto">
-			<div className="min-h-full flex flex-col items-center justify-center py-8">
+			<div className="min-h-full flex flex-col items-center justify-center py-4">
 				<div className="flex flex-col items-center gap-4 w-full max-w-2xl px-4 text-center">
 					<h1
 						className="flex flex-row scale-125"
