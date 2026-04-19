@@ -4,7 +4,8 @@ import { FavIcon } from "./Icon";
 
 export default function MinimalBasicScreen({
 	children,
-}: { children: ReactNode }) {
+	welcome,
+}: { children: ReactNode; welcome?: boolean }) {
 	const Messages = useMessages();
 	return (
 		<div className="fixed inset-0 bg-background-600 overflow-y-auto">
@@ -14,7 +15,10 @@ export default function MinimalBasicScreen({
 						className="flex flex-row scale-125"
 						data-testid="minimalScreenTitle"
 					>
-						<FavIcon /> <span className="ml-2">{Messages.tour.welcome}</span>
+						<FavIcon />{" "}
+						<span className="ml-2">
+							{welcome ? Messages.tour.welcome : Messages.menu.title}
+						</span>
 					</h1>
 					{children}
 				</div>

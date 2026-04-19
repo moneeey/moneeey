@@ -75,7 +75,7 @@ export default function LandingPage() {
 	];
 
 	return (
-		<MinimalBaseScreen>
+		<MinimalBaseScreen welcome>
 			<div className="container mx-auto px-4 py-8">
 				<div className="text-center mb-8 animate-fade-in">
 					<p className="text-xl text-muted max-w-2xl mx-auto">

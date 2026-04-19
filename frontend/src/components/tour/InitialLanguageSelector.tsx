@@ -19,7 +19,7 @@ export default function InitialLanguageSelector() {
 	const { selectLanguage, messagesForLanguage } = useLanguageSwitcher();
 	const Messages = messagesForLanguage(language);
 	return (
-		<MinimalBasicScreen>
+		<MinimalBasicScreen welcome>
 			<LanguageSelector onSelect={(selected) => setLanguage(selected)} />
 			<OkButton
 				disabled={language === LanguageUnset}
