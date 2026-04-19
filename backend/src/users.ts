@@ -56,7 +56,7 @@ async function sha(algo: "SHA-256" | "SHA-384", value: string) {
 }
 
 async function passkeyUserDocId(email: string) {
-	return `user:${await sha384(`passkey:${email}`)}`;
+	return `user:passkey${await sha384(`passkey:${email}`)}`;
 }
 
 function inviteDocId(tokenHash: string) {
