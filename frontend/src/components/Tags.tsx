@@ -42,8 +42,7 @@ const TagsRenderer = ({ color, tags }: IStyledTagsProp) => {
 						onMouseOver={() => setTag(t)}
 						onMouseOut={() => setTag("")}
 						title={t}
-						onClick={(e) => {
-							e.preventDefault();
+						onClick={() => {
 							moneeeyStore.navigation.globalSearchToggleTags([t]);
 						}}
 					/>
