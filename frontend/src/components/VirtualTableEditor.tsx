@@ -348,7 +348,7 @@ const CompactRowLine = ({
 				: "";
 			const alignClass =
 				cell.align === "right" && "text-right [&_input]:text-right";
-			const mutedClass = cell.muted && "text-xs text-muted-foreground";
+			const mutedClass = cell.muted && "text-muted-foreground";
 			const flexValue = cell.flex ?? 1;
 			return (
 				<div

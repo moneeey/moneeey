@@ -310,7 +310,7 @@ export default observer(
 			: [
 					[
 						{ title: Messages.util.date, muted: true },
-						{ title: Messages.transactions.memo },
+						{ title: Messages.transactions.memo, muted: true },
 					],
 					[
 						{

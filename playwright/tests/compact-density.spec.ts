@@ -61,22 +61,22 @@ test("Compact all-transactions — header and rows show per-side amounts", async
 		await retrieveRowsData(page, "transactionTable", 4),
 	).toEqual([
 		[
-			`date: ${today} (text-xs text-muted-foreground) | memo:  ()`,
+			`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
 			`from: Initial balance BRL (min-w-0 grow) | from_amount: 1.234,56 (text-right [&_input]:text-right text-negative)`,
 			`to: Banco Moneeey (min-w-0 grow) | to_amount: 1.234,56 (text-right [&_input]:text-right text-positive)`,
 		].join("\n"),
 		[
-			`date: ${today} (text-xs text-muted-foreground) | memo:  ()`,
+			`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
 			`from: Initial balance BRL (min-w-0 grow) | from_amount: 2.000 (text-right [&_input]:text-right text-negative)`,
 			`to: MoneeeyCard (min-w-0 grow) | to_amount: 2.000 (text-right [&_input]:text-right text-positive)`,
 		].join("\n"),
 		[
-			`date: ${today} (text-xs text-muted-foreground) | memo:  ()`,
+			`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
 			`from: Initial balance BTC (min-w-0 grow) | from_amount: 0,12345678 (text-right [&_input]:text-right text-negative)`,
 			`to: Bitcoinss (min-w-0 grow) | to_amount: 0,12345678 (text-right [&_input]:text-right text-positive)`,
 		].join("\n"),
 		[
-			`date: ${today} (text-xs text-muted-foreground) | memo:  ()`,
+			`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
 			`from: From (min-w-0 grow) | from_amount: 0 (text-right [&_input]:text-right)`,
 			`to: To (min-w-0 grow) | to_amount: 0 (text-right [&_input]:text-right)`,
 		].join("\n"),
@@ -106,11 +106,11 @@ test("Compact reference-account view — rows show running balance inline", asyn
 		await retrieveRowsData(page, "transactionTable", 2),
 	).toEqual([
 		[
-			`date: ${today} (text-xs text-muted-foreground) | memo:  () | running: 1.234,56 (text-right [&_input]:text-right text-xs text-muted-foreground text-positive)`,
+			`date: ${today} (text-muted-foreground) | memo:  () | running: 1.234,56 (text-right [&_input]:text-right text-muted-foreground text-positive)`,
 			`account: Initial balance BRL () | amount: 1.234,56 (text-right [&_input]:text-right text-positive)`,
 		].join("\n"),
 		[
-			`date: ${today} (text-xs text-muted-foreground) | memo:  () | running: 0 (text-right [&_input]:text-right text-xs text-muted-foreground)`,
+			`date: ${today} (text-muted-foreground) | memo:  () | running: 0 (text-right [&_input]:text-right text-muted-foreground)`,
 			`account: Account () | amount: 0 (text-right [&_input]:text-right)`,
 		].join("\n"),
 	]);
@@ -126,19 +126,19 @@ test("Compact account settings — rows show name + currency + type", async ({
 	expect(rows).toEqual([
 		[
 			"name: Banco Moneeey () | tags: Tags ()",
-			"type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
+			"type: Checking Account (text-muted-foreground) | currency: BRL Brazilian Real (text-muted-foreground)",
 		].join("\n"),
 		[
 			"name: Bitcoinss () | tags: Tags ()",
-			"type: Checking Account (text-xs text-muted-foreground) | currency: BTC Bitcoin (text-xs text-muted-foreground)",
+			"type: Checking Account (text-muted-foreground) | currency: BTC Bitcoin (text-muted-foreground)",
 		].join("\n"),
 		[
 			"name: MoneeeyCard () | tags: Tags ()",
-			"type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
+			"type: Checking Account (text-muted-foreground) | currency: BRL Brazilian Real (text-muted-foreground)",
 		].join("\n"),
 		[
 			"name:  () | tags: Tags ()",
-			"type: Checking Account (text-xs text-muted-foreground) | currency: BRL Brazilian Real (text-xs text-muted-foreground)",
+			"type: Checking Account (text-muted-foreground) | currency: BRL Brazilian Real (text-muted-foreground)",
 		].join("\n"),
 	]);
 });
@@ -163,13 +163,13 @@ test("Compact currency settings — header and rows show short/prefix/decimals",
 	expect(brl).toBe(
 		[
 			"name: Brazilian Real () | tags: Tags ()",
-			"short: BRL (text-xs text-muted-foreground) | prefix: R$ (text-xs text-muted-foreground) | suffix:  (text-xs text-muted-foreground) | decimals: 2 (text-xs text-muted-foreground)",
+			"short: BRL (text-muted-foreground) | prefix: R$ (text-muted-foreground) | suffix:  (text-muted-foreground) | decimals: 2 (text-muted-foreground)",
 		].join("\n"),
 	);
 	expect(btc).toBe(
 		[
 			"name: Bitcoin () | tags: Tags ()",
-			"short: BTC (text-xs text-muted-foreground) | prefix: ₿ (text-xs text-muted-foreground) | suffix:  (text-xs text-muted-foreground) | decimals: 8 (text-xs text-muted-foreground)",
+			"short: BTC (text-muted-foreground) | prefix: ₿ (text-muted-foreground) | suffix:  (text-muted-foreground) | decimals: 8 (text-muted-foreground)",
 		].join("\n"),
 	);
 });

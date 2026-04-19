@@ -33,7 +33,7 @@ const TagsRenderer = ({ color, tags }: IStyledTagsProp) => {
 	const moneeeyStore = useMoneeeyStore();
 
 	return (
-		<span>
+		<span className="inline-flex max-w-full items-center overflow-hidden whitespace-nowrap">
 			{tags.map((t: string) => {
 				return (
 					<Tag
