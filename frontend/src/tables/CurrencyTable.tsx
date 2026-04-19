@@ -94,7 +94,7 @@ const CurrencyTable = observer(() => {
 			factory={currencies.factory}
 			schema={schema}
 			compactLayout={compactLayout}
-			compactRowHeight={96}
+			compactRowHeight={84}
 		/>
 	);
 });

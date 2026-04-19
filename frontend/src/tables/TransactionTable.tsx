@@ -337,7 +337,7 @@ export default observer(
 				schemaFilter={schemaFilter}
 				factory={transactions.factory}
 				compactLayout={compactLayout}
-				compactRowHeight={hasReference ? 72 : 120}
+				compactRowHeight={hasReference ? 60 : 108}
 				schema={schema}
 			/>
 		);

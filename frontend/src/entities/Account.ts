@@ -1,3 +1,4 @@
+import { uniq } from "lodash";
 import { computed, makeObservable } from "mobx";
 
 import { EntityType, type IBaseEntity } from "../shared/Entity";
@@ -94,7 +95,7 @@ export class AccountStore extends MappedStore<IAccount> {
 				acct.currency_uuid,
 			);
 
-			return [acct.name, ...acct.tags, ...currencyTags];
+			return uniq([acct.name, ...acct.tags, ...currencyTags]);
 		}
 
 		return [];

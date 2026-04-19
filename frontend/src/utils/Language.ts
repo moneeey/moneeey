@@ -836,13 +836,6 @@ export default {
 			hi: "स्वचालित",
 			cn: "自动",
 		},
-		sort_by: {
-			en: "Sort by",
-			pt: "Ordenar por",
-			es: "Ordenar por",
-			hi: "क्रमबद्ध करें",
-			cn: "排序",
-		},
 	},
 	budget: {
 		budget: {

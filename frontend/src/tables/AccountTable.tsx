@@ -136,7 +136,7 @@ const AccountTable = observer(
 						factory={(id?: string) => ({ ...accounts.factory(id), kind })}
 						schema={schema}
 						compactLayout={compactLayout}
-						compactRowHeight={96}
+						compactRowHeight={84}
 					/>
 				</div>
 			</>

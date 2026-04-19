@@ -16,11 +16,9 @@ import {
 
 import { observer } from "mobx-react-lite";
 import type { ReactNode } from "react";
-import useMessages from "../utils/Messages";
 import useTableDensity from "../utils/useTableDensity";
 import type { WithDataTestId } from "./base/Common";
 import Icon from "./base/Icon";
-import Select from "./base/Select";
 import { FieldVisibility } from "./editor/FieldDef";
 
 const VirtualizedGrid =
@@ -28,8 +26,9 @@ const VirtualizedGrid =
 
 const SCROLLBAR_WIDTH = 24;
 const ROW_HEIGHT = 24;
-const COMPACT_ROW_HEIGHT = 80;
-const COMPACT_HEADER_HEIGHT = 40;
+const COMPACT_ROW_HEIGHT = 72;
+const COMPACT_HEADER_LINE_HEIGHT = 20;
+const COMPACT_HEADER_VERTICAL_PADDING = 8;
 
 export type Row = {
 	entityId: string;
@@ -280,7 +279,7 @@ const CompactRowLine = ({
 	rowIndex: number;
 	columnsByTitle: Map<string, ColumnDef>;
 }) => (
-	<div className="flex items-center gap-2">
+	<div className="flex items-center gap-2 leading-tight">
 		{line.map((rawCell, cellIdx) => {
 			const cell = asCompactCellObject(rawCell);
 			const column = columnsByTitle.get(cell.title);
@@ -289,19 +288,21 @@ const CompactRowLine = ({
 			const columnClass = column.customClass
 				? column.customClass(row, rowIndex)
 				: "";
-			const alignClass = cell.align === "right" ? "ml-auto text-right" : "";
+			const alignClass = cell.align === "right" ? "text-right" : "";
 			const mutedClass = cell.muted ? "text-xs text-muted-foreground" : "";
-			const flexStyle = cell.flex !== undefined ? { flex: cell.flex } : {};
+			const flexValue = cell.flex ?? 1;
 			return (
 				<div
 					key={`${cell.title}_${cellIdx}`}
-					style={flexStyle}
-					className={`min-w-0 ${alignClass} ${mutedClass} ${columnClass} ${cell.className ?? ""}`}
+					style={{ flex: flexValue, minWidth: 0 }}
+					className={`${alignClass} ${mutedClass} ${columnClass} ${cell.className ?? ""}`}
 				>
 					{cell.icon ? (
-						<span className="inline-flex items-center gap-1">
+						<span className="flex w-full items-center gap-1">
 							<span className="shrink-0">{cell.icon}</span>
-							<Renderer entityId={row.entityId} />
+							<span className="min-w-0 grow">
+								<Renderer entityId={row.entityId} />
+							</span>
 						</span>
 					) : (
 						<Renderer entityId={row.entityId} />
@@ -332,7 +333,7 @@ const CompactContentCell = observer(
 		return (
 			<div
 				style={style}
-				className={`${bgColor} border-b border-background-700 px-2 py-1`}
+				className={`${bgColor} flex flex-col justify-center gap-0.5 border-b border-background-700 px-2`}
 			>
 				{compactLayout.map((line, lineIdx) => (
 					<CompactRowLine
@@ -346,6 +347,54 @@ const CompactContentCell = observer(
 			</div>
 		);
 	},
+);
+
+const CompactHeaderLine = ({
+	line,
+	columnsByTitle,
+	sort,
+	setSort,
+}: {
+	line: CompactCell[];
+	columnsByTitle: Map<string, ColumnDef>;
+	sort: SortColumn;
+	setSort: Dispatch<SetStateAction<SortColumn>>;
+}) => (
+	<div
+		className="flex items-center gap-2"
+		style={{ height: COMPACT_HEADER_LINE_HEIGHT }}
+	>
+		{line.map((rawCell, cellIdx) => {
+			const cell = asCompactCellObject(rawCell);
+			const column = columnsByTitle.get(cell.title);
+			if (!column) return null;
+			const flex = cell.flex ?? 1;
+			const align = cell.align === "right" ? "text-right" : "";
+			const isSorted = sort.column.sorter === column.sorter;
+			const onClick = () => {
+				if (isSorted) {
+					setSort({
+						column,
+						order: sort.order === "ascend" ? "descend" : "ascend",
+					});
+				} else {
+					setSort({ column, order: "ascend" });
+				}
+			};
+			return (
+				<span
+					key={`${cell.title}_${cellIdx}`}
+					style={{ flex, minWidth: 0 }}
+					onClick={onClick}
+					onKeyDown={onClick}
+					className={`cursor-pointer select-none truncate text-xs font-semibold ${align}`}
+				>
+					{cell.title}
+					{isSorted && <SortIcon order={sort.order} />}
+				</span>
+			);
+		})}
+	</div>
 );
 
 const CompactVirtualTableGrid = ({
@@ -368,51 +417,34 @@ const CompactVirtualTableGrid = ({
 	sort: SortColumn;
 	columns: ColumnDef[];
 } & WithDataTestId) => {
-	const Messages = useMessages();
-	const sortableColumns = useMemo(
-		() => columns.filter((col) => col.sorter),
-		[columns],
-	);
-
 	const columnsByTitle = useMemo(
 		() => new Map(columns.map((col) => [col.title, col])),
 		[columns],
 	);
 
-	const sortOptions = sortableColumns.flatMap((col) => [
-		{ label: `${col.title} ↑`, value: `${col.index}:ascend` },
-		{ label: `${col.title} ↓`, value: `${col.index}:descend` },
-	]);
-
-	const sortValue = `${sort.column.index}:${sort.order}`;
+	const headerHeight =
+		compactLayout.length * COMPACT_HEADER_LINE_HEIGHT +
+		COMPACT_HEADER_VERTICAL_PADDING;
 
 	return (
 		<>
 			<div
-				className={`flex items-center gap-2 bg-background-700 px-2 ${testId}-header`}
-				style={{ height: COMPACT_HEADER_HEIGHT }}
+				className={`flex flex-col gap-0.5 bg-background-700 px-2 py-1 ${testId}-header`}
+				style={{ height: headerHeight, width }}
 			>
-				<Select
-					testId={`${testId}-sort`}
-					placeholder={Messages.settings.sort_by}
-					value={sortValue}
-					options={sortOptions}
-					onChange={(value) => {
-						const [rawIndex, rawOrder] = value.split(":");
-						const nextIndex = Number(rawIndex);
-						if (Number.isNaN(nextIndex)) return;
-						const nextColumn = columns.find((col) => col.index === nextIndex);
-						if (!nextColumn) return;
-						setSort({
-							column: nextColumn,
-							order: rawOrder === "descend" ? "descend" : "ascend",
-						});
-					}}
-				/>
+				{compactLayout.map((line, lineIdx) => (
+					<CompactHeaderLine
+						key={`headerLine_${line.map((cell) => (typeof cell === "string" ? cell : cell.title)).join("|")}_${lineIdx}`}
+						line={line}
+						columnsByTitle={columnsByTitle}
+						sort={sort}
+						setSort={setSort}
+					/>
+				))}
 			</div>
 			<VirtualizedGrid
 				className={`bg-background-800 pb-2 ${testId}-body`}
-				height={height - COMPACT_HEADER_HEIGHT}
+				height={height - headerHeight}
 				width={width}
 				rowCount={rows.length}
 				columnCount={1}
