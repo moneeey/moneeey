@@ -34,11 +34,6 @@
   @apply z-10;
 }
 
-.mn-select__menu-portal,
-.mn-select__menu,
-.mn-select__menu-list {
-  @apply bg-background-400;
-}
 .mn-select__menu-portal {
   z-index: 999999 !important;
 }
