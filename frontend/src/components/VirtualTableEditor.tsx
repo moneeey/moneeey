@@ -451,11 +451,11 @@ const CompactHeaderLine = ({
 	</div>
 );
 
-// Hidden line-rendering ruler: measures the actual rendered height of a text
-// row under the current font size, so both desktop ROW_HEIGHT and compact
-// per-line height adapt when the user zooms or the OS font scale changes.
-// The ruler contains both a normal-size and a text-xs span so its height
-// matches the tallest line any layout can produce.
+// Hidden row-line ruler. Renders the same DOM shape a real table cell
+// produces — an `<input>` wrapped by the InputContainer focus-ring div and a
+// `.mn-select__control` stub — so its measured height matches what users see.
+// Both desktop ROW_HEIGHT and compact per-line height read from the same
+// measurement so every table adapts uniformly to font-size or zoom changes.
 const RowLineRuler = ({
 	onMeasure,
 }: {
@@ -480,11 +480,26 @@ const RowLineRuler = ({
 		<div
 			ref={ref}
 			aria-hidden="true"
-			className="pointer-events-none invisible absolute flex items-center gap-2 leading-tight"
-			style={{ left: -9999, top: -9999 }}
+			className="pointer-events-none invisible absolute flex items-center gap-2"
+			style={{ left: -9999, top: -9999, width: 200 }}
 		>
-			<span className="text-xs">Mp</span>
-			<span>Mp</span>
+			<div className="flex focus-within:ring-1 focus-within:ring-inset">
+				<div className="grow">
+					<input
+						readOnly
+						tabIndex={-1}
+						value="Mp"
+						className="w-full color-inherit bg-transparent outline-none"
+					/>
+				</div>
+			</div>
+			<div className="mn-select">
+				<div className="mn-select__control">
+					<div className="mn-select__value-container">
+						<span className="mn-select__single-value">Mp</span>
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 };
