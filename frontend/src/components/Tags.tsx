@@ -3,14 +3,7 @@ import React, { type ReactNode } from "react";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import { identity } from "../utils/Utils";
 
-import Tag from "./base/Tag";
-
-const TagColors: { [_group: string]: string } = {
-	highlight: "lightblue",
-	memo: "goldenrod",
-	from: "mediumturquoise",
-	to: "geekblue",
-};
+import Tag, { type TagVariant } from "./base/Tag";
 
 const HighlightTagContext = React.createContext({
 	tag: "",
@@ -22,10 +15,10 @@ interface ITagsProp {
 }
 
 interface IStyledTagsProp extends ITagsProp {
-	color: string;
+	variant: TagVariant;
 }
 
-const TagsRenderer = ({ color, tags }: IStyledTagsProp) => {
+const TagsRenderer = ({ variant, tags }: IStyledTagsProp) => {
 	const { tag, setTag } = React.useContext(HighlightTagContext);
 	if (!setTag) {
 		throw new Error("Missing HighlightTagContext");
@@ -38,7 +31,7 @@ const TagsRenderer = ({ color, tags }: IStyledTagsProp) => {
 				return (
 					<Tag
 						key={t}
-						color={TagColors[tag === t ? "highlight" : color]}
+						variant={tag === t ? "highlight" : variant}
 						onMouseOver={() => setTag(t)}
 						onMouseOut={() => setTag("")}
 						title={t}
@@ -53,13 +46,13 @@ const TagsRenderer = ({ color, tags }: IStyledTagsProp) => {
 };
 
 const TagsMemo = ({ tags }: ITagsProp) => (
-	<TagsRenderer color={"memo"} tags={tags} />
+	<TagsRenderer variant="memo" tags={tags} />
 );
 const TagsFrom = ({ tags }: ITagsProp) => (
-	<TagsRenderer color={"from"} tags={tags} />
+	<TagsRenderer variant="from" tags={tags} />
 );
 const TagsTo = ({ tags }: ITagsProp) => (
-	<TagsRenderer color={"to"} tags={tags} />
+	<TagsRenderer variant="to" tags={tags} />
 );
 
 const TagsHighlightProvider = ({ children }: { children: ReactNode }) => {

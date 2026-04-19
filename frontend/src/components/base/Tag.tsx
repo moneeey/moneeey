@@ -1,25 +1,31 @@
+export type TagVariant = "highlight" | "memo" | "from" | "to";
+
 interface TagProps {
 	title: string;
-	color?: string;
+	variant: TagVariant;
 	onClick?: () => void;
 	onMouseOver?: () => void;
 	onMouseOut?: () => void;
 }
 
-const contrastColor = (hexcolor: string) => {
-	const r = Number.parseInt(hexcolor.substring(0, 2), 16);
-	const g = Number.parseInt(hexcolor.substring(2, 4), 16);
-	const b = Number.parseInt(hexcolor.substring(4, 6), 16);
-	const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-
-	return yiq >= 128 ? "black" : "white";
+const variantClass: Record<TagVariant, string> = {
+	highlight: "bg-tag-highlight",
+	memo: "bg-tag-memo",
+	from: "bg-tag-from",
+	to: "bg-tag-to",
 };
 
-const Tag = ({ title, color, onClick, onMouseOver, onMouseOut }: TagProps) => {
+const Tag = ({
+	title,
+	variant,
+	onClick,
+	onMouseOver,
+	onMouseOut,
+}: TagProps) => {
 	const interactive = Boolean(onClick);
 	return (
 		<span
-			className={`m-0 mr-1 inline-block px-1 text-xs leading-tight align-middle ${interactive ? "cursor-pointer hover:opacity-75" : ""}`}
+			className={`m-0 mr-1 inline-block px-1 text-xs leading-tight align-middle rounded-sm text-tag-fg ${variantClass[variant]} ${interactive ? "cursor-pointer hover:opacity-75" : ""}`}
 			role={interactive ? "button" : undefined}
 			tabIndex={interactive ? 0 : undefined}
 			onClick={onClick}
@@ -38,11 +44,6 @@ const Tag = ({ title, color, onClick, onMouseOver, onMouseOut }: TagProps) => {
 					: undefined
 			}
 			title={title}
-			style={{
-				backgroundColor: color,
-				color: contrastColor(color || "#000000"),
-				borderColor: color,
-			}}
 		>
 			{title}
 		</span>

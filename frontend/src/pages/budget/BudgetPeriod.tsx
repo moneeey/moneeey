@@ -1,8 +1,10 @@
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { map, range } from "lodash";
 import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
 
 import TableEditor, { type CompactLayout } from "../../components/TableEditor";
+import { PrimaryButton } from "../../components/base/Button";
 import Card from "../../components/base/Card";
 import { TextTitle } from "../../components/base/Text";
 import CurrencyAmountField from "../../components/editor/CurrencyAmountField";
@@ -96,8 +98,19 @@ const BudgetPeriod = observer(
 				className="h-full w-full"
 				testId={`budget_period_${formatDateMonth(startingDate)}`}
 				header={
-					<TextTitle className="flex flex-row justify-between">
+					<TextTitle className="flex flex-row justify-between items-center">
 						<div>{formatDateMonth(startingDate)}</div>
+						<PrimaryButton
+							testId={`addNewBudget_${formatDateMonth(startingDate)}`}
+							onClick={() => setEditing(budget.factory())}
+							className="text-sm"
+							compact
+						>
+							<span className="flex items-center gap-1 px-1">
+								<PlusCircleIcon className="h-4 w-4" />
+								{Messages.budget.new}
+							</span>
+						</PrimaryButton>
 					</TextTitle>
 				}
 			>

@@ -47,12 +47,19 @@ export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
 
 export const TabsContent = observer((props: TabsProps & WithDataTestId) => {
 	const { current } = useSelectedIndex(props);
-	return props.items[current]?.children;
+	return (
+		<div className="flex-1 min-h-0 overflow-y-auto">
+			{props.items[current]?.children}
+		</div>
+	);
 });
 
 const Tabs = (props: TabsProps & WithDataTestId) => {
 	return (
-		<section key={`Tabs_${props.testId}`} className="flex grow flex-col">
+		<section
+			key={`Tabs_${props.testId}`}
+			className="flex grow flex-col min-h-0"
+		>
 			<TabsHeader {...props} />
 			<TabsContent {...props} />
 		</section>
