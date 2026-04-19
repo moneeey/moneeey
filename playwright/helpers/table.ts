@@ -56,84 +56,129 @@ export async function retrieveRowData(
 
 /**
  * Snapshots all rows of a table as an array of strings, one per row.
- * If expectedCount is provided, waits for that many rows before reading.
+ *
+ * Two modes:
+ * - `retrieveRowsData(page, "tableTestId", count?)` — auto-discovers rows by
+ *   walking the rendered DOM under `.${tableTestId}-body`. Works for both
+ *   compact (`[data-testid="compactRow"]` with line/cell hierarchy) and full
+ *   (`[data-testid="rowCell"]` cells grouped by `data-row-index`) layouts.
+ *   Each row's snapshot mirrors its visible structure; lines (compact only)
+ *   are joined with "\n", cells with " | ".
+ * - `retrieveRowsData(page, [columnTestIds...], count?)` — legacy form: reads
+ *   only the listed columns in the given order. Useful when you want a fixed
+ *   shape regardless of layout changes.
  */
 export async function retrieveRowsData(
 	page: Page,
-	columns: string[],
-	expectedCount?: number,
-) {
-	if (expectedCount) {
-		await expect(page.getByTestId(columns[0])).toHaveCount(expectedCount, {
-			timeout: 10000,
-		});
-	}
-	const rows = await page.getByTestId(columns[0]).all();
-	return await Promise.all(
-		Array.from({ length: rows.length }).map((_v, index) =>
-			retrieveRowData(page, columns, index),
-		),
-	);
-}
-
-/**
- * Walks the rendered compact-mode table by `tableTestId`, discovering rows,
- * lines and cells from the DOM. Returns one snapshot string per row, with
- * lines separated by "\n" and cells separated by " | " — mirroring the
- * structure of the table's compactLayout without the test having to declare it.
- */
-export async function retrieveCompactRowsData(
-	page: Page,
-	tableTestId: string,
+	tableTestIdOrColumns: string | string[],
 	expectedCount?: number,
 ): Promise<string[]> {
-	const rowLocator = page.locator(
-		`.${tableTestId}-body [data-testid="compactRow"]`,
-	);
-	if (expectedCount !== undefined) {
-		await expect(rowLocator).toHaveCount(expectedCount, { timeout: 10000 });
+	if (Array.isArray(tableTestIdOrColumns)) {
+		const columns = tableTestIdOrColumns;
+		if (expectedCount) {
+			await expect(page.getByTestId(columns[0])).toHaveCount(expectedCount, {
+				timeout: 10000,
+			});
+		}
+		const rows = await page.getByTestId(columns[0]).all();
+		return await Promise.all(
+			Array.from({ length: rows.length }).map((_v, index) =>
+				retrieveRowData(page, columns, index),
+			),
+		);
 	}
+
+	const tableTestId = tableTestIdOrColumns;
+	if (expectedCount !== undefined) {
+		await expect(async () => {
+			const count = await page.evaluate((id) => {
+				const body = document.querySelector(`.${id}-body`);
+				if (!body) return 0;
+				const compactRows = body.querySelectorAll(
+					'[data-testid="compactRow"]',
+				);
+				if (compactRows.length > 0) return compactRows.length;
+				const cells = body.querySelectorAll('[data-testid="rowCell"]');
+				const indices = new Set<string>();
+				cells.forEach((c) => {
+					const idx = c.getAttribute("data-row-index");
+					if (idx !== null) indices.add(idx);
+				});
+				return indices.size;
+			}, tableTestId);
+			expect(count).toBe(expectedCount);
+		}).toPass({ timeout: 10000, intervals: [200, 500, 1000] });
+	}
+
 	return await page.evaluate((id) => {
 		const body = document.querySelector(`.${id}-body`);
 		if (!body) return [];
-		const rows = body.querySelectorAll('[data-testid="compactRow"]');
-		return Array.from(rows).map((row) => {
-			const lines = row.querySelectorAll('[data-testid="compactLine"]');
-			return Array.from(lines)
-				.map((line) => {
-					const cells = Array.from(line.children);
-					return cells
-						.map((cell) => {
-							const renderer = cell.querySelector(
-								'[data-testid^="editor"]',
-							) as HTMLElement | null;
-							if (!renderer) return null;
-							const testId = renderer.getAttribute("data-testid") ?? "";
-							const inputContainer = cell.querySelector(
-								`[data-testid="inputContainer${testId}"]`,
-							);
-							const containerParent = (inputContainer?.parentElement ??
-								null) as HTMLElement | null;
-							const className = (containerParent?.className ?? "")
-								.replace(/\s+/g, " ")
-								.replace(/bg-background-/g, "bg---")
-								.trim();
-							let value = "";
-							if (renderer.tagName.toLowerCase() === "input") {
-								value = (renderer as HTMLInputElement).value ?? "";
-							} else {
-								const sv = renderer.querySelector(
-									".mn-select__single-value, .mn-select__placeholder",
-								);
-								value = sv?.textContent ?? "";
-							}
-							const label = testId.replace("editor", "").toLowerCase();
-							return `${label}: ${value} (${className})`;
-						})
-						.filter((s): s is string => s !== null)
-						.join(" | ");
-				})
-				.join("\n");
+
+		const readCellSnapshot = (cell: Element) => {
+			const renderer = cell.querySelector(
+				'[data-testid^="editor"]',
+			) as HTMLElement | null;
+			if (!renderer) return null;
+			const testId = renderer.getAttribute("data-testid") ?? "";
+			const inputContainer = cell.querySelector(
+				`[data-testid="inputContainer${testId}"]`,
+			);
+			const containerParent = (inputContainer?.parentElement ??
+				null) as HTMLElement | null;
+			const className = (containerParent?.className ?? "")
+				.replace(/\s+/g, " ")
+				.replace(/bg-background-/g, "bg---")
+				.trim();
+			let value = "";
+			if (renderer.tagName.toLowerCase() === "input") {
+				value = (renderer as HTMLInputElement).value ?? "";
+			} else {
+				const sv = renderer.querySelector(
+					".mn-select__single-value, .mn-select__placeholder",
+				);
+				value = sv?.textContent ?? "";
+			}
+			const label = testId.replace("editor", "").toLowerCase();
+			return `${label}: ${value} (${className})`;
+		};
+
+		const compactRows = body.querySelectorAll('[data-testid="compactRow"]');
+		if (compactRows.length > 0) {
+			return Array.from(compactRows).map((row) => {
+				const lines = row.querySelectorAll('[data-testid="compactLine"]');
+				return Array.from(lines)
+					.map((line) =>
+						Array.from(line.children)
+							.map(readCellSnapshot)
+							.filter((s): s is string => s !== null)
+							.join(" | "),
+					)
+					.join("\n");
+			});
+		}
+
+		const cells = Array.from(
+			body.querySelectorAll('[data-testid="rowCell"]'),
+		) as HTMLElement[];
+		const rowsMap = new Map<number, HTMLElement[]>();
+		cells.forEach((cell) => {
+			const idx = Number(cell.getAttribute("data-row-index"));
+			if (Number.isNaN(idx)) return;
+			if (!rowsMap.has(idx)) rowsMap.set(idx, []);
+			rowsMap.get(idx)?.push(cell);
+		});
+		const sortedIndices = Array.from(rowsMap.keys()).sort((a, b) => a - b);
+		return sortedIndices.map((idx) => {
+			const rowCells = rowsMap.get(idx) ?? [];
+			rowCells.sort(
+				(a, b) =>
+					Number.parseInt(a.style.left || "0", 10) -
+					Number.parseInt(b.style.left || "0", 10),
+			);
+			return rowCells
+				.map(readCellSnapshot)
+				.filter((s): s is string => s !== null)
+				.join(" | ");
 		});
 	}, tableTestId);
 }

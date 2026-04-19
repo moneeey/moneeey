@@ -191,7 +191,13 @@ const ContentCell = observer(
 			: "";
 		const clzz = `${bgColor} ${columnClass}`;
 		return row ? (
-			<div key={`${clzz}_${row.entityId}`} style={style} className={clzz}>
+			<div
+				key={`${clzz}_${row.entityId}`}
+				data-testid="rowCell"
+				data-row-index={rowIndex}
+				style={style}
+				className={clzz}
+			>
 				<Renderer entityId={row.entityId} />
 			</div>
 		) : (

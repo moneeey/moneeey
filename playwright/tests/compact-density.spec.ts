@@ -4,7 +4,7 @@ import {
 	budgetEditorSave,
 	clickMenuByTestId,
 	expect,
-	retrieveCompactRowsData,
+	retrieveRowsData,
 	test,
 	updateOnAllTransactions,
 } from "../helpers";
@@ -56,7 +56,7 @@ test("Compact all-transactions — header and rows show per-side amounts", async
 
 	const today = new Date().toISOString().slice(0, 10);
 	expect(
-		await retrieveCompactRowsData(page, "transactionTable", 4),
+		await retrieveRowsData(page, "transactionTable", 4),
 	).toEqual([
 		[
 			`date: ${today} (text-xs text-muted-foreground) | memo:  ()`,
@@ -101,7 +101,7 @@ test("Compact reference-account view — rows show running balance inline", asyn
 
 	const today = new Date().toISOString().slice(0, 10);
 	expect(
-		await retrieveCompactRowsData(page, "transactionTable", 2),
+		await retrieveRowsData(page, "transactionTable", 2),
 	).toEqual([
 		[
 			`date: ${today} (text-xs text-muted-foreground) | memo:  () | running: 1.234,56 (text-right [&_input]:text-right text-xs text-muted-foreground text-positive)`,
@@ -120,7 +120,7 @@ test("Compact account settings — rows show name + currency + type", async ({
 	await setDensity(page, "compact");
 	await clickMenuByTestId(page, "appMenu_subitems_settings_settings_accounts");
 
-	const rows = await retrieveCompactRowsData(page, "accountTableCHECKING", 4);
+	const rows = await retrieveRowsData(page, "accountTableCHECKING", 4);
 	expect(rows).toEqual([
 		[
 			"name: Banco Moneeey () | tags: Tags ()",
@@ -155,7 +155,7 @@ test("Compact currency settings — header and rows show short/prefix/decimals",
 	await expect(header).toContainText("Name");
 	await expect(header).toContainText("Short");
 
-	const rows = await retrieveCompactRowsData(page, "currencyTable");
+	const rows = await retrieveRowsData(page, "currencyTable");
 	const brl = rows.find((r) => r.startsWith("name: Brazilian Real"));
 	const btc = rows.find((r) => r.startsWith("name: Bitcoin"));
 	expect(brl).toBe(
