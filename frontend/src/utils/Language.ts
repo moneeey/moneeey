@@ -1321,11 +1321,11 @@ export default {
 			cn: "Moneeey 同步",
 		},
 		database_sync: {
-			en: "Custom",
-			pt: "Custom",
-			es: "Custom",
-			hi: "कस्टम",
-			cn: "自定义",
+			en: "Custom Sync",
+			pt: "Custom Sync",
+			es: "Custom Sync",
+			hi: "कस्टम सिंक",
+			cn: "自定义同步",
 		},
 		couchdb_description: {
 			en: "Point Moneeey at any CouchDB (or CouchDB-compatible) server you control. Your encrypted data replicates to that server; the encryption key never leaves this device.",

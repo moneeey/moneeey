@@ -4,7 +4,6 @@ import { observer } from "mobx-react-lite";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { LinkButton } from "./Button";
 import type { WithDataTestId } from "./Common";
-import Space from "./Space";
 
 interface TabItem {
 	key: string;
@@ -30,7 +29,7 @@ export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
 	const { current, update } = useSelectedIndex(props);
 	return (
 		<nav data-testid={props.testId}>
-			<Space className="flex-wrap">
+			<div className="flex flex-col md:flex-row md:flex-wrap gap-2 md:gap-4 md:items-center">
 				{props.items.map((item, idx) => (
 					<LinkButton
 						key={item.key}
@@ -41,7 +40,7 @@ export const TabsHeader = observer((props: TabsProps & WithDataTestId) => {
 						{item.label}
 					</LinkButton>
 				))}
-			</Space>
+			</div>
 		</nav>
 	);
 });

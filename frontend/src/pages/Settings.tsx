@@ -1,4 +1,7 @@
-import { TrashIcon } from "@heroicons/react/24/outline";
+import {
+	QuestionMarkCircleIcon,
+	TrashIcon,
+} from "@heroicons/react/24/outline";
 import { useState } from "react";
 
 import LanguageSelector from "../components/LanguageSelector";
@@ -6,6 +9,7 @@ import Loading from "../components/Loading";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import {
 	DeleteButton,
+	LinkButton,
 	PrimaryButton,
 	SecondaryButton,
 } from "../components/base/Button";
@@ -30,9 +34,9 @@ type ActionState = {
 	submitFn?: (content: string) => void;
 };
 
-function ProfileTab() {
+function DataTab() {
 	const Messages = useMessages();
-	const { persistence, navigation } = useMoneeeyStore();
+	const { persistence } = useMoneeeyStore();
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
 	const [action, setAction] = useState<ActionState | undefined>(undefined);
 	const [loading, setLoading] = useState<number | false>(false);
@@ -105,33 +109,6 @@ function ProfileTab() {
 
 	return (
 		<div className="flex flex-col gap-4 p-2">
-			<LanguageSelector />
-			<ThemeSwitcher />
-			<div className="flex flex-col justify-center items-center gap-2">
-				<p>{Messages.menu.start_tour_description}</p>
-				<PrimaryButton
-					onClick={() => navigation.openModal(NavigationModal.LANDING)}
-					title={Messages.menu.start_tour}
-				/>
-			</div>
-			<hr className="border-background-600" />
-			<span className="white-space-preline">{Messages.sync.intro}</span>
-			<Tabs
-				testId="syncSettings"
-				items={[
-					{
-						key: "moneeeyAccount",
-						label: Messages.sync.moneeey_sync,
-						children: <MoneeeyAccountConfig />,
-					},
-					{
-						key: "database",
-						label: Messages.sync.database_sync,
-						children: <DatabaseConfig />,
-					},
-				]}
-			/>
-			<hr className="border-background-600" />
 			<Space>
 				<PrimaryButton onClick={onExportData}>
 					{Messages.settings.export_data}
@@ -291,21 +268,45 @@ function PassphraseTab() {
 
 export default function Settings() {
 	const Messages = useMessages();
+	const { navigation } = useMoneeeyStore();
 
 	return (
-		<div className="bg-background-800 h-full">
+		<div className="bg-background-800 h-full flex flex-col">
+			<div className="flex flex-col gap-4 p-2 items-center border-b border-background-600">
+				<LanguageSelector />
+				<ThemeSwitcher />
+				<LinkButton
+					onClick={() => navigation.openModal(NavigationModal.LANDING)}
+					title={Messages.menu.start_tour_description}
+				>
+					<span className="flex items-center gap-1">
+						<QuestionMarkCircleIcon className="h-5 w-5" />
+						{Messages.menu.start_tour}
+					</span>
+				</LinkButton>
+			</div>
 			<Tabs
 				testId="settingsTabs"
 				items={[
 					{
-						key: "profile",
-						label: Messages.menu.profile,
-						children: <ProfileTab />,
+						key: "moneeey",
+						label: Messages.sync.moneeey_sync,
+						children: <MoneeeyAccountConfig />,
+					},
+					{
+						key: "custom",
+						label: Messages.sync.database_sync,
+						children: <DatabaseConfig />,
 					},
 					{
 						key: "preferences",
 						label: Messages.menu.preferences,
 						children: <PreferencesTab />,
+					},
+					{
+						key: "data",
+						label: Messages.menu.data,
+						children: <DataTab />,
 					},
 					{
 						key: "passphrase",
