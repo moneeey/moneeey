@@ -276,7 +276,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				<p className="text-sm opacity-80">
 					{Messages.encryption.choose_description}
 				</p>
-				<div className="flex flex-col gap-3 w-full max-w-sm">
+				<div className="flex flex-col gap-4 w-full max-w-sm">
 					<OkButton
 						onClick={goSetup}
 						title={Messages.encryption.create_new_account}
@@ -314,7 +314,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				<p className="text-sm opacity-80">
 					{Messages.encryption.passkey_description}
 				</p>
-				<div className="flex flex-col gap-3 w-full max-w-sm">
+				<div className="flex flex-col gap-4 w-full max-w-sm">
 					<input
 						data-testid="passkeyEmail"
 						type="email"
@@ -372,7 +372,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				<p className="text-sm opacity-80">
 					{Messages.encryption.invite_description}
 				</p>
-				<div className="flex flex-col gap-3 w-full max-w-sm">
+				<div className="flex flex-col gap-4 w-full max-w-sm">
 					<input
 						data-testid="inviteEmail"
 						type="email"
@@ -477,7 +477,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 					{Messages.encryption.setup_warning}
 				</p>
 			)}
-			<div className="flex flex-col gap-3 w-full max-w-sm">
+			<div className="flex flex-col gap-4 w-full max-w-sm">
 				<input
 					data-testid="encryptionPassphrase"
 					type="password"
@@ -523,33 +523,37 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 			{busy && (
 				<p className="text-sm opacity-80">{Messages.encryption.unlocking}</p>
 			)}
-			<div className="flex gap-2">
-				{isSetup && (
+			{isSetup ? (
+				<div className="flex gap-2">
 					<SecondaryButton
 						onClick={goChoose}
 						title={Messages.util.cancel}
 						disabled={busy}
 					/>
-				)}
-				<OkButton disabled={busy || passphrase.length === 0} onClick={onSubmit}>
-					<span className="flex items-center gap-1">
-						{!isSetup && <LockOpenIcon className="h-4 w-4 shrink-0" />}
-						{isSetup
-							? Messages.encryption.setup_submit
-							: Messages.encryption.unlock_submit}
-					</span>
-				</OkButton>
-			</div>
-			{!isSetup && (
-				<DeleteButton
-					onClick={() => setState({ kind: "confirm-delete", returnTo: state })}
-					disabled={busy}
-				>
-					<span className="flex items-center gap-1">
-						<TrashIcon className="h-4 w-4 shrink-0" />
-						{Messages.menu.delete_data}
-					</span>
-				</DeleteButton>
+					<OkButton disabled={busy || passphrase.length === 0} onClick={onSubmit}>
+						<span className="flex items-center gap-1">
+							{Messages.encryption.setup_submit}
+						</span>
+					</OkButton>
+				</div>
+			) : (
+				<div className="flex justify-between w-full max-w-sm">
+					<DeleteButton
+						onClick={() => setState({ kind: "confirm-delete", returnTo: state })}
+						disabled={busy}
+					>
+						<span className="flex items-center gap-1">
+							<TrashIcon className="h-4 w-4 shrink-0" />
+							{Messages.menu.delete_data}
+						</span>
+					</DeleteButton>
+					<OkButton disabled={busy || passphrase.length === 0} onClick={onSubmit}>
+						<span className="flex items-center gap-1">
+							<LockOpenIcon className="h-4 w-4 shrink-0" />
+							{Messages.encryption.unlock_submit}
+						</span>
+					</OkButton>
+				</div>
 			)}
 		</MinimalBasicScreen>
 	);
