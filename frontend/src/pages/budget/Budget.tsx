@@ -19,7 +19,7 @@ type MonthDateSelectorProps = {
 	Messages: TMessages;
 };
 
-const MONTH_OFFSETS = [-2, -1, 0, 1, 2];
+export const MONTH_OFFSETS = [-2, -1, 0, 1, 2];
 
 const MonthDateSelector = ({
 	setDate,

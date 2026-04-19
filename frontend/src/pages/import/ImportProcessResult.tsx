@@ -80,8 +80,8 @@ function ImportProcessResultTable({
 			...accounts.allActive,
 		]);
 
-	const arrowDown = <ArrowDownIcon className="h-4 w-4 text-negative" />;
-	const arrowUp = <ArrowUpIcon className="h-4 w-4 text-positive" />;
+	const arrowDown = <ArrowDownIcon className="h-4 w-4 text-red-700" />;
+	const arrowUp = <ArrowUpIcon className="h-4 w-4 text-green-700" />;
 
 	const compactLayout: CompactLayout = [
 		[
@@ -225,7 +225,7 @@ const ImportProcessResult = ({
 			<p>
 				<TextNormal>{Messages.import.success(task.input.name)}</TextNormal>
 			</p>
-			<Space>
+			<Space className="flex-wrap gap-y-2">
 				<PrimaryButton onClick={onImport}>
 					{Messages.import.import_transactions}
 				</PrimaryButton>
@@ -235,7 +235,7 @@ const ImportProcessResult = ({
 				<SecondaryButton onClick={onClose}>
 					{Messages.util.cancel}
 				</SecondaryButton>
-				<div className="grow flex flex-row justify-end gap-2">
+				<div className="grow flex flex-row flex-wrap justify-end gap-2">
 					<span className={`${classRequired[0]} py-1 px-2 rounded`}>
 						{Messages.util.required}
 					</span>

@@ -120,7 +120,7 @@ const Menu = observer(
 					<>
 						<LinkButton
 							compact
-							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-11 md:h-6"
+							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-11 lg:h-6"
 							testId="appMenu_sync_status"
 							onClick={() => {
 								navigation.navigate(SettingsRoute.url());
@@ -141,7 +141,7 @@ const Menu = observer(
 						</LinkButton>
 						<LinkButton
 							compact
-							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-11 md:h-6"
+							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-11 lg:h-6"
 							testId="appMenu_lock"
 							onClick={() => encryption.lock()}
 							title={Messages.menu.lock}
@@ -310,7 +310,7 @@ const Content = ({
 	setExpanded: Dispatch<SetStateAction<boolean>>;
 	children: ReactNode;
 }) => (
-	<section className="flex grow flex-row">
+	<section className="flex grow flex-row min-h-0">
 		<Menu setExpanded={setExpanded} expanded={expanded} />
 		<section className="flex grow flex-col p-2 md:p-4 min-h-0">
 			{children}
@@ -324,7 +324,7 @@ export default observer(function AppMenu() {
 		if (stored !== "") {
 			return stored === "true";
 		}
-		return window.innerWidth >= 768;
+		return window.innerWidth >= 1024;
 	});
 	useEffect(() => {
 		setStorage("menu_expanded", String(expanded), StorageKind.PERMANENT);
