@@ -10,7 +10,7 @@ import {
 	generateShortDbId,
 } from "./users.ts";
 
-const USERS_DB = "moneeey_users";
+const USERS_DB = "accounts";
 
 Deno.test(async function ensureUsersDbExistsLocksDownSecurity() {
 	await withSpying({
