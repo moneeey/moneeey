@@ -21,153 +21,142 @@ async function setDensity(
 	await page.getByTestId(`tableDensitySwitcher_${mode}`).click();
 }
 
-test("Density switcher — picking compact persists and shows active ring", async ({
+test("Compact density — persistence, active ring, and table structure across views", async ({
 	wizardPage: page,
 }) => {
-	await setDensity(page, "compact");
-
-	const stored = await page.evaluate(() =>
-		window.localStorage.getItem("tableDensity"),
-	);
-	expect(stored).toBe("compact");
-
-	const compactBtn = page.getByTestId("tableDensitySwitcher_compact");
-	await expect(compactBtn).toHaveClass(/ring-4/);
-
-	await page.getByTestId("tableDensitySwitcher_full").click();
-	const stored2 = await page.evaluate(() =>
-		window.localStorage.getItem("tableDensity"),
-	);
-	expect(stored2).toBe("full");
-});
-
-test("Compact all-transactions — header and rows show per-side amounts", async ({
-	wizardPage: page,
-}) => {
-	await setDensity(page, "compact");
-	await OpenMenuItem(page, "All transactions");
-
-	const header = page.locator(".transactionTable-header");
-	await expect(header).toBeVisible();
-	await expect(header).toContainText("Date");
-	await expect(header).toContainText("Memo");
-	await expect(header).toContainText("From");
-	await expect(header).toContainText("To");
-	await expect(header).toContainText("From amount");
-	await expect(header).toContainText("To amount");
-
 	const today = new Date().toISOString().slice(0, 10);
-	expect(await retrieveRowsData(page, "transactionTable", 4)).toEqual([
-		[
-			`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
-			"from: Initial balance BRL (min-w-0 grow) | from_amount: 1.234,56 (text-right [&_input]:text-right text-negative)",
-			"to: Banco Moneeey (min-w-0 grow) | to_amount: 1.234,56 (text-right [&_input]:text-right text-positive)",
-		].join("\n"),
-		[
-			`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
-			"from: Initial balance BRL (min-w-0 grow) | from_amount: 2.000 (text-right [&_input]:text-right text-negative)",
-			"to: MoneeeyCard (min-w-0 grow) | to_amount: 2.000 (text-right [&_input]:text-right text-positive)",
-		].join("\n"),
-		[
-			`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
-			"from: Initial balance BTC (min-w-0 grow) | from_amount: 0,12345678 (text-right [&_input]:text-right text-negative)",
-			"to: Bitcoinss (min-w-0 grow) | to_amount: 0,12345678 (text-right [&_input]:text-right text-positive)",
-		].join("\n"),
-		[
-			`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
-			"from: From (min-w-0 grow) | from_amount: 0 (text-right [&_input]:text-right)",
-			"to: To (min-w-0 grow) | to_amount: 0 (text-right [&_input]:text-right)",
-		].join("\n"),
-	]);
-});
 
-test("Compact reference-account view — rows show running balance inline", async ({
-	wizardPage: page,
-}) => {
-	await setDensity(page, "compact");
-	await OpenMenuItem(page, "BRL Banco Moneeey");
+	await test.step("picking compact persists and shows active ring, and round-trips to full", async () => {
+		await setDensity(page, "compact");
+		const stored = await page.evaluate(() =>
+			window.localStorage.getItem("tableDensity"),
+		);
+		expect(stored).toBe("compact");
+		await expect(page.getByTestId("tableDensitySwitcher_compact")).toHaveClass(
+			/ring-4/,
+		);
 
-	const header = page.locator(".transactionTable-header");
-	await expect(header).toContainText("Date");
-	await expect(header).toContainText("Account");
-	await expect(header).toContainText("Amount");
-	await expect(header).toContainText("Running");
+		await page.getByTestId("tableDensitySwitcher_full").click();
+		const stored2 = await page.evaluate(() =>
+			window.localStorage.getItem("tableDensity"),
+		);
+		expect(stored2).toBe("full");
 
-	// Wait for the running balance computation to complete on the first row.
-	await expect(page.getByTestId("editorRunning").first()).toHaveValue(
-		"1.234,56",
-		{ timeout: 10000 },
-	);
+		await page.getByTestId("tableDensitySwitcher_compact").click();
+	});
 
-	const today = new Date().toISOString().slice(0, 10);
-	expect(await retrieveRowsData(page, "transactionTable", 2)).toEqual([
-		[
-			`date: ${today} (text-muted-foreground) | memo:  () | running: 1.234,56 (text-right [&_input]:text-right text-muted-foreground text-positive)`,
-			"account: Initial balance BRL () | amount: 1.234,56 (text-right [&_input]:text-right text-positive)",
-		].join("\n"),
-		[
-			`date: ${today} (text-muted-foreground) | memo:  () | running: 0 (text-right [&_input]:text-right text-muted-foreground)`,
-			"account: Account () | amount: 0 (text-right [&_input]:text-right)",
-		].join("\n"),
-	]);
-});
+	await test.step("compact all-transactions — header and rows show per-side amounts", async () => {
+		await OpenMenuItem(page, "All transactions");
+		const header = page.locator(".transactionTable-header");
+		await expect(header).toBeVisible();
+		await expect(header).toContainText("Date");
+		await expect(header).toContainText("Memo");
+		await expect(header).toContainText("From");
+		await expect(header).toContainText("To");
+		await expect(header).toContainText("From amount");
+		await expect(header).toContainText("To amount");
 
-test("Compact account settings — rows show name + currency + type", async ({
-	wizardPage: page,
-}) => {
-	await setDensity(page, "compact");
-	await clickMenuByTestId(page, "appMenu_subitems_settings_settings_accounts");
+		expect(await retrieveRowsData(page, "transactionTable", 4)).toEqual([
+			[
+				`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
+				"from: Initial balance BRL (min-w-0 grow) | from_amount: 1.234,56 (text-right [&_input]:text-right text-negative)",
+				"to: Banco Moneeey (min-w-0 grow) | to_amount: 1.234,56 (text-right [&_input]:text-right text-positive)",
+			].join("\n"),
+			[
+				`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
+				"from: Initial balance BRL (min-w-0 grow) | from_amount: 2.000 (text-right [&_input]:text-right text-negative)",
+				"to: MoneeeyCard (min-w-0 grow) | to_amount: 2.000 (text-right [&_input]:text-right text-positive)",
+			].join("\n"),
+			[
+				`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
+				"from: Initial balance BTC (min-w-0 grow) | from_amount: 0,12345678 (text-right [&_input]:text-right text-negative)",
+				"to: Bitcoinss (min-w-0 grow) | to_amount: 0,12345678 (text-right [&_input]:text-right text-positive)",
+			].join("\n"),
+			[
+				`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
+				"from: From (min-w-0 grow) | from_amount: 0 (text-right [&_input]:text-right)",
+				"to: To (min-w-0 grow) | to_amount: 0 (text-right [&_input]:text-right)",
+			].join("\n"),
+		]);
+	});
 
-	const rows = await retrieveRowsData(page, "accountTableCHECKING", 4);
-	expect(rows).toEqual([
-		[
-			"name: Banco Moneeey () | tags: Tags ()",
-			"type: Checking Account (text-muted-foreground) | currency: BRL Brazilian Real (text-muted-foreground)",
-		].join("\n"),
-		[
-			"name: Bitcoinss () | tags: Tags ()",
-			"type: Checking Account (text-muted-foreground) | currency: BTC Bitcoin (text-muted-foreground)",
-		].join("\n"),
-		[
-			"name: MoneeeyCard () | tags: Tags ()",
-			"type: Checking Account (text-muted-foreground) | currency: BRL Brazilian Real (text-muted-foreground)",
-		].join("\n"),
-		[
-			"name:  () | tags: Tags ()",
-			"type: Checking Account (text-muted-foreground) | currency: BRL Brazilian Real (text-muted-foreground)",
-		].join("\n"),
-	]);
-});
+	await test.step("compact reference-account view — rows show running balance inline", async () => {
+		await OpenMenuItem(page, "BRL Banco Moneeey");
+		const header = page.locator(".transactionTable-header");
+		await expect(header).toContainText("Date");
+		await expect(header).toContainText("Account");
+		await expect(header).toContainText("Amount");
+		await expect(header).toContainText("Running");
 
-test("Compact currency settings — header and rows show short/prefix/decimals", async ({
-	wizardPage: page,
-}) => {
-	await setDensity(page, "compact");
-	await clickMenuByTestId(
-		page,
-		"appMenu_subitems_settings_settings_currencies",
-	);
+		await expect(page.getByTestId("editorRunning").first()).toHaveValue(
+			"1.234,56",
+			{ timeout: 10000 },
+		);
 
-	const header = page.locator(".currencyTable-header");
-	await expect(header).toBeVisible({ timeout: 10000 });
-	await expect(header).toContainText("Name");
-	await expect(header).toContainText("Short");
+		expect(await retrieveRowsData(page, "transactionTable", 2)).toEqual([
+			[
+				`date: ${today} (text-muted-foreground) | memo:  () | running: 1.234,56 (text-right [&_input]:text-right text-muted-foreground text-positive)`,
+				"account: Initial balance BRL () | amount: 1.234,56 (text-right [&_input]:text-right text-positive)",
+			].join("\n"),
+			[
+				`date: ${today} (text-muted-foreground) | memo:  () | running: 0 (text-right [&_input]:text-right text-muted-foreground)`,
+				"account: Account () | amount: 0 (text-right [&_input]:text-right)",
+			].join("\n"),
+		]);
+	});
 
-	const rows = await retrieveRowsData(page, "currencyTable");
-	const brl = rows.find((r) => r.startsWith("name: Brazilian Real"));
-	const btc = rows.find((r) => r.startsWith("name: Bitcoin"));
-	expect(brl).toBe(
-		[
-			"name: Brazilian Real () | tags: Tags ()",
-			"short: BRL (text-muted-foreground) | prefix: R$ (text-muted-foreground) | suffix:  (text-muted-foreground) | decimals: 2 (text-muted-foreground)",
-		].join("\n"),
-	);
-	expect(btc).toBe(
-		[
-			"name: Bitcoin () | tags: Tags ()",
-			"short: BTC (text-muted-foreground) | prefix: ₿ (text-muted-foreground) | suffix:  (text-muted-foreground) | decimals: 8 (text-muted-foreground)",
-		].join("\n"),
-	);
+	await test.step("compact account settings — rows show name + currency + type", async () => {
+		await clickMenuByTestId(
+			page,
+			"appMenu_subitems_settings_settings_accounts",
+		);
+		const rows = await retrieveRowsData(page, "accountTableCHECKING", 4);
+		expect(rows).toEqual([
+			[
+				"name: Banco Moneeey () | tags: Tags ()",
+				"type: Checking Account (text-muted-foreground) | currency: BRL Brazilian Real (text-muted-foreground)",
+			].join("\n"),
+			[
+				"name: Bitcoinss () | tags: Tags ()",
+				"type: Checking Account (text-muted-foreground) | currency: BTC Bitcoin (text-muted-foreground)",
+			].join("\n"),
+			[
+				"name: MoneeeyCard () | tags: Tags ()",
+				"type: Checking Account (text-muted-foreground) | currency: BRL Brazilian Real (text-muted-foreground)",
+			].join("\n"),
+			[
+				"name:  () | tags: Tags ()",
+				"type: Checking Account (text-muted-foreground) | currency: BRL Brazilian Real (text-muted-foreground)",
+			].join("\n"),
+		]);
+	});
+
+	await test.step("compact currency settings — header and rows show short/prefix/decimals", async () => {
+		await clickMenuByTestId(
+			page,
+			"appMenu_subitems_settings_settings_currencies",
+		);
+		const header = page.locator(".currencyTable-header");
+		await expect(header).toBeVisible({ timeout: 10000 });
+		await expect(header).toContainText("Name");
+		await expect(header).toContainText("Short");
+
+		const rows = await retrieveRowsData(page, "currencyTable");
+		const brl = rows.find((r) => r.startsWith("name: Brazilian Real"));
+		const btc = rows.find((r) => r.startsWith("name: Bitcoin"));
+		expect(brl).toBe(
+			[
+				"name: Brazilian Real () | tags: Tags ()",
+				"short: BRL (text-muted-foreground) | prefix: R$ (text-muted-foreground) | suffix:  (text-muted-foreground) | decimals: 2 (text-muted-foreground)",
+			].join("\n"),
+		);
+		expect(btc).toBe(
+			[
+				"name: Bitcoin () | tags: Tags ()",
+				"short: BTC (text-muted-foreground) | prefix: ₿ (text-muted-foreground) | suffix:  (text-muted-foreground) | decimals: 8 (text-muted-foreground)",
+			].join("\n"),
+		);
+	});
 });
 
 test("Compact budget — rows allocate, used and remaining stay in sync", async ({

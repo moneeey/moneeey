@@ -16,6 +16,22 @@ async function pickLanguageEn(page: import("@playwright/test").Page) {
 	await page.getByTestId("ok-button").click();
 }
 
+test("Landing wizard — language selector offers pt/es/en and translates the CTA", async ({
+	seededPage: page,
+}) => {
+	await expect(page.getByTestId("minimalScreenTitle")).toContainText("Moneeey");
+	await expect(page.getByText("Select language")).toBeVisible();
+	await expect(page.getByTestId("languageSelector_pt")).toBeVisible();
+	await expect(page.getByTestId("languageSelector_es")).toBeVisible();
+	await expect(page.getByTestId("languageSelector_en")).toBeVisible();
+
+	await page.getByTestId("languageSelector_es").click();
+	await expect(page.getByTestId("ok-button")).toContainText("Ir a Moneeey");
+
+	await page.getByTestId("languageSelector_en").click();
+	await expect(page.getByTestId("ok-button")).toContainText("Go to Moneeey");
+});
+
 test.describe("Encryption gate", () => {
 	test("setup flow: three-way chooser → create new → advances to currency picker", async ({
 		seededPage: page,
