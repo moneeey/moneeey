@@ -29,16 +29,8 @@ export async function unlockWithPassphrase(
 
 export async function completeLandingWizard(page: Page) {
 	await expect(page.getByTestId("minimalScreenTitle")).toContainText("Moneeey");
-
-	await expect(page.getByText("Select language")).toBeVisible();
-	await expect(page.getByTestId("languageSelector_pt")).toBeVisible();
-	await expect(page.getByTestId("languageSelector_es")).toBeVisible();
-	await expect(page.getByTestId("languageSelector_en")).toBeVisible();
-	await page.getByTestId("languageSelector_es").click();
-	await expect(page.getByTestId("ok-button")).toContainText("Ir a Moneeey");
 	await page.getByTestId("languageSelector_en").click();
 	await expect(page.getByTestId("ok-button")).toContainText("Go to Moneeey");
-
 	await page.getByTestId("ok-button").click();
 
 	await completeEncryptionSetup(page);

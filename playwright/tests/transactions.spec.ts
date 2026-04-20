@@ -12,82 +12,97 @@ import {
 	updateOnAccountTransactions,
 } from "../helpers";
 
-test("Transactions — create on MoneeeyCard and verify across views", async ({
+test("Transactions — create on MoneeeyCard, verify views, and edit-date reorders", async ({
 	wizardPage: page,
 }) => {
 	await page.getByText("BRL MoneeeyCard").click();
 
-	// Add 5 transactions with mix of positive/negative amounts
-	await updateOnAccountTransactions(
-		page,
-		1,
-		"Banco Moneeey",
-		"3000,00",
-		undefined,
-		"3.000",
-	);
-	await updateOnAccountTransactions(
-		page,
-		2,
-		"Bakery123",
-		"-60,00",
-		"pao",
-		"-60",
-	);
-	await updateOnAccountTransactions(
-		page,
-		3,
-		"Ristorant88",
-		"-128,00",
-		undefined,
-		"-128",
-	);
-	await updateOnAccountTransactions(
-		page,
-		4,
-		"Playxbox421",
-		"-7213,21",
-		undefined,
-		"-7.213,21",
-	);
-	await updateOnAccountTransactions(page, 5, "Cashbazk", "69,42", "cashback");
+	await test.step("create 5 transactions with mix of positive/negative amounts", async () => {
+		await updateOnAccountTransactions(
+			page,
+			1,
+			"Banco Moneeey",
+			"3000,00",
+			undefined,
+			"3.000",
+		);
+		await updateOnAccountTransactions(
+			page,
+			2,
+			"Bakery123",
+			"-60,00",
+			"pao",
+			"-60",
+		);
+		await updateOnAccountTransactions(
+			page,
+			3,
+			"Ristorant88",
+			"-128,00",
+			undefined,
+			"-128",
+		);
+		await updateOnAccountTransactions(
+			page,
+			4,
+			"Playxbox421",
+			"-7213,21",
+			undefined,
+			"-7.213,21",
+		);
+		await updateOnAccountTransactions(page, 5, "Cashbazk", "69,42", "cashback");
+		await Input(page, "editorRunning", undefined, 5).toHaveValue("-2.331,79");
+	});
 
-	// Wait running balance to be updated
-	await Input(page, "editorRunning", undefined, 5).toHaveValue("-2.331,79");
-
-	// Assert MoneeeyCard view including row styling and running balances
 	const today = formatDate(new Date());
-	expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 7)).toEqual([
-		`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2.000 (bg---800 text-positive) | running: 2.000 (bg---800 text-positive) | memo:  (bg---800)`,
-		`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 3.000 (bg---600 text-positive) | running: 5.000 (bg---600 text-positive) | memo:  (bg---600)`,
-		`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800 text-negative) | running: 4.940 (bg---800 text-positive) | memo: pao (bg---800)`,
-		`date: ${today} (bg---600) | account: Ristorant88 (bg---600) | amount: -128 (bg---600 text-negative) | running: 4.812 (bg---600 text-positive) | memo:  (bg---600)`,
-		`date: ${today} (bg---800) | account: Playxbox421 (bg---800) | amount: -7.213,21 (bg---800 text-negative) | running: -2.401,21 (bg---800 text-negative) | memo:  (bg---800)`,
-		`date: ${today} (bg---600) | account: Cashbazk (bg---600) | amount: 69,42 (bg---600 text-positive) | running: -2.331,79 (bg---600 text-negative) | memo: cashback (bg---600)`,
-		`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
-	]);
 
-	// Verify the same transactions render correctly in "All transactions"
-	await OpenMenuItem(page, "All transactions");
-	expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 9)).toEqual([
-		`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
-		`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
-		`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
-		`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: MoneeeyCard (bg---600) | amount: 3.000 (bg---600) | memo:  (bg---600)`,
-		`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Bakery123 (bg---800) | amount: 60 (bg---800) | memo: pao (bg---800)`,
-		`date: ${today} (bg---600) | from: MoneeeyCard (bg---600) | to: Ristorant88 (bg---600) | amount: 128 (bg---600) | memo:  (bg---600)`,
-		`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Playxbox421 (bg---800) | amount: 7.213,21 (bg---800) | memo:  (bg---800)`,
-		`date: ${today} (bg---600) | from: Cashbazk (bg---600) | to: MoneeeyCard (bg---600) | amount: 69,42 (bg---600) | memo: cashback (bg---600)`,
-		`date: ${today} (bg---800) | from: From (bg---800) | to: To (bg---800) | amount: 0 (bg---800) | memo:  (bg---800)`,
-	]);
+	await test.step("MoneeeyCard view shows running balances and row styling", async () => {
+		expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 7)).toEqual([
+			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 2.000 (bg---800 text-positive) | running: 2.000 (bg---800 text-positive) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | account: Banco Moneeey (bg---600) | amount: 3.000 (bg---600 text-positive) | running: 5.000 (bg---600 text-positive) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Bakery123 (bg---800) | amount: -60 (bg---800 text-negative) | running: 4.940 (bg---800 text-positive) | memo: pao (bg---800)`,
+			`date: ${today} (bg---600) | account: Ristorant88 (bg---600) | amount: -128 (bg---600 text-negative) | running: 4.812 (bg---600 text-positive) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Playxbox421 (bg---800) | amount: -7.213,21 (bg---800 text-negative) | running: -2.401,21 (bg---800 text-negative) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | account: Cashbazk (bg---600) | amount: 69,42 (bg---600 text-positive) | running: -2.331,79 (bg---600 text-negative) | memo: cashback (bg---600)`,
+			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
+		]);
+	});
 
-	// Verify Banco Moneeey reference view shows the reverse entry
-	await OpenMenuItem(page, "BRL Banco Moneeey");
-	expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 3)).toEqual([
-		`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-positive) | running: 1.234,56 (bg---800 text-positive) | memo:  (bg---800)`,
-		`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: -3.000 (bg---600 text-negative) | running: -1.765,44 (bg---600 text-negative) | memo:  (bg---600)`,
-		`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
-	]);
+	await test.step("All transactions view renders the same transactions", async () => {
+		await OpenMenuItem(page, "All transactions");
+		expect(await retrieveRowsData(page, ALL_TRANSACTIONS_COLUMNS, 9)).toEqual([
+			`date: ${today} (bg---800) | from: Initial balance BRL (bg---800) | to: Banco Moneeey (bg---800) | amount: 1.234,56 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Initial balance BRL (bg---600) | to: MoneeeyCard (bg---600) | amount: 2.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: Initial balance BTC (bg---800) | to: Bitcoinss (bg---800) | amount: 0,12345678 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Banco Moneeey (bg---600) | to: MoneeeyCard (bg---600) | amount: 3.000 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Bakery123 (bg---800) | amount: 60 (bg---800) | memo: pao (bg---800)`,
+			`date: ${today} (bg---600) | from: MoneeeyCard (bg---600) | to: Ristorant88 (bg---600) | amount: 128 (bg---600) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | from: MoneeeyCard (bg---800) | to: Playxbox421 (bg---800) | amount: 7.213,21 (bg---800) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | from: Cashbazk (bg---600) | to: MoneeeyCard (bg---600) | amount: 69,42 (bg---600) | memo: cashback (bg---600)`,
+			`date: ${today} (bg---800) | from: From (bg---800) | to: To (bg---800) | amount: 0 (bg---800) | memo:  (bg---800)`,
+		]);
+	});
+
+	await test.step("Banco Moneeey reference view shows the reverse entry", async () => {
+		await OpenMenuItem(page, "BRL Banco Moneeey");
+		expect(await retrieveRowsData(page, REFERENCE_ACCOUNT_COLUMNS, 3)).toEqual([
+			`date: ${today} (bg---800) | account: Initial balance BRL (bg---800) | amount: 1.234,56 (bg---800 text-positive) | running: 1.234,56 (bg---800 text-positive) | memo:  (bg---800)`,
+			`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: -3.000 (bg---600 text-negative) | running: -1.765,44 (bg---600 text-negative) | memo:  (bg---600)`,
+			`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
+		]);
+	});
+
+	await test.step("editing date reorders rows and recomputes running balance", async () => {
+		await OpenMenuItem(page, "BRL MoneeeyCard");
+		const yesterday = formatDate(
+			new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
+		);
+		await setDateField(page, "editorDate", 2, yesterday);
+		await Input(page, "editorDate", undefined, 0).toHaveValue(yesterday);
+		await Input(page, "editorRunning", undefined, 0).toHaveValue("-60");
+		await Input(page, "editorRunning", undefined, 1).toHaveValue("1.940");
+		await Input(page, "editorRunning", undefined, 5).toHaveValue("-2.331,79");
+	});
 });
 
 test("Transactions — swapping direction flips from/to accounts", async ({
@@ -165,27 +180,4 @@ test("Transactions — swapping direction flips from/to accounts", async ({
 		`date: ${today} (bg---600) | account: MoneeeyCard (bg---600) | amount: 3.000 (bg---600 text-positive) | running: 4.234,56 (bg---600 text-positive) | memo: Salary (swapped) (bg---600)`,
 		`date: ${today} (bg---800) | account: Account (bg---800) | amount: 0 (bg---800) | running: 0 (bg---800) | memo:  (bg---800)`,
 	]);
-});
-
-test("Transactions — editing the date reorders rows and recomputes running balance", async ({
-	wizardPage: page,
-}) => {
-	await page.getByText("BRL MoneeeyCard").click();
-
-	const yesterday = formatDate(
-		new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
-	);
-
-	// Initial balance BRL → MoneeeyCard 2.000 is at index 0 (today).
-	// Add a -100 transaction at index 1; running balance should become 1.900.
-	await updateOnAccountTransactions(page, 1, "Bakery123", "-100");
-	await Input(page, "editorRunning", undefined, 1).toHaveValue("1.900");
-
-	// Move it to yesterday: date-asc sort puts -100 at row 0, initial balance at row 1.
-	// The row reorder + running balance recalc prove the date was committed, not just rendered.
-	await setDateField(page, "editorDate", 1, yesterday);
-
-	await Input(page, "editorDate", undefined, 0).toHaveValue(yesterday);
-	await Input(page, "editorRunning", undefined, 0).toHaveValue("-100");
-	await Input(page, "editorRunning", undefined, 1).toHaveValue("1.900");
 });

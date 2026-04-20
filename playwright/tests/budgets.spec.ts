@@ -65,92 +65,60 @@ test("Budget lifecycle — create, allocate, open editor, view archived toggle",
 	await expect(page.getByTestId("checkboxViewArchived")).not.toBeChecked();
 });
 
-test("Budget allocation can be set to zero", async ({ wizardPage: page }) => {
-	// Regression: `&&` truthy checks in InputNumber treated 0 as falsy and
-	// dropped the change. Allocation must apply immediately and persist.
-	await OpenMenuItem(page, "All transactions");
-	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "50");
-
-	await OpenMenuItem(page, "Budget");
-	await budgetEditorSave(page, "Food", "Bakery");
-	await expect(page.getByText("R$").first()).toBeVisible();
-
-	const food = BudgetRow(page, 0);
-
-	// Start with a non-zero allocation so we can verify the transition to 0
-	await food.allocate("100");
-	await food.expectAllocated("100");
-
-	// Set allocation to 0 — this used to silently no-op
-	await food.allocate("0");
-	await food.expectAllocated("0");
-
-	// Navigate away and back to verify the value survived re-render.
-	await OpenMenuItem(page, "All transactions");
-	await OpenMenuItem(page, "Budget");
-	await food.expectAllocated("0");
-});
-
-test("Archived budgets have a visual indicator when shown", async ({
-	wizardPage: page,
-}) => {
-	// Create a transaction so that "Bakery" becomes a known tag for budgets.
-	await OpenMenuItem(page, "All transactions");
-	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "50");
-
-	await OpenMenuItem(page, "Budget");
-	await budgetEditorSave(page, "Food", "Bakery");
-	await expect(page.getByText("R$").first()).toBeVisible();
-
-	// Archive the budget via its editor
-	await withBudgetEditor(page, 0, async (drawer) => {
-		await drawer.getByTestId("budgetIsArchived").click();
-		await expect(drawer.getByTestId("budgetIsArchived")).toBeChecked();
-		await drawer.getByTestId("budgetSave").click();
-		await expect(drawer).not.toBeVisible();
-	});
-
-	// Archived budget is hidden by default
-	await expect(page.getByText("Food (archived)")).toHaveCount(0);
-
-	// Flip the "view archived" toggle on
-	await page.getByTestId("checkboxViewArchived").click();
-	await expect(page.getByTestId("checkboxViewArchived")).toBeChecked();
-
-	// The archived row now shows with the `(archived)` suffix on the name
-	await expect(page.getByText("Food (archived)").first()).toBeVisible();
-
-	// The allocated cell's parent <span> carries the `archived-row` class.
-	const allocatedCellParentClass =
-		(await page
-			.getByTestId("inputContainereditorAllocated")
-			.first()
-			.locator("..")
-			.getAttribute("class")) ?? "";
-	expect(allocatedCellParentClass).toContain("archived-row");
-});
-
-test("Budget usage recalculates when tags change", async ({
+test("Budget — zero-allocation persists, tag swap recalculates used, archive shows indicator", async ({
 	wizardPage: page,
 }) => {
 	await OpenMenuItem(page, "All transactions");
 	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "100");
 	await updateOnAllTransactions(page, 4, "Banco Moneeey", "Gas Station", "42");
 
-	// Create a budget tracking "Bakery" → used should settle at 100
 	await OpenMenuItem(page, "Budget");
 	await budgetEditorSave(page, "Food", "Bakery");
-	const food = BudgetRow(page, 0);
-	await food.expectUsed("100");
+	await expect(page.getByText("R$").first()).toBeVisible();
 
-	// Open the budget and swap its tag from "Bakery" to "Gas Station"
-	await withBudgetEditor(page, 0, async (drawer) => {
-		await drawer.locator(".mn-select__multi-value__remove").first().click();
-		await Select(page, "budgetTags").choose("Gas Station", false);
-		await drawer.getByTestId("budgetSave").click();
-		await expect(drawer).not.toBeVisible();
+	const food = BudgetRow(page, 0);
+
+	await test.step("allocation can be set to zero and persists across re-render", async () => {
+		await food.expectUsed("100");
+		await food.allocate("100");
+		await food.expectAllocated("100");
+		await food.allocate("0");
+		await food.expectAllocated("0");
+		await OpenMenuItem(page, "All transactions");
+		await OpenMenuItem(page, "Budget");
+		await food.expectAllocated("0");
 	});
 
-	// `used` drops from 100 (Bakery) to 42 (Gas Station) — regression guard.
-	await food.expectUsed("42");
+	await test.step("used recalculates when tags change", async () => {
+		await withBudgetEditor(page, 0, async (drawer) => {
+			await drawer.locator(".mn-select__multi-value__remove").first().click();
+			await Select(page, "budgetTags").choose("Gas Station", false);
+			await drawer.getByTestId("budgetSave").click();
+			await expect(drawer).not.toBeVisible();
+		});
+		await food.expectUsed("42");
+	});
+
+	await test.step("archived budget is hidden by default and shows indicator when toggled on", async () => {
+		await withBudgetEditor(page, 0, async (drawer) => {
+			await drawer.getByTestId("budgetIsArchived").click();
+			await expect(drawer.getByTestId("budgetIsArchived")).toBeChecked();
+			await drawer.getByTestId("budgetSave").click();
+			await expect(drawer).not.toBeVisible();
+		});
+
+		await expect(page.getByText("Food (archived)")).toHaveCount(0);
+
+		await page.getByTestId("checkboxViewArchived").click();
+		await expect(page.getByTestId("checkboxViewArchived")).toBeChecked();
+		await expect(page.getByText("Food (archived)").first()).toBeVisible();
+
+		const allocatedCellParentClass =
+			(await page
+				.getByTestId("inputContainereditorAllocated")
+				.first()
+				.locator("..")
+				.getAttribute("class")) ?? "";
+		expect(allocatedCellParentClass).toContain("archived-row");
+	});
 });
