@@ -22,29 +22,45 @@ jobs:
       - run: yarn test
         name: Test
 
-      - name: Set up Playwright cache path
-        run: echo "PLAYWRIGHT_CACHE=${{ github.workspace }}/playwright-cache" >> $GITHUB_ENV
+  PLAYWRIGHT:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Playwright Dependencies cache
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22.14"
+          cache: yarn
+
+      - name: Install frontend
+        run: yarn install --immutable
+        working-directory: frontend
+
+      - name: Install playwright deps
+        run: yarn install --immutable
+        working-directory: playwright
+
+      - name: Cache Playwright browsers
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
-          path: ${{ github.workspace }}/playwright-cache
+          path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('playwright/yarn.lock') }}
           restore-keys: |
             playwright-${{ runner.os }}-
 
-      - name: Playwright
-        uses: addnab/docker-run-action@4f65fabd2431ebc8d299f8e5a018d79a769ae185 # v3
-        with:
-          image: mcr.microsoft.com/playwright:v1.59.1-noble
-          options: --rm -v ${{ github.workspace }}:/workspace -v ${{ github.workspace }}/playwright-cache:/root/.cache/ms-playwright
-          run: |
-            cd /workspace/playwright
-            yarn install --immutable
-            yarn playwright install
-            export CI=true
-            yarn test
+      - name: Install Playwright browsers
+        run: yarn playwright install --with-deps chromium firefox
+        working-directory: playwright
 
+      - name: Test (shard ${{ matrix.shard }}/3)
+        run: yarn playwright test --shard=${{ matrix.shard }}/3 --reporter=list
+        working-directory: playwright
+        env:
+          CI: "true"
 
   BACKEND:
     runs-on: ubuntu-latest

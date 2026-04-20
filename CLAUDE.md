@@ -41,7 +41,6 @@ yarn test-cr                         # Chromium only
 yarn test-ff                         # Firefox only
 yarn debug-cr                        # Headed debug (Chromium, no timeout)
 yarn ui                              # Interactive UI mode
-yarn godocker                        # Run in Playwright docker container
 ```
 E2E tests need the full stack running (podman-compose or dev servers).
 
