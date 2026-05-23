@@ -1,4 +1,8 @@
+import { getCurrentHost } from "../../utils/Utils";
 import type { LocalDoc, LocalStore, OutboxEntry } from "../storage/LocalStore";
+
+export const wsVaultUrl = (): string =>
+	`${getCurrentHost().replace(/^http/, "ws")}/api/vault`;
 
 export type SyncStatus =
 	| "offline"

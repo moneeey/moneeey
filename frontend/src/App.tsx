@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { observer } from "mobx-react";
 
@@ -90,11 +90,18 @@ const AppContent = observer(() => {
 const AppBoot = observer(() => {
 	const { currentLanguage } = useLanguageSwitcher();
 	const [moneeeyStore, setMoneeeyStore] = useState<MoneeeyStore | null>(null);
-	const localStore = useMemo(() => {
-		const s = new LocalStore();
-		s.open();
-		return s;
-	}, []);
+	const [localStoreReady, setLocalStoreReady] = useState(false);
+	const localStore = useMemo(() => new LocalStore(), []);
+
+	useEffect(() => {
+		let cancelled = false;
+		localStore.open().then(() => {
+			if (!cancelled) setLocalStoreReady(true);
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [localStore]);
 
 	const onUnlocked = useCallback(
 		async ({ dataKey, syncConfig }: UnlockResult) => {
@@ -104,7 +111,7 @@ const AppBoot = observer(() => {
 			if (syncConfig) {
 				store.config.merge({
 					...store.config.main,
-					couchSync: syncConfig,
+					moneeeySync: syncConfig,
 				});
 				store.persistence.sync(syncConfig);
 			}
@@ -115,6 +122,10 @@ const AppBoot = observer(() => {
 
 	if (showInitialLanguageSelector({ currentLanguage })) {
 		return <InitialLanguageSelector />;
+	}
+
+	if (!localStoreReady) {
+		return <AppLoading />;
 	}
 
 	if (!moneeeyStore) {

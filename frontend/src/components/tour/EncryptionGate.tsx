@@ -167,10 +167,12 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 			label: Messages.encryption.pulling_from_remote,
 		});
 		try {
-			const { SyncClient } = await import("../../shared/sync/SyncClient");
+			const { SyncClient, wsVaultUrl } = await import(
+				"../../shared/sync/SyncClient"
+			);
 			await new Promise<void>((resolve, reject) => {
 				const client = new SyncClient({
-					url: remote.url,
+					url: wsVaultUrl(),
 					sessionToken: remote.sessionToken,
 					localStore: store,
 					events: {

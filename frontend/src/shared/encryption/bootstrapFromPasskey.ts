@@ -4,7 +4,6 @@ import {
 	startRegistration,
 } from "@simplewebauthn/browser";
 import type { SyncConfig } from "../../entities/Config";
-import { getCurrentHost } from "../../utils/Utils";
 
 type RegistrationOptionsJSON = StartRegistrationOpts["optionsJSON"];
 type AuthenticationOptionsJSON = Parameters<
@@ -40,10 +39,7 @@ const post = async <T>(url: string, body: object): Promise<T> => {
 };
 
 function toSyncConfig(auth: AuthResponse): SyncConfig {
-	const host = getCurrentHost();
-	const wsHost = host.replace(/^http/, "ws");
 	return {
-		url: `${wsHost}/api/vault`,
 		vaultId: auth.vaultId,
 		sessionToken: auth.sessionToken,
 		enabled: true,

@@ -9,7 +9,6 @@ import { TDateFormat, currentDateTime } from "../utils/Date";
 import type { TCurrencyUUID } from "./Currency";
 
 export type SyncConfig = {
-	url: string;
 	vaultId: string;
 	sessionToken: string;
 	enabled: boolean;
@@ -21,7 +20,6 @@ export interface IConfig extends IBaseEntity {
 	thousand_separator: string;
 	default_currency: TCurrencyUUID;
 	view_archived: boolean;
-	couchSync?: SyncConfig;
 	moneeeySync?: SyncConfig;
 }
 
@@ -37,15 +35,8 @@ export class ConfigStore extends MappedStore<IConfig> {
 					thousand_separator: ".",
 					default_currency: "",
 					view_archived: false,
-					couchSync: {
-						enabled: false,
-						url: "",
-						vaultId: "",
-						sessionToken: "",
-					},
 					moneeeySync: {
 						enabled: false,
-						url: "",
 						vaultId: "",
 						sessionToken: "",
 					},

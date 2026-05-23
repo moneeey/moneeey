@@ -18,7 +18,7 @@ import {
 	type LocalDoc,
 	LocalStore,
 } from "./storage/LocalStore";
-import { SyncClient } from "./sync/SyncClient";
+import { SyncClient, wsVaultUrl } from "./sync/SyncClient";
 
 export enum Status {
 	ONLINE = "ONLINE",
@@ -102,6 +102,7 @@ export default class PersistenceStore {
 	private logger: Logger;
 	private localStore: LocalStore;
 	private syncClient: SyncClient | null = null;
+	private currentSync: SyncConfig | null = null;
 	private dataKey: CryptoKey | null = null;
 	private watchers = new Map<EntityType, Array<DocumentWatchListener>>();
 	private pendingByDocId = new Map<string, PersistedEntity>();
@@ -235,6 +236,7 @@ export default class PersistenceStore {
 		try {
 			await this.syncClient?.stop();
 			this.syncClient = null;
+			this.currentSync = null;
 			await this.localStore.destroy();
 		} catch (err) {
 			this.logger.error("truncateAll error", { err });
@@ -276,17 +278,20 @@ export default class PersistenceStore {
 	}
 
 	async sync(remote: SyncConfig): Promise<void> {
+		if (this.syncClient && sameSync(this.currentSync, remote)) return;
 		if (this.syncClient) {
 			await this.syncClient.stop();
 			this.syncClient = null;
 		}
-		if (!remote.enabled || !remote.url) {
+		this.currentSync = null;
+		if (!remote.enabled || !remote.sessionToken) {
 			this.setStatus(Status.OFFLINE);
 			return;
 		}
+		this.currentSync = { ...remote };
 		const dataKey = this.dataKey;
 		this.syncClient = new SyncClient({
-			url: remote.url,
+			url: wsVaultUrl(),
 			sessionToken: remote.sessionToken,
 			localStore: this.localStore,
 			events: {
@@ -326,6 +331,12 @@ export default class PersistenceStore {
 		if (winner) this.commit(winner as PersistedEntity);
 	}
 }
+
+const sameSync = (a: SyncConfig | null, b: SyncConfig): boolean =>
+	a !== null &&
+	a.enabled === b.enabled &&
+	a.vaultId === b.vaultId &&
+	a.sessionToken === b.sessionToken;
 
 const toPersistenceStatus = (s: string): Status => {
 	switch (s) {

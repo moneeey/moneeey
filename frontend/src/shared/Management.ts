@@ -1,14 +1,9 @@
 import { isEmpty } from "lodash";
 import { action, makeObservable, observable } from "mobx";
 
-import { getCurrentHost } from "../utils/Utils";
-
 import type ConfigStore from "../entities/Config";
 import type PersistenceStore from "./Persistence";
 import { fetchPasskeyAuthState } from "./encryption/bootstrapFromPasskey";
-
-const wsHostForVault = () =>
-	`${getCurrentHost().replace(/^http/, "ws")}/api/vault`;
 
 export default class ManagementStore {
 	sessionToken = "";
@@ -34,7 +29,7 @@ export default class ManagementStore {
 
 	async checkExistingSession() {
 		const stored = this.config.main.moneeeySync;
-		if (stored?.enabled && stored.url && stored.sessionToken) {
+		if (stored?.enabled && stored.sessionToken) {
 			this.sessionToken = stored.sessionToken;
 			this.vaultId = stored.vaultId;
 			this.loggedIn = true;
@@ -50,7 +45,6 @@ export default class ManagementStore {
 
 	applySync() {
 		this.persistence.sync({
-			url: wsHostForVault(),
 			vaultId: this.vaultId,
 			sessionToken: this.sessionToken,
 			enabled: Boolean(this.sessionToken),
@@ -66,7 +60,6 @@ export default class ManagementStore {
 			this.config.merge({
 				...this.config.main,
 				moneeeySync: {
-					url: wsHostForVault(),
 					vaultId,
 					sessionToken,
 					enabled: true,
@@ -93,7 +86,6 @@ export default class ManagementStore {
 		this.config.merge({
 			...this.config.main,
 			moneeeySync: {
-				url: "",
 				vaultId: "",
 				sessionToken: "",
 				enabled: false,
