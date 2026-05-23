@@ -66,7 +66,7 @@ Deno.test(async function withVaultCreatesShardedFileAndAppliesMigrations() {
 		const id = "abcdefghijklmnopqrstu";
 		await storage.withVault(id, (db) => {
 			db.prepare(
-				"INSERT INTO documents (id, seq, updated, deleted_at, data) VALUES (?, ?, ?, NULL, ?)",
+				"INSERT INTO documents (id, seq, updated_at, deleted_at, data) VALUES (?, ?, ?, NULL, ?)",
 			).run("doc1", 1, new Date().toISOString(), "cipher");
 		});
 		const expectedPath = `${root}/vaults/ab/cd/${id}.sqlite`;
@@ -144,7 +144,7 @@ Deno.test(async function reopeningExistingFileIsNoOpForMigrations() {
 		const id = "abcdefghijklmnopqrstu";
 		await storage.withVault(id, (db) => {
 			db.prepare(
-				"INSERT INTO documents (id, seq, updated, deleted_at, data) VALUES (?, 1, ?, NULL, '')",
+				"INSERT INTO documents (id, seq, updated_at, deleted_at, data) VALUES (?, 1, ?, NULL, '')",
 			).run("doc1", new Date().toISOString());
 		});
 		storage.closeAll();

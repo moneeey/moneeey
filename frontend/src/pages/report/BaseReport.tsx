@@ -90,9 +90,7 @@ export const BaseReport = ({
 						testId={`accountVisible_${account.id}`}
 						key={account.id}
 						value={Boolean(
-							selectedAccounts.find(
-								(act) => act.id === account.id,
-							),
+							selectedAccounts.find((act) => act.id === account.id),
 						)}
 						onChange={(checked) =>
 							setSelectedAccounts(

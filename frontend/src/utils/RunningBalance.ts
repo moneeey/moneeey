@@ -119,12 +119,10 @@ export default class RunningBalance {
 				calc,
 			);
 			this.updateTransactions(
-				Array.from(calc.transactionBalance.entries()).map(
-					([id, balances]) => ({
-						id,
-						balances,
-					}),
-				),
+				Array.from(calc.transactionBalance.entries()).map(([id, balances]) => ({
+					id,
+					balances,
+				})),
 			);
 			this.updateAccounts(
 				Array.from(calc.accountBalance.entries()).map(

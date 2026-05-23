@@ -118,15 +118,15 @@ describe("TransactionStore", () => {
 		});
 
 		it("throws on negative from_value", () => {
-			expect(() =>
-				makeTx(store, { id: "t1", from_value: -10 }),
-			).toThrow("Transaction amounts must be positive numbers");
+			expect(() => makeTx(store, { id: "t1", from_value: -10 })).toThrow(
+				"Transaction amounts must be positive numbers",
+			);
 		});
 
 		it("throws on negative to_value", () => {
-			expect(() =>
-				makeTx(store, { id: "t1", to_value: -10 }),
-			).toThrow("Transaction amounts must be positive numbers");
+			expect(() => makeTx(store, { id: "t1", to_value: -10 })).toThrow(
+				"Transaction amounts must be positive numbers",
+			);
 		});
 
 		it("tracks newest_dt", () => {

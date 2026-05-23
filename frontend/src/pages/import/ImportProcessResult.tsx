@@ -73,9 +73,8 @@ function ImportProcessResultTable({
 	const { currencies, accounts, transactions } = moneeeyStore;
 	const readAccountOptionsForTransaction = (t: ITransaction) =>
 		compact([
-			...map(
-				result.recommendedAccounts[t.id],
-				(cur_account_uuid) => accounts.byUuid(cur_account_uuid),
+			...map(result.recommendedAccounts[t.id], (cur_account_uuid) =>
+				accounts.byUuid(cur_account_uuid),
 			),
 			...accounts.allActive,
 		]);

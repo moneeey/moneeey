@@ -45,7 +45,7 @@ export const VAULT_MIGRATIONS: Migration[] = [
 			CREATE TABLE documents (
 				id            TEXT PRIMARY KEY,
 				seq           INTEGER NOT NULL,
-				updated       TEXT NOT NULL,
+				updated_at    TEXT NOT NULL,
 				deleted_at    TEXT,
 				data          TEXT NOT NULL
 			);

@@ -83,9 +83,7 @@ const txtImportFromLines = ({
 						importer,
 					});
 					stt.localTransactions.merge(transaction);
-					stt.recommendedAccounts[transaction.id] = accounts.map(
-						(a) => a.id,
-					);
+					stt.recommendedAccounts[transaction.id] = accounts.map((a) => a.id);
 				} catch (err) {
 					logger.error("process line error", { err, line });
 					stt.errors.push({

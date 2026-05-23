@@ -132,8 +132,8 @@ Deno.test(async function pushAcceptedBroadcastsChangesToOtherPeers() {
 				docs: [
 					{
 						id: "ACCOUNT-1",
-						updated: "2026-05-23T00:00:00Z",
-						deletedAt: null,
+						updated_at: "2026-05-23T00:00:00Z",
+						deleted_at: null,
 						data: "cipher",
 					},
 				],
@@ -176,14 +176,14 @@ Deno.test(async function pullReturnsDocsAboveCursor() {
 				docs: [
 					{
 						id: "a",
-						updated: "2026-01-01T00:00:00Z",
-						deletedAt: null,
+						updated_at: "2026-01-01T00:00:00Z",
+						deleted_at: null,
 						data: "x",
 					},
 					{
 						id: "b",
-						updated: "2026-01-01T00:00:00Z",
-						deletedAt: null,
+						updated_at: "2026-01-01T00:00:00Z",
+						deleted_at: null,
 						data: "y",
 					},
 				],
@@ -281,8 +281,8 @@ Deno.test(async function staleIncomingNotBroadcast() {
 				docs: [
 					{
 						id: "x",
-						updated: "2026-02-01T00:00:00Z",
-						deletedAt: null,
+						updated_at: "2026-02-01T00:00:00Z",
+						deleted_at: null,
 						data: "newer",
 					},
 				],
@@ -296,8 +296,8 @@ Deno.test(async function staleIncomingNotBroadcast() {
 				docs: [
 					{
 						id: "x",
-						updated: "2026-01-01T00:00:00Z",
-						deletedAt: null,
+						updated_at: "2026-01-01T00:00:00Z",
+						deleted_at: null,
 						data: "older",
 					},
 				],

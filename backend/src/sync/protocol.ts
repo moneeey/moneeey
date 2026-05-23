@@ -253,8 +253,8 @@ class ReadyHandler implements MessageHandler {
 			.map((d) => ({
 				id: d.id,
 				seq: acceptedById.get(d.id) as number,
-				updated: d.updated,
-				deletedAt: d.deletedAt,
+				updated_at: d.updated_at,
+				deleted_at: d.deleted_at,
 				data: d.data,
 			}));
 		const head = await getHeadSeq(this.ctx.storage, this.vaultId);

@@ -12,10 +12,10 @@ const VAULT_B = "bbbbbbbbbbbbbbbbbbbbb";
 
 const doc = (
 	id: string,
-	updated: string,
+	updated_at: string,
 	data = "cipher",
-	deletedAt: string | null = null,
-): IncomingDoc => ({ id, updated, deletedAt, data });
+	deleted_at: string | null = null,
+): IncomingDoc => ({ id, updated_at, deleted_at, data });
 
 Deno.test(async function bulkUpsertAssignsMonotonicSeq() {
 	const t = makeTempStorage();
@@ -144,7 +144,7 @@ Deno.test(async function tombstonesCarryDeletedAtTimestamp() {
 		await bulkUpsert(t.storage, VAULT, [doc("a", deletedAt, "", deletedAt)]);
 		const all = await getSince(t.storage, VAULT, 0, 100);
 		assert.assertEquals(all.length, 1);
-		assert.assertEquals(all[0].deletedAt, deletedAt);
+		assert.assertEquals(all[0].deleted_at, deletedAt);
 		assert.assertEquals(all[0].data, "");
 	} finally {
 		t.cleanup();
@@ -156,7 +156,7 @@ Deno.test(async function nonTombstoneRowsHaveNullDeletedAt() {
 	try {
 		await bulkUpsert(t.storage, VAULT, [doc("a", "2026-01-01T00:00:00Z")]);
 		const all = await getSince(t.storage, VAULT, 0, 100);
-		assert.assertEquals(all[0].deletedAt, null);
+		assert.assertEquals(all[0].deleted_at, null);
 	} finally {
 		t.cleanup();
 	}

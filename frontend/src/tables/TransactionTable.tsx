@@ -80,9 +80,7 @@ export default observer(
 			}: { from_account: TAccountUUID | null; to_account: TAccountUUID | null },
 		) => {
 			const balance =
-				transactions.runningBalance.transactionRunningBalance.get(
-					id,
-				);
+				transactions.runningBalance.transactionRunningBalance.get(id);
 			if (referenceAccount === to_account) return balance?.to_balance ?? 0;
 			if (referenceAccount === from_account) return balance?.from_balance ?? 0;
 			return 0;
