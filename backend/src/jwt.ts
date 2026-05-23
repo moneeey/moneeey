@@ -65,4 +65,5 @@ const jwtForKey = (keyId: string) => ({
 
 export const challengeJwt = jwtForKey(JWT_CHALLENGE_KEY_ID);
 export const couchJwt = jwtForKey(JWT_COUCH_KEY_ID);
+export const sessionJwt = couchJwt;
 export const authJwt = jwtForKey(JWT_AUTH_KEY_ID);

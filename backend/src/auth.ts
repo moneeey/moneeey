@@ -1,5 +1,5 @@
-import { setupCouch } from "./auth_couch.ts";
 import { setupPasskey } from "./auth_passkey.ts";
+import { setupSession } from "./auth_session.ts";
 import { oak } from "./deps.ts";
 
 export function setupAuth(_app: oak.Application, router: oak.Router) {
@@ -10,7 +10,7 @@ export function setupAuth(_app: oak.Application, router: oak.Router) {
 	});
 
 	setupPasskey(authRouter);
-	setupCouch(authRouter);
+	setupSession(authRouter);
 
 	router.use("/api/auth", authRouter.routes(), authRouter.allowedMethods());
 }

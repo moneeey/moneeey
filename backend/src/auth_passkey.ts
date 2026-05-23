@@ -1,10 +1,32 @@
-import { authenticateAndRespond } from "./auth_couch.ts";
+import { authenticateAndRespond } from "./auth_session.ts";
 import {
 	APP_URL,
 	WEBAUTHN_ORIGIN,
 	WEBAUTHN_RP_ID,
 	WEBAUTHN_RP_NAME,
 } from "./config.ts";
+import {
+	createInvite as dataCreateInvite,
+	findInvite as dataFindInvite,
+	redeemInvite as dataRedeemInvite,
+} from "./data/invites.ts";
+import { getStorage } from "./data/storage_singleton.ts";
+import type {
+	InviteRecord,
+	StoredCredential,
+	UserRecord,
+} from "./data/types.ts";
+import {
+	addCredential as dataAddCredential,
+	createUser as dataCreateUser,
+	getUserByEmail as dataGetUserByEmail,
+	updateCredentialCounter as dataUpdateCredentialCounter,
+} from "./data/users.ts";
+import {
+	VaultFullError,
+	createVaultForUser as dataCreateVaultForUser,
+	getVaultsByUser as dataGetVaultsByUser,
+} from "./data/vaults.ts";
 import {
 	generateAuthenticationOptions,
 	generateRegistrationOptions,
@@ -18,27 +40,83 @@ import type {
 } from "./deps.ts";
 import { authJwt, challengeJwt } from "./jwt.ts";
 import { Logger } from "./logger.ts";
-import {
-	createInvite,
-	createUserForInvite,
-	createUserWithDatabase,
-	findInvite,
-	getUserByEmail,
-	redeemInvite,
-	updateCredentialCounter,
-} from "./users.ts";
-import type { StoredCredential } from "./users.ts";
 
 const logger = Logger("passkey");
 
+async function getUserByEmail(email: string): Promise<UserRecord | null> {
+	return await dataGetUserByEmail(getStorage(), email);
+}
+
+async function createUserAndVault(
+	email: string,
+	credential: StoredCredential,
+): Promise<{ user: UserRecord; vaultId: string }> {
+	const storage = getStorage();
+	const user = await dataCreateUser(storage, email, credential);
+	const vault = await dataCreateVaultForUser(storage, user.id);
+	return { user, vaultId: vault.id };
+}
+
+async function getPrimaryVaultId(userId: string): Promise<string | null> {
+	const vaults = await dataGetVaultsByUser(getStorage(), userId);
+	return vaults[0]?.id ?? null;
+}
+
+async function createInviteForOwner(
+	ownerEmail: string,
+): Promise<{ token: string; vaultId: string }> {
+	const owner = await dataGetUserByEmail(getStorage(), ownerEmail);
+	if (!owner) throw new Error("owner not found");
+	const vaultId = await getPrimaryVaultId(owner.id);
+	if (!vaultId) throw new Error("owner has no vault");
+	const token = await dataCreateInvite(getStorage(), owner.id, vaultId);
+	return { token, vaultId };
+}
+
+async function findInvite(token: string): Promise<InviteRecord | null> {
+	return await dataFindInvite(getStorage(), token);
+}
+
+async function registerInvitee(
+	email: string,
+	credential: StoredCredential,
+	inviteToken: string,
+): Promise<{ user: UserRecord; vaultId: string }> {
+	const storage = getStorage();
+	const user = await dataCreateUser(storage, email, credential);
+	const vaultId = await dataRedeemInvite(storage, inviteToken, user.id);
+	return { user, vaultId };
+}
+
+async function updateCredentialCounter(
+	email: string,
+	credentialId: string,
+	newCounter: number,
+): Promise<void> {
+	await dataUpdateCredentialCounter(
+		getStorage(),
+		email,
+		credentialId,
+		newCounter,
+	);
+}
+
+async function addCredentialForEmail(
+	email: string,
+	credential: StoredCredential,
+): Promise<void> {
+	await dataAddCredential(getStorage(), email, credential);
+}
+
 export const authPasskeyInternals = {
 	getUserByEmail,
-	createUserWithDatabase,
-	createUserForInvite,
-	createInvite,
+	createUserAndVault,
+	getPrimaryVaultId,
+	createInviteForOwner,
 	findInvite,
-	redeemInvite,
+	registerInvitee,
 	updateCredentialCounter,
+	addCredentialForEmail,
 	generateRegistrationOptions,
 	generateAuthenticationOptions,
 	verifyRegistrationResponse,
@@ -50,9 +128,6 @@ const getBodyJson = async (ctx: oak.Context) => {
 	return await ctx.request.body({ type: "json" }).value;
 };
 
-// Permissive but bounded: at least one char before @, at least one dot in the
-// domain, no whitespace. Final correctness is enforced by the WebAuthn ceremony
-// and downstream usage; we mainly want to reject obvious garbage.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 const parseEmail = (raw: unknown): string | null => {
@@ -173,7 +248,7 @@ export function setupPasskey(authRouter: oak.Router) {
 				},
 				(credential as RegistrationResponseJSON).response.transports,
 			);
-			const user = await authPasskeyInternals.createUserWithDatabase(
+			const { user, vaultId } = await authPasskeyInternals.createUserAndVault(
 				email,
 				stored,
 			);
@@ -181,8 +256,8 @@ export function setupPasskey(authRouter: oak.Router) {
 				ctx,
 				"passkey",
 				email,
-				`passkey:${email}`,
-				user.database,
+				user.id,
+				vaultId,
 			);
 			respond(ctx, oak.Status.OK, result);
 		} catch (err) {
@@ -281,12 +356,20 @@ export function setupPasskey(authRouter: oak.Router) {
 				verification.authenticationInfo.newCounter,
 			);
 
+			const vaultId = await authPasskeyInternals.getPrimaryVaultId(user.id);
+			if (!vaultId) {
+				respond(ctx, oak.Status.InternalServerError, {
+					error: "user has no vault",
+				});
+				return;
+			}
+
 			const result = await authPasskeyInternals.authenticateAndRespond(
 				ctx,
 				"passkey",
 				email,
-				`passkey:${email}`,
-				user.database,
+				user.id,
+				vaultId,
 			);
 			respond(ctx, oak.Status.OK, result);
 		} catch (err) {
@@ -312,7 +395,7 @@ export function setupPasskey(authRouter: oak.Router) {
 			}
 
 			try {
-				const token = await authPasskeyInternals.createInvite(email);
+				const { token } = await authPasskeyInternals.createInviteForOwner(email);
 				const inviteUrl = `${APP_URL}/#/invite/${token}`;
 				respond(ctx, oak.Status.OK, { inviteUrl, token });
 			} catch (err) {
@@ -430,9 +513,16 @@ export function setupPasskey(authRouter: oak.Router) {
 				(credential as RegistrationResponseJSON).response.transports,
 			);
 
-			let database: string;
+			let user: UserRecord;
+			let vaultId: string;
 			try {
-				database = await authPasskeyInternals.redeemInvite(inviteToken, email);
+				const registered = await authPasskeyInternals.registerInvitee(
+					email,
+					stored,
+					inviteToken,
+				);
+				user = registered.user;
+				vaultId = registered.vaultId;
 			} catch (err) {
 				const msg = (err as Error).message;
 				if (msg === "invite_already_redeemed") {
@@ -445,16 +535,19 @@ export function setupPasskey(authRouter: oak.Router) {
 					respond(ctx, oak.Status.NotFound, { error: "invite not found" });
 					return;
 				}
+				if (err instanceof VaultFullError) {
+					respond(ctx, oak.Status.Conflict, { error: "vault_full" });
+					return;
+				}
 				throw err;
 			}
-			await authPasskeyInternals.createUserForInvite(email, database, stored);
 
 			const result = await authPasskeyInternals.authenticateAndRespond(
 				ctx,
 				"passkey",
 				email,
-				`passkey:${email}`,
-				database,
+				user.id,
+				vaultId,
 			);
 			respond(ctx, oak.Status.OK, result);
 		} catch (err) {

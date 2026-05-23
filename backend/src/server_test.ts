@@ -38,7 +38,7 @@ Deno.test(async function appError() {
 Deno.test(async function runTheServer() {
 	await withSpying({
 		object: serverInternals,
-		method: "ensureUsersDbExists",
+		method: "ensureMetaInitialized",
 		action: async (ensureStub) => {
 			ensureStub.resolves();
 			await withSpyingLogger(async (logger) => {
