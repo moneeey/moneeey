@@ -73,14 +73,8 @@ export class PersistenceMonitor<TEntity extends IBaseEntity> {
 
 	private monitorLocalChanges() {
 		observe(this.store.itemsByUuid, (changes) => {
-			if (changes.type === "add") {
-				this.persist(changes.newValue as TEntity, "added");
-			} else if (changes.type === "update") {
-				const newValue = changes.newValue as TEntity;
-				const oldValue = changes.oldValue as TEntity;
-				if (newValue.updated_at !== oldValue.updated_at) {
-					this.persist(newValue, "updated");
-				}
+			if (changes.type === "add" || changes.type === "update") {
+				this.persist(changes.newValue as TEntity, changes.type);
 			}
 		});
 	}

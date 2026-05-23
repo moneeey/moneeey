@@ -34,7 +34,7 @@ export default function <TEntity>({
 				const renderField = field as unknown as FieldDef<CurrencyAmount>;
 
 				const sameCurrency =
-					to.currency?.currency_uuid === from.currency?.currency_uuid ||
+					to.currency?.id === from.currency?.id ||
 					!to.currency ||
 					!from.currency;
 
