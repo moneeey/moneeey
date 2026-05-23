@@ -70,8 +70,21 @@ export class LocalStore implements MetaStore {
 	}
 
 	async destroy(): Promise<void> {
+		if (this.db) {
+			try {
+				await clearStore(this.db, STORE_DOCUMENTS);
+				await clearStore(this.db, STORE_META);
+				await clearStore(this.db, STORE_OUTBOX);
+			} catch {
+				/* best effort — proceed to delete even if clears fail */
+			}
+		}
 		await this.close();
-		await deleteDatabase(this.name);
+		try {
+			await deleteDatabase(this.name);
+		} catch {
+			/* delete may be blocked by lingering connections; stores were already cleared */
+		}
 	}
 
 	async get(id: string): Promise<LocalDoc | undefined> {
