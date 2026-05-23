@@ -107,9 +107,7 @@ export class LocalStore implements MetaStore {
 
 	async manifest(): Promise<ManifestEntry[]> {
 		const docs = await this.allDocs();
-		return docs
-			.filter((d) => d.id !== ENCRYPTION_META_DOC_ID)
-			.map((d) => ({ id: d.id, updated_at: d.updated_at }));
+		return docs.map((d) => ({ id: d.id, updated_at: d.updated_at }));
 	}
 
 	async clearDocs(): Promise<void> {

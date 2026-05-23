@@ -72,7 +72,7 @@ describe("LocalStore", () => {
 		}
 	});
 
-	it("manifest returns id + updated_at, skipping encryption meta", async () => {
+	it("manifest includes encryption meta so it syncs across devices", async () => {
 		const s = await freshStore();
 		try {
 			await s.bulkPut([doc("a", 1), doc("b", 2)]);
@@ -86,7 +86,7 @@ describe("LocalStore", () => {
 			});
 			const manifest = await s.manifest();
 			const ids = manifest.map((e) => e.id).sort();
-			expect(ids).toEqual(["a", "b"]);
+			expect(ids).toEqual(["ENCRYPTION-META", "a", "b"]);
 		} finally {
 			await s.destroy();
 		}
