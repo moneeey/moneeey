@@ -1,3 +1,4 @@
+import type { MetaDoc, MetaStore } from "../encryption/codec";
 import {
 	bulkPutValues,
 	clearStore,
@@ -31,6 +32,7 @@ const STORE_OUTBOX = "outbox";
 
 const META_HEAD_SEQ = "head_seq";
 const META_VAULT_ID = "vault_id";
+const META_ENCRYPTION = "encryption_meta";
 
 export const DEFAULT_DB_NAME = "moneeey";
 const DB_VERSION = 1;
@@ -45,7 +47,7 @@ const schema = (name: string) => ({
 	],
 });
 
-export class LocalStore {
+export class LocalStore implements MetaStore {
 	private db: IDBDatabase | null = null;
 
 	constructor(private readonly name: string = DEFAULT_DB_NAME) {}
@@ -115,6 +117,19 @@ export class LocalStore {
 
 	async setVaultId(vaultId: string): Promise<void> {
 		await putValue(this.requireDb(), STORE_META, vaultId, META_VAULT_ID);
+	}
+
+	async getEncryptionMeta(): Promise<MetaDoc | null> {
+		const v = await getValue<MetaDoc>(
+			this.requireDb(),
+			STORE_META,
+			META_ENCRYPTION,
+		);
+		return v ?? null;
+	}
+
+	async setEncryptionMeta(meta: MetaDoc): Promise<void> {
+		await putValue(this.requireDb(), STORE_META, meta, META_ENCRYPTION);
 	}
 
 	async outboxAdd(entry: OutboxEntry): Promise<void> {
