@@ -5,7 +5,10 @@ import { makeTempStorage } from "./test_storage.ts";
 import type { StoredCredential } from "./types.ts";
 import { createUser } from "./users.ts";
 import {
+	MAX_USERS_PER_VAULT,
+	VaultFullError,
 	addMember,
+	countMembers,
 	createVaultForUser,
 	deleteVault,
 	getMembership,
@@ -95,6 +98,52 @@ Deno.test(async function deleteVaultRemovesRowsAndFile() {
 		await deleteVault(t.storage, v.id);
 		assert.assertEquals(fs.existsSync(path), false);
 		assert.assertEquals(await userHasAccess(t.storage, owner, v.id), false);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function addMemberRejectsBeyondCap() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		for (let i = 1; i < MAX_USERS_PER_VAULT; i++) {
+			const u = await seedUser(t.storage, `u${i}@x.io`);
+			await addMember(t.storage, vault.id, u);
+		}
+		assert.assertEquals(
+			await countMembers(t.storage, vault.id),
+			MAX_USERS_PER_VAULT,
+		);
+		const extra = await seedUser(t.storage, "extra@x.io");
+		await assert.assertRejects(
+			() => addMember(t.storage, vault.id, extra),
+			VaultFullError,
+		);
+		assert.assertEquals(
+			await countMembers(t.storage, vault.id),
+			MAX_USERS_PER_VAULT,
+		);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function addMemberAtCapStillAllowsExistingMemberRetry() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		for (let i = 1; i < MAX_USERS_PER_VAULT; i++) {
+			const u = await seedUser(t.storage, `u${i}@x.io`);
+			await addMember(t.storage, vault.id, u);
+		}
+		await addMember(t.storage, vault.id, owner);
+		assert.assertEquals(
+			await countMembers(t.storage, vault.id),
+			MAX_USERS_PER_VAULT,
+		);
 	} finally {
 		t.cleanup();
 	}

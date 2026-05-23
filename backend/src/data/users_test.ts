@@ -26,33 +26,12 @@ Deno.test(async function createUserPersistsAndReturnsRecord() {
 		assert.assertEquals(created.id, expectedId);
 		assert.assertEquals(created.email, "a@b.co");
 		assert.assertEquals(created.credentials.length, 1);
-		assert.assertEquals(created.isTest, false);
 
 		const fetched = await getUserByEmail(t.storage, "a@b.co");
 		assert.assertEquals(fetched?.id, expectedId);
 
 		const byId = await getUserById(t.storage, expectedId);
 		assert.assertEquals(byId?.email, "a@b.co");
-	} finally {
-		t.cleanup();
-	}
-});
-
-Deno.test(async function createUserFlagsPlaywrightLocalEmailsAsTest() {
-	const t = makeTempStorage();
-	try {
-		const u = await createUser(
-			t.storage,
-			"test@playwright.local",
-			sampleCredential(),
-		);
-		assert.assertEquals(u.isTest, true);
-		const u2 = await createUser(
-			t.storage,
-			"alice@example.com",
-			sampleCredential("c2"),
-		);
-		assert.assertEquals(u2.isTest, false);
 	} finally {
 		t.cleanup();
 	}

@@ -1,14 +1,6 @@
 export async function sha384(value: string): Promise<string> {
-	return await sha("SHA-384", value);
-}
-
-export async function sha256(value: string): Promise<string> {
-	return await sha("SHA-256", value);
-}
-
-async function sha(algo: "SHA-256" | "SHA-384", value: string): Promise<string> {
 	const dataBuffer = new TextEncoder().encode(value);
-	const hashBuffer = await crypto.subtle.digest(algo, dataBuffer);
+	const hashBuffer = await crypto.subtle.digest("SHA-384", dataBuffer);
 	return Array.from(new Uint8Array(hashBuffer))
 		.map((b) => b.toString(16).padStart(2, "0"))
 		.join("");

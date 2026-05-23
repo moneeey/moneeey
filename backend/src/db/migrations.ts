@@ -10,7 +10,6 @@ export const META_MIGRATIONS: Migration[] = [
 				id            TEXT PRIMARY KEY,
 				email         TEXT UNIQUE NOT NULL,
 				credentials   TEXT NOT NULL DEFAULT '[]',
-				is_test       INTEGER NOT NULL DEFAULT 0,
 				created_at    TEXT NOT NULL
 			);
 
@@ -47,7 +46,7 @@ export const VAULT_MIGRATIONS: Migration[] = [
 				id            TEXT PRIMARY KEY,
 				seq           INTEGER NOT NULL,
 				updated       TEXT NOT NULL,
-				deleted       INTEGER NOT NULL DEFAULT 0,
+				deleted_at    TEXT,
 				data          TEXT NOT NULL
 			);
 			CREATE INDEX documents_pull_idx ON documents (seq);

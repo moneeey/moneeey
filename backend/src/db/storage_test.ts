@@ -44,7 +44,7 @@ Deno.test(async function withMetaCreatesFileAndAppliesMigrations() {
 	try {
 		await storage.withMeta((db) => {
 			db.prepare(
-				"INSERT INTO users (id, email, credentials, is_test, created_at) VALUES (?, ?, '[]', 0, ?)",
+				"INSERT INTO users (id, email, credentials, created_at) VALUES (?, ?, '[]', ?)",
 			).run("u1", "a@b.c", new Date().toISOString());
 		});
 		assert.assertEquals(fs.existsSync(`${root}/meta.sqlite`), true);
@@ -66,7 +66,7 @@ Deno.test(async function withVaultCreatesShardedFileAndAppliesMigrations() {
 		const id = "abcdefghijklmnopqrstu";
 		await storage.withVault(id, (db) => {
 			db.prepare(
-				"INSERT INTO documents (id, seq, updated, deleted, data) VALUES (?, ?, ?, 0, ?)",
+				"INSERT INTO documents (id, seq, updated, deleted_at, data) VALUES (?, ?, ?, NULL, ?)",
 			).run("doc1", 1, new Date().toISOString(), "cipher");
 		});
 		const expectedPath = `${root}/vaults/ab/cd/${id}.sqlite`;
@@ -144,7 +144,7 @@ Deno.test(async function reopeningExistingFileIsNoOpForMigrations() {
 		const id = "abcdefghijklmnopqrstu";
 		await storage.withVault(id, (db) => {
 			db.prepare(
-				"INSERT INTO documents (id, seq, updated, deleted, data) VALUES (?, 1, ?, 0, '')",
+				"INSERT INTO documents (id, seq, updated, deleted_at, data) VALUES (?, 1, ?, NULL, '')",
 			).run("doc1", new Date().toISOString());
 		});
 		storage.closeAll();

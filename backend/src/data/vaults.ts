@@ -7,6 +7,14 @@ import type { Membership, VaultRecord } from "./types.ts";
 const logger = Logger("data/vaults");
 
 const VAULT_ID_ATTEMPTS = 5;
+export const MAX_USERS_PER_VAULT = 10;
+
+export class VaultFullError extends Error {
+	constructor() {
+		super("vault_full");
+		this.name = "VaultFullError";
+	}
+}
 
 type VaultRow = { id: string; created_at: string };
 type MembershipRow = {
@@ -93,6 +101,18 @@ export async function getVaultsByUser(
 	});
 }
 
+export async function countMembers(
+	storage: Storage,
+	vaultId: string,
+): Promise<number> {
+	return await storage.withMeta((db) => {
+		const row = db
+			.prepare("SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?")
+			.get<{ n: number }>(vaultId);
+		return row?.n ?? 0;
+	});
+}
+
 export async function addMember(
 	storage: Storage,
 	vaultId: string,
@@ -101,9 +121,34 @@ export async function addMember(
 ): Promise<void> {
 	const addedAt = new Date().toISOString();
 	await storage.withMeta((db) => {
-		db.prepare(
-			"INSERT OR IGNORE INTO user_vaults (user_id, vault_id, role, added_at) VALUES (?, ?, ?, ?)",
-		).run(userId, vaultId, role, addedAt);
+		db.exec("BEGIN");
+		try {
+			const existing = db
+				.prepare(
+					"SELECT 1 AS one FROM user_vaults WHERE user_id = ? AND vault_id = ?",
+				)
+				.get<{ one: number }>(userId, vaultId);
+			if (existing) {
+				db.exec("COMMIT");
+				return;
+			}
+			const count = db
+				.prepare("SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?")
+				.get<{ n: number }>(vaultId);
+			if ((count?.n ?? 0) >= MAX_USERS_PER_VAULT) {
+				db.exec("ROLLBACK");
+				throw new VaultFullError();
+			}
+			db.prepare(
+				"INSERT INTO user_vaults (user_id, vault_id, role, added_at) VALUES (?, ?, ?, ?)",
+			).run(userId, vaultId, role, addedAt);
+			db.exec("COMMIT");
+		} catch (err) {
+			if (!(err instanceof VaultFullError)) {
+				db.exec("ROLLBACK");
+			}
+			throw err;
+		}
 	});
 }
 

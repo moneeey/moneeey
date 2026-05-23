@@ -9,7 +9,12 @@ import {
 import { makeTempStorage } from "./test_storage.ts";
 import type { StoredCredential } from "./types.ts";
 import { createUser } from "./users.ts";
-import { createVaultForUser } from "./vaults.ts";
+import {
+	MAX_USERS_PER_VAULT,
+	VaultFullError,
+	addMember,
+	createVaultForUser,
+} from "./vaults.ts";
 
 const cred = (id = "c"): StoredCredential => ({
 	credentialId: id,
@@ -101,6 +106,29 @@ Deno.test(async function createInviteEnforcesQuota() {
 			Error,
 			"invite_quota_exceeded",
 		);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function redeemInviteRejectsWhenVaultIsFull() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		for (let i = 1; i < MAX_USERS_PER_VAULT; i++) {
+			const u = await seedUser(t.storage, `u${i}@x.io`);
+			await addMember(t.storage, vault.id, u);
+		}
+		const guest = await seedUser(t.storage, "guest@x.io");
+		const token = await createInvite(t.storage, owner, vault.id);
+		await assert.assertRejects(
+			() => redeemInvite(t.storage, token, guest),
+			VaultFullError,
+		);
+		const stillUnredeemed = await findInvite(t.storage, token);
+		assert.assertExists(stillUnredeemed);
+		assert.assertEquals(stillUnredeemed?.redeemedBy, null);
 	} finally {
 		t.cleanup();
 	}

@@ -1,3 +1,4 @@
+import { MONEEEY_META_PATH, MONEEEY_VAULTS_DIR } from "../config.ts";
 import { Database } from "../deps.ts";
 import { Logger } from "../logger.ts";
 import {
@@ -6,8 +7,6 @@ import {
 	runMigrations,
 } from "./migrations.ts";
 
-const DEFAULT_META_PATH = "/btech/moneeey/meta.sqlite";
-const DEFAULT_VAULTS_DIR = "/btech/moneeey/vaults";
 const MAX_CACHED_HANDLES = 100;
 
 const logger = Logger("storage");
@@ -18,14 +17,6 @@ export type StorageConfig = {
 	maxCachedHandles?: number;
 };
 
-const env = (key: string): string | undefined => {
-	try {
-		return Deno.env.get(key);
-	} catch {
-		return undefined;
-	}
-};
-
 export class Storage {
 	private metaPath: string;
 	private vaultsDir: string;
@@ -34,10 +25,8 @@ export class Storage {
 	private vaultHandles = new Map<string, Database>();
 
 	constructor(config: StorageConfig = {}) {
-		this.metaPath =
-			config.metaPath ?? env("MONEEEY_META_PATH") ?? DEFAULT_META_PATH;
-		this.vaultsDir =
-			config.vaultsDir ?? env("MONEEEY_VAULTS_DIR") ?? DEFAULT_VAULTS_DIR;
+		this.metaPath = config.metaPath ?? MONEEEY_META_PATH;
+		this.vaultsDir = config.vaultsDir ?? MONEEEY_VAULTS_DIR;
 		this.maxCached = config.maxCachedHandles ?? MAX_CACHED_HANDLES;
 	}
 

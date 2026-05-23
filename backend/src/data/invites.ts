@@ -1,9 +1,10 @@
 import type { Storage } from "../db/storage.ts";
-import { sha256 } from "./ids.ts";
+import { sha384 } from "./ids.ts";
 import type { InviteRecord } from "./types.ts";
+import { MAX_USERS_PER_VAULT, VaultFullError } from "./vaults.ts";
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-export const INVITE_QUOTA_PER_OWNER = 10;
+export const INVITE_QUOTA_PER_OWNER = 5;
 
 type InviteRow = {
 	token_hash: string;
@@ -59,7 +60,7 @@ export async function createInvite(
 		throw new Error("invite_quota_exceeded");
 	}
 	const token = randomToken();
-	const tokenHash = await sha256(token);
+	const tokenHash = await sha384(token);
 	const expiresAt = new Date(now + INVITE_TTL_MS).toISOString();
 	await storage.withMeta((db) => {
 		db.prepare(
@@ -74,7 +75,7 @@ export async function findInvite(
 	storage: Storage,
 	token: string,
 ): Promise<InviteRecord | null> {
-	const tokenHash = await sha256(token);
+	const tokenHash = await sha384(token);
 	const invite = await storage.withMeta((db) => {
 		const row = db
 			.prepare(
@@ -96,19 +97,46 @@ export async function redeemInvite(
 ): Promise<string> {
 	const invite = await findInvite(storage, token);
 	if (!invite) throw new Error("invite_not_found");
-	const changes = await storage.withMeta((db) => {
-		const result = db
-			.prepare(
-				"UPDATE invites SET redeemed_by = ? WHERE token_hash = ? AND redeemed_by IS NULL",
-			)
-			.run(redeemerUserId, invite.tokenHash);
-		return result;
-	});
-	if (changes === 0) throw new Error("invite_already_redeemed");
 	await storage.withMeta((db) => {
-		db.prepare(
-			"INSERT OR IGNORE INTO user_vaults (user_id, vault_id, role, added_at) VALUES (?, ?, 'member', ?)",
-		).run(redeemerUserId, invite.vaultId, new Date().toISOString());
+		db.exec("BEGIN");
+		try {
+			const alreadyMember = db
+				.prepare(
+					"SELECT 1 AS one FROM user_vaults WHERE user_id = ? AND vault_id = ?",
+				)
+				.get<{ one: number }>(redeemerUserId, invite.vaultId);
+			if (!alreadyMember) {
+				const count = db
+					.prepare("SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?")
+					.get<{ n: number }>(invite.vaultId);
+				if ((count?.n ?? 0) >= MAX_USERS_PER_VAULT) {
+					db.exec("ROLLBACK");
+					throw new VaultFullError();
+				}
+			}
+			const changes = db
+				.prepare(
+					"UPDATE invites SET redeemed_by = ? WHERE token_hash = ? AND redeemed_by IS NULL",
+				)
+				.run(redeemerUserId, invite.tokenHash);
+			if (changes === 0) {
+				db.exec("ROLLBACK");
+				throw new Error("invite_already_redeemed");
+			}
+			db.prepare(
+				"INSERT OR IGNORE INTO user_vaults (user_id, vault_id, role, added_at) VALUES (?, ?, 'member', ?)",
+			).run(redeemerUserId, invite.vaultId, new Date().toISOString());
+			db.exec("COMMIT");
+		} catch (err) {
+			if (!(err instanceof VaultFullError) && (err as Error).message !== "invite_already_redeemed") {
+				try {
+					db.exec("ROLLBACK");
+				} catch {
+					/* already rolled back */
+				}
+			}
+			throw err;
+		}
 	});
 	return invite.vaultId;
 }

@@ -12,7 +12,6 @@ export type UserRecord = {
 	id: string;
 	email: string;
 	credentials: StoredCredential[];
-	isTest: boolean;
 	createdAt: string;
 };
 
