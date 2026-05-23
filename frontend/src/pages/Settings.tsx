@@ -24,7 +24,7 @@ import useMoneeeyStore from "../shared/useMoneeeyStore";
 import ConfigTable from "../tables/ConfigTable";
 import useMessages from "../utils/Messages";
 import { noop } from "../utils/Utils";
-import { DatabaseConfig, MoneeeyAccountConfig } from "./Sync";
+import { MoneeeyAccountConfig } from "./Sync";
 
 type ActionState = {
 	content: string;
@@ -183,10 +183,10 @@ function PassphraseTab() {
 		setPassphraseError(null);
 		setPassphraseBusy(true);
 		try {
-			const db = moneeeyStore.persistence.getDb();
-			const dataKey = await verifyPassphrase(db, currentPassphrase);
+			const localStore = moneeeyStore.persistence.getLocalStore();
+			const dataKey = await verifyPassphrase(localStore, currentPassphrase);
 			await moneeeyStore.encryption.changePassphrase(
-				db,
+				localStore,
 				dataKey,
 				newPassphrase,
 			);
@@ -291,11 +291,6 @@ export default function Settings() {
 						key: "moneeey",
 						label: Messages.sync.moneeey_sync,
 						children: <MoneeeyAccountConfig />,
-					},
-					{
-						key: "custom",
-						label: Messages.sync.database_sync,
-						children: <DatabaseConfig />,
 					},
 					{
 						key: "preferences",

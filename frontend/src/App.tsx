@@ -9,7 +9,7 @@ import Navigator from "./components/Navigator";
 import Notifications from "./components/Notifications";
 import type { UnlockResult } from "./components/tour/EncryptionGate";
 import MoneeeyStore from "./shared/MoneeeyStore";
-import { openRawDatabase } from "./shared/encryption/encryptedPouch";
+import { LocalStore } from "./shared/storage/LocalStore";
 import useMoneeeyStore, {
 	MoneeeyStoreProvider,
 } from "./shared/useMoneeeyStore";
@@ -90,11 +90,15 @@ const AppContent = observer(() => {
 const AppBoot = observer(() => {
 	const { currentLanguage } = useLanguageSwitcher();
 	const [moneeeyStore, setMoneeeyStore] = useState<MoneeeyStore | null>(null);
-	const rawDb = useMemo(() => openRawDatabase(), []);
+	const localStore = useMemo(() => {
+		const s = new LocalStore();
+		s.open();
+		return s;
+	}, []);
 
 	const onUnlocked = useCallback(
 		async ({ dataKey, syncConfig }: UnlockResult) => {
-			const store = new MoneeeyStore(() => rawDb);
+			const store = new MoneeeyStore(localStore);
 			store.persistence.setDataKey(dataKey);
 			await store.load();
 			if (syncConfig) {
@@ -106,7 +110,7 @@ const AppBoot = observer(() => {
 			}
 			setMoneeeyStore(store);
 		},
-		[rawDb],
+		[localStore],
 	);
 
 	if (showInitialLanguageSelector({ currentLanguage })) {
@@ -114,7 +118,7 @@ const AppBoot = observer(() => {
 	}
 
 	if (!moneeeyStore) {
-		return <EncryptionGate db={rawDb} onUnlocked={onUnlocked} />;
+		return <EncryptionGate store={localStore} onUnlocked={onUnlocked} />;
 	}
 
 	return (

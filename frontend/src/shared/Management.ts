@@ -7,11 +7,11 @@ import type ConfigStore from "../entities/Config";
 import type PersistenceStore from "./Persistence";
 import { fetchPasskeyAuthState } from "./encryption/bootstrapFromPasskey";
 
+const wsHostForVault = () => `${getCurrentHost().replace(/^http/, "ws")}/api/vault`;
+
 export default class ManagementStore {
-	accessToken = "";
-
-	database = "";
-
+	sessionToken = "";
+	vaultId = "";
 	loggedIn = false;
 
 	persistence: PersistenceStore;
@@ -19,8 +19,8 @@ export default class ManagementStore {
 
 	constructor(persistence: PersistenceStore, config: ConfigStore) {
 		makeObservable(this, {
-			accessToken: observable,
-			database: observable,
+			sessionToken: observable,
+			vaultId: observable,
 			loggedIn: observable,
 			complete: action,
 			logout: action,
@@ -33,10 +33,9 @@ export default class ManagementStore {
 
 	async checkExistingSession() {
 		const stored = this.config.main.moneeeySync;
-		if (stored?.enabled && stored.url && stored.password) {
-			this.accessToken = stored.password;
-			const urlParts = stored.url.split("/db/");
-			this.database = urlParts.length > 1 ? urlParts[1] : "";
+		if (stored?.enabled && stored.url && stored.sessionToken) {
+			this.sessionToken = stored.sessionToken;
+			this.vaultId = stored.vaultId;
 			this.loggedIn = true;
 			this.applySync();
 			return;
@@ -44,32 +43,31 @@ export default class ManagementStore {
 
 		const remote = await fetchPasskeyAuthState();
 		if (remote) {
-			this.complete(remote.password, remote.url);
+			this.complete(remote.sessionToken, remote.vaultId);
 		}
 	}
 
 	applySync() {
 		this.persistence.sync({
-			url: `${getCurrentHost()}/db/${this.database}`,
-			username: "JWT",
-			password: this.accessToken,
-			enabled: Boolean(this.accessToken),
+			url: wsHostForVault(),
+			vaultId: this.vaultId,
+			sessionToken: this.sessionToken,
+			enabled: Boolean(this.sessionToken),
 		});
 	}
 
-	complete(accessToken: string, _url: string) {
-		if (!isEmpty(accessToken)) {
-			this.accessToken = accessToken;
-			const urlParts = _url.split("/db/");
-			this.database = urlParts.length > 1 ? urlParts[1] : "";
+	complete(sessionToken: string, vaultId: string) {
+		if (!isEmpty(sessionToken)) {
+			this.sessionToken = sessionToken;
+			this.vaultId = vaultId;
 			this.loggedIn = true;
 
 			this.config.merge({
 				...this.config.main,
 				moneeeySync: {
-					url: `${getCurrentHost()}/db/${this.database}`,
-					username: "JWT",
-					password: this.accessToken,
+					url: wsHostForVault(),
+					vaultId,
+					sessionToken,
 					enabled: true,
 				},
 			});
@@ -87,16 +85,16 @@ export default class ManagementStore {
 			},
 			body: JSON.stringify({}),
 		});
-		this.accessToken = "";
-		this.database = "";
+		this.sessionToken = "";
+		this.vaultId = "";
 		this.loggedIn = false;
 
 		this.config.merge({
 			...this.config.main,
 			moneeeySync: {
 				url: "",
-				username: "",
-				password: "",
+				vaultId: "",
+				sessionToken: "",
 				enabled: false,
 			},
 		});

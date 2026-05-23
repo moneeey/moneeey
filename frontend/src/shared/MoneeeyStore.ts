@@ -10,7 +10,8 @@ import EncryptionStore from "./EncryptionStore";
 import Logger from "./Logger";
 import ManagementStore from "./Management";
 import NavigationStore from "./Navigation";
-import PersistenceStore, { type PouchDBFactoryFn } from "./Persistence";
+import PersistenceStore from "./Persistence";
+import type { LocalStore } from "./storage/LocalStore";
 import TagsStore from "./Tags";
 import Importer from "./import/Importer";
 
@@ -41,7 +42,7 @@ export default class MoneeeyStore {
 
 	management: ManagementStore;
 
-	constructor(dbFactory: PouchDBFactoryFn) {
+	constructor(localStore: LocalStore) {
 		makeObservable(this, {
 			loaded: observable,
 			load: action,
@@ -49,7 +50,7 @@ export default class MoneeeyStore {
 		});
 
 		this.encryption = new EncryptionStore(this.logger);
-		this.persistence = new PersistenceStore(dbFactory, this.logger);
+		this.persistence = new PersistenceStore(localStore, this.logger);
 		this.persistence.monitor(this.accounts);
 		this.persistence.monitor(this.currencies);
 		this.persistence.monitor(this.transactions);

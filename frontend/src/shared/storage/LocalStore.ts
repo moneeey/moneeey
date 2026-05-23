@@ -32,7 +32,7 @@ const STORE_OUTBOX = "outbox";
 
 const META_HEAD_SEQ = "head_seq";
 const META_VAULT_ID = "vault_id";
-const META_ENCRYPTION = "encryption_meta";
+export const ENCRYPTION_META_DOC_ID = "ENCRYPTION-META";
 
 export const DEFAULT_DB_NAME = "moneeey";
 const DB_VERSION = 1;
@@ -120,16 +120,32 @@ export class LocalStore implements MetaStore {
 	}
 
 	async getEncryptionMeta(): Promise<MetaDoc | null> {
-		const v = await getValue<MetaDoc>(
-			this.requireDb(),
-			STORE_META,
-			META_ENCRYPTION,
-		);
-		return v ?? null;
+		const row = await this.get(ENCRYPTION_META_DOC_ID);
+		if (!row) return null;
+		try {
+			return JSON.parse(row.data) as MetaDoc;
+		} catch {
+			return null;
+		}
 	}
 
 	async setEncryptionMeta(meta: MetaDoc): Promise<void> {
-		await putValue(this.requireDb(), STORE_META, meta, META_ENCRYPTION);
+		const updated = new Date().toISOString();
+		const data = JSON.stringify(meta);
+		await this.put({
+			_id: ENCRYPTION_META_DOC_ID,
+			seq: 0,
+			updated,
+			deletedAt: null,
+			data,
+		});
+		await this.outboxAdd({
+			_id: ENCRYPTION_META_DOC_ID,
+			updated,
+			deletedAt: null,
+			data,
+			enqueuedAt: updated,
+		});
 	}
 
 	async outboxAdd(entry: OutboxEntry): Promise<void> {

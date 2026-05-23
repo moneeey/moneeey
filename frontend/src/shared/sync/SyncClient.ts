@@ -10,6 +10,7 @@ export type SyncStatus =
 export type SyncEvents = {
 	onStatus?: (status: SyncStatus) => void;
 	onChanges?: (docs: LocalDoc[], headSeq: number) => void;
+	onFirstPullDone?: () => void;
 };
 
 export interface WebSocketLike {
@@ -148,6 +149,7 @@ export class SyncClient {
 			await this.opts.localStore.setVaultId(vaultId);
 			await this.runPullLoop();
 			await this.drainOutbox();
+			this.opts.events?.onFirstPullDone?.();
 			return;
 		}
 		if (type === "pong") return;

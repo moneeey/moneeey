@@ -7,15 +7,15 @@ import {
 	MIN_PASSPHRASE_LENGTH,
 	openEncryptedDatabase,
 } from "../../shared/EncryptionStore";
-import { PouchDBRemoteFactory, deleteAllData } from "../../shared/Persistence";
+import type { LocalStore } from "../../shared/storage/LocalStore";
 import {
 	getInviteInfo,
 	loginPasskey,
 	registerPasskey,
 	registerViaInvite,
 } from "../../shared/encryption/bootstrapFromPasskey";
+import { hasEncryptionMeta } from "../../shared/encryption/codec";
 import { isWebCryptoAvailable } from "../../shared/encryption/crypto";
-import { hasEncryptionMeta } from "../../shared/encryption/encryptedPouch";
 import useMessages, { type TMessages } from "../../utils/Messages";
 import {
 	CancelButton,
@@ -25,7 +25,6 @@ import {
 } from "../base/Button";
 import { Input } from "../base/Input";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
-import SelfHostedSyncForm from "../sync/SelfHostedSyncForm";
 
 export type UnlockResult = {
 	dataKey: CryptoKey;
@@ -33,7 +32,7 @@ export type UnlockResult = {
 };
 
 type Props = {
-	db: PouchDB.Database;
+	store: LocalStore;
 	onUnlocked: (result: UnlockResult) => void;
 };
 
@@ -44,7 +43,6 @@ type GateState =
 	| { kind: "unlock" }
 	| { kind: "passkey" }
 	| { kind: "invite"; token: string }
-	| { kind: "self-hosted" }
 	| { kind: "pulling"; label: string }
 	| { kind: "confirm-delete"; returnTo: GateState };
 
@@ -75,7 +73,7 @@ function parseInviteToken(): string | null {
 	return match ? match[1] : null;
 }
 
-const detectInitialState = async (db: PouchDB.Database): Promise<GateState> => {
+const detectInitialState = async (store: LocalStore): Promise<GateState> => {
 	const inviteToken = parseInviteToken();
 	if (inviteToken) {
 		const info = await getInviteInfo(inviteToken);
@@ -83,12 +81,12 @@ const detectInitialState = async (db: PouchDB.Database): Promise<GateState> => {
 			return { kind: "invite", token: inviteToken };
 		}
 	}
-	return (await hasEncryptionMeta(db))
+	return (await hasEncryptionMeta(store))
 		? { kind: "unlock" }
 		: { kind: "choose" };
 };
 
-export default function EncryptionGate({ db, onUnlocked }: Props) {
+export default function EncryptionGate({ store, onUnlocked }: Props) {
 	const Messages = useMessages();
 	const [state, setState] = useState<GateState>({ kind: "loading" });
 	const [passphrase, setPassphrase] = useState("");
@@ -100,13 +98,13 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 
 	useEffect(() => {
 		let cancelled = false;
-		detectInitialState(db).then((next) => {
+		detectInitialState(store).then((next) => {
 			if (!cancelled) setState(next);
 		});
 		return () => {
 			cancelled = true;
 		};
-	}, [db]);
+	}, [store]);
 
 	const reset = () => {
 		setPassphrase("");
@@ -137,7 +135,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		setError(null);
 		setBusy(true);
 		try {
-			const dataKey = await openEncryptedDatabase(db, passphrase, "setup");
+			const dataKey = await openEncryptedDatabase(store, passphrase, "setup");
 			onUnlocked({ dataKey, syncConfig: pendingSyncRef.current ?? undefined });
 		} catch (err) {
 			setError(messageForError(err, Messages));
@@ -153,7 +151,7 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		setError(null);
 		setBusy(true);
 		try {
-			const dataKey = await openEncryptedDatabase(db, passphrase, "unlock");
+			const dataKey = await openEncryptedDatabase(store, passphrase, "unlock");
 			onUnlocked({ dataKey, syncConfig: pendingSyncRef.current ?? undefined });
 		} catch (err) {
 			setError(messageForError(err, Messages));
@@ -169,19 +167,29 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 			label: Messages.encryption.pulling_from_remote,
 		});
 		try {
-			const remoteDb = PouchDBRemoteFactory(remote);
+			const { SyncClient } = await import("../../shared/sync/SyncClient");
 			await new Promise<void>((resolve, reject) => {
-				db.sync(remoteDb, { live: false, retry: false })
-					.on("complete", () => resolve())
-					.on("denied", (info) =>
-						reject(new Error(`denied: ${JSON.stringify(info)}`)),
-					)
-					.on("error", (err: unknown) => reject(err));
+				const client = new SyncClient({
+					url: remote.url,
+					sessionToken: remote.sessionToken,
+					localStore: store,
+					events: {
+						onFirstPullDone: () => {
+							client.stop().finally(resolve);
+						},
+						onStatus: (s) => {
+							if (s === "denied" || s === "error") {
+								client.stop().finally(() => reject(new Error(s)));
+							}
+						},
+					},
+				});
+				client.start();
 			});
 
 			pendingSyncRef.current = remote;
 
-			if (await hasEncryptionMeta(db)) {
+			if (await hasEncryptionMeta(store)) {
 				reset();
 				setState({ kind: "unlock" });
 				return;
@@ -288,13 +296,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 							setState({ kind: "passkey" });
 						}}
 						title={Messages.encryption.signin_online_account}
-					/>
-					<SecondaryButton
-						onClick={() => {
-							reset();
-							setState({ kind: "self-hosted" });
-						}}
-						title={Messages.encryption.signin_self_hosted}
 					/>
 				</div>
 				{error && (
@@ -409,34 +410,6 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 		);
 	}
 
-	if (state.kind === "self-hosted") {
-		return (
-			<MinimalBasicScreen>
-				<h2 className="text-xl font-semibold">
-					{Messages.encryption.signin_self_hosted}
-				</h2>
-				<p className="text-sm opacity-80">
-					{Messages.encryption.self_hosted_description}
-				</p>
-				<SelfHostedSyncForm
-					onSubmit={(remote) => pullFromRemote(remote)}
-					submitTitle={Messages.encryption.pull_from_remote}
-					disabled={busy}
-				/>
-				{error && (
-					<p className="text-sm text-danger-300" data-testid="encryptionError">
-						{error}
-					</p>
-				)}
-				<SecondaryButton
-					onClick={goChoose}
-					title={Messages.util.cancel}
-					disabled={busy}
-				/>
-			</MinimalBasicScreen>
-		);
-	}
-
 	if (state.kind === "confirm-delete") {
 		return (
 			<MinimalBasicScreen>
@@ -448,7 +421,14 @@ export default function EncryptionGate({ db, onUnlocked }: Props) {
 				</p>
 				<div className="flex gap-2">
 					<CancelButton onClick={() => setState(state.returnTo)} />
-					<DeleteButton onClick={() => deleteAllData(db)}>
+					<DeleteButton
+						onClick={async () => {
+							await store.destroy();
+							window.localStorage.clear();
+							window.sessionStorage.clear();
+							window.location.reload();
+						}}
+					>
 						<span className="flex items-center gap-1">
 							<TrashIcon className="h-4 w-4 shrink-0" />
 							{Messages.menu.delete_data}

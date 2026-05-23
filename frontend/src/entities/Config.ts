@@ -10,8 +10,8 @@ import type { TCurrencyUUID } from "./Currency";
 
 export type SyncConfig = {
 	url: string;
-	username: string;
-	password: string;
+	vaultId: string;
+	sessionToken: string;
 	enabled: boolean;
 };
 
@@ -40,14 +40,14 @@ export class ConfigStore extends MappedStore<IConfig> {
 					couchSync: {
 						enabled: false,
 						url: "",
-						username: "",
-						password: "",
+						vaultId: "",
+						sessionToken: "",
 					},
 					moneeeySync: {
 						enabled: false,
 						url: "",
-						username: "",
-						password: "",
+						vaultId: "",
+						sessionToken: "",
 					},
 					updated: currentDateTime(),
 					created: currentDateTime(),
