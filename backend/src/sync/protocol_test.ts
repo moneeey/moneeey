@@ -198,13 +198,44 @@ Deno.test(async function pullReturnsDocsAboveCursor() {
 	}
 });
 
-Deno.test(async function pingRespondsPong() {
+Deno.test(async function pingRespondsPongAfterHello() {
+	const { t, user, vault, hub } = await setupVault();
+	try {
+		const peer = new FakePeer();
+		const protocol = new VaultProtocol(t.storage, hub, peer);
+		const token = await buildSessionToken(user.email, user.id, vault.id);
+		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
+		await protocol.handleMessage(JSON.stringify({ type: "ping" }));
+		assert.assertEquals(peer.last()?.type, "pong");
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function pingBeforeHelloRespondsError() {
 	const { t, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
 		const protocol = new VaultProtocol(t.storage, hub, peer);
 		await protocol.handleMessage(JSON.stringify({ type: "ping" }));
-		assert.assertEquals(peer.last()?.type, "pong");
+		assert.assertEquals(peer.last()?.type, "error");
+		assert.assertEquals(peer.last()?.code, "not_ready");
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function helloTwiceRespondsError() {
+	const { t, user, vault, hub } = await setupVault();
+	try {
+		const peer = new FakePeer();
+		const protocol = new VaultProtocol(t.storage, hub, peer);
+		const token = await buildSessionToken(user.email, user.id, vault.id);
+		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
+		peer.sent.length = 0;
+		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
+		assert.assertEquals(peer.last()?.type, "error");
+		assert.assertEquals(peer.last()?.code, "bad_request");
 	} finally {
 		t.cleanup();
 	}

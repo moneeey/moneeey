@@ -32,6 +32,17 @@ type PushMsg = { type: "push"; request_id: string; docs: IncomingDoc[] };
 type PingMsg = { type: "ping" };
 type ClientMsg = HelloMsg | PullMsg | PushMsg | PingMsg | { type: string };
 
+type ProtocolContext = {
+	storage: Storage;
+	hub: VaultHub;
+	peer: PeerSink;
+};
+
+interface MessageHandler {
+	handle(msg: ClientMsg): Promise<MessageHandler>;
+	onClose(): void;
+}
+
 async function validateSessionToken(
 	token: string,
 ): Promise<{ vaultId: string; userId: string; email: string } | null> {
@@ -61,116 +72,119 @@ async function validateSessionToken(
 	return null;
 }
 
-export class VaultProtocol {
-	private state: "open" | "ready" | "closed" = "open";
-	private vaultId: string | null = null;
-	private deregister: (() => void) | null = null;
+const sendError = (
+	peer: PeerSink,
+	requestId: string | undefined,
+	code: string,
+	message: string,
+) => {
+	peer.send({ type: "error", request_id: requestId, code, message });
+};
 
-	constructor(
-		private storage: Storage,
-		private hub: VaultHub,
-		private peer: PeerSink,
-	) {}
-
-	get currentVaultId(): string | null {
-		return this.vaultId;
+class ClosedHandler implements MessageHandler {
+	async handle(): Promise<MessageHandler> {
+		return this;
 	}
-
-	async handleMessage(raw: string): Promise<void> {
-		if (this.state === "closed") return;
-		let msg: ClientMsg;
-		try {
-			msg = JSON.parse(raw) as ClientMsg;
-		} catch {
-			this.error(undefined, "bad_request", "invalid JSON");
-			return;
-		}
-		try {
-			switch (msg.type) {
-				case "hello":
-					await this.handleHello(msg as HelloMsg);
-					return;
-				case "ping":
-					this.peer.send({ type: "pong" });
-					return;
-				case "pull":
-					await this.handlePull(msg as PullMsg);
-					return;
-				case "push":
-					await this.handlePush(msg as PushMsg);
-					return;
-				default:
-					this.error(undefined, "bad_request", `unknown type ${msg.type}`);
-			}
-		} catch (err) {
-			logger.error("handler error", { err, type: msg.type });
-			const requestId = (msg as { request_id?: string }).request_id;
-			this.error(requestId, "server_error", (err as Error).message);
-		}
+	onClose(): void {
+		/* nothing to clean up */
 	}
+}
 
-	handleClose(): void {
-		this.state = "closed";
-		if (this.deregister) {
-			this.deregister();
-			this.deregister = null;
-		}
-	}
+class HelloHandler implements MessageHandler {
+	constructor(private readonly ctx: ProtocolContext) {}
 
-	private async handleHello(msg: HelloMsg): Promise<void> {
-		if (this.state !== "open") {
-			this.error(undefined, "bad_request", "hello already received");
-			return;
+	async handle(msg: ClientMsg): Promise<MessageHandler> {
+		if (msg.type !== "hello") {
+			sendError(this.ctx.peer, undefined, "not_ready", "send hello first");
+			return this;
 		}
-		if (typeof msg.token !== "string" || msg.token.length === 0) {
-			this.peer.close(CLOSE_UNAUTHORIZED, "missing token");
-			this.state = "closed";
-			return;
+		const hello = msg as HelloMsg;
+		if (typeof hello.token !== "string" || hello.token.length === 0) {
+			this.ctx.peer.close(CLOSE_UNAUTHORIZED, "missing token");
+			return new ClosedHandler();
 		}
-		const claims = await validateSessionToken(msg.token);
+		const claims = await validateSessionToken(hello.token);
 		if (!claims) {
-			this.peer.close(CLOSE_UNAUTHORIZED, "invalid token");
-			this.state = "closed";
-			return;
+			this.ctx.peer.close(CLOSE_UNAUTHORIZED, "invalid token");
+			return new ClosedHandler();
 		}
 		if (!claims.vaultId) {
-			this.peer.close(CLOSE_UNAUTHORIZED, "no vault in token");
-			this.state = "closed";
-			return;
+			this.ctx.peer.close(CLOSE_UNAUTHORIZED, "no vault in token");
+			return new ClosedHandler();
 		}
 		const access = await userHasAccess(
-			this.storage,
+			this.ctx.storage,
 			claims.userId,
 			claims.vaultId,
 		);
 		if (!access) {
-			this.peer.close(CLOSE_FORBIDDEN, "not a member of vault");
-			this.state = "closed";
-			return;
+			this.ctx.peer.close(CLOSE_FORBIDDEN, "not a member of vault");
+			return new ClosedHandler();
 		}
-		this.vaultId = claims.vaultId;
-		this.state = "ready";
-		this.deregister = this.hub.registerPeer(claims.vaultId, this.peer);
-		const headSeq = await getHeadSeq(this.storage, claims.vaultId);
-		this.peer.send({
+		const deregister = this.ctx.hub.registerPeer(claims.vaultId, this.ctx.peer);
+		const headSeq = await getHeadSeq(this.ctx.storage, claims.vaultId);
+		this.ctx.peer.send({
 			type: "ready",
 			vault_id: claims.vaultId,
 			head_seq: headSeq,
 		});
+		return new ReadyHandler(this.ctx, claims.vaultId, deregister);
+	}
+
+	onClose(): void {
+		/* no hub registration yet */
+	}
+}
+
+class ReadyHandler implements MessageHandler {
+	constructor(
+		private readonly ctx: ProtocolContext,
+		private readonly vaultId: string,
+		private readonly deregister: () => void,
+	) {}
+
+	async handle(msg: ClientMsg): Promise<MessageHandler> {
+		switch (msg.type) {
+			case "hello":
+				sendError(
+					this.ctx.peer,
+					undefined,
+					"bad_request",
+					"hello already received",
+				);
+				return this;
+			case "ping":
+				this.ctx.peer.send({ type: "pong" });
+				return this;
+			case "pull":
+				await this.handlePull(msg as PullMsg);
+				return this;
+			case "push":
+				await this.handlePush(msg as PushMsg);
+				return this;
+			default:
+				sendError(
+					this.ctx.peer,
+					undefined,
+					"bad_request",
+					`unknown type ${msg.type}`,
+				);
+				return this;
+		}
+	}
+
+	onClose(): void {
+		this.deregister();
 	}
 
 	private async handlePull(msg: PullMsg): Promise<void> {
-		if (this.state !== "ready" || !this.vaultId) {
-			this.error(msg.request_id, "not_ready", "send hello first");
-			return;
-		}
 		const since = Number(msg.since ?? 0);
 		const limit = Math.min(MAX_PULL_LIMIT, Number(msg.limit ?? MAX_PULL_LIMIT));
-		const docs = await getSince(this.storage, this.vaultId, since, limit);
-		const head = await getHeadSeq(this.storage, this.vaultId);
+		const docs = await getSince(this.ctx.storage, this.vaultId, since, limit);
+		const head = await getHeadSeq(this.ctx.storage, this.vaultId);
 		const nextSince = docs.length > 0 ? docs[docs.length - 1].seq : since;
 		const done = docs.length < limit || nextSince >= head;
-		this.peer.send({
+		this.ctx.peer.send({
 			type: "pull_result",
 			request_id: msg.request_id,
 			docs,
@@ -180,31 +194,47 @@ export class VaultProtocol {
 	}
 
 	private async handlePush(msg: PushMsg): Promise<void> {
-		if (this.state !== "ready" || !this.vaultId) {
-			this.error(msg.request_id, "not_ready", "send hello first");
-			return;
-		}
 		const incoming = msg.docs;
 		if (!Array.isArray(incoming)) {
-			this.error(msg.request_id, "bad_request", "docs must be an array");
+			sendError(
+				this.ctx.peer,
+				msg.request_id,
+				"bad_request",
+				"docs must be an array",
+			);
 			return;
 		}
 		if (incoming.length > MAX_PUSH_DOCS) {
-			this.error(msg.request_id, "too_many_docs", `max ${MAX_PUSH_DOCS}`);
+			sendError(
+				this.ctx.peer,
+				msg.request_id,
+				"too_many_docs",
+				`max ${MAX_PUSH_DOCS}`,
+			);
 			return;
 		}
 		for (const d of incoming) {
 			if (typeof d?.id !== "string" || d.id.length === 0) {
-				this.error(msg.request_id, "bad_request", "doc.id required");
+				sendError(
+					this.ctx.peer,
+					msg.request_id,
+					"bad_request",
+					"doc.id required",
+				);
 				return;
 			}
 			if (typeof d.data !== "string" || d.data.length > MAX_DATA_BYTES) {
-				this.error(msg.request_id, "bad_request", "doc.data too large");
+				sendError(
+					this.ctx.peer,
+					msg.request_id,
+					"bad_request",
+					"doc.data too large",
+				);
 				return;
 			}
 		}
-		const results = await bulkUpsert(this.storage, this.vaultId, incoming);
-		this.peer.send({
+		const results = await bulkUpsert(this.ctx.storage, this.vaultId, incoming);
+		this.ctx.peer.send({
 			type: "push_result",
 			request_id: msg.request_id,
 			results,
@@ -227,20 +257,48 @@ export class VaultProtocol {
 				deletedAt: d.deletedAt,
 				data: d.data,
 			}));
-		const head = await getHeadSeq(this.storage, this.vaultId);
-		this.hub.broadcast(
+		const head = await getHeadSeq(this.ctx.storage, this.vaultId);
+		this.ctx.hub.broadcast(
 			this.vaultId,
 			{ type: "changes", docs: broadcastDocs, head_seq: head },
-			this.peer,
+			this.ctx.peer,
 		);
 	}
+}
 
-	private error(requestId: string | undefined, code: string, message: string) {
-		this.peer.send({
-			type: "error",
-			request_id: requestId,
-			code,
-			message,
-		});
+export class VaultProtocol {
+	private handler: MessageHandler;
+	private readonly ctx: ProtocolContext;
+
+	constructor(storage: Storage, hub: VaultHub, peer: PeerSink) {
+		this.ctx = { storage, hub, peer };
+		this.handler = new HelloHandler(this.ctx);
+	}
+
+	async handleMessage(raw: string): Promise<void> {
+		let msg: ClientMsg;
+		try {
+			msg = JSON.parse(raw) as ClientMsg;
+		} catch {
+			sendError(this.ctx.peer, undefined, "bad_request", "invalid JSON");
+			return;
+		}
+		try {
+			this.handler = await this.handler.handle(msg);
+		} catch (err) {
+			logger.error("handler error", { err, type: msg.type });
+			const requestId = (msg as { request_id?: string }).request_id;
+			sendError(
+				this.ctx.peer,
+				requestId,
+				"server_error",
+				(err as Error).message,
+			);
+		}
+	}
+
+	handleClose(): void {
+		this.handler.onClose();
+		this.handler = new ClosedHandler();
 	}
 }
