@@ -1,5 +1,5 @@
 import { getCurrentHost } from "../../utils/Utils";
-import type { LocalDoc, LocalStore, OutboxEntry } from "../storage/LocalStore";
+import type { LocalDoc, LocalStore } from "../storage/LocalStore";
 
 export const wsVaultUrl = (): string =>
 	`${getCurrentHost().replace(/^http/, "ws")}/api/vault`;
@@ -13,8 +13,8 @@ export type SyncStatus =
 
 export type SyncEvents = {
 	onStatus?: (status: SyncStatus) => void;
-	onChanges?: (docs: LocalDoc[], headSeq: number) => void;
-	onFirstPullDone?: () => void;
+	onChanges?: (docs: LocalDoc[]) => void;
+	onReconcileDone?: () => void;
 };
 
 export interface WebSocketLike {
@@ -30,7 +30,8 @@ export interface WebSocketLike {
 export type WebSocketFactory = (url: string) => WebSocketLike;
 
 const DEFAULT_PUSH_DEBOUNCE_MS = 200;
-const DEFAULT_PUSH_BATCH = 20;
+const DEFAULT_PUSH_BATCH = 50;
+const DEFAULT_FETCH_BATCH = 50;
 const DEFAULT_BACKOFF_MS = [1000, 2000, 4000, 8000, 16000, 30000];
 
 export type SyncClientOpts = {
@@ -41,6 +42,7 @@ export type SyncClientOpts = {
 	wsFactory?: WebSocketFactory;
 	pushDebounceMs?: number;
 	pushBatchSize?: number;
+	fetchBatchSize?: number;
 	backoffMs?: number[];
 };
 
@@ -64,6 +66,7 @@ export class SyncClient {
 	private retryAttempt = 0;
 	private intentionallyStopped = false;
 	private currentSessionToken: string;
+	private pendingPush = new Map<string, LocalDoc>();
 
 	constructor(private readonly opts: SyncClientOpts) {
 		this.currentSessionToken = opts.sessionToken;
@@ -101,17 +104,14 @@ export class SyncClient {
 		this.pendingRequests.clear();
 	}
 
-	async enqueue(doc: Omit<OutboxEntry, "enqueuedAt">): Promise<void> {
-		await this.opts.localStore.outboxAdd({
-			...doc,
-			enqueuedAt: new Date().toISOString(),
-		});
+	enqueue(doc: LocalDoc): void {
+		this.pendingPush.set(doc.id, doc);
 		this.schedulePushFlush();
 	}
 
 	async flush(): Promise<void> {
 		this.clearPushTimer();
-		await this.drainOutbox();
+		await this.drainPending();
 	}
 
 	private connect(): void {
@@ -151,9 +151,8 @@ export class SyncClient {
 			this.setStatus("online");
 			const vaultId = msg.vault_id as string;
 			await this.opts.localStore.setVaultId(vaultId);
-			await this.runPullLoop();
-			await this.drainOutbox();
-			this.opts.events?.onFirstPullDone?.();
+			await this.reconcile();
+			this.opts.events?.onReconcileDone?.();
 			return;
 		}
 		if (type === "pong") return;
@@ -166,7 +165,7 @@ export class SyncClient {
 			return;
 		}
 		if (type === "changes") {
-			await this.applyChanges(msg.docs as LocalDoc[], msg.head_seq as number);
+			await this.applyChanges(msg.docs as LocalDoc[]);
 		}
 	}
 
@@ -176,11 +175,7 @@ export class SyncClient {
 			pending.reject(new Error("ws closed"));
 		}
 		this.pendingRequests.clear();
-		if (event.code === 4401) {
-			this.setStatus("denied");
-			return;
-		}
-		if (event.code === 4403) {
+		if (event.code === 4401 || event.code === 4403) {
 			this.setStatus("denied");
 			return;
 		}
@@ -223,36 +218,34 @@ export class SyncClient {
 		this.opts.events?.onStatus?.(status);
 	}
 
-	private async runPullLoop(): Promise<void> {
-		let since = await this.opts.localStore.getHeadSeq();
-		while (true) {
-			const reply = await this.request({
-				type: "pull",
-				since,
-				limit: 500,
-			});
-			const docs = (reply.docs as LocalDoc[]) ?? [];
-			await this.applyChanges(docs, reply.head_seq as number);
-			const next = Number(reply.next_since ?? since);
-			const done = Boolean(reply.done);
-			if (done || next <= since) break;
-			since = next;
+	private async reconcile(): Promise<void> {
+		const entries = await this.opts.localStore.manifest();
+		const reply = await this.request({
+			type: "manifest",
+			entries,
+		});
+		const pullIds = (reply.pull_ids as string[]) ?? [];
+		const pushIds = (reply.push_ids as string[]) ?? [];
+
+		const fetchBatch = this.opts.fetchBatchSize ?? DEFAULT_FETCH_BATCH;
+		for (let i = 0; i < pullIds.length; i += fetchBatch) {
+			const batch = pullIds.slice(i, i + fetchBatch);
+			const fetched = await this.request({ type: "fetch", ids: batch });
+			const docs = (fetched.docs as LocalDoc[]) ?? [];
+			await this.applyChanges(docs);
 		}
+
+		if (pushIds.length > 0) {
+			const docs = await this.opts.localStore.getMany(pushIds);
+			await this.pushDocs(docs);
+		}
+		await this.drainPending();
 	}
 
-	private async applyChanges(docs: LocalDoc[], headSeq: number): Promise<void> {
-		if (docs.length > 0) {
-			await this.opts.localStore.bulkPut(docs);
-		}
-		const maxSeq = docs.reduce((m, d) => Math.max(m, d.seq), 0);
-		const current = await this.opts.localStore.getHeadSeq();
-		const newHead = Math.max(current, headSeq, maxSeq);
-		if (newHead > current) {
-			await this.opts.localStore.setHeadSeq(newHead);
-		}
-		if (docs.length > 0) {
-			this.opts.events?.onChanges?.(docs, newHead);
-		}
+	private async applyChanges(docs: LocalDoc[]): Promise<void> {
+		if (docs.length === 0) return;
+		await this.opts.localStore.bulkPut(docs);
+		this.opts.events?.onChanges?.(docs);
 	}
 
 	private schedulePushFlush(): void {
@@ -260,62 +253,33 @@ export class SyncClient {
 		const delay = this.opts.pushDebounceMs ?? DEFAULT_PUSH_DEBOUNCE_MS;
 		this.pushTimer = setTimeout(() => {
 			this.pushTimer = null;
-			this.drainOutbox().catch(() => {
-				/* push errors leave entries in outbox; will retry on next trigger */
+			this.drainPending().catch(() => {
+				/* push errors leave entries in pendingPush; will retry on next trigger */
 			});
 		}, delay);
 	}
 
-	private async drainOutbox(): Promise<void> {
+	private async drainPending(): Promise<void> {
 		if (this.status !== "online") return;
-		const all = await this.opts.localStore.outboxList();
-		if (all.length === 0) return;
-		const batchSize = this.opts.pushBatchSize ?? DEFAULT_PUSH_BATCH;
-		for (let i = 0; i < all.length; i += batchSize) {
-			const batch = all.slice(i, i + batchSize);
-			const reply = await this.request({
-				type: "push",
-				docs: batch.map(({ enqueuedAt: _e, ...doc }) => doc),
-			});
-			const results =
-				(reply.results as Array<{
-					id: string;
-					status: string;
-					seq?: number;
-				}>) ?? [];
-			for (const r of results) {
-				if (r.status === "accepted") {
-					const entry = batch.find((b) => b.id === r.id);
-					if (entry && typeof r.seq === "number") {
-						await this.opts.localStore.put({
-							id: entry.id,
-							seq: r.seq,
-							updated_at: entry.updated_at,
-							deleted_at: entry.deleted_at,
-							data: entry.data,
-						});
-						const current = await this.opts.localStore.getHeadSeq();
-						if (r.seq > current) {
-							await this.opts.localStore.setHeadSeq(r.seq);
-						}
-					}
-					await this.opts.localStore.outboxRemove(r.id);
-				} else if (r.status === "stale") {
-					await this.opts.localStore.outboxRemove(r.id);
-					await this.refetchSingleDoc(r.id);
-				}
+		if (this.pendingPush.size === 0) return;
+		const docs = Array.from(this.pendingPush.values());
+		this.pendingPush.clear();
+		try {
+			await this.pushDocs(docs);
+		} catch (err) {
+			for (const d of docs) {
+				if (!this.pendingPush.has(d.id)) this.pendingPush.set(d.id, d);
 			}
+			throw err;
 		}
 	}
 
-	private async refetchSingleDoc(id: string): Promise<void> {
-		const local = await this.opts.localStore.get(id);
-		const since = local ? Math.max(0, local.seq - 1) : 0;
-		const reply = await this.request({ type: "pull", since, limit: 500 });
-		const docs = (reply.docs as LocalDoc[]) ?? [];
-		const match = docs.find((d) => d.id === id);
-		if (match) {
-			await this.applyChanges([match], reply.head_seq as number);
+	private async pushDocs(docs: LocalDoc[]): Promise<void> {
+		if (docs.length === 0) return;
+		const batchSize = this.opts.pushBatchSize ?? DEFAULT_PUSH_BATCH;
+		for (let i = 0; i < docs.length; i += batchSize) {
+			const batch = docs.slice(i, i + batchSize);
+			await this.request({ type: "push", docs: batch });
 		}
 	}
 

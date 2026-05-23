@@ -4,9 +4,9 @@ import {
 	add,
 	differenceInSeconds,
 	format,
-	formatISO,
 	isValid,
 	parse,
+	parseISO,
 	setDefaultOptions,
 	startOfMonth,
 } from "date-fns";
@@ -68,8 +68,7 @@ export const parseDateFmt = (date: TDate, formatPattern: string) => {
 };
 
 export const parseDate = (date: TDate) => parseDateFmt(date, TDateFormat);
-export const parseDateTime = (date: TDateTime) =>
-	parseDateFmt(date, TDateTimeFormat);
+export const parseDateTime = (date: TDateTime) => parseISO(date);
 export const parseDateOrTime = (date: string) => {
 	if (date) {
 		if (date.includes("T")) {
@@ -84,7 +83,7 @@ export const parseDateOrTime = (date: string) => {
 };
 
 export const currentDate = () => formatDate(new Date());
-export const currentDateTime = () => formatISO(new Date());
+export const currentDateTime = () => new Date().toISOString();
 
 export const isFirstDayOfMonth = (date: TDate) =>
 	_isFirstDayOfMonth(parseDate(date));

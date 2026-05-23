@@ -176,7 +176,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 					sessionToken: remote.sessionToken,
 					localStore: store,
 					events: {
-						onFirstPullDone: () => {
+						onReconcileDone: () => {
 							client.stop().finally(resolve);
 						},
 						onStatus: (s) => {

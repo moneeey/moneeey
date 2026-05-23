@@ -57,7 +57,6 @@ Deno.test(async function helloWithValidTokenSendsReady() {
 		const last = peer.last();
 		assert.assertEquals(last?.type, "ready");
 		assert.assertEquals(last?.vault_id, vault.id);
-		assert.assertEquals(last?.head_seq, 0);
 		assert.assertEquals(hub.peerCount(vault.id), 1);
 	} finally {
 		t.cleanup();
@@ -96,13 +95,13 @@ Deno.test(async function helloWithNonMemberCloses4403() {
 	}
 });
 
-Deno.test(async function pullBeforeHelloRespondsError() {
+Deno.test(async function manifestBeforeHelloRespondsError() {
 	const { t, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
 		const protocol = new VaultProtocol(t.storage, hub, peer);
 		await protocol.handleMessage(
-			JSON.stringify({ type: "pull", request_id: "r1", since: 0 }),
+			JSON.stringify({ type: "manifest", request_id: "r1", entries: [] }),
 		);
 		const last = peer.last();
 		assert.assertEquals(last?.type, "error");
@@ -132,7 +131,7 @@ Deno.test(async function pushAcceptedBroadcastsChangesToOtherPeers() {
 				docs: [
 					{
 						id: "ACCOUNT-1",
-						updated_at: "2026-05-23T00:00:00Z",
+						updated_at: "2026-05-23T00:00:00.000Z",
 						deleted_at: null,
 						data: "cipher",
 					},
@@ -153,7 +152,6 @@ Deno.test(async function pushAcceptedBroadcastsChangesToOtherPeers() {
 			(changes?.docs as Array<{ id: string }>)[0].id,
 			"ACCOUNT-1",
 		);
-		assert.assertEquals(changes?.head_seq, 1);
 
 		const senderGotNoChanges = peerA.sent.find((m) => m.type === "changes");
 		assert.assertEquals(senderGotNoChanges, undefined);
@@ -162,7 +160,64 @@ Deno.test(async function pushAcceptedBroadcastsChangesToOtherPeers() {
 	}
 });
 
-Deno.test(async function pullReturnsDocsAboveCursor() {
+Deno.test(async function manifestComputesPullAndPushIds() {
+	const { t, user, vault, hub } = await setupVault();
+	try {
+		const peer = new FakePeer();
+		const protocol = new VaultProtocol(t.storage, hub, peer);
+		const token = await buildSessionToken(user.email, user.id, vault.id);
+		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
+		await protocol.handleMessage(
+			JSON.stringify({
+				type: "push",
+				request_id: "p1",
+				docs: [
+					{
+						id: "server-only",
+						updated_at: "2026-01-01T00:00:00.000Z",
+						deleted_at: null,
+						data: "s1",
+					},
+					{
+						id: "server-newer",
+						updated_at: "2026-02-01T00:00:00.000Z",
+						deleted_at: null,
+						data: "s2",
+					},
+					{
+						id: "in-sync",
+						updated_at: "2026-01-01T00:00:00.000Z",
+						deleted_at: null,
+						data: "s3",
+					},
+				],
+			}),
+		);
+		peer.sent.length = 0;
+		await protocol.handleMessage(
+			JSON.stringify({
+				type: "manifest",
+				request_id: "m1",
+				entries: [
+					{ id: "in-sync", updated_at: "2026-01-01T00:00:00.000Z" },
+					{ id: "client-only", updated_at: "2026-01-01T00:00:00.000Z" },
+					{ id: "server-newer", updated_at: "2026-01-15T00:00:00.000Z" },
+				],
+			}),
+		);
+		const last = peer.last();
+		assert.assertEquals(last?.type, "reconcile_result");
+		assert.assertEquals((last?.pull_ids as string[]).sort(), [
+			"server-newer",
+			"server-only",
+		]);
+		assert.assertEquals(last?.push_ids as string[], ["client-only"]);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function fetchReturnsRequestedDocs() {
 	const { t, user, vault, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -176,13 +231,13 @@ Deno.test(async function pullReturnsDocsAboveCursor() {
 				docs: [
 					{
 						id: "a",
-						updated_at: "2026-01-01T00:00:00Z",
+						updated_at: "2026-01-01T00:00:00.000Z",
 						deleted_at: null,
 						data: "x",
 					},
 					{
 						id: "b",
-						updated_at: "2026-01-01T00:00:00Z",
+						updated_at: "2026-01-01T00:00:00.000Z",
 						deleted_at: null,
 						data: "y",
 					},
@@ -191,16 +246,14 @@ Deno.test(async function pullReturnsDocsAboveCursor() {
 		);
 		peer.sent.length = 0;
 		await protocol.handleMessage(
-			JSON.stringify({ type: "pull", request_id: "r1", since: 1 }),
+			JSON.stringify({ type: "fetch", request_id: "f1", ids: ["b"] }),
 		);
 		const last = peer.last();
-		assert.assertEquals(last?.type, "pull_result");
-		const docs = last?.docs as Array<{ id: string; seq: number }>;
+		assert.assertEquals(last?.type, "fetch_result");
+		const docs = last?.docs as Array<{ id: string; data: string }>;
 		assert.assertEquals(docs.length, 1);
 		assert.assertEquals(docs[0].id, "b");
-		assert.assertEquals(docs[0].seq, 2);
-		assert.assertEquals(last?.done, true);
-		assert.assertEquals(last?.next_since, 2);
+		assert.assertEquals(docs[0].data, "y");
 	} finally {
 		t.cleanup();
 	}
@@ -281,7 +334,7 @@ Deno.test(async function staleIncomingNotBroadcast() {
 				docs: [
 					{
 						id: "x",
-						updated_at: "2026-02-01T00:00:00Z",
+						updated_at: "2026-02-01T00:00:00.000Z",
 						deleted_at: null,
 						data: "newer",
 					},
@@ -296,7 +349,7 @@ Deno.test(async function staleIncomingNotBroadcast() {
 				docs: [
 					{
 						id: "x",
-						updated_at: "2026-01-01T00:00:00Z",
+						updated_at: "2026-01-01T00:00:00.000Z",
 						deleted_at: null,
 						data: "older",
 					},

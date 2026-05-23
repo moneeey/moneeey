@@ -42,7 +42,7 @@ Deno.test(function vaultMigrationsCreateDocumentsTable() {
 		)
 		.all<{ name: string }>()
 		.map((r: { name: string }) => r.name);
-	assert.assertEquals(indexes, ["documents_pull_idx"]);
+	assert.assertEquals(indexes, []);
 	db.close();
 });
 

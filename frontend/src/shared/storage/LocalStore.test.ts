@@ -9,10 +9,9 @@ const freshStore = async () => {
 	return store;
 };
 
-const doc = (id: string, seq: number, data = "cipher"): LocalDoc => ({
-	id: id,
-	seq,
-	updated_at: new Date(seq * 1000).toISOString(),
+const doc = (id: string, t: number, data = "cipher"): LocalDoc => ({
+	id,
+	updated_at: new Date(t * 1000).toISOString(),
 	deleted_at: null,
 	data,
 });
@@ -62,19 +61,6 @@ describe("LocalStore", () => {
 		}
 	});
 
-	it("tracks head_seq across calls", async () => {
-		const s = await freshStore();
-		try {
-			expect(await s.getHeadSeq()).toBe(0);
-			await s.setHeadSeq(42);
-			expect(await s.getHeadSeq()).toBe(42);
-			await s.setHeadSeq(100);
-			expect(await s.getHeadSeq()).toBe(100);
-		} finally {
-			await s.destroy();
-		}
-	});
-
 	it("tracks vaultId", async () => {
 		const s = await freshStore();
 		try {
@@ -86,54 +72,32 @@ describe("LocalStore", () => {
 		}
 	});
 
-	it("outbox add/list/remove round trip", async () => {
+	it("manifest returns id + updated_at, skipping encryption meta", async () => {
 		const s = await freshStore();
 		try {
-			await s.outboxAdd({
-				id: "a",
-				updated_at: "2026-01-01T00:00:00Z",
-				deleted_at: null,
-				data: "cipher",
-				enqueuedAt: new Date().toISOString(),
+			await s.bulkPut([doc("a", 1), doc("b", 2)]);
+			await s.setEncryptionMeta({
+				schema_version: 1,
+				kdf: "PBKDF2",
+				iterations: 1,
+				hash: "SHA-256",
+				salt: "s",
+				wrapped_key: "w",
 			});
-			await s.outboxAdd({
-				id: "b",
-				updated_at: "2026-01-02T00:00:00Z",
-				deleted_at: null,
-				data: "cipher2",
-				enqueuedAt: new Date().toISOString(),
-			});
-			let list = await s.outboxList();
-			expect(list.length).toBe(2);
-			await s.outboxRemove("a");
-			list = await s.outboxList();
-			expect(list.length).toBe(1);
-			expect(list[0].id).toBe("b");
+			const manifest = await s.manifest();
+			const ids = manifest.map((e) => e.id).sort();
+			expect(ids).toEqual(["a", "b"]);
 		} finally {
 			await s.destroy();
 		}
 	});
 
-	it("outbox addd by same id overwrites", async () => {
+	it("getMany returns docs in any order; missing ids skipped", async () => {
 		const s = await freshStore();
 		try {
-			await s.outboxAdd({
-				id: "a",
-				updated_at: "t1",
-				deleted_at: null,
-				data: "v1",
-				enqueuedAt: "e1",
-			});
-			await s.outboxAdd({
-				id: "a",
-				updated_at: "t2",
-				deleted_at: null,
-				data: "v2",
-				enqueuedAt: "e2",
-			});
-			const list = await s.outboxList();
-			expect(list.length).toBe(1);
-			expect(list[0].data).toBe("v2");
+			await s.bulkPut([doc("a", 1), doc("b", 2)]);
+			const got = await s.getMany(["a", "missing", "b"]);
+			expect(got.map((d) => d.id).sort()).toEqual(["a", "b"]);
 		} finally {
 			await s.destroy();
 		}
@@ -155,11 +119,11 @@ describe("LocalStore", () => {
 	it("clearDocs leaves meta intact", async () => {
 		const s = await freshStore();
 		try {
-			await s.setHeadSeq(5);
+			await s.setVaultId("v1");
 			await s.put(doc("a", 1));
 			await s.clearDocs();
 			expect((await s.allDocs()).length).toBe(0);
-			expect(await s.getHeadSeq()).toBe(5);
+			expect(await s.getVaultId()).toBe("v1");
 		} finally {
 			await s.destroy();
 		}

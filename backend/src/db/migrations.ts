@@ -44,12 +44,10 @@ export const VAULT_MIGRATIONS: Migration[] = [
 		sql: `
 			CREATE TABLE documents (
 				id            TEXT PRIMARY KEY,
-				seq           INTEGER NOT NULL,
 				updated_at    TEXT NOT NULL,
 				deleted_at    TEXT,
 				data          TEXT NOT NULL
 			);
-			CREATE INDEX documents_pull_idx ON documents (seq);
 		`,
 	},
 ];

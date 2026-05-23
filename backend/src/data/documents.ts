@@ -9,19 +9,22 @@ export type IncomingDoc = {
 
 export type DocRecord = {
 	id: string;
-	seq: number;
 	updated_at: string;
 	deleted_at: string | null;
 	data: string;
 };
 
+export type ManifestEntry = {
+	id: string;
+	updated_at: string;
+};
+
 export type UpsertResult =
-	| { id: string; status: "accepted"; seq: number }
-	| { id: string; status: "stale"; currentSeq: number };
+	| { id: string; status: "accepted" }
+	| { id: string; status: "stale"; current_updated_at: string };
 
 type DocRow = {
 	id: string;
-	seq: number;
 	updated_at: string;
 	deleted_at: string | null;
 	data: string;
@@ -29,37 +32,40 @@ type DocRow = {
 
 const toRecord = (row: DocRow): DocRecord => ({
 	id: row.id,
-	seq: row.seq,
 	updated_at: row.updated_at,
 	deleted_at: row.deleted_at,
 	data: row.data,
 });
 
-export async function getSince(
+export async function getManifest(
 	storage: Storage,
 	vaultId: string,
-	sinceSeq: number,
-	limit: number,
-): Promise<DocRecord[]> {
+): Promise<ManifestEntry[]> {
 	return await storage.withVault(vaultId, (db) =>
 		db
-			.prepare(
-				"SELECT id, seq, updated_at, deleted_at, data FROM documents WHERE seq > ? ORDER BY seq LIMIT ?",
-			)
-			.all<DocRow>(sinceSeq, limit)
-			.map(toRecord),
+			.prepare("SELECT id, updated_at FROM documents")
+			.all<ManifestEntry>()
+			.map((row: ManifestEntry) => ({
+				id: row.id,
+				updated_at: row.updated_at,
+			})),
 	);
 }
 
-export async function getHeadSeq(
+export async function getDocs(
 	storage: Storage,
 	vaultId: string,
-): Promise<number> {
+	ids: string[],
+): Promise<DocRecord[]> {
+	if (ids.length === 0) return [];
 	return await storage.withVault(vaultId, (db) => {
-		const row = db
-			.prepare("SELECT MAX(seq) AS s FROM documents")
-			.get<{ s: number | null }>();
-		return row?.s ?? 0;
+		const placeholders = ids.map(() => "?").join(",");
+		return db
+			.prepare(
+				`SELECT id, updated_at, deleted_at, data FROM documents WHERE id IN (${placeholders})`,
+			)
+			.all<DocRow>(...ids)
+			.map(toRecord);
 	});
 }
 
@@ -74,37 +80,29 @@ export async function bulkUpsert(
 		try {
 			const results: UpsertResult[] = [];
 			const getStored = db.prepare(
-				"SELECT seq, updated_at FROM documents WHERE id = ?",
+				"SELECT updated_at FROM documents WHERE id = ?",
 			);
 			const upsert = db.prepare(
-				`INSERT INTO documents (id, seq, updated_at, deleted_at, data) VALUES (?, ?, ?, ?, ?)
-				 ON CONFLICT(id) DO UPDATE SET seq = excluded.seq, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, data = excluded.data`,
+				`INSERT INTO documents (id, updated_at, deleted_at, data) VALUES (?, ?, ?, ?)
+				 ON CONFLICT(id) DO UPDATE SET updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, data = excluded.data`,
 			);
-			const headRow = db
-				.prepare("SELECT MAX(seq) AS s FROM documents")
-				.get<{ s: number | null }>();
-			let nextSeq = (headRow?.s ?? 0) + 1;
 			for (const incoming of docs) {
-				const stored = getStored.get<{ seq: number; updated_at: string }>(
-					incoming.id,
-				);
+				const stored = getStored.get<{ updated_at: string }>(incoming.id);
 				if (stored && stored.updated_at > incoming.updated_at) {
 					results.push({
 						id: incoming.id,
 						status: "stale",
-						currentSeq: stored.seq,
+						current_updated_at: stored.updated_at,
 					});
 					continue;
 				}
 				upsert.run(
 					incoming.id,
-					nextSeq,
 					incoming.updated_at,
 					incoming.deleted_at,
 					incoming.data,
 				);
-				results.push({ id: incoming.id, status: "accepted", seq: nextSeq });
-				nextSeq += 1;
+				results.push({ id: incoming.id, status: "accepted" });
 			}
 			db.exec("COMMIT");
 			return results;

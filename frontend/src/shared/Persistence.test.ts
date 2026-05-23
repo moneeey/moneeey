@@ -167,12 +167,12 @@ describe("PersistenceStore", () => {
 });
 
 describe("LocalStore + encryption meta", () => {
-	it("setEncryptionMeta also enqueues for sync", async () => {
+	it("setEncryptionMeta writes the meta doc to the documents store", async () => {
 		const store = await freshStore();
 		try {
 			await setupNewEncryption(store, "p");
-			const outbox = await store.outboxList();
-			expect(outbox.find((e) => e.id === "ENCRYPTION-META")).toBeDefined();
+			const all = await store.allDocs();
+			expect(all.find((d) => d.id === "ENCRYPTION-META")).toBeDefined();
 		} finally {
 			await store.destroy();
 		}

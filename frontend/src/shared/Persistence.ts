@@ -201,22 +201,14 @@ export default class PersistenceStore {
 		try {
 			for (const doc of docs) {
 				const enc = await encryptEntity(doc as unknown as PlainEntity, dataKey);
-				const existing = await this.localStore.get(enc.id);
-				await this.localStore.put({
+				const localDoc = {
 					id: enc.id,
-					seq: existing?.seq ?? 0,
 					updated_at: enc.updated_at,
 					deleted_at: enc.deleted_at,
 					data: enc.data,
-				});
-				if (this.syncClient) {
-					await this.syncClient.enqueue({
-						id: enc.id,
-						updated_at: enc.updated_at,
-						deleted_at: enc.deleted_at,
-						data: enc.data,
-					});
-				}
+				};
+				await this.localStore.put(localDoc);
+				this.syncClient?.enqueue(localDoc);
 			}
 		} catch (err) {
 			this.logger.error("flush error", { err });

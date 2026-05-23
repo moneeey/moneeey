@@ -1,5 +1,5 @@
 import "fake-indexeddb/auto";
-import { LocalStore } from "../storage/LocalStore";
+import { type LocalDoc, LocalStore } from "../storage/LocalStore";
 import {
 	SyncClient,
 	type SyncClientOpts,
@@ -42,14 +42,9 @@ class FakeWebSocket implements WebSocketLike {
 		this.onclose?.({ code, reason } as CloseEvent);
 	}
 
-	lastRequestId(type?: string): string | undefined {
-		const matching = type
-			? this.sent.filter((m) => m.type === type)
-			: this.sent;
-		const last = matching[matching.length - 1] as
-			| { request_id?: string }
-			| undefined;
-		return last?.request_id;
+	lastByType(type: string): Record<string, unknown> | undefined {
+		const matching = this.sent.filter((m) => m.type === type);
+		return matching[matching.length - 1];
 	}
 }
 
@@ -72,6 +67,7 @@ const buildClient = async (
 		events: SyncClientOpts["events"];
 		pushDebounceMs: number;
 		pushBatchSize: number;
+		fetchBatchSize: number;
 	}> = {},
 ) => {
 	const ws = new FakeWebSocket();
@@ -82,9 +78,23 @@ const buildClient = async (
 		wsFactory: () => ws,
 		pushDebounceMs: overrides.pushDebounceMs ?? 1,
 		pushBatchSize: overrides.pushBatchSize,
+		fetchBatchSize: overrides.fetchBatchSize,
 		events: overrides.events,
 	});
 	return { client, ws };
+};
+
+const ack = (
+	ws: FakeWebSocket,
+	type: string,
+	body: Record<string, unknown>,
+) => {
+	const msg = ws.lastByType(type);
+	ws.simulateMessage({
+		type: `${type}_result`,
+		request_id: msg?.request_id,
+		...body,
+	});
 };
 
 describe("SyncClient", () => {
@@ -101,9 +111,8 @@ describe("SyncClient", () => {
 		}
 	});
 
-	it("becomes online and pulls from head_seq after ready", async () => {
+	it("on ready: sends manifest then becomes online", async () => {
 		const store = await freshStore();
-		await store.setHeadSeq(5);
 		const statuses: string[] = [];
 		const { client, ws } = await buildClient(store, {
 			events: { onStatus: (s) => statuses.push(s) },
@@ -111,14 +120,11 @@ describe("SyncClient", () => {
 		try {
 			await client.start();
 			ws.simulateOpen();
-			ws.simulateMessage({ type: "ready", vault_id: "v1", head_seq: 5 });
+			ws.simulateMessage({ type: "ready", vault_id: "v1" });
 			await flushMicrotasks();
-			const pullMsg = ws.sent.find((m) => m.type === "pull") as
-				| {
-						since: number;
-				  }
-				| undefined;
-			expect(pullMsg?.since).toBe(5);
+			const manifestMsg = ws.lastByType("manifest");
+			expect(manifestMsg).toBeDefined();
+			expect(manifestMsg?.entries).toEqual([]);
 			expect(await store.getVaultId()).toBe("v1");
 			expect(statuses).toContain("online");
 		} finally {
@@ -127,76 +133,90 @@ describe("SyncClient", () => {
 		}
 	});
 
-	it("applies pulled docs to the local store", async () => {
+	it("reconcile: fetches pull_ids and applies them locally", async () => {
 		const store = await freshStore();
-		const { client, ws } = await buildClient(store);
+		const onChanges: LocalDoc[][] = [];
+		const { client, ws } = await buildClient(store, {
+			events: { onChanges: (docs) => onChanges.push(docs) },
+		});
 		try {
 			await client.start();
 			ws.simulateOpen();
-			ws.simulateMessage({ type: "ready", vault_id: "v1", head_seq: 0 });
+			ws.simulateMessage({ type: "ready", vault_id: "v1" });
 			await flushMicrotasks();
-			const pullId = ws.lastRequestId("pull");
-			ws.simulateMessage({
-				type: "pull_result",
-				request_id: pullId,
+			ack(ws, "manifest", { pull_ids: ["a"], push_ids: [] });
+			await flushMicrotasks();
+			ack(ws, "fetch", {
 				docs: [
 					{
 						id: "a",
-						seq: 1,
-						updated_at: "2026-01-01T00:00:00Z",
+						updated_at: "2026-01-01T00:00:00.000Z",
 						deleted_at: null,
 						data: "cipher",
 					},
 				],
-				next_since: 1,
-				done: true,
-				head_seq: 1,
 			});
 			await flushMicrotasks();
-			const stored = await store.get("a");
-			expect(stored?.data).toBe("cipher");
-			expect(await store.getHeadSeq()).toBe(1);
+			expect((await store.get("a"))?.data).toBe("cipher");
+			expect(onChanges.length).toBe(1);
 		} finally {
 			await client.stop();
 			await store.destroy();
 		}
 	});
 
-	it("enqueue stores in outbox and drains on push debounce", async () => {
+	it("reconcile: pushes push_ids docs from local", async () => {
+		const store = await freshStore();
+		await store.put({
+			id: "x",
+			updated_at: "2026-01-01T00:00:00.000Z",
+			deleted_at: null,
+			data: "local",
+		});
+		const { client, ws } = await buildClient(store);
+		try {
+			await client.start();
+			ws.simulateOpen();
+			ws.simulateMessage({ type: "ready", vault_id: "v1" });
+			await flushMicrotasks();
+			ack(ws, "manifest", { pull_ids: [], push_ids: ["x"] });
+			await flushMicrotasks();
+			const pushMsg = ws.lastByType("push");
+			expect(pushMsg).toBeDefined();
+			expect((pushMsg?.docs as Array<{ id: string }> | undefined)?.[0].id).toBe(
+				"x",
+			);
+		} finally {
+			await client.stop();
+			await store.destroy();
+		}
+	});
+
+	it("enqueue debounced-pushes to server while online", async () => {
 		const store = await freshStore();
 		const { client, ws } = await buildClient(store, { pushDebounceMs: 1 });
 		try {
 			await client.start();
 			ws.simulateOpen();
-			ws.simulateMessage({ type: "ready", vault_id: "v1", head_seq: 0 });
+			ws.simulateMessage({ type: "ready", vault_id: "v1" });
+			await flushMicrotasks();
+			ack(ws, "manifest", { pull_ids: [], push_ids: [] });
 			await flushMicrotasks();
 			ws.sent.length = 0;
 
-			await client.enqueue({
+			client.enqueue({
 				id: "x",
-				updated_at: "2026-01-01T00:00:00Z",
+				updated_at: "2026-01-01T00:00:00.000Z",
 				deleted_at: null,
 				data: "cipher",
 			});
 			await new Promise<void>((r) => setTimeout(r, 5));
 
-			const pushMsg = ws.sent.find((m) => m.type === "push") as
-				| { docs: Array<{ id: string }>; request_id: string }
-				| undefined;
+			const pushMsg = ws.lastByType("push");
 			expect(pushMsg).toBeDefined();
-			expect(pushMsg?.docs[0].id).toBe("x");
-
-			ws.simulateMessage({
-				type: "push_result",
-				request_id: pushMsg?.request_id,
-				results: [{ id: "x", status: "accepted", seq: 7 }],
-			});
-			await flushMicrotasks();
-
-			const stored = await store.get("x");
-			expect(stored?.seq).toBe(7);
-			expect(await store.getHeadSeq()).toBe(7);
-			expect((await store.outboxList()).length).toBe(0);
+			expect((pushMsg?.docs as Array<{ id: string }> | undefined)?.[0].id).toBe(
+				"x",
+			);
 		} finally {
 			await client.stop();
 			await store.destroy();
@@ -205,27 +225,20 @@ describe("SyncClient", () => {
 
 	it("processes inbound changes frames", async () => {
 		const store = await freshStore();
-		const received: number[] = [];
+		let lastChanges: LocalDoc[] | null = null;
 		const { client, ws } = await buildClient(store, {
 			events: {
-				onChanges: (docs, head) => {
-					received.push(head);
+				onChanges: (docs) => {
+					lastChanges = docs;
 				},
 			},
 		});
 		try {
 			await client.start();
 			ws.simulateOpen();
-			ws.simulateMessage({ type: "ready", vault_id: "v1", head_seq: 0 });
+			ws.simulateMessage({ type: "ready", vault_id: "v1" });
 			await flushMicrotasks();
-			ws.simulateMessage({
-				type: "pull_result",
-				request_id: ws.lastRequestId("pull"),
-				docs: [],
-				next_since: 0,
-				done: true,
-				head_seq: 0,
-			});
+			ack(ws, "manifest", { pull_ids: [], push_ids: [] });
 			await flushMicrotasks();
 
 			ws.simulateMessage({
@@ -233,18 +246,16 @@ describe("SyncClient", () => {
 				docs: [
 					{
 						id: "y",
-						seq: 4,
-						updated_at: "2026-02-01T00:00:00Z",
+						updated_at: "2026-02-01T00:00:00.000Z",
 						deleted_at: null,
 						data: "broadcast",
 					},
 				],
-				head_seq: 4,
 			});
 			await flushMicrotasks();
 
 			expect((await store.get("y"))?.data).toBe("broadcast");
-			expect(received).toEqual([4]);
+			expect(lastChanges).not.toBeNull();
 		} finally {
 			await client.stop();
 			await store.destroy();
@@ -263,56 +274,6 @@ describe("SyncClient", () => {
 			ws.simulateClose(4401, "bad token");
 			await flushMicrotasks();
 			expect(statuses).toContain("denied");
-		} finally {
-			await client.stop();
-			await store.destroy();
-		}
-	});
-
-	it("stale push entries are removed from outbox", async () => {
-		const store = await freshStore();
-		const { client, ws } = await buildClient(store, { pushDebounceMs: 1 });
-		try {
-			await client.start();
-			ws.simulateOpen();
-			ws.simulateMessage({ type: "ready", vault_id: "v1", head_seq: 0 });
-			await flushMicrotasks();
-			ws.sent.length = 0;
-			await client.enqueue({
-				id: "old",
-				updated_at: "2026-01-01T00:00:00Z",
-				deleted_at: null,
-				data: "stale",
-			});
-			await new Promise<void>((r) => setTimeout(r, 5));
-			const pushId = ws.lastRequestId("push");
-			ws.simulateMessage({
-				type: "push_result",
-				request_id: pushId,
-				results: [{ id: "old", status: "stale", currentSeq: 10 }],
-			});
-			await flushMicrotasks();
-			const refetchId = ws.lastRequestId("pull");
-			ws.simulateMessage({
-				type: "pull_result",
-				request_id: refetchId,
-				docs: [
-					{
-						id: "old",
-						seq: 10,
-						updated_at: "2026-03-01T00:00:00Z",
-						deleted_at: null,
-						data: "winner",
-					},
-				],
-				next_since: 10,
-				done: true,
-				head_seq: 10,
-			});
-			await flushMicrotasks();
-			expect((await store.outboxList()).length).toBe(0);
-			const stored = await store.get("old");
-			expect(stored?.data).toBe("winner");
 		} finally {
 			await client.stop();
 			await store.destroy();
@@ -338,7 +299,10 @@ describe("SyncClient", () => {
 		try {
 			await client.start();
 			ws.simulateOpen();
-			ws.simulateMessage({ type: "ready", vault_id: "v1", head_seq: 0 });
+			ws.simulateMessage({ type: "ready", vault_id: "v1" });
+			await flushMicrotasks();
+			ack(ws, "manifest", { pull_ids: [], push_ids: [] });
+			await flushMicrotasks();
 			ws.simulateMessage({ type: "pong" });
 			expect(client.currentStatus).toBe("online");
 		} finally {
