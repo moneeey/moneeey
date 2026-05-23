@@ -1,15 +1,22 @@
 import { setupAuth } from "./auth.ts";
-import { PORT } from "./config.ts";
+import { MONEEEY_DEV, PORT } from "./config.ts";
 import { getStorage } from "./data/storage_singleton.ts";
 import { oak } from "./deps.ts";
+import { purgeStaleTestUsers } from "./janitor.ts";
 import { Logger } from "./logger.ts";
 
 async function ensureMetaInitialized() {
 	await getStorage().withMeta(() => {});
 }
 
+async function runDevJanitor() {
+	if (!MONEEEY_DEV) return;
+	await purgeStaleTestUsers(getStorage());
+}
+
 export const serverInternals = {
 	ensureMetaInitialized,
+	runDevJanitor,
 };
 
 export function createServer() {
@@ -36,6 +43,7 @@ export function createServer() {
 
 export async function runServer(app: ReturnType<typeof createServer>) {
 	await serverInternals.ensureMetaInitialized();
+	await serverInternals.runDevJanitor();
 	const port = PORT;
 	Logger("runServer").info("Moneeey API listening", { port });
 	await app.listen({ port });
