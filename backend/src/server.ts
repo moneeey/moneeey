@@ -4,6 +4,7 @@ import { getStorage } from "./data/storage_singleton.ts";
 import { oak } from "./deps.ts";
 import { purgeStaleTestUsers } from "./janitor.ts";
 import { Logger } from "./logger.ts";
+import { setupVaultSync } from "./sync/vault.ts";
 
 async function ensureMetaInitialized() {
 	await getStorage().withMeta(() => {});
@@ -31,6 +32,10 @@ export function createServer() {
 	});
 
 	setupAuth(app, router);
+
+	const apiRouter = new oak.Router({ prefix: "/api" });
+	setupVaultSync(apiRouter);
+	router.use(apiRouter.routes(), apiRouter.allowedMethods());
 
 	app.use(router.routes());
 	app.use(router.allowedMethods());
