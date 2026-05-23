@@ -15,14 +15,10 @@ services:
     restart: unless-stopped
     networks:
       - moneeey-network
-    environment:
-      - MONEEEY_META_PATH=/btech/moneeey/meta.sqlite
-      - MONEEEY_VAULTS_DIR=/btech/moneeey/vaults
-      - MONEEEY_DEV=1
     volumes:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend/env.example:/run/secret/dev.env:z,ro
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app:z
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/moneeey:/btech/moneeey:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/backend_data:/data:z
 
   caddy:
     image: caddy:2.6.4-alpine
