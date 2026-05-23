@@ -18,7 +18,7 @@ services:
     volumes:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend/env.example:/run/secret/dev.env:z,ro
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app:z
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/backend_data:/data:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/backend_data:/data:z,U
 
   caddy:
     image: caddy:2.6.4-alpine
