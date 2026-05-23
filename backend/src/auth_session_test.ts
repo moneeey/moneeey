@@ -1,7 +1,7 @@
 import { authSessionInternals } from "./auth_session.ts";
-import { createUser } from "./data/users.ts";
 import { setStorageForTest } from "./data/storage_singleton.ts";
 import { makeTempStorage } from "./data/test_storage.ts";
+import { createUser } from "./data/users.ts";
 import { createVaultForUser, getVaultsByUser } from "./data/vaults.ts";
 import { assert } from "./test.ts";
 

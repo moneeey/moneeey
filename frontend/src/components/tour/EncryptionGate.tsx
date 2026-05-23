@@ -7,7 +7,6 @@ import {
 	MIN_PASSPHRASE_LENGTH,
 	openEncryptedDatabase,
 } from "../../shared/EncryptionStore";
-import type { LocalStore } from "../../shared/storage/LocalStore";
 import {
 	getInviteInfo,
 	loginPasskey,
@@ -16,6 +15,7 @@ import {
 } from "../../shared/encryption/bootstrapFromPasskey";
 import { hasEncryptionMeta } from "../../shared/encryption/codec";
 import { isWebCryptoAvailable } from "../../shared/encryption/crypto";
+import type { LocalStore } from "../../shared/storage/LocalStore";
 import useMessages, { type TMessages } from "../../utils/Messages";
 import {
 	CancelButton,

@@ -141,9 +141,7 @@ Deno.test(async function tombstonesCarryDeletedAtTimestamp() {
 			doc("a", "2026-01-01T00:00:00Z", "cipher"),
 		]);
 		const deletedAt = "2026-01-02T00:00:00Z";
-		await bulkUpsert(t.storage, VAULT, [
-			doc("a", deletedAt, "", deletedAt),
-		]);
+		await bulkUpsert(t.storage, VAULT, [doc("a", deletedAt, "", deletedAt)]);
 		const all = await getSince(t.storage, VAULT, 0, 100);
 		assert.assertEquals(all.length, 1);
 		assert.assertEquals(all[0].deletedAt, deletedAt);
@@ -167,14 +165,22 @@ Deno.test(async function nonTombstoneRowsHaveNullDeletedAt() {
 Deno.test(async function vaultsAreIsolatedByFile() {
 	const t = makeTempStorage();
 	try {
-		await bulkUpsert(t.storage, VAULT, [doc("a", "2026-01-01T00:00:00Z", "in-a")]);
+		await bulkUpsert(t.storage, VAULT, [
+			doc("a", "2026-01-01T00:00:00Z", "in-a"),
+		]);
 		await bulkUpsert(t.storage, VAULT_B, [
 			doc("a", "2026-01-01T00:00:00Z", "in-b"),
 		]);
 		const a = await getSince(t.storage, VAULT, 0, 100);
 		const b = await getSince(t.storage, VAULT_B, 0, 100);
-		assert.assertEquals(a.map((d) => d.data), ["in-a"]);
-		assert.assertEquals(b.map((d) => d.data), ["in-b"]);
+		assert.assertEquals(
+			a.map((d) => d.data),
+			["in-a"],
+		);
+		assert.assertEquals(
+			b.map((d) => d.data),
+			["in-b"],
+		);
 	} finally {
 		t.cleanup();
 	}

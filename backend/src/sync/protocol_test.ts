@@ -1,9 +1,9 @@
-import { createUser } from "../data/users.ts";
 import { makeTempStorage } from "../data/test_storage.ts";
+import { createUser } from "../data/users.ts";
 import { createVaultForUser } from "../data/vaults.ts";
 import { sessionJwt } from "../jwt.ts";
 import { assert } from "../test.ts";
-import { VaultHub, type PeerSink } from "./hub.ts";
+import { type PeerSink, VaultHub } from "./hub.ts";
 import {
 	CLOSE_FORBIDDEN,
 	CLOSE_UNAUTHORIZED,
@@ -37,12 +37,7 @@ const buildSessionToken = async (
 	email: string,
 	userId: string,
 	vaultId: string,
-) =>
-	await sessionJwt.generate(
-		email,
-		{ vaultId, userId },
-		"5min",
-	);
+) => await sessionJwt.generate(email, { vaultId, userId }, "5min");
 
 const setupVault = async () => {
 	const t = makeTempStorage();
@@ -147,7 +142,10 @@ Deno.test(async function pushAcceptedBroadcastsChangesToOtherPeers() {
 
 		const pushResult = peerA.sent.find((m) => m.type === "push_result");
 		assert.assertExists(pushResult);
-		assert.assertEquals((pushResult?.results as Array<{ status: string }>)[0].status, "accepted");
+		assert.assertEquals(
+			(pushResult?.results as Array<{ status: string }>)[0].status,
+			"accepted",
+		);
 
 		const changes = peerB.sent.find((m) => m.type === "changes");
 		assert.assertExists(changes);
@@ -176,8 +174,18 @@ Deno.test(async function pullReturnsDocsAboveCursor() {
 				type: "push",
 				request_id: "p1",
 				docs: [
-					{ id: "a", updated: "2026-01-01T00:00:00Z", deletedAt: null, data: "x" },
-					{ id: "b", updated: "2026-01-01T00:00:00Z", deletedAt: null, data: "y" },
+					{
+						id: "a",
+						updated: "2026-01-01T00:00:00Z",
+						deletedAt: null,
+						data: "x",
+					},
+					{
+						id: "b",
+						updated: "2026-01-01T00:00:00Z",
+						deletedAt: null,
+						data: "y",
+					},
 				],
 			}),
 		);

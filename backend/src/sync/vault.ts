@@ -1,7 +1,7 @@
 import { getStorage } from "../data/storage_singleton.ts";
 import { oak } from "../deps.ts";
 import { Logger } from "../logger.ts";
-import { VaultHub, type PeerSink } from "./hub.ts";
+import { type PeerSink, VaultHub } from "./hub.ts";
 import { VaultProtocol } from "./protocol.ts";
 
 const logger = Logger("sync/vault");

@@ -156,7 +156,12 @@ export const encryptEntity = async (
 };
 
 export const decryptEntity = async <T extends PlainEntity = PlainEntity>(
-	record: { _id: string; updated: string; deletedAt: string | null; data: string },
+	record: {
+		_id: string;
+		updated: string;
+		deletedAt: string | null;
+		data: string;
+	},
 	dataKey: CryptoKey,
 ): Promise<T> => {
 	const bodyJson = await decryptString(record.data, dataKey);

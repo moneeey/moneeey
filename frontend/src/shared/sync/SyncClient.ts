@@ -162,10 +162,7 @@ export class SyncClient {
 			return;
 		}
 		if (type === "changes") {
-			await this.applyChanges(
-				msg.docs as LocalDoc[],
-				msg.head_seq as number,
-			);
+			await this.applyChanges(msg.docs as LocalDoc[], msg.head_seq as number);
 		}
 	}
 
@@ -239,10 +236,7 @@ export class SyncClient {
 		}
 	}
 
-	private async applyChanges(
-		docs: LocalDoc[],
-		headSeq: number,
-	): Promise<void> {
+	private async applyChanges(docs: LocalDoc[], headSeq: number): Promise<void> {
 		if (docs.length > 0) {
 			await this.opts.localStore.bulkPut(docs);
 		}
@@ -280,8 +274,11 @@ export class SyncClient {
 				docs: batch.map(({ enqueuedAt: _e, ...doc }) => doc),
 			});
 			const results =
-				(reply.results as Array<{ id: string; status: string; seq?: number }>) ??
-				[];
+				(reply.results as Array<{
+					id: string;
+					status: string;
+					seq?: number;
+				}>) ?? [];
 			for (const r of results) {
 				if (r.status === "accepted") {
 					const entry = batch.find((b) => b._id === r.id);

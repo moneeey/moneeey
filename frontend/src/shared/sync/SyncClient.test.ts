@@ -113,9 +113,11 @@ describe("SyncClient", () => {
 			ws.simulateOpen();
 			ws.simulateMessage({ type: "ready", vault_id: "v1", head_seq: 5 });
 			await flushMicrotasks();
-			const pullMsg = ws.sent.find((m) => m.type === "pull") as {
-				since: number;
-			} | undefined;
+			const pullMsg = ws.sent.find((m) => m.type === "pull") as
+				| {
+						since: number;
+				  }
+				| undefined;
 			expect(pullMsg?.since).toBe(5);
 			expect(await store.getVaultId()).toBe("v1");
 			expect(statuses).toContain("online");

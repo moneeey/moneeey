@@ -62,11 +62,15 @@ Deno.test(async function addCredentialAppendsToList() {
 	const t = makeTempStorage();
 	try {
 		await createUser(t.storage, "x@y.z", sampleCredential("c1"));
-		const updated = await addCredential(t.storage, "x@y.z", sampleCredential("c2"));
-		assert.assertEquals(updated.credentials.map((c) => c.credentialId), [
-			"c1",
-			"c2",
-		]);
+		const updated = await addCredential(
+			t.storage,
+			"x@y.z",
+			sampleCredential("c2"),
+		);
+		assert.assertEquals(
+			updated.credentials.map((c) => c.credentialId),
+			["c1", "c2"],
+		);
 		const fetched = await getUserByEmail(t.storage, "x@y.z");
 		assert.assertEquals(fetched?.credentials.length, 2);
 	} finally {

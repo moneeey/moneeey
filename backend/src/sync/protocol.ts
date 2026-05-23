@@ -1,4 +1,3 @@
-import type { Storage } from "../db/storage.ts";
 import {
 	type DocRecord,
 	type IncomingDoc,
@@ -7,6 +6,7 @@ import {
 	getSince,
 } from "../data/documents.ts";
 import { userHasAccess } from "../data/vaults.ts";
+import type { Storage } from "../db/storage.ts";
 import { authJwt, sessionJwt } from "../jwt.ts";
 import { Logger } from "../logger.ts";
 import type { PeerSink, VaultHub } from "./hub.ts";

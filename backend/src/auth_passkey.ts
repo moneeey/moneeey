@@ -395,7 +395,8 @@ export function setupPasskey(authRouter: oak.Router) {
 			}
 
 			try {
-				const { token } = await authPasskeyInternals.createInviteForOwner(email);
+				const { token } =
+					await authPasskeyInternals.createInviteForOwner(email);
 				const inviteUrl = `${APP_URL}/#/invite/${token}`;
 				respond(ctx, oak.Status.OK, { inviteUrl, token });
 			} catch (err) {

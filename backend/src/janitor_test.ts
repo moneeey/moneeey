@@ -1,7 +1,7 @@
-import { fs } from "./deps.ts";
-import { createUser } from "./data/users.ts";
 import { makeTempStorage } from "./data/test_storage.ts";
+import { createUser } from "./data/users.ts";
 import { addMember, createVaultForUser } from "./data/vaults.ts";
+import { fs } from "./deps.ts";
 import { purgeStaleTestUsers } from "./janitor.ts";
 import { assert } from "./test.ts";
 
@@ -102,9 +102,7 @@ Deno.test(async function membershipsCascadeButSharedVaultSurvives() {
 		const membersLeft = await t.storage.withMeta(
 			(db) =>
 				db
-					.prepare(
-						"SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?",
-					)
+					.prepare("SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?")
 					.get<{ n: number }>(vault.id)?.n,
 		);
 		assert.assertEquals(membersLeft, 1);

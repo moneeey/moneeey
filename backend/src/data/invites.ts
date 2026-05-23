@@ -128,7 +128,10 @@ export async function redeemInvite(
 			).run(redeemerUserId, invite.vaultId, new Date().toISOString());
 			db.exec("COMMIT");
 		} catch (err) {
-			if (!(err instanceof VaultFullError) && (err as Error).message !== "invite_already_redeemed") {
+			if (
+				!(err instanceof VaultFullError) &&
+				(err as Error).message !== "invite_already_redeemed"
+			) {
 				try {
 					db.exec("ROLLBACK");
 				} catch {

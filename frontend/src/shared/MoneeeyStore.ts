@@ -11,9 +11,9 @@ import Logger from "./Logger";
 import ManagementStore from "./Management";
 import NavigationStore from "./Navigation";
 import PersistenceStore from "./Persistence";
-import type { LocalStore } from "./storage/LocalStore";
 import TagsStore from "./Tags";
 import Importer from "./import/Importer";
+import type { LocalStore } from "./storage/LocalStore";
 
 export default class MoneeeyStore {
 	loaded = false;

@@ -139,7 +139,10 @@ describe("PersistenceStore", () => {
 		const { store, persistence } = await newPersistence();
 		try {
 			const a = sampleEntity("e1", "Alice");
-			const b = { ...sampleEntity("e1", "Alicia"), updated: "2026-02-01T00:00:00Z" };
+			const b = {
+				...sampleEntity("e1", "Alicia"),
+				updated: "2026-02-01T00:00:00Z",
+			};
 			persistence.resolveConflict(a, b);
 			await persistence.flush();
 			const docs = await persistence.fetchAllDocs();

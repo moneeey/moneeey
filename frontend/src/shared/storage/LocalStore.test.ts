@@ -143,7 +143,7 @@ describe("LocalStore", () => {
 		const s = await freshStore();
 		await s.put(doc("a", 1));
 		await s.destroy();
-		const s2 = new LocalStore(s["name"] as unknown as string);
+		const s2 = new LocalStore(s.name as unknown as string);
 		await s2.open();
 		try {
 			expect((await s2.allDocs()).length).toBe(0);

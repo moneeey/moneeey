@@ -12,9 +12,7 @@ Deno.test(function metaMigrationsCreateExpectedTables() {
 	assert.assertEquals(applied, ["0001_init"]);
 
 	const tables = db
-		.prepare(
-			"SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
-		)
+		.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
 		.all<{ name: string }>()
 		.map((r: { name: string }) => r.name);
 	assert.assertEquals(tables, [
@@ -33,9 +31,7 @@ Deno.test(function vaultMigrationsCreateDocumentsTable() {
 	assert.assertEquals(applied, ["0001_init"]);
 
 	const tables = db
-		.prepare(
-			"SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
-		)
+		.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
 		.all<{ name: string }>()
 		.map((r: { name: string }) => r.name);
 	assert.assertEquals(tables, ["documents", "schema_migrations"]);
@@ -71,9 +67,7 @@ Deno.test(function runMigrationsAppliesOnlyNewOnes() {
 	assert.assertEquals(runMigrations(db, second).applied, ["0002_add_b"]);
 
 	const tables = db
-		.prepare(
-			"SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
-		)
+		.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
 		.all<{ name: string }>()
 		.map((r: { name: string }) => r.name);
 	assert.assertEquals(tables, ["a", "b", "schema_migrations"]);
@@ -82,7 +76,9 @@ Deno.test(function runMigrationsAppliesOnlyNewOnes() {
 
 Deno.test(function runMigrationsRollsBackOnFailure() {
 	const db = new Database(":memory:");
-	runMigrations(db, [{ name: "0001_init", sql: "CREATE TABLE a (x INTEGER);" }]);
+	runMigrations(db, [
+		{ name: "0001_init", sql: "CREATE TABLE a (x INTEGER);" },
+	]);
 	assert.assertThrows(() =>
 		runMigrations(db, [
 			{ name: "0001_init", sql: "CREATE TABLE a (x INTEGER);" },
@@ -93,9 +89,7 @@ Deno.test(function runMigrationsRollsBackOnFailure() {
 		]),
 	);
 	const tables = db
-		.prepare(
-			"SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
-		)
+		.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
 		.all<{ name: string }>()
 		.map((r: { name: string }) => r.name);
 	assert.assertEquals(tables, ["a", "schema_migrations"]);

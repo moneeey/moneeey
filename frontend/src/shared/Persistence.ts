@@ -8,9 +8,9 @@ import type { EntityType, IBaseEntity } from "./Entity";
 import Logger from "./Logger";
 import type MappedStore from "./MappedStore";
 import {
+	type PlainEntity,
 	decryptEntity,
 	encryptEntity,
-	type PlainEntity,
 } from "./encryption/codec";
 import {
 	DEFAULT_DB_NAME,
@@ -208,10 +208,7 @@ export default class PersistenceStore {
 		this.pendingByDocId.clear();
 		try {
 			for (const doc of docs) {
-				const enc = await encryptEntity(
-					doc as unknown as PlainEntity,
-					dataKey,
-				);
+				const enc = await encryptEntity(doc as unknown as PlainEntity, dataKey);
 				const existing = await this.localStore.get(enc._id);
 				await this.localStore.put({
 					_id: enc._id,

@@ -7,7 +7,8 @@ import type ConfigStore from "../entities/Config";
 import type PersistenceStore from "./Persistence";
 import { fetchPasskeyAuthState } from "./encryption/bootstrapFromPasskey";
 
-const wsHostForVault = () => `${getCurrentHost().replace(/^http/, "ws")}/api/vault`;
+const wsHostForVault = () =>
+	`${getCurrentHost().replace(/^http/, "ws")}/api/vault`;
 
 export default class ManagementStore {
 	sessionToken = "";

@@ -22,13 +22,10 @@ if (!env) {
 
 export const PORT = Number.parseInt(env.PORT);
 export const APP_URL = env.APP_URL;
-export const COUCHDB_HOST = env.COUCHDB_HOST;
-export const COUCHDB_ADMIN_USERNAME = env.COUCHDB_USER;
-export const COUCHDB_ADMIN_PASSWORD = env.COUCHDB_PASSWORD;
 export const MONEEEY_META_PATH = env.MONEEEY_META_PATH;
 export const MONEEEY_VAULTS_DIR = env.MONEEEY_VAULTS_DIR;
 export const MONEEEY_DEV = env.MONEEEY_DEV === "1";
-export const JWT_COUCH_KEY_ID = env.JWT_COUCH_KEY_ID;
+export const JWT_SESSION_KEY_ID = env.JWT_COUCH_KEY_ID;
 export const JWT_CHALLENGE_KEY_ID = env.JWT_CHALLENGE_KEY_ID;
 export const JWT_AUTH_KEY_ID = env.JWT_AUTH_KEY_ID;
 export const JWT_PRIVATE_KEY = env.JWT_PRIVATE_KEY;

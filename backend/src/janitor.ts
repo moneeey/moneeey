@@ -1,6 +1,6 @@
+import { deleteVault } from "./data/vaults.ts";
 import type { Storage } from "./db/storage.ts";
 import { Logger } from "./logger.ts";
-import { deleteVault } from "./data/vaults.ts";
 
 const logger = Logger("janitor");
 

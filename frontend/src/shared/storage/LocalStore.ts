@@ -50,7 +50,7 @@ const schema = (name: string) => ({
 export class LocalStore implements MetaStore {
 	private db: IDBDatabase | null = null;
 
-	constructor(private readonly name: string = DEFAULT_DB_NAME) {}
+	constructor(public readonly name: string = DEFAULT_DB_NAME) {}
 
 	async open(): Promise<void> {
 		if (this.db) return;
