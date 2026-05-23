@@ -351,12 +351,11 @@ Date
 
 		it("merges with existing transaction when found", () => {
 			const existingTx = {
-				transaction_uuid: "existing-uuid",
+				id: "existing-uuid",
 				memo: "Old memo",
 				tags: ["tag1"],
 				from_account: "bank",
 				to_account: "grocery",
-				_rev: "1-abc",
 			};
 			const importerWithExisting = {
 				importIds: () => ["import-id-1"],
@@ -372,21 +371,19 @@ Date
 				importer: importerWithExisting,
 			});
 
-			expect(transaction.transaction_uuid).toBe("existing-uuid");
+			expect(transaction.id).toBe("existing-uuid");
 			expect(transaction.memo).toBe("Old memo;New line data");
 			expect(transaction.tags).toEqual(["tag1"]);
-			expect(transaction._rev).toBe("1-abc");
 			expect(existing).toBe(existingTx);
 		});
 
 		it("does not append line to memo if already present", () => {
 			const existingTx = {
-				transaction_uuid: "existing-uuid",
+				id: "existing-uuid",
 				memo: "Same line data",
 				tags: [],
 				from_account: "bank",
 				to_account: "grocery",
-				_rev: "1-abc",
 			};
 			const importerWithExisting = {
 				importIds: () => ["import-id-1"],

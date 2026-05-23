@@ -12,9 +12,9 @@ const RecentTransactions = observer(() => {
 	const { transactions, accounts, currencies } = useMoneeeyStore();
 	const Messages = useMessages();
 	const recent = new Set(
-		[...transactions.sorted].splice(0, 5).map((t) => t.transaction_uuid),
+		[...transactions.sorted].splice(0, 5).map((t) => t.id),
 	);
-	const schemaFilter = (row: ITransaction) => recent.has(row.transaction_uuid);
+	const schemaFilter = (row: ITransaction) => recent.has(row.id);
 	const referenceAccount = "";
 
 	return (

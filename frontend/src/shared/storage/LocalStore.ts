@@ -11,17 +11,17 @@ import {
 } from "./idb";
 
 export type LocalDoc = {
-	_id: string;
+	id: string;
 	seq: number;
-	updated: string;
-	deletedAt: string | null;
+	updated_at: string;
+	deleted_at: string | null;
 	data: string;
 };
 
 export type OutboxEntry = {
-	_id: string;
-	updated: string;
-	deletedAt: string | null;
+	id: string;
+	updated_at: string;
+	deleted_at: string | null;
 	data: string;
 	enqueuedAt: string;
 };
@@ -41,9 +41,9 @@ const schema = (name: string) => ({
 	name,
 	version: DB_VERSION,
 	stores: [
-		{ name: STORE_DOCUMENTS, keyPath: "_id" },
+		{ name: STORE_DOCUMENTS, keyPath: "id" },
 		{ name: STORE_META },
-		{ name: STORE_OUTBOX, keyPath: "_id" },
+		{ name: STORE_OUTBOX, keyPath: "id" },
 	],
 });
 
@@ -130,21 +130,21 @@ export class LocalStore implements MetaStore {
 	}
 
 	async setEncryptionMeta(meta: MetaDoc): Promise<void> {
-		const updated = new Date().toISOString();
+		const updated_at = new Date().toISOString();
 		const data = JSON.stringify(meta);
 		await this.put({
-			_id: ENCRYPTION_META_DOC_ID,
+			id: ENCRYPTION_META_DOC_ID,
 			seq: 0,
-			updated,
-			deletedAt: null,
+			updated_at,
+			deleted_at: null,
 			data,
 		});
 		await this.outboxAdd({
-			_id: ENCRYPTION_META_DOC_ID,
-			updated,
-			deletedAt: null,
+			id: ENCRYPTION_META_DOC_ID,
+			updated_at,
+			deleted_at: null,
 			data,
-			enqueuedAt: updated,
+			enqueuedAt: updated_at,
 		});
 	}
 

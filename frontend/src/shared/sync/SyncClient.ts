@@ -285,13 +285,13 @@ export class SyncClient {
 				}>) ?? [];
 			for (const r of results) {
 				if (r.status === "accepted") {
-					const entry = batch.find((b) => b._id === r.id);
+					const entry = batch.find((b) => b.id === r.id);
 					if (entry && typeof r.seq === "number") {
 						await this.opts.localStore.put({
-							_id: entry._id,
+							id: entry.id,
 							seq: r.seq,
-							updated: entry.updated,
-							deletedAt: entry.deletedAt,
+							updated_at: entry.updated_at,
+							deleted_at: entry.deleted_at,
 							data: entry.data,
 						});
 						const current = await this.opts.localStore.getHeadSeq();
@@ -313,7 +313,7 @@ export class SyncClient {
 		const since = local ? Math.max(0, local.seq - 1) : 0;
 		const reply = await this.request({ type: "pull", since, limit: 500 });
 		const docs = (reply.docs as LocalDoc[]) ?? [];
-		const match = docs.find((d) => d._id === id);
+		const match = docs.find((d) => d.id === id);
 		if (match) {
 			await this.applyChanges([match], reply.head_seq as number);
 		}

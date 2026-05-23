@@ -94,7 +94,7 @@ export const ReferenceAccountSelector = observer(
 				}
 				options={moneeeyStore.accounts.allNonPayees.map((account) => ({
 					label: account.name,
-					value: account.account_uuid,
+					value: account.id,
 				}))}
 			/>
 		);
@@ -111,7 +111,7 @@ const ImportStarter = ({
 	const [config, setConfig] = useState(
 		() =>
 			({
-				referenceAccount: head(accounts.allNonPayees)?.account_uuid || "",
+				referenceAccount: head(accounts.allNonPayees)?.id || "",
 			}) as ImportConfig,
 	);
 

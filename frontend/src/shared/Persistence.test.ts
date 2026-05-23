@@ -7,7 +7,6 @@ import { setupNewEncryption } from "./encryption/codec";
 import { LocalStore } from "./storage/LocalStore";
 
 type TestEntity = IBaseEntity & {
-	test_uuid: string;
 	name: string;
 };
 
@@ -30,13 +29,12 @@ const newPersistence = async () => {
 const wait = (ms = 250) => new Promise((r) => setTimeout(r, ms));
 
 const sampleEntity = (id: string, name: string): TestEntity => ({
-	_id: `ACCOUNT-${id}`,
+	id: `ACCOUNT-${id}`,
 	entity_type: EntityType.ACCOUNT,
-	test_uuid: id,
 	name,
 	tags: [],
 	created: "2026-01-01T00:00:00Z",
-	updated: "2026-01-01T00:00:00Z",
+	updated_at: "2026-01-01T00:00:00Z",
 });
 
 describe("PersistenceStore", () => {
@@ -55,7 +53,7 @@ describe("PersistenceStore", () => {
 			persistence.commit(sampleEntity("e1", "Alice"));
 			await persistence.flush();
 			const rows = await store.allDocs();
-			const doc = rows.find((r) => r._id === "ACCOUNT-e1");
+			const doc = rows.find((r) => r.id === "ACCOUNT-e1");
 			expect(doc).toBeDefined();
 			expect(doc?.data.length).toBeGreaterThan(0);
 			expect(doc?.data).not.toContain("Alice");
@@ -141,7 +139,7 @@ describe("PersistenceStore", () => {
 			const a = sampleEntity("e1", "Alice");
 			const b = {
 				...sampleEntity("e1", "Alicia"),
-				updated: "2026-02-01T00:00:00Z",
+				updated_at: "2026-02-01T00:00:00Z",
 			};
 			persistence.resolveConflict(a, b);
 			await persistence.flush();
@@ -174,7 +172,7 @@ describe("LocalStore + encryption meta", () => {
 		try {
 			await setupNewEncryption(store, "p");
 			const outbox = await store.outboxList();
-			expect(outbox.find((e) => e._id === "ENCRYPTION-META")).toBeDefined();
+			expect(outbox.find((e) => e.id === "ENCRYPTION-META")).toBeDefined();
 		} finally {
 			await store.destroy();
 		}

@@ -69,7 +69,7 @@ export default class RunningBalance {
 						item.to_account,
 						item.to_value,
 					);
-					state.transactionBalance.set(item.transaction_uuid, {
+					state.transactionBalance.set(item.id, {
 						from_balance,
 						to_balance,
 					});
@@ -88,10 +88,10 @@ export default class RunningBalance {
 	}
 
 	updateTransactions(
-		updates: { transaction_uuid: TTransactionUUID; balances: FromToBalance }[],
+		updates: { id: TTransactionUUID; balances: FromToBalance }[],
 	) {
-		for (const { transaction_uuid, balances } of updates) {
-			this.transactionRunningBalance.set(transaction_uuid, balances);
+		for (const { id, balances } of updates) {
+			this.transactionRunningBalance.set(id, balances);
 		}
 	}
 
@@ -105,9 +105,9 @@ export default class RunningBalance {
 		this.incrementVersion();
 		this.updateTransactions(
 			transactions
-				.filter((t) => !this.transactionRunningBalance.has(t.transaction_uuid))
+				.filter((t) => !this.transactionRunningBalance.has(t.id))
 				.map((t) => ({
-					transaction_uuid: t.transaction_uuid,
+					id: t.id,
 					balances: { from_balance: null, to_balance: null },
 				})),
 		);
@@ -120,8 +120,8 @@ export default class RunningBalance {
 			);
 			this.updateTransactions(
 				Array.from(calc.transactionBalance.entries()).map(
-					([transaction_uuid, balances]) => ({
-						transaction_uuid,
+					([id, balances]) => ({
+						id,
 						balances,
 					}),
 				),

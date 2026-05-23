@@ -63,7 +63,7 @@ export const MergeAccountsModal = observer(() => {
 					onChange={(source_account) => setState({ ...state, source_account })}
 					options={accounts.all.map((account) => ({
 						label: account.name,
-						value: account.account_uuid,
+						value: account.id,
 					}))}
 				/>
 				<p>{Messages.merge_accounts.target}</p>
@@ -75,7 +75,7 @@ export const MergeAccountsModal = observer(() => {
 					onChange={(target_account) => setState({ ...state, target_account })}
 					options={accounts.all.map((account) => ({
 						label: account.name,
-						value: account.account_uuid,
+						value: account.id,
 					}))}
 				/>
 			</VerticalSpace>

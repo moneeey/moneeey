@@ -1,4 +1,4 @@
-import { debounce, isEmpty, omit } from "lodash";
+import { debounce, isEmpty } from "lodash";
 import { action, makeObservable, observable, observe, toJS } from "mobx";
 
 import type { SyncConfig } from "../entities/Config";
@@ -53,7 +53,7 @@ export class PersistenceMonitor<TEntity extends IBaseEntity> {
 	}
 
 	persist(item: TEntity, reason: string) {
-		const id = item._id;
+		const id = item.id;
 		if (id && this.bypassMonitor.has(id)) {
 			this.logger.log("persist bypass", { id, reason, item });
 			return;
@@ -64,10 +64,10 @@ export class PersistenceMonitor<TEntity extends IBaseEntity> {
 
 	mergeBypassingMonitor(entity: TEntity) {
 		try {
-			if (entity._id) this.bypassMonitor.add(entity._id);
+			if (entity.id) this.bypassMonitor.add(entity.id);
 			this.store.merge(entity, { setUpdated: false });
 		} finally {
-			if (entity._id) this.bypassMonitor.delete(entity._id);
+			if (entity.id) this.bypassMonitor.delete(entity.id);
 		}
 	}
 
@@ -78,10 +78,7 @@ export class PersistenceMonitor<TEntity extends IBaseEntity> {
 			} else if (changes.type === "update") {
 				const newValue = changes.newValue as TEntity;
 				const oldValue = changes.oldValue as TEntity;
-				if (
-					(newValue as { _rev?: string })._rev ===
-					(oldValue as { _rev?: string })._rev
-				) {
+				if (newValue.updated_at !== oldValue.updated_at) {
 					this.persist(newValue, "updated");
 				}
 			}
@@ -137,7 +134,7 @@ export default class PersistenceStore {
 	async fetchAllDocs(): Promise<PersistedEntity[]> {
 		await this.localStore.open();
 		const records = (await this.localStore.allDocs()).filter(
-			(r) => r._id !== ENCRYPTION_META_DOC_ID,
+			(r) => r.id !== ENCRYPTION_META_DOC_ID,
 		);
 		if (!this.dataKey) return [];
 		const key = this.dataKey;
@@ -149,7 +146,7 @@ export default class PersistenceStore {
 						key,
 					)) as unknown as PersistedEntity;
 				} catch (err) {
-					this.logger.warn("failed to decrypt doc", { id: r._id, err });
+					this.logger.warn("failed to decrypt doc", { id: r.id, err });
 					return null;
 				}
 			}),
@@ -178,8 +175,8 @@ export default class PersistenceStore {
 	}
 
 	commit(doc: PersistedEntity) {
-		if (!doc._id) return;
-		this.pendingByDocId.set(doc._id, doc);
+		if (!doc.id) return;
+		this.pendingByDocId.set(doc.id, doc);
 		this.scheduleFlush();
 	}
 
@@ -210,19 +207,19 @@ export default class PersistenceStore {
 		try {
 			for (const doc of docs) {
 				const enc = await encryptEntity(doc as unknown as PlainEntity, dataKey);
-				const existing = await this.localStore.get(enc._id);
+				const existing = await this.localStore.get(enc.id);
 				await this.localStore.put({
-					_id: enc._id,
+					id: enc.id,
 					seq: existing?.seq ?? 0,
-					updated: enc.updated,
-					deletedAt: enc.deletedAt,
+					updated_at: enc.updated_at,
+					deleted_at: enc.deleted_at,
 					data: enc.data,
 				});
 				if (this.syncClient) {
 					await this.syncClient.enqueue({
-						_id: enc._id,
-						updated: enc.updated,
-						deletedAt: enc.deletedAt,
+						id: enc.id,
+						updated_at: enc.updated_at,
+						deleted_at: enc.deleted_at,
 						data: enc.data,
 					});
 				}
@@ -269,8 +266,7 @@ export default class PersistenceStore {
 			(chunk, _state, percentage) => {
 				onProgress(percentage);
 				for (const line of chunk) {
-					const withoutRev = omit(line, ["_rev"]) as PersistedEntity;
-					this.commit(withoutRev);
+					this.commit(line as PersistedEntity);
 				}
 			},
 			{ state: {}, chunkSize: 100, chunkThrottle: 50 },
@@ -299,7 +295,7 @@ export default class PersistenceStore {
 				onChanges: async (docs: LocalDoc[]) => {
 					if (!dataKey) return;
 					for (const record of docs) {
-						if (record._id === ENCRYPTION_META_DOC_ID) continue;
+						if (record.id === ENCRYPTION_META_DOC_ID) continue;
 						try {
 							const decoded = (await decryptEntity<PlainEntity>(
 								record,
@@ -308,7 +304,7 @@ export default class PersistenceStore {
 							this.handleReceivedDocument(decoded);
 						} catch (err) {
 							this.logger.warn("decrypt failed on changes", {
-								id: record._id,
+								id: record.id,
 								err,
 							});
 						}
@@ -355,8 +351,8 @@ const pickWinner = (
 	a: Partial<PersistedEntity>,
 	b: Partial<PersistedEntity>,
 ) => {
-	const au = a.updated;
-	const bu = b.updated;
+	const au = a.updated_at;
+	const bu = b.updated_at;
 	if (au && !bu) return a;
 	if (!au && bu) return b;
 	if (au && bu) {

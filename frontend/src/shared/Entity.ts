@@ -11,18 +11,14 @@ export enum EntityType {
 	VIRTUAL_BUDGET_ENVELOPE = "VIRTUAL_BUDGET_ENVELOPE",
 }
 
-export interface IBaseCouchEntity {
-	_id?: string;
-	_rev?: string;
-	_deleted?: boolean;
-}
-
-export interface IBaseEntity extends IBaseCouchEntity {
+export interface IBaseEntity {
 	[k: string]: unknown;
+	id: string;
 	entity_type: EntityType;
 	tags: string[];
-	updated?: TDateTime;
+	updated_at: TDateTime;
 	created?: TDateTime;
+	deleted_at?: TDateTime | null;
 }
 
 const isEntityType =

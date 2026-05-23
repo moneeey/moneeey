@@ -173,11 +173,11 @@ class Importer {
 				: -0.1;
 
 		return nonReferenceAccount
-			.map(({ id: account_uuid, ...rest }) => ({
+			.map(({ id, ...rest }) => ({
 				...rest,
-				account_uuid,
-				name: this.moneeeyStore.accounts.nameForUuid(account_uuid),
-				score: rest.score + accountScore(account_uuid),
+				id,
+				name: this.moneeeyStore.accounts.nameForUuid(id),
+				score: rest.score + accountScore(id),
 			}))
 			.sort((a, b) => b.score - a.score);
 	}

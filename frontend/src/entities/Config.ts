@@ -26,21 +26,22 @@ export interface IConfig extends IBaseEntity {
 export class ConfigStore extends MappedStore<IConfig> {
 	constructor(moneeeyStore: MoneeeyStore) {
 		super(moneeeyStore, {
-			getUuid: () => "CONFIG",
 			factory: () =>
 				({
+					id: "CONFIG",
 					entity_type: EntityType.CONFIG,
 					date_format: TDateFormat,
 					decimal_separator: ",",
 					thousand_separator: ".",
 					default_currency: "",
 					view_archived: false,
+					tags: [],
 					moneeeySync: {
 						enabled: false,
 						vaultId: "",
 						sessionToken: "",
 					},
-					updated: currentDateTime(),
+					updated_at: currentDateTime(),
 					created: currentDateTime(),
 				}) as IConfig,
 		});

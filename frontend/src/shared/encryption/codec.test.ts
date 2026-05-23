@@ -57,7 +57,7 @@ describe("codec - meta", () => {
 		const original = await setupNewEncryption(store, "passphrase-1");
 		const unlocked = await unlockExistingEncryption(store, "passphrase-1");
 		const sample = await encryptEntity(
-			{ _id: "x", updated: "u", name: "alice" } as PlainEntity,
+			{ id: "x", updated_at: "u", name: "alice" } as PlainEntity,
 			original,
 		);
 		const round = await decryptEntity(sample, unlocked);
@@ -76,7 +76,7 @@ describe("codec - meta", () => {
 		const store = new MemoryMetaStore();
 		const dataKey = await setupNewEncryption(store, "old");
 		const encrypted = await encryptEntity(
-			{ _id: "x", updated: "u", val: 7 } as PlainEntity,
+			{ id: "x", updated_at: "u", val: 7 } as PlainEntity,
 			dataKey,
 		);
 		await changePassphrase(store, dataKey, "new");
@@ -109,38 +109,38 @@ describe("codec - entity round trips", () => {
 		const store = new MemoryMetaStore();
 		const dataKey = await setupNewEncryption(store, "p");
 		const entity = {
-			_id: "ACCOUNT-1",
-			updated: "2026-01-01T00:00:00Z",
+			id: "ACCOUNT-1",
+			updated_at: "2026-01-01T00:00:00Z",
 			entity_type: "ACCOUNT",
 			name: "Checking",
 			tags: ["personal"],
 		} as PlainEntity;
 		const enc = await encryptEntity(entity, dataKey);
-		expect(enc._id).toBe("ACCOUNT-1");
-		expect(enc.updated).toBe("2026-01-01T00:00:00Z");
-		expect(enc.deletedAt).toBeNull();
+		expect(enc.id).toBe("ACCOUNT-1");
+		expect(enc.updated_at).toBe("2026-01-01T00:00:00Z");
+		expect(enc.deleted_at).toBeNull();
 		expect(typeof enc.data).toBe("string");
 		expect(enc.data).not.toContain("Checking");
 
 		const decoded = await decryptEntity<PlainEntity>(enc, dataKey);
 		expect(decoded.name).toBe("Checking");
 		expect(decoded.entity_type).toBe("ACCOUNT");
-		expect(decoded._deleted).toBe(false);
+		expect(decoded.deleted_at).toBeNull();
 	});
 
-	it("tombstones round-trip with deletedAt set", async () => {
+	it("tombstones round-trip with deleted_at set", async () => {
 		const store = new MemoryMetaStore();
 		const dataKey = await setupNewEncryption(store, "p");
 		const entity = {
-			_id: "X",
-			updated: "2026-02-01T00:00:00Z",
-			_deleted: true,
+			id: "X",
+			updated_at: "2026-02-01T00:00:00Z",
+			deleted_at: "2026-02-01T00:00:00Z",
 			entity_type: "ACCOUNT",
 		} as PlainEntity;
 		const enc = await encryptEntity(entity, dataKey);
-		expect(enc.deletedAt).toBe("2026-02-01T00:00:00Z");
+		expect(enc.deleted_at).toBe("2026-02-01T00:00:00Z");
 		const decoded = await decryptEntity<PlainEntity>(enc, dataKey);
-		expect(decoded._deleted).toBe(true);
+		expect(decoded.deleted_at).toBe("2026-02-01T00:00:00Z");
 	});
 
 	it("data is not decryptable with a different key", async () => {
@@ -149,7 +149,7 @@ describe("codec - entity round trips", () => {
 		const keyA = await setupNewEncryption(storeA, "pA");
 		const keyB = await setupNewEncryption(storeB, "pB");
 		const enc = await encryptEntity(
-			{ _id: "X", updated: "u", name: "secret" } as PlainEntity,
+			{ id: "X", updated_at: "u", name: "secret" } as PlainEntity,
 			keyA,
 		);
 		await expect(decryptEntity(enc as EncryptedRecord, keyB)).rejects.toThrow();
@@ -163,8 +163,8 @@ describe("LocalStore satisfies MetaStore", () => {
 			const dataKey = await setupNewEncryption(store, "passphrase-xyz");
 			const verified = await verifyPassphrase(store, "passphrase-xyz");
 			const entity = {
-				_id: "T-1",
-				updated: "u",
+				id: "T-1",
+				updated_at: "u",
 				entity_type: "TRANSACTION",
 				value: 42,
 			} as PlainEntity;

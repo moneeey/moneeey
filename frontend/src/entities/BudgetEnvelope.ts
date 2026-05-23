@@ -62,8 +62,8 @@ function computeEnvelopes(
 			const matching = tagIndex.get(tag);
 			if (matching) {
 				for (const budget of matching) {
-					if (!seen.has(budget.budget_uuid)) {
-						seen.add(budget.budget_uuid);
+					if (!seen.has(budget.id)) {
+						seen.add(budget.id);
 						result.push(budget);
 					}
 				}
@@ -97,14 +97,14 @@ function computeEnvelopes(
 		const txCurrency = fromAccount?.currency_uuid || defaultCurrency;
 
 		for (const budget of matchingBudgets) {
-			const key = BudgetEnvelopeKey(budget.budget_uuid, starting, txCurrency);
+			const key = BudgetEnvelopeKey(budget.id, starting, txCurrency);
 			usages.set(key, (usages.get(key) || 0) + transaction.from_value);
 
 			// Track currencies per budget for fill-forward
-			let currencies = currenciesByBudget.get(budget.budget_uuid);
+			let currencies = currenciesByBudget.get(budget.id);
 			if (!currencies) {
 				currencies = new Set<TCurrencyUUID>();
-				currenciesByBudget.set(budget.budget_uuid, currencies);
+				currenciesByBudget.set(budget.id, currencies);
 			}
 			currencies.add(txCurrency);
 		}
@@ -118,7 +118,7 @@ function computeEnvelopes(
 		starting: TDate,
 		currency_uuid: TCurrencyUUID,
 	): EnvelopeData => {
-		const key = BudgetEnvelopeKey(budget.budget_uuid, starting, currency_uuid);
+		const key = BudgetEnvelopeKey(budget.id, starting, currency_uuid);
 		let env = envelopes.get(key);
 		if (!env) {
 			const allocated =
@@ -126,7 +126,7 @@ function computeEnvelopes(
 					(e) => e.starting === starting && e.currency_uuid === currency_uuid,
 				)?.allocated || 0;
 			env = {
-				budget_uuid: budget.budget_uuid,
+				budget_uuid: budget.id,
 				currency_uuid,
 				starting,
 				allocated,
@@ -154,7 +154,7 @@ function computeEnvelopes(
 		const starting = parts[0];
 		const currency_uuid = parts[parts.length - 1];
 		const budget_uuid = parts.slice(1, -1).join("_");
-		const budget = budgets.find((b) => b.budget_uuid === budget_uuid);
+		const budget = budgets.find((b) => b.id === budget_uuid);
 		if (budget) {
 			const env = getOrCreate(budget, starting, currency_uuid);
 			env.used = usage;
@@ -174,8 +174,8 @@ function computeEnvelopes(
 	}
 
 	for (const budget of budgets) {
-		const currencies = currenciesByBudget.get(budget.budget_uuid);
-		const startings = startingsByBudget.get(budget.budget_uuid);
+		const currencies = currenciesByBudget.get(budget.id);
+		const startings = startingsByBudget.get(budget.id);
 		if (!currencies || !startings) continue;
 		for (const starting of startings) {
 			for (const currency_uuid of currencies) {
@@ -220,11 +220,11 @@ export class BudgetEnvelope implements IBaseEntity {
 
 	entity_type: EntityType = EntityType.VIRTUAL_BUDGET_ENVELOPE;
 
-	_rev: string;
+	updated_at: string;
 
 	tags = [];
 
-	envelope_uuid: string;
+	id: string;
 
 	budget_uuid: TBudgetUUID;
 
@@ -244,7 +244,7 @@ export class BudgetEnvelope implements IBaseEntity {
 		this.moneeeyStore = moneeeyStore;
 		this.budget_uuid = data.budget_uuid;
 		this.currency_uuid = data.currency_uuid;
-		this.envelope_uuid = BudgetEnvelopeKey(
+		this.id = BudgetEnvelopeKey(
 			data.budget_uuid,
 			data.starting,
 			data.currency_uuid,
@@ -253,14 +253,14 @@ export class BudgetEnvelope implements IBaseEntity {
 		this.allocated = data.allocated;
 		this.remaining = data.remaining;
 		this.used = data.used;
-		this._rev = rev;
+		this.updated_at = rev;
 	}
 
 	updateFrom(data: EnvelopeData, rev: string) {
 		this.allocated = data.allocated;
 		this.used = data.used;
 		this.remaining = data.remaining;
-		this._rev = rev;
+		this.updated_at = rev;
 	}
 
 	get budget(): IBudget | undefined {
@@ -280,7 +280,6 @@ export class BudgetEnvelopeStore extends MappedStore<BudgetEnvelope> {
 
 	constructor(moneeeyStore: MoneeeyStore) {
 		super(moneeeyStore, {
-			getUuid: (b) => b.envelope_uuid,
 			factory: () =>
 				({
 					entity_type: EntityType.VIRTUAL_BUDGET_ENVELOPE,

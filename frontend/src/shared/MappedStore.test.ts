@@ -5,7 +5,6 @@ import type MoneeeyStore from "./MoneeeyStore";
 import TagsStore from "./Tags";
 
 interface ITestEntity extends IBaseEntity {
-	test_uuid: string;
 	name: string;
 }
 
@@ -18,12 +17,12 @@ const mockMoneeeyStore = () => {
 const createStore = () => {
 	const moneeeyStore = mockMoneeeyStore();
 	const store = new MappedStore<ITestEntity>(moneeeyStore, {
-		getUuid: (item) => item.test_uuid,
 		factory: (id?: string) => ({
+			id: id || `test-${Math.random()}`,
 			entity_type: EntityType.ACCOUNT,
-			test_uuid: id || `test-${Math.random()}`,
 			name: "",
 			tags: [],
+			updated_at: "",
 		}),
 	});
 	return { store, moneeeyStore };
@@ -34,10 +33,10 @@ const mergeEntity = (
 	overrides: Partial<ITestEntity> = {},
 ): ITestEntity => {
 	const base = store.factory();
-	const entity = { ...base, ...overrides };
+	const entity = { ...base, ...overrides } as ITestEntity;
 	store.merge(entity, { setUpdated: false });
 	// biome-ignore lint/style/noNonNullAssertion: test helper, entity was just merged
-	return store.byUuid(store.getUuid(entity))!;
+	return store.byUuid(entity.id)!;
 };
 
 describe("MappedStore", () => {
@@ -51,70 +50,60 @@ describe("MappedStore", () => {
 	describe("merge", () => {
 		it("adds an entity to the store", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1", name: "First" });
+			mergeEntity(store, { id: "e1", name: "First" });
 			expect(store.byUuid("e1")?.name).toBe("First");
 		});
 
-		it("generates opaque _id when none is set", () => {
+		it("preserves existing id", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1" });
-			const id = store.byUuid("e1")?._id;
-			expect(id).toBeTruthy();
-			expect(id).not.toContain("ACCOUNT");
-			expect(id).not.toContain("e1");
-		});
-
-		it("preserves existing _id", () => {
-			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1", _id: "existing-id" });
-			expect(store.byUuid("e1")?._id).toBe("existing-id");
+			mergeEntity(store, { id: "existing-id" });
+			expect(store.byUuid("existing-id")?.id).toBe("existing-id");
 		});
 
 		it("sets created if not present", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1" });
+			mergeEntity(store, { id: "e1" });
 			expect(store.byUuid("e1")?.created).toBeTruthy();
 		});
 
 		it("preserves existing created", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1", created: "2020-01-01T00:00:00Z" });
+			mergeEntity(store, { id: "e1", created: "2020-01-01T00:00:00Z" });
 			expect(store.byUuid("e1")?.created).toBe("2020-01-01T00:00:00Z");
 		});
 
-		it("sets updated to current datetime when setUpdated is true", () => {
+		it("sets updated_at to current datetime when setUpdated is true", () => {
 			const { store } = createStore();
 			const base = store.factory();
 			store.merge(
-				{ ...base, test_uuid: "e1", updated: "2000-01-01T00:00:00Z" },
+				{ ...base, id: "e1", updated_at: "2000-01-01T00:00:00Z" },
 				{ setUpdated: true },
 			);
-			const updated = store.byUuid("e1")?.updated;
-			expect(updated).toBeTruthy();
-			// Should be overwritten to current time, not the old value
-			expect(updated).not.toBe("2000-01-01T00:00:00Z");
+			const updated_at = store.byUuid("e1")?.updated_at;
+			expect(updated_at).toBeTruthy();
+			expect(updated_at).not.toBe("2000-01-01T00:00:00Z");
 		});
 
-		it("preserves existing updated when setUpdated is false", () => {
+		it("preserves existing updated_at when setUpdated is false", () => {
 			const { store } = createStore();
 			mergeEntity(store, {
-				test_uuid: "e1",
-				updated: "2020-06-15T00:00:00Z",
+				id: "e1",
+				updated_at: "2020-06-15T00:00:00Z",
 			});
-			expect(store.byUuid("e1")?.updated).toBe("2020-06-15T00:00:00Z");
+			expect(store.byUuid("e1")?.updated_at).toBe("2020-06-15T00:00:00Z");
 		});
 
 		it("registers tags", () => {
 			const { store, moneeeyStore } = createStore();
-			mergeEntity(store, { test_uuid: "e1", tags: ["food", "groceries"] });
+			mergeEntity(store, { id: "e1", tags: ["food", "groceries"] });
 			expect(moneeeyStore.tags.all).toContain("food");
 			expect(moneeeyStore.tags.all).toContain("groceries");
 		});
 
-		it("overwrites existing entity with same uuid", () => {
+		it("overwrites existing entity with same id", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1", name: "First" });
-			mergeEntity(store, { test_uuid: "e1", name: "Updated" });
+			mergeEntity(store, { id: "e1", name: "First" });
+			mergeEntity(store, { id: "e1", name: "Updated" });
 			expect(store.byUuid("e1")?.name).toBe("Updated");
 			expect(store.all.length).toBe(1);
 		});
@@ -123,7 +112,7 @@ describe("MappedStore", () => {
 	describe("readField", () => {
 		it("reads a field from an existing entity", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1", name: "Hello" });
+			mergeEntity(store, { id: "e1", name: "Hello" });
 			expect(store.readField("e1", "name")).toBe("Hello");
 		});
 
@@ -136,7 +125,7 @@ describe("MappedStore", () => {
 	describe("update", () => {
 		it("updates fields on an existing entity", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1", name: "Old" });
+			mergeEntity(store, { id: "e1", name: "Old" });
 			store.update("e1", { name: "New" });
 			expect(store.byUuid("e1")?.name).toBe("New");
 		});
@@ -151,23 +140,23 @@ describe("MappedStore", () => {
 	describe("remove", () => {
 		it("removes entity from the store", () => {
 			const { store } = createStore();
-			const entity = mergeEntity(store, { test_uuid: "e1" });
+			const entity = mergeEntity(store, { id: "e1" });
 			store.remove(entity);
 			expect(store.byUuid("e1")).toBeUndefined();
 		});
 
-		it("sets _deleted on the entity", () => {
+		it("sets deleted_at on the entity", () => {
 			const { store } = createStore();
-			const entity = mergeEntity(store, { test_uuid: "e1" });
+			const entity = mergeEntity(store, { id: "e1" });
 			store.remove(entity);
-			expect(entity._deleted).toBe(true);
+			expect(entity.deleted_at).toBeTruthy();
 		});
 	});
 
 	describe("hasKey", () => {
 		it("returns true for existing uuid", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1" });
+			mergeEntity(store, { id: "e1" });
 			expect(store.hasKey("e1")).toBe(true);
 		});
 
@@ -190,7 +179,7 @@ describe("MappedStore", () => {
 	describe("byUuid", () => {
 		it("returns entity for existing uuid", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1", name: "Found" });
+			mergeEntity(store, { id: "e1", name: "Found" });
 			expect(store.byUuid("e1")?.name).toBe("Found");
 		});
 
@@ -213,9 +202,9 @@ describe("MappedStore", () => {
 	describe("byPredicate", () => {
 		it("filters entities by predicate", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1", name: "Alpha" });
-			mergeEntity(store, { test_uuid: "e2", name: "Beta" });
-			mergeEntity(store, { test_uuid: "e3", name: "Alpha" });
+			mergeEntity(store, { id: "e1", name: "Alpha" });
+			mergeEntity(store, { id: "e2", name: "Beta" });
+			mergeEntity(store, { id: "e3", name: "Alpha" });
 			const results = store.byPredicate((e) => e.name === "Alpha");
 			expect(results.length).toBe(2);
 		});
@@ -224,14 +213,14 @@ describe("MappedStore", () => {
 	describe("find", () => {
 		it("returns first matching entity", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1", name: "Alpha" });
-			mergeEntity(store, { test_uuid: "e2", name: "Beta" });
-			expect(store.find((e) => e.name === "Beta")?.test_uuid).toBe("e2");
+			mergeEntity(store, { id: "e1", name: "Alpha" });
+			mergeEntity(store, { id: "e2", name: "Beta" });
+			expect(store.find((e) => e.name === "Beta")?.id).toBe("e2");
 		});
 
 		it("returns undefined when nothing matches", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1", name: "Alpha" });
+			mergeEntity(store, { id: "e1", name: "Alpha" });
 			expect(store.find((e) => e.name === "Gamma")).toBeUndefined();
 		});
 	});
@@ -239,8 +228,8 @@ describe("MappedStore", () => {
 	describe("all", () => {
 		it("returns all entities", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1" });
-			mergeEntity(store, { test_uuid: "e2" });
+			mergeEntity(store, { id: "e1" });
+			mergeEntity(store, { id: "e2" });
 			expect(store.all.length).toBe(2);
 		});
 
@@ -251,10 +240,10 @@ describe("MappedStore", () => {
 	});
 
 	describe("ids", () => {
-		it("returns all uuids", () => {
+		it("returns all ids", () => {
 			const { store } = createStore();
-			mergeEntity(store, { test_uuid: "e1" });
-			mergeEntity(store, { test_uuid: "e2" });
+			mergeEntity(store, { id: "e1" });
+			mergeEntity(store, { id: "e2" });
 			expect(store.ids).toEqual(["e1", "e2"]);
 		});
 

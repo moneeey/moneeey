@@ -7,12 +7,8 @@ import { uuid as generateId } from "../utils/Utils";
 import type { IBaseEntity } from "./Entity";
 import type MoneeeyStore from "./MoneeeyStore";
 
-type UUIDGetter<T> = (item: T) => string;
-
 export default class MappedStore<T extends IBaseEntity> {
 	public readonly itemsByUuid = new Map<string, T>();
-
-	public readonly getUuid: UUIDGetter<T>;
 
 	public readonly factory: (id?: string) => T;
 
@@ -21,11 +17,9 @@ export default class MappedStore<T extends IBaseEntity> {
 	constructor(
 		moneeeyStore: MoneeeyStore,
 		config: {
-			getUuid: UUIDGetter<T>;
 			factory: (id?: string) => T;
 		},
 	) {
-		this.getUuid = config.getUuid;
 		this.factory = config.factory;
 		this.moneeeyStore = moneeeyStore;
 		makeObservable(this, {
@@ -41,17 +35,21 @@ export default class MappedStore<T extends IBaseEntity> {
 		return this.factory().entity_type;
 	}
 
+	getUuid(item: T): string {
+		return item.id;
+	}
+
 	merge(item: T, options: { setUpdated: boolean } = { setUpdated: true }) {
-		const uuid = this.getUuid(item);
+		const id = item.id || generateId();
 		this.moneeeyStore.tags.registerAll(item.tags);
-		this.itemsByUuid.set(uuid, {
+		this.itemsByUuid.set(id, {
 			...item,
 			entity_type: this.factory().entity_type,
-			_id: item._id || generateId(),
+			id,
 			created: item.created || currentDateTime(),
-			updated: options.setUpdated
+			updated_at: options.setUpdated
 				? currentDateTime()
-				: item.updated || currentDateTime(),
+				: item.updated_at || currentDateTime(),
 		});
 	}
 
@@ -67,9 +65,8 @@ export default class MappedStore<T extends IBaseEntity> {
 	}
 
 	remove(item: T) {
-		const uuid = this.getUuid(item);
-		this.itemsByUuid.delete(uuid);
-		item._deleted = true;
+		this.itemsByUuid.delete(item.id);
+		item.deleted_at = currentDateTime();
 	}
 
 	hasKey(uuid: string | undefined) {

@@ -26,7 +26,6 @@ import type { AccountStore, TAccountUUID } from "./Account";
 export type TTransactionUUID = string;
 
 export interface ITransaction extends IBaseEntity {
-	transaction_uuid: TTransactionUUID;
 	date: TDate;
 	from_account: TAccountUUID;
 	to_account: TAccountUUID;
@@ -45,10 +44,9 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 
 	constructor(moneeeyStore: MoneeeyStore) {
 		super(moneeeyStore, {
-			getUuid: (t) => t.transaction_uuid,
 			factory: (id?: string) => ({
+				id: id || uuid(),
 				entity_type: EntityType.TRANSACTION,
-				transaction_uuid: id || uuid(),
 				date: currentDate(),
 				from_account: "",
 				to_account: "",
@@ -56,7 +54,7 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 				to_value: 0,
 				memo: "",
 				tags: [],
-				updated: currentDateTime(),
+				updated_at: currentDateTime(),
 				created: currentDateTime(),
 			}),
 		});
@@ -156,7 +154,7 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 
 	viewAllNonPayees(accountsStore: AccountStore) {
 		return this.viewAllWithAccounts(
-			accountsStore.allNonPayees.map((act) => act.account_uuid),
+			accountsStore.allNonPayees.map((act) => act.id),
 		);
 	}
 
@@ -189,7 +187,7 @@ export const isTransaction = isEntityType<ITransaction>(EntityType.TRANSACTION);
 export const mockTransaction = (
 	data: Pick<
 		ITransaction,
-		"transaction_uuid" | "from_account" | "to_account" | "from_value"
+		"id" | "from_account" | "to_account" | "from_value"
 	> &
 		Partial<ITransaction>,
 ) => ({
@@ -198,5 +196,6 @@ export const mockTransaction = (
 	date: "2023-02-01",
 	memo: "",
 	tags: [],
+	updated_at: "2023-02-01T00:00:00.000Z",
 	...data,
 });

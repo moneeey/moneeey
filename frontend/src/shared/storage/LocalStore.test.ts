@@ -10,10 +10,10 @@ const freshStore = async () => {
 };
 
 const doc = (id: string, seq: number, data = "cipher"): LocalDoc => ({
-	_id: id,
+	id: id,
 	seq,
-	updated: new Date(seq * 1000).toISOString(),
-	deletedAt: null,
+	updated_at: new Date(seq * 1000).toISOString(),
+	deleted_at: null,
 	data,
 });
 
@@ -45,7 +45,7 @@ describe("LocalStore", () => {
 			await s.bulkPut([doc("a", 2, "second"), doc("b", 3, "b1")]);
 			const all = await s.allDocs();
 			expect(all.length).toBe(2);
-			expect(all.find((d) => d._id === "a")?.data).toBe("second");
+			expect(all.find((d) => d.id === "a")?.data).toBe("second");
 		} finally {
 			await s.destroy();
 		}
@@ -90,16 +90,16 @@ describe("LocalStore", () => {
 		const s = await freshStore();
 		try {
 			await s.outboxAdd({
-				_id: "a",
-				updated: "2026-01-01T00:00:00Z",
-				deletedAt: null,
+				id: "a",
+				updated_at: "2026-01-01T00:00:00Z",
+				deleted_at: null,
 				data: "cipher",
 				enqueuedAt: new Date().toISOString(),
 			});
 			await s.outboxAdd({
-				_id: "b",
-				updated: "2026-01-02T00:00:00Z",
-				deletedAt: null,
+				id: "b",
+				updated_at: "2026-01-02T00:00:00Z",
+				deleted_at: null,
 				data: "cipher2",
 				enqueuedAt: new Date().toISOString(),
 			});
@@ -108,7 +108,7 @@ describe("LocalStore", () => {
 			await s.outboxRemove("a");
 			list = await s.outboxList();
 			expect(list.length).toBe(1);
-			expect(list[0]._id).toBe("b");
+			expect(list[0].id).toBe("b");
 		} finally {
 			await s.destroy();
 		}
@@ -118,16 +118,16 @@ describe("LocalStore", () => {
 		const s = await freshStore();
 		try {
 			await s.outboxAdd({
-				_id: "a",
-				updated: "t1",
-				deletedAt: null,
+				id: "a",
+				updated_at: "t1",
+				deleted_at: null,
 				data: "v1",
 				enqueuedAt: "e1",
 			});
 			await s.outboxAdd({
-				_id: "a",
-				updated: "t2",
-				deletedAt: null,
+				id: "a",
+				updated_at: "t2",
+				deleted_at: null,
 				data: "v2",
 				enqueuedAt: "e2",
 			});
@@ -170,7 +170,7 @@ describe("LocalStore", () => {
 		try {
 			await s.bulkPut([doc("a", 1), doc("b", 2), doc("c", 3)]);
 			const all = await s.allDocs();
-			expect(all.map((d) => d._id).sort()).toEqual(["a", "b", "c"]);
+			expect(all.map((d) => d.id).sort()).toEqual(["a", "b", "c"]);
 		} finally {
 			await s.destroy();
 		}

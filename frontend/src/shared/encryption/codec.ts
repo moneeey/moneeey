@@ -40,7 +40,7 @@ export interface MetaStore {
 	setEncryptionMeta(meta: MetaDoc): Promise<void>;
 }
 
-const CLEAR_FIELDS = ["_id", "updated", "_deleted"] as const;
+const CLEAR_FIELDS = ["id", "updated_at", "deleted_at"] as const;
 type ClearField = (typeof CLEAR_FIELDS)[number];
 const isClearField = (key: string): key is ClearField =>
 	(CLEAR_FIELDS as readonly string[]).includes(key);
@@ -126,15 +126,15 @@ export const changePassphrase = async (
 };
 
 export type PlainEntity = Record<string, unknown> & {
-	_id: string;
-	updated: string;
-	_deleted?: boolean;
+	id: string;
+	updated_at: string;
+	deleted_at?: string | null;
 };
 
 export type EncryptedRecord = {
-	_id: string;
-	updated: string;
-	deletedAt: string | null;
+	id: string;
+	updated_at: string;
+	deleted_at: string | null;
 	data: string;
 };
 
@@ -148,18 +148,18 @@ export const encryptEntity = async (
 	}
 	const data = await encryptString(JSON.stringify(body), dataKey);
 	return {
-		_id: entity._id,
-		updated: entity.updated,
-		deletedAt: entity._deleted ? entity.updated : null,
+		id: entity.id,
+		updated_at: entity.updated_at,
+		deleted_at: entity.deleted_at ?? null,
 		data,
 	};
 };
 
 export const decryptEntity = async <T extends PlainEntity = PlainEntity>(
 	record: {
-		_id: string;
-		updated: string;
-		deletedAt: string | null;
+		id: string;
+		updated_at: string;
+		deleted_at: string | null;
 		data: string;
 	},
 	dataKey: CryptoKey,
@@ -168,8 +168,8 @@ export const decryptEntity = async <T extends PlainEntity = PlainEntity>(
 	const body = JSON.parse(bodyJson) as Record<string, unknown>;
 	return {
 		...body,
-		_id: record._id,
-		updated: record.updated,
-		_deleted: record.deletedAt !== null,
+		id: record.id,
+		updated_at: record.updated_at,
+		deleted_at: record.deleted_at,
 	} as T;
 };

@@ -40,7 +40,7 @@ export default function <TEntity>({
 								<b>{currency.short}</b> {currency.name}
 							</span>
 						),
-						value: currency.currency_uuid,
+						value: currency.id,
 					}))}
 					onChange={(value: string) =>
 						commit({ ...entity, ...delta(value, entity) })

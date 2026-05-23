@@ -61,7 +61,7 @@ export const BaseReport = ({
 		(async () => {
 			const currentData = await asyncProcessTransactionsForAccounts({
 				moneeeyStore,
-				accounts: selectedAccounts.map((act) => act.account_uuid),
+				accounts: selectedAccounts.map((act) => act.id),
 				processFn,
 				period,
 				setProgress,
@@ -87,17 +87,17 @@ export const BaseReport = ({
 				{Messages.reports.include_accounts}
 				{accounts.map((account) => (
 					<Checkbox
-						testId={`accountVisible_${account.account_uuid}`}
-						key={account.account_uuid}
+						testId={`accountVisible_${account.id}`}
+						key={account.id}
 						value={Boolean(
 							selectedAccounts.find(
-								(act) => act.account_uuid === account.account_uuid,
+								(act) => act.id === account.id,
 							),
 						)}
 						onChange={(checked) =>
 							setSelectedAccounts(
 								selectedAccounts
-									.filter((act) => act.account_uuid !== account.account_uuid)
+									.filter((act) => act.id !== account.id)
 									.concat(checked ? [account] : []),
 							)
 						}

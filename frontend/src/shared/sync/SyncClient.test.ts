@@ -141,10 +141,10 @@ describe("SyncClient", () => {
 				request_id: pullId,
 				docs: [
 					{
-						_id: "a",
+						id: "a",
 						seq: 1,
-						updated: "2026-01-01T00:00:00Z",
-						deletedAt: null,
+						updated_at: "2026-01-01T00:00:00Z",
+						deleted_at: null,
 						data: "cipher",
 					},
 				],
@@ -173,18 +173,18 @@ describe("SyncClient", () => {
 			ws.sent.length = 0;
 
 			await client.enqueue({
-				_id: "x",
-				updated: "2026-01-01T00:00:00Z",
-				deletedAt: null,
+				id: "x",
+				updated_at: "2026-01-01T00:00:00Z",
+				deleted_at: null,
 				data: "cipher",
 			});
 			await new Promise<void>((r) => setTimeout(r, 5));
 
 			const pushMsg = ws.sent.find((m) => m.type === "push") as
-				| { docs: Array<{ _id: string }>; request_id: string }
+				| { docs: Array<{ id: string }>; request_id: string }
 				| undefined;
 			expect(pushMsg).toBeDefined();
-			expect(pushMsg?.docs[0]._id).toBe("x");
+			expect(pushMsg?.docs[0].id).toBe("x");
 
 			ws.simulateMessage({
 				type: "push_result",
@@ -232,10 +232,10 @@ describe("SyncClient", () => {
 				type: "changes",
 				docs: [
 					{
-						_id: "y",
+						id: "y",
 						seq: 4,
-						updated: "2026-02-01T00:00:00Z",
-						deletedAt: null,
+						updated_at: "2026-02-01T00:00:00Z",
+						deleted_at: null,
 						data: "broadcast",
 					},
 				],
@@ -279,9 +279,9 @@ describe("SyncClient", () => {
 			await flushMicrotasks();
 			ws.sent.length = 0;
 			await client.enqueue({
-				_id: "old",
-				updated: "2026-01-01T00:00:00Z",
-				deletedAt: null,
+				id: "old",
+				updated_at: "2026-01-01T00:00:00Z",
+				deleted_at: null,
 				data: "stale",
 			});
 			await new Promise<void>((r) => setTimeout(r, 5));
@@ -298,10 +298,10 @@ describe("SyncClient", () => {
 				request_id: refetchId,
 				docs: [
 					{
-						_id: "old",
+						id: "old",
 						seq: 10,
-						updated: "2026-03-01T00:00:00Z",
-						deletedAt: null,
+						updated_at: "2026-03-01T00:00:00Z",
+						deleted_at: null,
 						data: "winner",
 					},
 				],
