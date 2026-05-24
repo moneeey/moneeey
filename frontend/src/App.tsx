@@ -10,6 +10,7 @@ import Notifications from "./components/Notifications";
 import type { UnlockResult } from "./components/tour/EncryptionGate";
 import MoneeeyStore from "./shared/MoneeeyStore";
 import { LocalStore } from "./shared/storage/LocalStore";
+import { getTabLocalStoreName } from "./shared/storage/tabVault";
 import useMoneeeyStore, {
 	MoneeeyStoreProvider,
 } from "./shared/useMoneeeyStore";
@@ -91,7 +92,7 @@ const AppBoot = observer(() => {
 	const { currentLanguage } = useLanguageSwitcher();
 	const [moneeeyStore, setMoneeeyStore] = useState<MoneeeyStore | null>(null);
 	const [localStoreReady, setLocalStoreReady] = useState(false);
-	const localStore = useMemo(() => new LocalStore(), []);
+	const localStore = useMemo(() => new LocalStore(getTabLocalStoreName()), []);
 
 	useEffect(() => {
 		let cancelled = false;
