@@ -115,6 +115,9 @@ const AppBoot = observer(() => {
 				});
 				store.persistence.sync(syncConfig);
 			}
+			if (window.location.hash.startsWith("#/invite/")) {
+				window.location.hash = "/dashboard";
+			}
 			setMoneeeyStore(store);
 		},
 		[localStore],
