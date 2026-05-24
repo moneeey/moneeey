@@ -74,6 +74,9 @@ function parseInviteToken(): string | null {
 }
 
 const detectInitialState = async (store: LocalStore): Promise<GateState> => {
+	if (await hasEncryptionMeta(store)) {
+		return { kind: "unlock" };
+	}
 	const inviteToken = parseInviteToken();
 	if (inviteToken) {
 		const info = await getInviteInfo(inviteToken);
@@ -81,9 +84,7 @@ const detectInitialState = async (store: LocalStore): Promise<GateState> => {
 			return { kind: "invite", token: inviteToken };
 		}
 	}
-	return (await hasEncryptionMeta(store))
-		? { kind: "unlock" }
-		: { kind: "choose" };
+	return { kind: "choose" };
 };
 
 export default function EncryptionGate({ store, onUnlocked }: Props) {
@@ -240,7 +241,12 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 			await pullFromRemote(syncConfig);
 		} catch (err) {
 			console.error("invite register failed", err);
-			setError(Messages.encryption.passkey_error);
+			const msg = (err as Error).message;
+			setError(
+				msg === "user already exists"
+					? Messages.encryption.invite_sign_in_first
+					: Messages.encryption.passkey_error,
+			);
 			setBusy(false);
 		}
 	};

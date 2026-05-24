@@ -3,7 +3,11 @@ import { action, makeObservable, observable } from "mobx";
 
 import type ConfigStore from "../entities/Config";
 import type PersistenceStore from "./Persistence";
-import { fetchPasskeyAuthState } from "./encryption/bootstrapFromPasskey";
+import {
+	fetchPasskeyAuthState,
+	selectVault,
+} from "./encryption/bootstrapFromPasskey";
+import { getTabVaultId, rememberLastVault } from "./storage/tabVault";
 
 export default class ManagementStore {
 	sessionToken = "";
@@ -28,8 +32,13 @@ export default class ManagementStore {
 	}
 
 	async checkExistingSession() {
+		const tabVaultId = getTabVaultId();
 		const stored = this.config.main.moneeeySync;
-		if (stored?.enabled && stored.sessionToken) {
+		if (
+			stored?.enabled &&
+			stored.sessionToken &&
+			(!tabVaultId || tabVaultId === stored.vaultId)
+		) {
 			this.sessionToken = stored.sessionToken;
 			this.vaultId = stored.vaultId;
 			this.loggedIn = true;
@@ -38,9 +47,17 @@ export default class ManagementStore {
 		}
 
 		const remote = await fetchPasskeyAuthState();
-		if (remote) {
-			this.complete(remote.sessionToken, remote.vaultId);
+		if (!remote) return;
+		if (tabVaultId && tabVaultId !== remote.vaultId) {
+			try {
+				const switched = await selectVault(tabVaultId);
+				this.complete(switched.sessionToken, switched.vaultId);
+				return;
+			} catch (err) {
+				console.warn("tab vault no longer accessible, falling back", err);
+			}
 		}
+		this.complete(remote.sessionToken, remote.vaultId);
 	}
 
 	applySync() {
@@ -56,6 +73,7 @@ export default class ManagementStore {
 			this.sessionToken = sessionToken;
 			this.vaultId = vaultId;
 			this.loggedIn = true;
+			rememberLastVault(vaultId);
 
 			this.config.merge({
 				...this.config.main,

@@ -175,6 +175,118 @@ export async function userHasAccess(
 	return (await getMembership(storage, userId, vaultId)) !== null;
 }
 
+export type VaultMember = Membership & { email: string };
+
+export async function listVaultMembers(
+	storage: Storage,
+	vaultId: string,
+): Promise<VaultMember[]> {
+	return await storage.withMeta((db) => {
+		const rows = db
+			.prepare(
+				`SELECT uv.user_id AS user_id, uv.vault_id AS vault_id, uv.role AS role,
+				        uv.added_at AS added_at, u.email AS email
+				 FROM user_vaults uv
+				 INNER JOIN users u ON u.id = uv.user_id
+				 WHERE uv.vault_id = ?
+				 ORDER BY CASE uv.role WHEN 'owner' THEN 0 ELSE 1 END, uv.added_at`,
+			)
+			.all<MembershipRow & { email: string }>(vaultId);
+		return rows.map((row) => ({ ...toMembership(row), email: row.email }));
+	});
+}
+
+export class CannotRemoveOwnerError extends Error {
+	constructor() {
+		super("cannot_remove_owner");
+		this.name = "CannotRemoveOwnerError";
+	}
+}
+
+export async function removeMember(
+	storage: Storage,
+	vaultId: string,
+	userId: string,
+): Promise<void> {
+	await storage.withMeta((db) => {
+		const row = db
+			.prepare(
+				"SELECT role FROM user_vaults WHERE user_id = ? AND vault_id = ?",
+			)
+			.get<{ role: string }>(userId, vaultId);
+		if (!row) return;
+		if (row.role === "owner") throw new CannotRemoveOwnerError();
+		db.prepare(
+			"DELETE FROM user_vaults WHERE user_id = ? AND vault_id = ?",
+		).run(userId, vaultId);
+	});
+}
+
+export class NotOwnerError extends Error {
+	constructor() {
+		super("not_owner");
+		this.name = "NotOwnerError";
+	}
+}
+
+export class TargetNotMemberError extends Error {
+	constructor() {
+		super("target_not_member");
+		this.name = "TargetNotMemberError";
+	}
+}
+
+export async function transferOwnership(
+	storage: Storage,
+	vaultId: string,
+	fromUserId: string,
+	toUserId: string,
+): Promise<void> {
+	if (fromUserId === toUserId) return;
+	await storage.withMeta((db) => {
+		db.exec("BEGIN");
+		try {
+			const from = db
+				.prepare(
+					"SELECT role FROM user_vaults WHERE user_id = ? AND vault_id = ?",
+				)
+				.get<{ role: string }>(fromUserId, vaultId);
+			if (!from || from.role !== "owner") {
+				db.exec("ROLLBACK");
+				throw new NotOwnerError();
+			}
+			const to = db
+				.prepare(
+					"SELECT role FROM user_vaults WHERE user_id = ? AND vault_id = ?",
+				)
+				.get<{ role: string }>(toUserId, vaultId);
+			if (!to) {
+				db.exec("ROLLBACK");
+				throw new TargetNotMemberError();
+			}
+			db.prepare(
+				"UPDATE user_vaults SET role = 'member' WHERE user_id = ? AND vault_id = ?",
+			).run(fromUserId, vaultId);
+			db.prepare(
+				"UPDATE user_vaults SET role = 'owner' WHERE user_id = ? AND vault_id = ?",
+			).run(toUserId, vaultId);
+			db.exec("COMMIT");
+		} catch (err) {
+			if (
+				!(err instanceof NotOwnerError) &&
+				!(err instanceof TargetNotMemberError)
+			) {
+				try {
+					db.exec("ROLLBACK");
+				} catch {
+					/* already rolled back */
+				}
+			}
+			throw err;
+		}
+	});
+}
+
 export async function deleteVault(
 	storage: Storage,
 	vaultId: string,

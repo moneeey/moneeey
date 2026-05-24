@@ -118,10 +118,69 @@ export const registerViaInvite = async (
 	return toSyncConfig(auth);
 };
 
+export const acceptInvite = async (
+	token: string,
+): Promise<{ vaultId: string }> => {
+	return await post<{ vaultId: string }>("/api/auth/passkey/invite/accept", {
+		token,
+	});
+};
+
 export const createInviteLink = async (): Promise<string> => {
 	const result = await post<{ inviteUrl: string }>(
 		"/api/auth/passkey/invite/create",
 		{},
 	);
 	return result.inviteUrl;
+};
+
+export type VaultMember = {
+	userId: string;
+	email: string;
+	role: "owner" | "member";
+	addedAt: string;
+};
+
+export type VaultMembersResponse = {
+	members: VaultMember[];
+	yourRole: "owner" | "member";
+	yourUserId: string;
+};
+
+export const listVaultMembers = async (
+	vaultId: string,
+): Promise<VaultMembersResponse> =>
+	await post<VaultMembersResponse>("/api/auth/vault/members", { vaultId });
+
+export const kickVaultMember = async (
+	vaultId: string,
+	userId: string,
+): Promise<void> => {
+	await post("/api/auth/vault/kick", { vaultId, userId });
+};
+
+export const transferVaultOwnership = async (
+	vaultId: string,
+	userId: string,
+): Promise<void> => {
+	await post("/api/auth/vault/transfer", { vaultId, userId });
+};
+
+export type VaultListItem = {
+	vaultId: string;
+	role: "owner" | "member";
+	createdAt: string;
+};
+
+export const listMyVaults = async (): Promise<VaultListItem[]> => {
+	const result = await post<{ vaults: VaultListItem[] }>(
+		"/api/auth/vaults/list",
+		{},
+	);
+	return result.vaults;
+};
+
+export const selectVault = async (vaultId: string): Promise<SyncConfig> => {
+	const auth = await post<AuthResponse>("/api/auth/vault/select", { vaultId });
+	return toSyncConfig(auth);
 };

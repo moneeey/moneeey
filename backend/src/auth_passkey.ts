@@ -20,6 +20,7 @@ import {
 	addCredential as dataAddCredential,
 	createUser as dataCreateUser,
 	getUserByEmail as dataGetUserByEmail,
+	replaceCredentials as dataReplaceCredentials,
 	updateCredentialCounter as dataUpdateCredentialCounter,
 } from "./data/users.ts";
 import {
@@ -57,6 +58,34 @@ async function createUserAndVault(
 	return { user, vaultId: vault.id };
 }
 
+async function userBlocksReuse(email: string): Promise<boolean> {
+	const existing = await dataGetUserByEmail(getStorage(), email);
+	if (!existing) return false;
+	const vaults = await dataGetVaultsByUser(getStorage(), existing.id);
+	return vaults.length > 0;
+}
+
+async function reregisterUserWithFreshVault(
+	email: string,
+	credential: StoredCredential,
+): Promise<{ user: UserRecord; vaultId: string }> {
+	const storage = getStorage();
+	const user = await dataReplaceCredentials(storage, email, credential);
+	const vault = await dataCreateVaultForUser(storage, user.id);
+	return { user, vaultId: vault.id };
+}
+
+async function reregisterInvitee(
+	email: string,
+	credential: StoredCredential,
+	inviteToken: string,
+): Promise<{ user: UserRecord; vaultId: string }> {
+	const storage = getStorage();
+	const user = await dataReplaceCredentials(storage, email, credential);
+	const vaultId = await dataRedeemInvite(storage, inviteToken, user.id);
+	return { user, vaultId };
+}
+
 async function getPrimaryVaultId(userId: string): Promise<string | null> {
 	const vaults = await dataGetVaultsByUser(getStorage(), userId);
 	return vaults[0]?.id ?? null;
@@ -75,6 +104,14 @@ async function createInviteForOwner(
 
 async function findInvite(token: string): Promise<InviteRecord | null> {
 	return await dataFindInvite(getStorage(), token);
+}
+
+async function acceptInviteForUser(
+	userId: string,
+	token: string,
+): Promise<{ vaultId: string }> {
+	const vaultId = await dataRedeemInvite(getStorage(), token, userId);
+	return { vaultId };
 }
 
 async function registerInvitee(
@@ -114,7 +151,11 @@ export const authPasskeyInternals = {
 	getPrimaryVaultId,
 	createInviteForOwner,
 	findInvite,
+	acceptInviteForUser,
 	registerInvitee,
+	userBlocksReuse,
+	reregisterUserWithFreshVault,
+	reregisterInvitee,
 	updateCredentialCounter,
 	addCredentialForEmail,
 	generateRegistrationOptions,
@@ -192,8 +233,7 @@ export function setupPasskey(authRouter: oak.Router) {
 				return;
 			}
 
-			const existing = await authPasskeyInternals.getUserByEmail(email);
-			if (existing) {
+			if (await authPasskeyInternals.userBlocksReuse(email)) {
 				respond(ctx, oak.Status.Conflict, { error: "user already exists" });
 				return;
 			}
@@ -248,10 +288,10 @@ export function setupPasskey(authRouter: oak.Router) {
 				},
 				(credential as RegistrationResponseJSON).response.transports,
 			);
-			const { user, vaultId } = await authPasskeyInternals.createUserAndVault(
-				email,
-				stored,
-			);
+			const existing = await authPasskeyInternals.getUserByEmail(email);
+			const { user, vaultId } = existing
+				? await authPasskeyInternals.reregisterUserWithFreshVault(email, stored)
+				: await authPasskeyInternals.createUserAndVault(email, stored);
 			const result = await authPasskeyInternals.authenticateAndRespond(
 				ctx,
 				"passkey",
@@ -416,6 +456,56 @@ export function setupPasskey(authRouter: oak.Router) {
 		}
 	});
 
+	authRouter.post("/passkey/invite/accept", async (ctx) => {
+		try {
+			const authToken = await ctx.cookies.get("authToken");
+			if (!authToken) {
+				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				return;
+			}
+			const validated = await authJwt.validate(authToken);
+			const userId = String(validated.payload.userId || "");
+			if (!userId) {
+				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				return;
+			}
+			const { token } = await getBodyJson(ctx);
+			if (typeof token !== "string" || token.length === 0) {
+				respond(ctx, oak.Status.BadRequest, { error: "missing token" });
+				return;
+			}
+			try {
+				const { vaultId } = await authPasskeyInternals.acceptInviteForUser(
+					userId,
+					token,
+				);
+				respond(ctx, oak.Status.OK, { vaultId });
+			} catch (err) {
+				const msg = (err as Error).message;
+				if (msg === "invite_not_found") {
+					respond(ctx, oak.Status.NotFound, { error: "invite not found" });
+					return;
+				}
+				if (msg === "invite_already_redeemed") {
+					respond(ctx, oak.Status.Conflict, {
+						error: "invite_already_redeemed",
+					});
+					return;
+				}
+				if (err instanceof VaultFullError) {
+					respond(ctx, oak.Status.Conflict, { error: "vault_full" });
+					return;
+				}
+				throw err;
+			}
+		} catch (err) {
+			logger.error("invite/accept error", { err });
+			respond(ctx, oak.Status.InternalServerError, {
+				error: "internal server error",
+			});
+		}
+	});
+
 	authRouter.post("/passkey/invite/info", async (ctx) => {
 		try {
 			const { token } = await getBodyJson(ctx);
@@ -448,8 +538,7 @@ export function setupPasskey(authRouter: oak.Router) {
 				return;
 			}
 
-			const existing = await authPasskeyInternals.getUserByEmail(email);
-			if (existing) {
+			if (await authPasskeyInternals.userBlocksReuse(email)) {
 				respond(ctx, oak.Status.Conflict, { error: "user already exists" });
 				return;
 			}
@@ -517,11 +606,18 @@ export function setupPasskey(authRouter: oak.Router) {
 			let user: UserRecord;
 			let vaultId: string;
 			try {
-				const registered = await authPasskeyInternals.registerInvitee(
-					email,
-					stored,
-					inviteToken,
-				);
+				const existing = await authPasskeyInternals.getUserByEmail(email);
+				const registered = existing
+					? await authPasskeyInternals.reregisterInvitee(
+							email,
+							stored,
+							inviteToken,
+						)
+					: await authPasskeyInternals.registerInvitee(
+							email,
+							stored,
+							inviteToken,
+						);
 				user = registered.user;
 				vaultId = registered.vaultId;
 			} catch (err) {

@@ -1,3 +1,4 @@
+import { setupMembership } from "./auth_membership.ts";
 import { setupPasskey } from "./auth_passkey.ts";
 import { setupSession } from "./auth_session.ts";
 import { oak } from "./deps.ts";
@@ -11,6 +12,7 @@ export function setupAuth(_app: oak.Application, router: oak.Router) {
 
 	setupPasskey(authRouter);
 	setupSession(authRouter);
+	setupMembership(authRouter);
 
 	router.use("/api/auth", authRouter.routes(), authRouter.allowedMethods());
 }
