@@ -22,10 +22,30 @@ export default defineConfig({
 		VitePWA({
 			registerType: "autoUpdate",
 			strategies: "generateSW",
+			devOptions: {
+				enabled: true,
+				type: "module",
+				navigateFallback: "index.html",
+			},
 			workbox: {
 				maximumFileSizeToCacheInBytes: 32 * 1024 * 1024,
 				globPatterns: ["**/*.{js,css,html,ico,png,svg,ttf}"],
 				navigateFallbackDenylist: [/^\/(api|db)\//],
+				runtimeCaching: [
+					{
+						urlPattern: ({ url, request, sameOrigin }) =>
+							sameOrigin &&
+							request.method === "GET" &&
+							!url.pathname.startsWith("/api/") &&
+							!url.pathname.startsWith("/db/"),
+						handler: "NetworkFirst",
+						options: {
+							cacheName: "moneeey-runtime",
+							networkTimeoutSeconds: 3,
+							expiration: { maxEntries: 500 },
+						},
+					},
+				],
 			},
 			includeAssets: ["**/*.{js,css,html,ico,png,svg,ttf}"],
 			manifest: {
@@ -39,25 +59,25 @@ export default defineConfig({
 					{
 						src: "/favicon.svg",
 						sizes: "64x64",
-						type: "image/svg",
+						type: "image/svg+xml",
 						purpose: "any",
 					},
 					{
 						src: "/favicon.144x144.svg",
 						sizes: "144x144",
-						type: "image/svg",
+						type: "image/svg+xml",
 						purpose: "any",
 					},
 					{
 						src: "/favicon.192x192.svg",
 						sizes: "192x192",
-						type: "image/svg",
+						type: "image/svg+xml",
 						purpose: "any",
 					},
 					{
 						src: "/favicon.512x512.svg",
 						sizes: "512x512",
-						type: "image/svg",
+						type: "image/svg+xml",
 						purpose: "any",
 					},
 				],
