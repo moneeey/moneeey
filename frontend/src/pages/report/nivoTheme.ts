@@ -83,3 +83,26 @@ export const SIGN_PALETTE = {
 	negative: colors.rose[400],
 	neutral: colors.slate[400],
 } as const;
+
+export const fadeColor = (color: string, alpha: number): string => {
+	if (color.startsWith("rgba(")) return color;
+	if (color.startsWith("rgb(")) {
+		const inner = color.slice(4, -1);
+		return `rgba(${inner}, ${alpha})`;
+	}
+	if (color.startsWith("#")) {
+		const hex = color.slice(1);
+		const expand =
+			hex.length === 3
+				? hex
+						.split("")
+						.map((c) => c + c)
+						.join("")
+				: hex;
+		const r = Number.parseInt(expand.slice(0, 2), 16);
+		const g = Number.parseInt(expand.slice(2, 4), 16);
+		const b = Number.parseInt(expand.slice(4, 6), 16);
+		return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+	}
+	return color;
+};

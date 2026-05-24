@@ -27,12 +27,14 @@ import {
 	dateToPeriod,
 	periodByKey,
 } from "./ReportUtils";
+import { mergeComparison, shiftRangeBackwards } from "./comparison";
 import { type IReportStateApi, useReportState } from "./useReportState";
 
 export interface ChartHelpers {
 	hiddenSeries: ReadonlySet<string>;
 	onSeriesClick: (info: DrillDownInfo) => void;
 	colorMap?: Record<string, string>;
+	dimmedSeries?: ReadonlySet<string>;
 }
 
 interface BaseReportProps {
@@ -98,6 +100,9 @@ export const BaseReport = ({
 		[Messages, state.period],
 	);
 	const [data, setData] = useState(NewReportDataMap());
+	const [comparisonSeries, setComparisonSeries] = useState<ReadonlySet<string>>(
+		() => new Set(),
+	);
 	const [progress, setProgress] = useState(0);
 	const [hiddenSeries, setHiddenSeries] = useState<ReadonlySet<string>>(
 		() => new Set(),
@@ -130,19 +135,64 @@ export const BaseReport = ({
 				currency: state.currency,
 			});
 			if (cancelled) return;
-			setProgress(0);
 			for (const points of Array.from(currentData.points.values())) {
 				for (const label of keys(points)) {
 					points[label] = roundPoint(points[label]);
 				}
 			}
-			setData(currentData);
+
+			let finalData = currentData;
+			let comparison: ReadonlySet<string> = new Set();
+			if (state.compare !== "none" && range.from && range.to) {
+				const shifted = shiftRangeBackwards(
+					{ from: range.from, to: range.to },
+					state.compare,
+				);
+				if (shifted) {
+					const previousData = await asyncProcessTransactionsForAccounts({
+						moneeeyStore,
+						accounts: accountIds,
+						processFn,
+						period,
+						setProgress,
+						range: shifted,
+						currency: state.currency,
+					});
+					if (cancelled) return;
+					for (const points of Array.from(previousData.points.values())) {
+						for (const label of keys(points)) {
+							points[label] = roundPoint(points[label]);
+						}
+					}
+					const merged = mergeComparison(
+						currentData,
+						previousData,
+						state.compare,
+						range.from,
+						range.to,
+					);
+					finalData = merged.merged;
+					comparison = merged.comparisonSeries;
+				}
+			}
+
+			setProgress(0);
+			setData(finalData);
+			setComparisonSeries(comparison);
 			setDrillDown(null);
 		})();
 		return () => {
 			cancelled = true;
 		};
-	}, [moneeeyStore, processFn, period, range, state.currency, accountIds]);
+	}, [
+		moneeeyStore,
+		processFn,
+		period,
+		range,
+		state.currency,
+		state.compare,
+		accountIds,
+	]);
 
 	const toggleSeries = useCallback((s: string) => {
 		setHiddenSeries((prev) => {
@@ -158,8 +208,13 @@ export const BaseReport = ({
 	}, []);
 
 	const chartHelpers = useMemo<ChartHelpers>(
-		() => ({ hiddenSeries, onSeriesClick, colorMap }),
-		[hiddenSeries, onSeriesClick, colorMap],
+		() => ({
+			hiddenSeries,
+			onSeriesClick,
+			colorMap,
+			dimmedSeries: comparisonSeries,
+		}),
+		[hiddenSeries, onSeriesClick, colorMap, comparisonSeries],
 	);
 
 	const seriesList = useMemo(() => Array.from(data.columns), [data]);
@@ -224,6 +279,7 @@ export const BaseReport = ({
 					hidden={hiddenSeries}
 					onToggle={toggleSeries}
 					colorMap={colorMap}
+					dimmedSeries={comparisonSeries}
 				/>
 			)}
 			{drillDown && (

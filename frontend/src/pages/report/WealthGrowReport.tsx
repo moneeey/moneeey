@@ -58,18 +58,20 @@ const wealthGrowProcess =
 		);
 	};
 
-const withRunningBalance = (
-	data: ReportDataMap,
-	category: string,
-): ReportDataMap => {
+const withRunningBalance = (data: ReportDataMap): ReportDataMap => {
 	const sorted = Array.from(data.points.entries()).sort(([a], [b]) =>
 		compareDates(a, b),
 	);
 	const next = new Map<string, Record<string, number>>();
-	let running = 0;
+	const running: Record<string, number> = {};
+	for (const col of data.columns) running[col] = 0;
 	for (const [key, record] of sorted) {
-		running += record[category] || 0;
-		next.set(key, { [category]: running });
+		const out: Record<string, number> = {};
+		for (const col of data.columns) {
+			running[col] += record[col] || 0;
+			out[col] = running[col];
+		}
+		next.set(key, out);
 	}
 	return { columns: data.columns, points: next };
 };
@@ -84,7 +86,7 @@ const WealthGrowReport = () => {
 	);
 
 	const renderKpis = (data: ReportDataMap) => {
-		const running = withRunningBalance(data, Messages.reports.wealth);
+		const running = withRunningBalance(data);
 		const sorted = Array.from(running.points.entries()).sort(([a], [b]) =>
 			compareDates(a, b),
 		);
@@ -142,10 +144,11 @@ const WealthGrowReport = () => {
 			renderKpis={renderKpis}
 			chartFn={(data, period, helpers) => (
 				<ReportLineChart
-					data={withRunningBalance(data, Messages.reports.wealth)}
+					data={withRunningBalance(data)}
 					xFormatter={period.formatter}
 					enableArea={true}
 					hiddenSeries={helpers.hiddenSeries}
+					dimmedSeries={helpers.dimmedSeries}
 					onPointClick={helpers.onSeriesClick}
 				/>
 			)}

@@ -159,6 +159,7 @@ const TagExpensesReport = () => {
 					data={data}
 					xFormatter={period.formatter}
 					hiddenSeries={helpers.hiddenSeries}
+					dimmedSeries={helpers.dimmedSeries}
 					onBarClick={helpers.onSeriesClick}
 				/>
 			)}

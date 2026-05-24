@@ -4,13 +4,19 @@ import { useMemo } from "react";
 import type { TDate } from "../../../utils/Date";
 import type { ReportDataMap } from "../ReportUtils";
 import { formatNumber } from "../kpiCalcs";
-import { REPORT_PALETTE, colorForKey, useNivoTheme } from "../nivoTheme";
+import {
+	REPORT_PALETTE,
+	colorForKey,
+	fadeColor,
+	useNivoTheme,
+} from "../nivoTheme";
 
 interface ReportBarChartProps {
 	data: ReportDataMap;
 	xFormatter: (v: TDate) => string;
 	stacked?: boolean;
 	hiddenSeries?: ReadonlySet<string>;
+	dimmedSeries?: ReadonlySet<string>;
 	onBarClick?: (info: { period: TDate; series: string; value: number }) => void;
 	height?: string | number;
 	colorMap?: Record<string, string>;
@@ -21,6 +27,7 @@ const ReportBarChart = ({
 	xFormatter,
 	stacked = true,
 	hiddenSeries,
+	dimmedSeries,
 	onBarClick,
 	height = "24em",
 	colorMap,
@@ -41,10 +48,15 @@ const ReportBarChart = ({
 	}, [data, hiddenSeries]);
 
 	const colorBy = useMemo(() => {
-		if (!colorMap) return undefined;
-		return (bar: { id: string | number }) =>
-			colorMap[String(bar.id)] ?? colorForKey(String(bar.id));
-	}, [colorMap]);
+		if (!colorMap && !dimmedSeries) return undefined;
+		const dimmed = dimmedSeries;
+		const palette = colorMap;
+		return (bar: { id: string | number }) => {
+			const id = String(bar.id);
+			const base = palette?.[id] ?? colorForKey(id);
+			return dimmed?.has(id) ? fadeColor(base, 0.45) : base;
+		};
+	}, [colorMap, dimmedSeries]);
 
 	return (
 		<div style={{ height, width: "100%" }}>

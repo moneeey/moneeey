@@ -17,6 +17,7 @@ import {
 	dateToPeriod,
 } from "./ReportUtils";
 import ReportLineChart from "./charts/ReportLineChart";
+import { COMPARISON_PREFIX } from "./comparison";
 import {
 	formatNumber,
 	formatSigned,
@@ -71,20 +72,40 @@ const withRunningAndNet = (
 	const assets = Messages.reports.assets;
 	const liabilities = Messages.reports.liabilities;
 	const net = Messages.reports.net;
+	const compAssets = `${COMPARISON_PREFIX}${assets}`;
+	const compLiabilities = `${COMPARISON_PREFIX}${liabilities}`;
+	const compNet = `${COMPARISON_PREFIX}${net}`;
+	const hasComparison =
+		data.columns.has(compAssets) || data.columns.has(compLiabilities);
 
 	const nextPoints = new Map<string, Record<string, number>>();
 	let runAssets = 0;
 	let runLiab = 0;
+	let runCompAssets = 0;
+	let runCompLiab = 0;
 	for (const [key, record] of sorted) {
 		runAssets += record[assets] || 0;
 		runLiab += record[liabilities] || 0;
-		nextPoints.set(key, {
+		runCompAssets += record[compAssets] || 0;
+		runCompLiab += record[compLiabilities] || 0;
+		const point: Record<string, number> = {
 			[assets]: runAssets,
 			[liabilities]: Math.abs(runLiab),
 			[net]: runAssets - Math.abs(runLiab),
-		});
+		};
+		if (hasComparison) {
+			point[compAssets] = runCompAssets;
+			point[compLiabilities] = Math.abs(runCompLiab);
+			point[compNet] = runCompAssets - Math.abs(runCompLiab);
+		}
+		nextPoints.set(key, point);
 	}
 	const nextColumns = new Set<string>([assets, liabilities, net]);
+	if (hasComparison) {
+		nextColumns.add(compAssets);
+		nextColumns.add(compLiabilities);
+		nextColumns.add(compNet);
+	}
 	return { columns: nextColumns, points: nextPoints };
 };
 
@@ -109,6 +130,10 @@ const NetWorthReport = observer(() => {
 			[Messages.reports.assets]: SIGN_PALETTE.positive,
 			[Messages.reports.liabilities]: SIGN_PALETTE.negative,
 			[Messages.reports.net]: SIGN_PALETTE.neutral,
+			[`${COMPARISON_PREFIX}${Messages.reports.assets}`]: SIGN_PALETTE.positive,
+			[`${COMPARISON_PREFIX}${Messages.reports.liabilities}`]:
+				SIGN_PALETTE.negative,
+			[`${COMPARISON_PREFIX}${Messages.reports.net}`]: SIGN_PALETTE.neutral,
 		}),
 		[Messages],
 	);
@@ -185,6 +210,7 @@ const NetWorthReport = observer(() => {
 					data={withRunningAndNet(data, Messages)}
 					xFormatter={period.formatter}
 					hiddenSeries={helpers.hiddenSeries}
+					dimmedSeries={helpers.dimmedSeries}
 					onPointClick={helpers.onSeriesClick}
 					colorMap={helpers.colorMap}
 					enableArea={true}

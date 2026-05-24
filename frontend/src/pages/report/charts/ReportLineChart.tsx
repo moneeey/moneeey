@@ -4,12 +4,18 @@ import { useMemo } from "react";
 import type { TDate } from "../../../utils/Date";
 import type { ReportDataMap } from "../ReportUtils";
 import { formatNumber } from "../kpiCalcs";
-import { REPORT_PALETTE, colorForKey, useNivoTheme } from "../nivoTheme";
+import {
+	REPORT_PALETTE,
+	colorForKey,
+	fadeColor,
+	useNivoTheme,
+} from "../nivoTheme";
 
 interface ReportLineChartProps {
 	data: ReportDataMap;
 	xFormatter: (v: TDate) => string;
 	hiddenSeries?: ReadonlySet<string>;
+	dimmedSeries?: ReadonlySet<string>;
 	onPointClick?: (info: {
 		period: TDate;
 		series: string;
@@ -25,6 +31,7 @@ const ReportLineChart = ({
 	data,
 	xFormatter,
 	hiddenSeries,
+	dimmedSeries,
 	onPointClick,
 	height = "24em",
 	colorMap,
@@ -49,8 +56,11 @@ const ReportLineChart = ({
 
 	const colors = useMemo(() => {
 		const map = colorMap ?? {};
-		return series.map((s) => map[s.id] ?? colorForKey(s.id));
-	}, [series, colorMap]);
+		return series.map((s) => {
+			const base = map[s.id] ?? colorForKey(s.id);
+			return dimmedSeries?.has(s.id) ? fadeColor(base, 0.45) : base;
+		});
+	}, [series, colorMap, dimmedSeries]);
 
 	return (
 		<div style={{ height, width: "100%" }}>

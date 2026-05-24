@@ -123,6 +123,7 @@ const IncomeVsExpensesReport = () => {
 					xFormatter={period.formatter}
 					stacked={false}
 					hiddenSeries={helpers.hiddenSeries}
+					dimmedSeries={helpers.dimmedSeries}
 					onBarClick={helpers.onSeriesClick}
 					colorMap={helpers.colorMap}
 				/>
