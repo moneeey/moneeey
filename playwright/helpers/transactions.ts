@@ -47,6 +47,6 @@ export async function setDateField(
 	const input = page.getByTestId(testId).nth(index);
 	await input.click();
 	await input.fill(value);
-	await input.press("Tab");
 	await expect(input).toHaveValue(value);
+	await input.press("Tab");
 }
