@@ -2,9 +2,7 @@ import { observer } from "mobx-react";
 import { useMemo } from "react";
 
 import DatePicker from "../../components/base/DatePicker";
-import { Checkbox } from "../../components/base/Input";
 import Select from "../../components/base/Select";
-import Space from "../../components/base/Space";
 import type { IAccount, TAccountUUID } from "../../entities/Account";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import {
@@ -229,7 +227,7 @@ const ReportControls = observer(
 				)}
 
 				{showAccounts && accounts.length > 0 && (
-					<Space className="flex-wrap">
+					<div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
 						<span className="text-sm opacity-80">
 							{Messages.reports.include_accounts}
 						</span>
@@ -254,7 +252,7 @@ const ReportControls = observer(
 								}}
 							/>
 						))}
-					</Space>
+					</div>
 				)}
 			</section>
 		);
@@ -270,14 +268,22 @@ const AccountToggle = ({
 	selected: boolean;
 	onToggle: () => void;
 }) => (
-	<Checkbox
-		testId={`accountVisible_${account.id}`}
-		value={selected}
-		onChange={onToggle}
-		placeholder={account.name}
+	<label
+		className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition ${
+			selected
+				? "border-primary-400 bg-primary-300/15 text-foreground"
+				: "border-background-700 bg-background-800 text-foreground/70 hover:bg-background-700"
+		}`}
 	>
+		<input
+			data-testid={`accountVisible_${account.id}`}
+			type="checkbox"
+			className="m-0 h-3 w-3"
+			checked={selected}
+			onChange={onToggle}
+		/>
 		{account.name}
-	</Checkbox>
+	</label>
 );
 
 export default ReportControls;

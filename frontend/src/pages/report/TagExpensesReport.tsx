@@ -43,8 +43,10 @@ const tagExpensesProcess =
 		) => {
 			const account = moneeeyStore.accounts.byUuid(account_uuid);
 			const is_payee = account?.kind === AccountKind.PAYEE;
-			const payee_tags = (is_payee && account?.tags) || [];
-			const tags = new Set([...payee_tags, ...transaction.tags]);
+			const accountSourceTags = is_payee
+				? moneeeyStore.accounts.accountTags(account_uuid)
+				: [];
+			const tags = new Set([...accountSourceTags, ...transaction.tags]);
 			for (const rawTag of tags) {
 				const normalized = normalizeTag(rawTag);
 				if (!normalized) continue;

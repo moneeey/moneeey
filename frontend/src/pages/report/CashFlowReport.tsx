@@ -59,6 +59,18 @@ const buildSankey = (
 		moneeeyStore.accounts.nameForUuid(id) || "(none)";
 	const isPayee = (id: string) =>
 		moneeeyStore.accounts.byUuid(id)?.kind === AccountKind.PAYEE;
+	const tagsForOutflow = (t: ITransaction): string[] => {
+		const merged = new Set<string>();
+		for (const tag of moneeeyStore.accounts.accountTags(t.to_account)) {
+			const n = normalizeTag(tag);
+			if (n) merged.add(n);
+		}
+		for (const tag of t.tags) {
+			const n = normalizeTag(tag);
+			if (n) merged.add(n);
+		}
+		return Array.from(merged);
+	};
 
 	for (const t of transactions) {
 		const fromIsPayee = isPayee(t.from_account);
@@ -74,12 +86,13 @@ const buildSankey = (
 					accumulate(edges, fromName, toName, value);
 				}
 				if (!fromIsPayee && toIsPayee) {
-					for (const rawTag of t.tags) {
-						const tag = normalizeTag(rawTag);
-						if (!tag) continue;
-						accumulate(edges, fromName, tag, value / t.tags.length);
+					const tags = tagsForOutflow(t);
+					if (tags.length === 0) {
+						accumulate(edges, fromName, toName, value);
+					} else {
+						const share = value / tags.length;
+						for (const tag of tags) accumulate(edges, fromName, tag, share);
 					}
-					if (t.tags.length === 0) accumulate(edges, fromName, toName, value);
 				}
 				break;
 			}
@@ -89,25 +102,27 @@ const buildSankey = (
 					accumulate(edges, incomeSource, toName, value);
 				}
 				if (!fromIsPayee && toIsPayee) {
-					for (const rawTag of t.tags) {
-						const tag = normalizeTag(rawTag);
-						if (!tag) continue;
-						accumulate(edges, fromName, tag, value / t.tags.length);
+					const tags = tagsForOutflow(t);
+					if (tags.length === 0) {
+						accumulate(edges, fromName, toName, value);
+					} else {
+						const share = value / tags.length;
+						for (const tag of tags) accumulate(edges, fromName, tag, share);
 					}
-					if (t.tags.length === 0) accumulate(edges, fromName, toName, value);
 				}
 				break;
 			}
 			case "acct_tag_subtag": {
 				if (!fromIsPayee && toIsPayee) {
-					for (const rawTag of t.tags) {
-						const tag = normalizeTag(rawTag);
-						if (!tag) continue;
+					const tags = tagsForOutflow(t);
+					if (tags.length === 0) break;
+					const share = value / tags.length;
+					for (const tag of tags) {
 						const root = tagAtDepth(tag, 1);
 						const second = tagAtDepth(tag, 2) ?? root;
-						if (root) accumulate(edges, fromName, root, value / t.tags.length);
+						if (root) accumulate(edges, fromName, root, share);
 						if (second && second !== root)
-							accumulate(edges, root || "", second, value / t.tags.length);
+							accumulate(edges, root || "", second, share);
 					}
 				}
 				break;

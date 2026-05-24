@@ -71,9 +71,9 @@ const buildSunburstData = (
 		const fromIsPayee = fromAct?.kind === AccountKind.PAYEE;
 		const toIsPayee = toAct?.kind === AccountKind.PAYEE;
 		if (!toIsPayee) continue;
-		const accountTags = [...(fromAct?.tags ?? []), ...(toAct?.tags ?? [])];
+		const payeeSourceTags = moneeeyStore.accounts.accountTags(t.to_account);
 		const tags = new Set(
-			[...accountTags, ...t.tags].map(normalizeTag).filter(Boolean),
+			[...payeeSourceTags, ...t.tags].map(normalizeTag).filter(Boolean),
 		);
 		if (tags.size === 0) continue;
 		const share = Math.abs(t.to_value) / tags.size;
