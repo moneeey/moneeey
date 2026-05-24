@@ -10,16 +10,14 @@ import type { TDate } from "../../utils/Date";
 
 import useMessages, { type TMessages } from "../../utils/Messages";
 
-import {
-	BaseColumnChart,
-	BaseReport,
-	ChartColorGeneratorForColors,
-} from "./BaseReport";
+import { BaseReport } from "./BaseReport";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
 	dateToPeriod,
 } from "./ReportUtils";
+import ReportBarChart from "./charts/ReportBarChart";
+import { SIGN_PALETTE } from "./nivoTheme";
 
 const incomeVsExpensesProcess =
 	(moneeeyStore: MoneeeyStore, Messages: TMessages) =>
@@ -73,16 +71,14 @@ const IncomeVsExpensesReport = () => {
 			processFn={processFn}
 			title={Messages.reports.income_vs_expenses}
 			chartFn={(data, period) => (
-				<BaseColumnChart
+				<ReportBarChart
 					data={data}
 					xFormatter={period.formatter}
 					stacked={false}
-					colorGenerator={() =>
-						ChartColorGeneratorForColors([
-							"text-green-600 fill-green-300 stroke-green-300",
-							"text-red-600 fill-red-300 stroke-red-300",
-						])
-					}
+					colorMap={{
+						[Messages.reports.income]: SIGN_PALETTE.positive,
+						[Messages.reports.expense]: SIGN_PALETTE.negative,
+					}}
 				/>
 			)}
 		/>

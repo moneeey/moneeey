@@ -13,6 +13,11 @@
 	},
 	"dependencies": {
 		"@heroicons/react": "2.1.1",
+		"@nivo/bar": "^0.99.0",
+		"@nivo/core": "^0.99.0",
+		"@nivo/line": "^0.99.0",
+		"@nivo/sankey": "^0.99.0",
+		"@nivo/sunburst": "^0.99.0",
 		"@simplewebauthn/browser": "^13.3.0",
 		"autoprefixer": "10.4.27",
 		"classnames": "2.5.1",

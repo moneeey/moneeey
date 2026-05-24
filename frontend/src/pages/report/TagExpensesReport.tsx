@@ -8,12 +8,13 @@ import type MoneeeyStore from "../../shared/MoneeeyStore";
 
 import useMessages from "../../utils/Messages";
 
-import { BaseColumnChart, BaseReport } from "./BaseReport";
+import { BaseReport } from "./BaseReport";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
 	dateToPeriod,
 } from "./ReportUtils";
+import ReportBarChart from "./charts/ReportBarChart";
 
 const tagExpensesProcess =
 	(moneeeyStore: MoneeeyStore) =>
@@ -55,7 +56,7 @@ const TagExpensesReport = () => {
 			processFn={processFn}
 			title={Messages.reports.tag_expenses}
 			chartFn={(data, period) => (
-				<BaseColumnChart data={data} xFormatter={period.formatter} />
+				<ReportBarChart data={data} xFormatter={period.formatter} />
 			)}
 		/>
 	);

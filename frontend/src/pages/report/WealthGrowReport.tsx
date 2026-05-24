@@ -10,12 +10,13 @@ import type MoneeeyStore from "../../shared/MoneeeyStore";
 
 import useMessages, { type TMessages } from "../../utils/Messages";
 
-import { BaseLineChart, BaseReport } from "./BaseReport";
+import { BaseReport } from "./BaseReport";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
 	dateToPeriod,
 } from "./ReportUtils";
+import ReportLineChart from "./charts/ReportLineChart";
 
 const wealthGrowProcess =
 	(moneeeyStore: MoneeeyStore, Messages: TMessages) =>
@@ -81,9 +82,10 @@ const WealthGrowReport = () => {
 			processFn={processFn}
 			title={Messages.reports.wealth_growth}
 			chartFn={(data, period) => (
-				<BaseLineChart
+				<ReportLineChart
 					data={withRunningBalance(data, Messages.reports.wealth)}
 					xFormatter={period.formatter}
+					enableArea={true}
 				/>
 			)}
 		/>

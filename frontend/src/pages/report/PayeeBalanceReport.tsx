@@ -8,7 +8,8 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import useMessages from "../../utils/Messages";
 
 import { baseAccountBalanceReport } from "./AccountBalanceReport";
-import { BaseColumnChart, BaseReport } from "./BaseReport";
+import { BaseReport } from "./BaseReport";
+import ReportBarChart from "./charts/ReportBarChart";
 
 const payeeBalanceReport = (moneeeyStore: MoneeeyStore) =>
 	baseAccountBalanceReport(
@@ -42,7 +43,7 @@ const PayeeBalanceReport = observer(() => {
 				}
 				const positiveData = { columns: data.columns, points: positivePoints };
 				return (
-					<BaseColumnChart data={positiveData} xFormatter={period.formatter} />
+					<ReportBarChart data={positiveData} xFormatter={period.formatter} />
 				);
 			}}
 		/>
