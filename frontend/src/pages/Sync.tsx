@@ -17,6 +17,8 @@ import {
 } from "../shared/encryption/bootstrapFromPasskey";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
+import { MembersSection } from "./MembersSection";
+import { VaultSwitcherSection } from "./VaultSwitcherSection";
 
 export const MoneeeyLogin = ({
 	setMessage,
@@ -114,11 +116,14 @@ export const InviteSection = () => {
 	};
 
 	return (
-		<div className="flex flex-col gap-2 mt-4">
+		<VerticalSpace testId="inviteSection">
+			<h3 className="text-base font-semibold">{Messages.sync.invite_create}</h3>
 			<p className="text-sm opacity-80">
 				{Messages.sync.invite_share_description}
 			</p>
-			<OkButton onClick={onGenerate} title={Messages.sync.invite_create} />
+			<div>
+				<OkButton onClick={onGenerate} title={Messages.sync.invite_create} />
+			</div>
 			{inviteUrl && (
 				<>
 					<Input
@@ -129,17 +134,25 @@ export const InviteSection = () => {
 						containerArea
 						onChange={() => {}}
 					/>
-					<SecondaryButton
-						onClick={onCopy}
-						title={
-							copied ? Messages.sync.invite_copied : Messages.sync.invite_copy
-						}
-					/>
+					<div>
+						<SecondaryButton
+							onClick={onCopy}
+							title={
+								copied ? Messages.sync.invite_copied : Messages.sync.invite_copy
+							}
+						/>
+					</div>
 				</>
 			)}
-		</div>
+		</VerticalSpace>
 	);
 };
+
+const SectionCard = ({ children }: { children: React.ReactNode }) => (
+	<section className="rounded-lg border border-background-700 bg-background-900 p-4">
+		{children}
+	</section>
+);
 
 export const MoneeeyAccountConfig = observer(() => {
 	const Messages = useMessages();
@@ -154,8 +167,18 @@ export const MoneeeyAccountConfig = observer(() => {
 			{message}
 			{loggedIn ? (
 				<>
-					<OkButton onClick={onLogout} title={Messages.login.logout} />
-					<InviteSection />
+					<SectionCard>
+						<VaultSwitcherSection />
+					</SectionCard>
+					<SectionCard>
+						<MembersSection />
+					</SectionCard>
+					<SectionCard>
+						<InviteSection />
+					</SectionCard>
+					<div>
+						<SecondaryButton onClick={onLogout} title={Messages.login.logout} />
+					</div>
 				</>
 			) : (
 				<MoneeeyLogin setMessage={setMessage} />
