@@ -14,7 +14,8 @@ export const useNivoTheme = () => {
 		const foreground = cssVar("--text-default", "241 245 249");
 		const muted = cssVar("--text-muted", "148 163 184");
 		const grid = cssVar("--bg-700", "63 63 70");
-		const tooltipBg = cssVar("--bg-100", "24 24 27");
+		const tooltipBg = cssVar("--bg-900", "9 9 11");
+		const tooltipBorder = cssVar("--bg-700", "63 63 70");
 		const tooltipFg = foreground;
 
 		return {
@@ -38,7 +39,8 @@ export const useNivoTheme = () => {
 					color: tooltipFg,
 					fontSize: 12,
 					borderRadius: 6,
-					boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+					border: `1px solid ${tooltipBorder}`,
+					boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
 					padding: "8px 10px",
 				},
 			},
