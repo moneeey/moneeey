@@ -36,6 +36,10 @@ jobs:
           node-version: "22.14"
           cache: yarn
 
+      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
+        with:
+          deno-version: v2.7
+
       - name: Install frontend
         run: yarn install --immutable
         working-directory: frontend
@@ -56,11 +60,46 @@ jobs:
         run: yarn playwright install --with-deps chromium firefox
         working-directory: playwright
 
+      - name: Start backend
+        working-directory: backend
+        run: |
+          mkdir -p /tmp/moneeey-data/vaults
+          sed \
+            -e "s|MONEEEY_META_PATH=.*|MONEEEY_META_PATH=/tmp/moneeey-data/meta.sqlite|" \
+            -e "s|MONEEEY_VAULTS_DIR=.*|MONEEEY_VAULTS_DIR=/tmp/moneeey-data/vaults|" \
+            env.example > env
+          nohup deno run --allow-read --allow-write --allow-env --allow-net --allow-ffi --allow-import main.ts > /tmp/backend.log 2>&1 &
+          echo $! > /tmp/backend.pid
+
+      - name: Wait for backend
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:4269/api >/dev/null 2>&1; then
+              echo "Backend ready after ${i} attempts"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Backend failed to become ready"
+          cat /tmp/backend.log
+          exit 1
+
       - name: Test (shard ${{ matrix.shard }}/3)
         run: yarn playwright test --shard=${{ matrix.shard }}/3 --reporter=list
         working-directory: playwright
         env:
           CI: "true"
+
+      - name: Backend log on failure
+        if: failure()
+        run: cat /tmp/backend.log
+
+      - name: Stop backend
+        if: always()
+        run: |
+          if [ -f /tmp/backend.pid ]; then
+            kill "$(cat /tmp/backend.pid)" 2>/dev/null || true
+          fi
 
   BACKEND:
     runs-on: ubuntu-latest
