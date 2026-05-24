@@ -5,7 +5,10 @@ import { makeTempStorage } from "./test_storage.ts";
 import type { StoredCredential } from "./types.ts";
 import { createUser } from "./users.ts";
 import {
+	CannotRemoveOwnerError,
 	MAX_USERS_PER_VAULT,
+	NotOwnerError,
+	TargetNotMemberError,
 	VaultFullError,
 	addMember,
 	countMembers,
@@ -13,6 +16,9 @@ import {
 	deleteVault,
 	getMembership,
 	getVaultsByUser,
+	listVaultMembers,
+	removeMember,
+	transferOwnership,
 	userHasAccess,
 } from "./vaults.ts";
 
@@ -144,6 +150,142 @@ Deno.test(async function addMemberAtCapStillAllowsExistingMemberRetry() {
 			await countMembers(t.storage, vault.id),
 			MAX_USERS_PER_VAULT,
 		);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function listVaultMembersReturnsOwnerFirstThenMembers() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const m1 = await seedUser(t.storage, "m1@x.io");
+		const m2 = await seedUser(t.storage, "m2@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		await addMember(t.storage, vault.id, m1);
+		await addMember(t.storage, vault.id, m2);
+		const members = await listVaultMembers(t.storage, vault.id);
+		assert.assertEquals(members.length, 3);
+		assert.assertEquals(members[0].role, "owner");
+		assert.assertEquals(members[0].email, "owner@x.io");
+		assert.assertEquals(
+			members
+				.slice(1)
+				.map((m) => m.email)
+				.sort(),
+			["m1@x.io", "m2@x.io"],
+		);
+		for (const m of members.slice(1)) {
+			assert.assertEquals(m.role, "member");
+		}
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function removeMemberRemovesMemberRow() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const guest = await seedUser(t.storage, "guest@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		await addMember(t.storage, vault.id, guest);
+		assert.assertEquals(await userHasAccess(t.storage, guest, vault.id), true);
+		await removeMember(t.storage, vault.id, guest);
+		assert.assertEquals(await userHasAccess(t.storage, guest, vault.id), false);
+		assert.assertEquals(await userHasAccess(t.storage, owner, vault.id), true);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function removeMemberRefusesToRemoveOwner() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		await assert.assertRejects(
+			() => removeMember(t.storage, vault.id, owner),
+			CannotRemoveOwnerError,
+		);
+		assert.assertEquals(await userHasAccess(t.storage, owner, vault.id), true);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function removeMemberIsIdempotentForUnknownUser() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const stranger = await seedUser(t.storage, "stranger@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		await removeMember(t.storage, vault.id, stranger);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function transferOwnershipSwapsRoles() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const member = await seedUser(t.storage, "member@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		await addMember(t.storage, vault.id, member);
+		await transferOwnership(t.storage, vault.id, owner, member);
+		const ownerMembership = await getMembership(t.storage, owner, vault.id);
+		const memberMembership = await getMembership(t.storage, member, vault.id);
+		assert.assertEquals(ownerMembership?.role, "member");
+		assert.assertEquals(memberMembership?.role, "owner");
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function transferOwnershipRejectsNonOwnerCaller() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const a = await seedUser(t.storage, "a@x.io");
+		const b = await seedUser(t.storage, "b@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		await addMember(t.storage, vault.id, a);
+		await addMember(t.storage, vault.id, b);
+		await assert.assertRejects(
+			() => transferOwnership(t.storage, vault.id, a, b),
+			NotOwnerError,
+		);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function transferOwnershipRejectsWhenTargetNotMember() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const stranger = await seedUser(t.storage, "stranger@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		await assert.assertRejects(
+			() => transferOwnership(t.storage, vault.id, owner, stranger),
+			TargetNotMemberError,
+		);
+		const ownerMembership = await getMembership(t.storage, owner, vault.id);
+		assert.assertEquals(ownerMembership?.role, "owner");
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function transferOwnershipNoopWhenSelf() {
+	const t = makeTempStorage();
+	try {
+		const owner = await seedUser(t.storage, "owner@x.io");
+		const vault = await createVaultForUser(t.storage, owner);
+		await transferOwnership(t.storage, vault.id, owner, owner);
+		const ownerMembership = await getMembership(t.storage, owner, vault.id);
+		assert.assertEquals(ownerMembership?.role, "owner");
 	} finally {
 		t.cleanup();
 	}
