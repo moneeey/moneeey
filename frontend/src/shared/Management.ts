@@ -7,7 +7,7 @@ import {
 	fetchPasskeyAuthState,
 	selectVault,
 } from "./encryption/bootstrapFromPasskey";
-import { getTabVaultId, rememberVaultForTab } from "./storage/tabVault";
+import { getTabVaultId, rememberLastVault } from "./storage/tabVault";
 
 export default class ManagementStore {
 	sessionToken = "";
@@ -73,7 +73,7 @@ export default class ManagementStore {
 			this.sessionToken = sessionToken;
 			this.vaultId = vaultId;
 			this.loggedIn = true;
-			rememberVaultForTab(vaultId);
+			rememberLastVault(vaultId);
 
 			this.config.merge({
 				...this.config.main,
