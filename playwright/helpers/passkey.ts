@@ -1,8 +1,19 @@
-import type { BrowserContext, Page } from "@playwright/test";
+import type { BrowserContext, CDPSession, Page } from "@playwright/test";
 
 export type VirtualAuthenticator = {
 	authenticatorId: string;
+	client: CDPSession;
 	remove: () => Promise<void>;
+};
+
+export type WebAuthnCredential = {
+	credentialId: string;
+	isResidentCredential: boolean;
+	rpId?: string;
+	privateKey: string;
+	userHandle?: string;
+	signCount: number;
+	largeBlob?: string;
 };
 
 /**
@@ -40,6 +51,7 @@ export async function enableVirtualAuthenticator(
 
 	return {
 		authenticatorId,
+		client,
 		remove: async () => {
 			try {
 				await client.send("WebAuthn.removeVirtualAuthenticator", {
@@ -53,6 +65,27 @@ export async function enableVirtualAuthenticator(
 			});
 		},
 	};
+}
+
+export async function exportCredentials(
+	auth: VirtualAuthenticator,
+): Promise<WebAuthnCredential[]> {
+	const result = (await auth.client.send("WebAuthn.getCredentials", {
+		authenticatorId: auth.authenticatorId,
+	})) as { credentials: WebAuthnCredential[] };
+	return result.credentials;
+}
+
+export async function importCredentials(
+	auth: VirtualAuthenticator,
+	credentials: WebAuthnCredential[],
+): Promise<void> {
+	for (const credential of credentials) {
+		await auth.client.send("WebAuthn.addCredential", {
+			authenticatorId: auth.authenticatorId,
+			credential,
+		});
+	}
 }
 
 export const passkeyEngineSupported = (context: BrowserContext): boolean =>
