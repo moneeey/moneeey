@@ -11,12 +11,19 @@ import type MoneeeyStore from "../../shared/MoneeeyStore";
 import useMessages, { type TMessages } from "../../utils/Messages";
 
 import { BaseReport } from "./BaseReport";
+import KpiCard, { KpiGrid } from "./KpiCard";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
 	dateToPeriod,
 } from "./ReportUtils";
 import ReportLineChart from "./charts/ReportLineChart";
+import {
+	formatNumber,
+	formatSigned,
+	lowestPeriod,
+	peakPeriod,
+} from "./kpiCalcs";
 
 const wealthGrowProcess =
 	(moneeeyStore: MoneeeyStore, Messages: TMessages) =>
@@ -76,11 +83,63 @@ const WealthGrowReport = () => {
 		[moneeeyStore, Messages],
 	);
 
+	const renderKpis = (data: ReportDataMap) => {
+		const running = withRunningBalance(data, Messages.reports.wealth);
+		const sorted = Array.from(running.points.entries()).sort(([a], [b]) =>
+			compareDates(a, b),
+		);
+		const last = sorted.length ? sorted[sorted.length - 1][1] : null;
+		const first = sorted.length ? sorted[0][1] : null;
+		const current = last?.[Messages.reports.wealth] ?? 0;
+		const startVal = first?.[Messages.reports.wealth] ?? 0;
+		const change = current - startVal;
+		const avg = sorted.length > 1 ? change / (sorted.length - 1) : 0;
+		const peak = peakPeriod(data);
+		const low = lowestPeriod(data);
+		return (
+			<KpiGrid>
+				<KpiCard
+					testId="kpiCurrentWealth"
+					label={Messages.reports.kpi_current_wealth}
+					value={formatNumber(current)}
+					tone={current >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiTotalChange"
+					label={Messages.reports.kpi_total_change}
+					value={formatSigned(change)}
+					tone={change >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiAvgGrowth"
+					label={Messages.reports.kpi_avg_growth}
+					value={formatSigned(avg)}
+					tone={avg >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiBestPeriod"
+					label={Messages.reports.kpi_best_period}
+					value={formatSigned(peak.value)}
+					hint={peak.period ?? ""}
+					tone={peak.value >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiWorstPeriod"
+					label={Messages.reports.kpi_worst_period}
+					value={formatSigned(low.value)}
+					hint={low.period ?? ""}
+					tone={low.value >= 0 ? "positive" : "negative"}
+				/>
+			</KpiGrid>
+		);
+	};
+
 	return (
 		<BaseReport
 			accounts={accounts.allPayees}
 			processFn={processFn}
 			title={Messages.reports.wealth_growth}
+			renderKpis={renderKpis}
 			chartFn={(data, period) => (
 				<ReportLineChart
 					data={withRunningBalance(data, Messages.reports.wealth)}

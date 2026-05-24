@@ -27,7 +27,7 @@ interface BaseReportProps {
 	showCompare?: boolean;
 	showAccounts?: boolean;
 	state?: IReportStateApi;
-	kpis?: ReactElement;
+	renderKpis?: (data: ReportDataMap) => ReactElement;
 	extraControls?: ReactElement;
 }
 
@@ -44,7 +44,7 @@ export const BaseReport = ({
 	showCompare = true,
 	showAccounts = true,
 	state: externalState,
-	kpis,
+	renderKpis,
 	extraControls,
 }: BaseReportProps) => {
 	const Messages = useMessages();
@@ -110,7 +110,11 @@ export const BaseReport = ({
 				showAccounts={showAccounts}
 			/>
 			{extraControls}
-			{kpis && hasData && <div className="mt-1">{kpis}</div>}
+			{renderKpis && hasData && (
+				<div className="mt-1" data-testid="reportKpis">
+					{renderKpis(data)}
+				</div>
+			)}
 			<Loading loading={progress !== 0} progress={progress}>
 				{hasData ? (
 					<section className="min-h-[24em]">{chartFn(data, period)}</section>

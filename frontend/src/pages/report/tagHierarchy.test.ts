@@ -11,7 +11,9 @@ import {
 describe("tagHierarchy", () => {
 	describe("normalizeTag", () => {
 		test("trims whitespace around separators", () => {
-			expect(normalizeTag("food>groceries")).toBe(`food${TAG_SEPARATOR}groceries`);
+			expect(normalizeTag("food>groceries")).toBe(
+				`food${TAG_SEPARATOR}groceries`,
+			);
 			expect(normalizeTag("food >  groceries")).toBe(
 				`food${TAG_SEPARATOR}groceries`,
 			);
@@ -82,7 +84,9 @@ describe("tagHierarchy", () => {
 		});
 		test("nested tags are descendants", () => {
 			expect(isDescendantOf("food > groceries", "food")).toBe(true);
-			expect(isDescendantOf("food > groceries > supermarket", "food")).toBe(true);
+			expect(isDescendantOf("food > groceries > supermarket", "food")).toBe(
+				true,
+			);
 		});
 		test("unrelated tags are not descendants", () => {
 			expect(isDescendantOf("transport", "food")).toBe(false);

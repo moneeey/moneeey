@@ -10,16 +10,24 @@ import Select from "../../components/base/Select";
 import useMessages from "../../utils/Messages";
 
 import { BaseReport } from "./BaseReport";
-import ReportBarChart from "./charts/ReportBarChart";
+import KpiCard, { KpiGrid } from "./KpiCard";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
 	dateToPeriod,
 } from "./ReportUtils";
+import ReportBarChart from "./charts/ReportBarChart";
 import {
+	averagePerPeriod,
+	formatNumber,
+	peakPeriod,
+	topSeries,
+	totalSumAbs,
+} from "./kpiCalcs";
+import {
+	tagDepth as computeTagDepth,
 	normalizeTag,
 	tagAtDepth,
-	tagDepth as computeTagDepth,
 } from "./tagHierarchy";
 import { useReportState } from "./useReportState";
 
@@ -43,9 +51,9 @@ const tagExpensesProcess =
 				const bucket =
 					depthMode === "all"
 						? normalized
-						: (tagAtDepth(normalized, Number(depthMode)) ??
+						: tagAtDepth(normalized, Number(depthMode)) ??
 							tagAtDepth(normalized, computeTagDepth(normalized)) ??
-							normalized);
+							normalized;
 				const key = dateToPeriod(period, transaction.date);
 				const prev_record = data.points.get(key);
 				const prev_balance = prev_record?.[bucket] || 0;
@@ -66,7 +74,10 @@ const TagExpensesReport = () => {
 	const state = useReportState();
 	const rawDepth = state.getExtra(DEPTH_KEY);
 	const depthMode: TDepthMode =
-		rawDepth === "1" || rawDepth === "2" || rawDepth === "3" || rawDepth === "all"
+		rawDepth === "1" ||
+		rawDepth === "2" ||
+		rawDepth === "3" ||
+		rawDepth === "all"
 			? rawDepth
 			: "all";
 
@@ -100,6 +111,39 @@ const TagExpensesReport = () => {
 		</section>
 	);
 
+	const renderKpis = (data: ReportDataMap) => {
+		const total = totalSumAbs(data);
+		const avg = averagePerPeriod(data);
+		const peak = peakPeriod(data);
+		const top = topSeries(data, 1)[0];
+		return (
+			<KpiGrid>
+				<KpiCard
+					testId="kpiTotalSpend"
+					label={Messages.reports.kpi_total_change}
+					value={formatNumber(total)}
+				/>
+				<KpiCard
+					testId="kpiAvgPerPeriod"
+					label={Messages.reports.kpi_avg_per_period}
+					value={formatNumber(avg)}
+				/>
+				<KpiCard
+					testId="kpiPeak"
+					label={Messages.reports.kpi_peak_period}
+					value={formatNumber(peak.value)}
+					hint={peak.period ?? ""}
+				/>
+				<KpiCard
+					testId="kpiTopTag"
+					label={Messages.reports.kpi_top_tag}
+					value={top?.series ?? "—"}
+					hint={top ? formatNumber(top.total) : ""}
+				/>
+			</KpiGrid>
+		);
+	};
+
 	return (
 		<BaseReport
 			state={state}
@@ -107,6 +151,7 @@ const TagExpensesReport = () => {
 			processFn={processFn}
 			title={Messages.reports.tag_expenses}
 			extraControls={extraControls}
+			renderKpis={renderKpis}
 			chartFn={(data, period) => (
 				<ReportBarChart data={data} xFormatter={period.formatter} />
 			)}

@@ -11,12 +11,14 @@ import type { TDate } from "../../utils/Date";
 import useMessages, { type TMessages } from "../../utils/Messages";
 
 import { BaseReport } from "./BaseReport";
+import KpiCard, { KpiGrid } from "./KpiCard";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
 	dateToPeriod,
 } from "./ReportUtils";
 import ReportBarChart from "./charts/ReportBarChart";
+import { formatNumber, formatPercent, seriesTotal } from "./kpiCalcs";
 import { SIGN_PALETTE } from "./nivoTheme";
 
 const incomeVsExpensesProcess =
@@ -65,11 +67,47 @@ const IncomeVsExpensesReport = () => {
 		[moneeeyStore, Messages],
 	);
 
+	const renderKpis = (data: ReportDataMap) => {
+		const income = seriesTotal(data, Messages.reports.income);
+		const expense = seriesTotal(data, Messages.reports.expense);
+		const net = income - expense;
+		const rate = income > 0 ? net / income : 0;
+		return (
+			<KpiGrid>
+				<KpiCard
+					testId="kpiTotalIncome"
+					label={Messages.reports.kpi_total_income}
+					value={formatNumber(income)}
+					tone="positive"
+				/>
+				<KpiCard
+					testId="kpiTotalExpense"
+					label={Messages.reports.kpi_total_expense}
+					value={formatNumber(expense)}
+					tone="negative"
+				/>
+				<KpiCard
+					testId="kpiNetSavings"
+					label={Messages.reports.kpi_net_savings}
+					value={formatNumber(net)}
+					tone={net >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiSavingsRate"
+					label={Messages.reports.kpi_savings_rate}
+					value={formatPercent(rate)}
+					tone={rate >= 0 ? "positive" : "negative"}
+				/>
+			</KpiGrid>
+		);
+	};
+
 	return (
 		<BaseReport
 			accounts={accounts.allPayees}
 			processFn={processFn}
 			title={Messages.reports.income_vs_expenses}
+			renderKpis={renderKpis}
 			chartFn={(data, period) => (
 				<ReportBarChart
 					data={data}
