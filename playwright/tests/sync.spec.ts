@@ -25,7 +25,7 @@ import { resetAppState, uniqueTestEmail } from "../helpers/setup";
 
 const BACKEND_REACHABLE = async (baseURL: string) => {
 	try {
-		const response = await fetch(`${baseURL.replace(/\/$/, "")}/api`);
+		const response = await fetch(`${baseURL.replace(/\/$/, "")}/api/`);
 		return response.ok;
 	} catch {
 		return false;
@@ -547,6 +547,195 @@ test.describe("passkey logout-login regression", () => {
 			});
 		} finally {
 			await auth.remove();
+		}
+	});
+});
+
+async function createInviteUrl(page: Page): Promise<string> {
+	return await page.evaluate(async () => {
+		const res = await fetch("/api/auth/passkey/invite/create", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: "{}",
+		});
+		if (!res.ok) throw new Error(`invite/create failed: ${res.status}`);
+		const json = (await res.json()) as { inviteUrl: string };
+		return json.inviteUrl;
+	});
+}
+
+async function ownerVaultId(page: Page): Promise<string> {
+	return await page.evaluate(async () => {
+		const res = await fetch("/api/auth/vaults/list", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: "{}",
+		});
+		const json = (await res.json()) as {
+			vaults: { vaultId: string; role: string }[];
+		};
+		return json.vaults.find((v) => v.role === "owner")?.vaultId ?? "";
+	});
+}
+
+test.describe("existing user joins another vault via invite", () => {
+	test.skip(
+		({ browserName }) => browserName !== "chromium",
+		"WebAuthn virtual authenticator is chromium-only",
+	);
+
+	test("logged-in user opens invite link, accepts, and sees both vaults", async ({
+		browser,
+		baseURL,
+	}) => {
+		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
+			test.skip(true, "backend not reachable at baseURL");
+		}
+
+		const contextA = await browser.newContext({ baseURL });
+		const contextB = await browser.newContext({ baseURL });
+		const pageA = await contextA.newPage();
+		const pageB = await contextB.newPage();
+		const authA = await enableVirtualAuthenticator(pageA);
+		const authB = await enableVirtualAuthenticator(pageB);
+		const emailA = uniqueTestEmail("joinA");
+		const emailB = uniqueTestEmail("joinB");
+		const accountFromA = `JoinAccA-${Date.now()}`;
+		const accountFromB = `JoinAccB-${Date.now()}`;
+
+		try {
+			await resetAppState(pageA);
+			await landThroughLanguage(pageA);
+			await signupViaPasskey(pageA, emailA);
+			await pickDefaultCurrencyBRL(pageA);
+			await createFirstAccount(pageA, accountFromA);
+			const vaultIdA = await ownerVaultId(pageA);
+			expect(vaultIdA).not.toBe("");
+
+			await resetAppState(pageB);
+			await landThroughLanguage(pageB);
+			await signupViaPasskey(pageB, emailB);
+			await pickDefaultCurrencyBRL(pageB);
+			await createFirstAccount(pageB, accountFromB);
+			const vaultIdB = await ownerVaultId(pageB);
+			expect(vaultIdB).not.toBe("");
+			expect(vaultIdB).not.toBe(vaultIdA);
+
+			const inviteUrl = await createInviteUrl(pageA);
+			const hashMatch = inviteUrl.match(/#\/invite\/([a-f0-9]+)/);
+			if (!hashMatch) throw new Error("invite URL missing hash");
+
+			await openAccountSettings(pageB);
+			await expect(pageB.getByText(accountFromB)).toBeVisible({
+				timeout: 15_000,
+			});
+			await pageB.waitForTimeout(1500);
+
+			await pageB.evaluate((h) => {
+				window.location.hash = h.replace(/^#/, "");
+			}, hashMatch[0]);
+			await pageB.reload();
+
+			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
+				timeout: 30_000,
+			});
+			await expect(
+				pageB.getByTestId("encryptionPassphraseConfirm"),
+			).toHaveCount(0);
+			await pageB.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
+			await pageB.getByRole("button", { name: "Unlock" }).click();
+
+			await expect(pageB.getByTestId("joinVaultAccept")).toBeVisible({
+				timeout: 30_000,
+			});
+			await pageB.getByTestId("joinVaultAccept").click();
+
+			await expect(pageB.getByTestId("joinVaultDone")).toBeVisible({
+				timeout: 15_000,
+			});
+			await pageB.getByTestId("joinVaultDone").click();
+
+			await expect(pageB).toHaveURL(/#\/dashboard$/, { timeout: 15_000 });
+			await openSyncSettings(pageB);
+
+			await expect(pageB.getByTestId("vaultSwitcherSection")).toBeVisible({
+				timeout: 15_000,
+			});
+			await expect(pageB.getByTestId(`vault-${vaultIdA}`)).toBeVisible({
+				timeout: 15_000,
+			});
+			await expect(pageB.getByTestId(`vault-${vaultIdB}`)).toBeVisible();
+		} finally {
+			await authA.remove();
+			await authB.remove();
+			await contextA.close();
+			await contextB.close();
+		}
+	});
+
+	test("unauth tab with existing email sees 'sign in first' on invite-register", async ({
+		browser,
+		baseURL,
+	}) => {
+		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
+			test.skip(true, "backend not reachable at baseURL");
+		}
+
+		const contextA = await browser.newContext({ baseURL });
+		const contextB = await browser.newContext({ baseURL });
+		const pageA = await contextA.newPage();
+		const pageB = await contextB.newPage();
+		const authA = await enableVirtualAuthenticator(pageA);
+		const authB = await enableVirtualAuthenticator(pageB);
+		const emailA = uniqueTestEmail("unauthInviteA");
+		const emailB = uniqueTestEmail("unauthInviteB");
+
+		try {
+			await resetAppState(pageA);
+			await landThroughLanguage(pageA);
+			await signupViaPasskey(pageA, emailA);
+			await pickDefaultCurrencyBRL(pageA);
+			await createFirstAccount(pageA, `Acc-${Date.now()}`);
+
+			await resetAppState(pageB);
+			await landThroughLanguage(pageB);
+			await signupViaPasskey(pageB, emailB);
+			await pickDefaultCurrencyBRL(pageB);
+			await createFirstAccount(pageB, `BAcc-${Date.now()}`);
+
+			const inviteUrl = await createInviteUrl(pageA);
+			const hashMatch = inviteUrl.match(/#\/invite\/([a-f0-9]+)/);
+			if (!hashMatch) throw new Error("invite URL missing hash");
+
+			// pageC is a fresh unauthenticated tab — no local meta, no cookie.
+			const contextC = await browser.newContext({ baseURL });
+			const pageC = await contextC.newPage();
+			const authC = await enableVirtualAuthenticator(pageC);
+			try {
+				await pageC.goto(`/${hashMatch[0]}`);
+				await landThroughLanguage(pageC);
+				await expect(pageC.getByTestId("inviteEmail")).toBeVisible({
+					timeout: 15_000,
+				});
+				await pageC.getByTestId("inviteEmail").fill(emailB);
+				await pageC.getByRole("button", { name: "Join with passkey" }).click();
+
+				await expect(pageC.getByTestId("encryptionError")).toContainText(
+					/Sign in first|Faça login primeiro|Inicia sesión primero/,
+					{ timeout: 30_000 },
+				);
+			} finally {
+				await authC.remove();
+				await contextC.close();
+			}
+		} finally {
+			await authA.remove();
+			await authB.remove();
+			await contextA.close();
+			await contextB.close();
 		}
 	});
 });

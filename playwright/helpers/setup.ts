@@ -28,5 +28,5 @@ export async function resetAppState(page: Page) {
 
 export function uniqueTestEmail(prefix = "u"): string {
 	const slug = Math.random().toString(36).slice(2, 10);
-	return `${prefix}-${Date.now()}-${slug}@playwright.local`;
+	return `${prefix}-${Date.now()}-${slug}@playwright.local`.toLowerCase();
 }

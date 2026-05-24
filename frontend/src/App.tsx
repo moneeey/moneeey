@@ -2,7 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { observer } from "mobx-react";
 
-import { HashRouter, Route, Routes } from "react-router-dom";
+import {
+	HashRouter,
+	Route,
+	Routes,
+	useLocation,
+	useNavigate,
+} from "react-router-dom";
 
 import AppMenu from "./components/AppMenu";
 import Navigator from "./components/Navigator";
@@ -29,6 +35,7 @@ import InitialCurrencySelector, {
 import InitialLanguageSelector, {
 	showInitialLanguageSelector,
 } from "./components/tour/InitialLanguageSelector";
+import JoinVaultGate from "./components/tour/JoinVaultGate";
 import { NavigationModal } from "./shared/Navigation";
 import useMessages, {
 	MessagesProvider,
@@ -115,9 +122,9 @@ const AppBoot = observer(() => {
 					moneeeySync: syncConfig,
 				});
 				store.persistence.sync(syncConfig);
-			}
-			if (window.location.hash.startsWith("#/invite/")) {
-				window.location.hash = "/dashboard";
+				if (window.location.hash.startsWith("#/invite/")) {
+					window.location.hash = "/dashboard";
+				}
 			}
 			setMoneeeyStore(store);
 		},
@@ -138,10 +145,27 @@ const AppBoot = observer(() => {
 
 	return (
 		<MoneeeyStoreProvider value={moneeeyStore}>
-			<AppContent />
+			<InviteGateOrApp />
 		</MoneeeyStoreProvider>
 	);
 });
+
+const InviteGateOrApp = () => {
+	const location = useLocation();
+	const navigate = useNavigate();
+	const inviteMatch = location.pathname.match(/^\/invite\/([a-f0-9]+)$/);
+	if (inviteMatch) {
+		const token = inviteMatch[1];
+		return (
+			<JoinVaultGate
+				token={token}
+				onDone={() => navigate("/dashboard")}
+				onCancel={() => navigate("/dashboard")}
+			/>
+		);
+	}
+	return <AppContent />;
+};
 
 export const App = () => {
 	return (

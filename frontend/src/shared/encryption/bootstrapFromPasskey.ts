@@ -118,6 +118,14 @@ export const registerViaInvite = async (
 	return toSyncConfig(auth);
 };
 
+export const acceptInvite = async (
+	token: string,
+): Promise<{ vaultId: string }> => {
+	return await post<{ vaultId: string }>("/api/auth/passkey/invite/accept", {
+		token,
+	});
+};
+
 export const createInviteLink = async (): Promise<string> => {
 	const result = await post<{ inviteUrl: string }>(
 		"/api/auth/passkey/invite/create",
