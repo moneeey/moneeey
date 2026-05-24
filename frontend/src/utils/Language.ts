@@ -1297,6 +1297,13 @@ export default {
 			hi: "वर्ष आरंभ से",
 			cn: "本年至今",
 		},
+		preset_last_6mo: {
+			en: "Last 6 months",
+			pt: "Últimos 6 meses",
+			es: "Últimos 6 meses",
+			hi: "पिछले 6 महीने",
+			cn: "近6个月",
+		},
 		preset_last_12mo: {
 			en: "Last 12 months",
 			pt: "Últimos 12 meses",

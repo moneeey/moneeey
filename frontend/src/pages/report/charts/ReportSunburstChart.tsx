@@ -1,5 +1,6 @@
 import { ResponsiveSunburst } from "@nivo/sunburst";
 
+import { formatNumber } from "../kpiCalcs";
 import { colorForKey, useNivoTheme } from "../nivoTheme";
 
 export interface SunburstNode {
@@ -37,6 +38,7 @@ const ReportSunburstChart = ({
 				enableArcLabels={true}
 				arcLabelsSkipAngle={12}
 				arcLabelsTextColor={{ from: "color", modifiers: [["darker", 2]] }}
+				valueFormat={(v) => formatNumber(Number(v))}
 				animate={true}
 				motionConfig="gentle"
 				onClick={(node) =>

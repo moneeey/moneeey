@@ -1,5 +1,6 @@
 import { ResponsiveSankey } from "@nivo/sankey";
 
+import { formatNumber } from "../kpiCalcs";
 import { colorForKey, useNivoTheme } from "../nivoTheme";
 
 export interface SankeyNode {
@@ -51,6 +52,7 @@ const ReportSankeyChart = ({
 				labelPosition="outside"
 				labelOrientation="horizontal"
 				labelPadding={8}
+				valueFormat={(v) => formatNumber(Number(v))}
 				animate={true}
 				motionConfig="gentle"
 				onClick={(node) => {

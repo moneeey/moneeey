@@ -24,8 +24,9 @@ import {
 const PRESETS: TRangePreset[] = [
 	"thisMonth",
 	"last30d",
-	"ytd",
+	"last6mo",
 	"last12mo",
+	"ytd",
 	"allTime",
 	"custom",
 ];
@@ -45,6 +46,8 @@ const presetLabel = (
 			return Messages.reports.preset_last_30d;
 		case "ytd":
 			return Messages.reports.preset_ytd;
+		case "last6mo":
+			return Messages.reports.preset_last_6mo;
 		case "last12mo":
 			return Messages.reports.preset_last_12mo;
 		case "allTime":

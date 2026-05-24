@@ -3,6 +3,7 @@ import { useMemo } from "react";
 
 import type { TDate } from "../../../utils/Date";
 import type { ReportDataMap } from "../ReportUtils";
+import { formatNumber } from "../kpiCalcs";
 import { REPORT_PALETTE, colorForKey, useNivoTheme } from "../nivoTheme";
 
 interface ReportBarChartProps {
@@ -64,7 +65,12 @@ const ReportBarChart = ({
 					tickRotation: -25,
 					format: (v: string) => xFormatter(v),
 				}}
-				axisLeft={{ tickSize: 4, tickPadding: 6 }}
+				axisLeft={{
+					tickSize: 4,
+					tickPadding: 6,
+					format: (v) => formatNumber(Number(v), 0),
+				}}
+				valueFormat={(v) => formatNumber(Number(v))}
 				enableLabel={false}
 				animate={true}
 				motionConfig="gentle"
@@ -91,7 +97,7 @@ const ReportBarChart = ({
 								}}
 							/>
 							<span>
-								{id}: {value}
+								{id}: {formatNumber(Number(value))}
 							</span>
 						</div>
 					</div>

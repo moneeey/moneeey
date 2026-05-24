@@ -3,6 +3,7 @@ import { useMemo } from "react";
 
 import type { TDate } from "../../../utils/Date";
 import type { ReportDataMap } from "../ReportUtils";
+import { formatNumber } from "../kpiCalcs";
 import { REPORT_PALETTE, colorForKey, useNivoTheme } from "../nivoTheme";
 
 interface ReportLineChartProps {
@@ -66,7 +67,11 @@ const ReportLineChart = ({
 					tickRotation: -25,
 					format: (v: string) => xFormatter(v),
 				}}
-				axisLeft={{ tickSize: 4, tickPadding: 6 }}
+				axisLeft={{
+					tickSize: 4,
+					tickPadding: 6,
+					format: (v) => formatNumber(Number(v), 0),
+				}}
 				curve={curve}
 				enableArea={enableArea}
 				areaOpacity={0.15}
@@ -105,7 +110,7 @@ const ReportLineChart = ({
 								}}
 							/>
 							<span>
-								{point.seriesId}: {point.data.y as number}
+								{point.seriesId}: {formatNumber(Number(point.data.y))}
 							</span>
 						</div>
 					</div>

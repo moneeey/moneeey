@@ -10,6 +10,7 @@ export type TRangePreset =
 	| "thisMonth"
 	| "last30d"
 	| "ytd"
+	| "last6mo"
 	| "last12mo"
 	| "allTime"
 	| "custom";
@@ -61,6 +62,8 @@ export const resolveRange = (
 			return { from: formatDate(subDays(now, 30)), to: formatDate(now) };
 		case "ytd":
 			return { from: formatDate(startOfYear(now)), to: formatDate(now) };
+		case "last6mo":
+			return { from: formatDate(subMonths(now, 6)), to: formatDate(now) };
 		case "last12mo":
 			return { from: formatDate(subMonths(now, 12)), to: formatDate(now) };
 		case "allTime":
@@ -82,6 +85,7 @@ const isPreset = (value: string | null): value is TRangePreset =>
 	value === "thisMonth" ||
 	value === "last30d" ||
 	value === "ytd" ||
+	value === "last6mo" ||
 	value === "last12mo" ||
 	value === "allTime" ||
 	value === "custom";
