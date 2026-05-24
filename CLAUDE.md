@@ -75,7 +75,7 @@ yarn ci                              # Biome CI (read-only check)
 - Auth: `src/auth_session.ts` (`/api/auth/session` returns `{vaultId, sessionToken}`) + `src/auth_passkey.ts` (WebAuthn ceremonies, calls SQL data layer)
 - Sync: `src/sync/protocol.ts` (Hello → Ready → Closed handler-strategy chain) + `src/sync/hub.ts` (in-process `Map<vaultId, Set<WebSocket>>` for change broadcast) + `src/sync/vault.ts` (Oak WS endpoint at `/api/vault`)
 - Janitor: `src/janitor.ts` — `purgeStaleTestUsers()` deletes `*@playwright.local` users older than 1 day and unlinks their owned vault files
-- Config: loads from `/run/secret/prod.env`, `/run/secret/dev.env`, `./env`, `./env.example`. Required env: `MONEEEY_META_PATH`, `MONEEEY_VAULTS_DIR`, `MONEEEY_DEV`, plus the JWT keys.
+- Config: loads from `/run/secret/prod.env`, `/run/secret/dev.env`, `./env`, `./env.example`. Required env: `MONEEEY_META_PATH`, `MONEEEY_VAULTS_DIR`, `MONEEEY_ENV` (`prod` or `dev`), plus the JWT keys.
 - Endpoints: `GET /api` (info), `POST /api/auth/passkey/*` (WebAuthn), `POST /api/auth/session` (vaultId+sessionToken), `POST /api/auth/logout`, `GET /api/vault` (WebSocket upgrade — the entire data plane)
 
 ### Key Conventions

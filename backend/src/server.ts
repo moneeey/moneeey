@@ -1,5 +1,5 @@
 import { setupAuth } from "./auth.ts";
-import { MONEEEY_DEV, PORT } from "./config.ts";
+import { MONEEEY_ENV, PORT } from "./config.ts";
 import { getStorage } from "./data/storage_singleton.ts";
 import { oak } from "./deps.ts";
 import { purgeStaleTestUsers } from "./janitor.ts";
@@ -11,7 +11,7 @@ async function ensureMetaInitialized() {
 }
 
 async function runDevJanitor() {
-	if (!MONEEEY_DEV) return;
+	if (MONEEEY_ENV !== "dev") return;
 	await purgeStaleTestUsers(getStorage());
 }
 

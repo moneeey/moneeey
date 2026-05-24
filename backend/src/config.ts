@@ -24,7 +24,11 @@ export const PORT = Number.parseInt(env.PORT);
 export const APP_URL = env.APP_URL;
 export const MONEEEY_META_PATH = env.MONEEEY_META_PATH;
 export const MONEEEY_VAULTS_DIR = env.MONEEEY_VAULTS_DIR;
-export const MONEEEY_DEV = env.MONEEEY_DEV === "1";
+const rawEnv = env.MONEEEY_ENV;
+if (rawEnv !== "prod" && rawEnv !== "dev") {
+	throw new Error(`MONEEEY_ENV must be "prod" or "dev", got: ${rawEnv}`);
+}
+export const MONEEEY_ENV: "prod" | "dev" = rawEnv;
 export const JWT_SESSION_KEY_ID = env.JWT_COUCH_KEY_ID;
 export const JWT_CHALLENGE_KEY_ID = env.JWT_CHALLENGE_KEY_ID;
 export const JWT_AUTH_KEY_ID = env.JWT_AUTH_KEY_ID;
