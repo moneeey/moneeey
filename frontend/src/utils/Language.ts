@@ -1430,6 +1430,13 @@ export default {
 			hi: "सबसे खराब अवधि",
 			cn: "最差期",
 		},
+		drilldown_title: {
+			en: "Transactions",
+			pt: "Transações",
+			es: "Transacciones",
+			hi: "लेन-देन",
+			cn: "交易",
+		},
 	},
 
 	modal: {

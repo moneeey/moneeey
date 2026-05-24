@@ -102,21 +102,29 @@ const IncomeVsExpensesReport = () => {
 		);
 	};
 
+	const colorMap = useMemo(
+		() => ({
+			[Messages.reports.income]: SIGN_PALETTE.positive,
+			[Messages.reports.expense]: SIGN_PALETTE.negative,
+		}),
+		[Messages.reports.income, Messages.reports.expense],
+	);
+
 	return (
 		<BaseReport
 			accounts={accounts.allPayees}
 			processFn={processFn}
 			title={Messages.reports.income_vs_expenses}
 			renderKpis={renderKpis}
-			chartFn={(data, period) => (
+			colorMap={colorMap}
+			chartFn={(data, period, helpers) => (
 				<ReportBarChart
 					data={data}
 					xFormatter={period.formatter}
 					stacked={false}
-					colorMap={{
-						[Messages.reports.income]: SIGN_PALETTE.positive,
-						[Messages.reports.expense]: SIGN_PALETTE.negative,
-					}}
+					hiddenSeries={helpers.hiddenSeries}
+					onBarClick={helpers.onSeriesClick}
+					colorMap={helpers.colorMap}
 				/>
 			)}
 		/>

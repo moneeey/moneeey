@@ -123,8 +123,13 @@ const AccountBalanceReport = observer(() => {
 			processFn={processFn}
 			title={Messages.reports.account_balance}
 			renderKpis={renderKpis}
-			chartFn={(data, period) => (
-				<ReportBarChart data={data} xFormatter={period.formatter} />
+			chartFn={(data, period, helpers) => (
+				<ReportBarChart
+					data={data}
+					xFormatter={period.formatter}
+					hiddenSeries={helpers.hiddenSeries}
+					onBarClick={helpers.onSeriesClick}
+				/>
 			)}
 		/>
 	);

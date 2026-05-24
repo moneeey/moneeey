@@ -86,8 +86,13 @@ const PayeeBalanceReport = observer(() => {
 			processFn={processFn}
 			title={Messages.reports.payee_balance}
 			renderKpis={(data) => renderKpis(data)}
-			chartFn={(data, period) => (
-				<ReportBarChart data={toPositive(data)} xFormatter={period.formatter} />
+			chartFn={(data, period, helpers) => (
+				<ReportBarChart
+					data={toPositive(data)}
+					xFormatter={period.formatter}
+					hiddenSeries={helpers.hiddenSeries}
+					onBarClick={helpers.onSeriesClick}
+				/>
 			)}
 		/>
 	);

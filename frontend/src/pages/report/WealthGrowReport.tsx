@@ -140,11 +140,13 @@ const WealthGrowReport = () => {
 			processFn={processFn}
 			title={Messages.reports.wealth_growth}
 			renderKpis={renderKpis}
-			chartFn={(data, period) => (
+			chartFn={(data, period, helpers) => (
 				<ReportLineChart
 					data={withRunningBalance(data, Messages.reports.wealth)}
 					xFormatter={period.formatter}
 					enableArea={true}
+					hiddenSeries={helpers.hiddenSeries}
+					onPointClick={helpers.onSeriesClick}
 				/>
 			)}
 		/>

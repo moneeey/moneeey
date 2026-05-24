@@ -24,8 +24,7 @@ function trackConsole(page: import("@playwright/test").Page): ConsoleSink {
 function assertNoLoop(sink: ConsoleSink) {
 	const loopMessages = sink.errors.filter(
 		(e) =>
-			e.includes("Maximum update depth") ||
-			e.includes("Too many re-renders"),
+			e.includes("Maximum update depth") || e.includes("Too many re-renders"),
 	);
 	expect(loopMessages, loopMessages.join("\n")).toEqual([]);
 }
@@ -89,6 +88,53 @@ test.describe("Reports", () => {
 		assertNoLoop(sink);
 	});
 
+	test("legend chip toggles a series without crash", async ({
+		wizardPage: page,
+	}) => {
+		const sink = trackConsole(page);
+		await OpenMenuItem(page, "Reports");
+		// Account balance has 3 seeded accounts → multi-series → legend renders
+		await page
+			.getByTestId("reportTabs")
+			.getByText("Account balance")
+			.first()
+			.click();
+
+		const legend = page.getByTestId("chartLegend");
+		await expect(legend).toBeVisible({ timeout: 10_000 });
+
+		const firstChip = legend.locator("button").first();
+		await firstChip.click();
+		await firstChip.click();
+
+		assertNoLoop(sink);
+	});
+
+	test("clicking a bar opens an inline drill-down with transactions", async ({
+		wizardPage: page,
+	}) => {
+		const sink = trackConsole(page);
+		await OpenMenuItem(page, "Reports");
+		await page
+			.getByTestId("reportTabs")
+			.getByText("Income vs Expenses")
+			.first()
+			.click();
+
+		// Wait for chart, then click any rendered bar rect
+		await expect(page.locator("svg").first()).toBeVisible({ timeout: 10_000 });
+		const bar = page.locator("svg rect[role='img']").first();
+		if (await bar.count()) {
+			await bar.click();
+			await expect(page.getByTestId("reportDrillDown")).toBeVisible({
+				timeout: 5_000,
+			});
+			await page.getByTestId("drillDownClose").click();
+			await expect(page.getByTestId("reportDrillDown")).toBeHidden();
+		}
+		assertNoLoop(sink);
+	});
+
 	test("tag depth selector on Tag expenses survives a round-trip", async ({
 		wizardPage: page,
 	}) => {
@@ -114,9 +160,5 @@ async function openSelect(
 	page: import("@playwright/test").Page,
 	testId: string,
 ) {
-	await page
-		.getByTestId(testId)
-		.locator(".mn-select__control")
-		.first()
-		.click();
+	await page.getByTestId(testId).locator(".mn-select__control").first().click();
 }

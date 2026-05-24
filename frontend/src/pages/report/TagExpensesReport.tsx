@@ -152,8 +152,13 @@ const TagExpensesReport = () => {
 			title={Messages.reports.tag_expenses}
 			extraControls={extraControls}
 			renderKpis={renderKpis}
-			chartFn={(data, period) => (
-				<ReportBarChart data={data} xFormatter={period.formatter} />
+			chartFn={(data, period, helpers) => (
+				<ReportBarChart
+					data={data}
+					xFormatter={period.formatter}
+					hiddenSeries={helpers.hiddenSeries}
+					onBarClick={helpers.onSeriesClick}
+				/>
 			)}
 		/>
 	);
