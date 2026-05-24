@@ -167,9 +167,7 @@ export const MoneeeyAccountConfig = observer(() => {
 			{message}
 			{loggedIn ? (
 				<>
-					<SectionCard>
-						<VaultSwitcherSection />
-					</SectionCard>
+					<VaultSwitcherSection />
 					<SectionCard>
 						<MembersSection />
 					</SectionCard>

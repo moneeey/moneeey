@@ -41,58 +41,60 @@ export const VaultSwitcherSection = observer(() => {
 		};
 	}, [Messages.sync.members_load_error]);
 
-	if (vaults !== null && vaults.length < 2) return null;
+	if (!error && (vaults === null || vaults.length < 2)) return null;
 
 	return (
-		<VerticalSpace testId="vaultSwitcherSection">
-			<h3 className="text-base font-semibold">
-				{Messages.sync.vault_switcher_title}
-			</h3>
-			<p className="text-sm opacity-80">
-				{Messages.sync.vault_switcher_description}
-			</p>
-			{error && <Status type="error">{error}</Status>}
-			{vaults && (
-				<ul className="flex flex-col gap-2">
-					{vaults.map((v) => {
-						const isCurrent = v.vaultId === management.vaultId;
-						return (
-							<li
-								key={v.vaultId}
-								data-testid={`vault-${v.vaultId}`}
-								className={`flex items-center justify-between gap-2 rounded border p-2 ${isCurrent ? "border-primary-500 bg-background-800" : "border-background-700 bg-background-900"}`}
-							>
-								<div className="flex flex-col">
-									<span className="text-sm font-mono">{v.vaultId}</span>
-									<span className="text-xs opacity-70">
-										{v.role === "owner"
-											? Messages.sync.role_owner
-											: Messages.sync.role_member}
-										{" · "}
-										{Messages.sync.vault_switcher_created}:{" "}
-										{formatDate(v.createdAt)}
-										{isCurrent && (
-											<>
-												{" · "}
-												<span className="text-primary-400">
-													{Messages.sync.vault_switcher_current}
-												</span>
-											</>
-										)}
-									</span>
-								</div>
-								{!isCurrent && (
-									<OkButton
-										testId={`select-vault-${v.vaultId}`}
-										onClick={() => selectVaultForTabAndReload(v.vaultId)}
-										title={Messages.sync.vault_switcher_use}
-									/>
-								)}
-							</li>
-						);
-					})}
-				</ul>
-			)}
-		</VerticalSpace>
+		<section className="rounded-lg border border-background-700 bg-background-900 p-4">
+			<VerticalSpace testId="vaultSwitcherSection">
+				<h3 className="text-base font-semibold">
+					{Messages.sync.vault_switcher_title}
+				</h3>
+				<p className="text-sm opacity-80">
+					{Messages.sync.vault_switcher_description}
+				</p>
+				{error && <Status type="error">{error}</Status>}
+				{vaults && (
+					<ul className="flex flex-col gap-2">
+						{vaults.map((v) => {
+							const isCurrent = v.vaultId === management.vaultId;
+							return (
+								<li
+									key={v.vaultId}
+									data-testid={`vault-${v.vaultId}`}
+									className={`flex items-center justify-between gap-2 rounded border p-2 ${isCurrent ? "border-primary-500 bg-background-800" : "border-background-700 bg-background-900"}`}
+								>
+									<div className="flex flex-col">
+										<span className="text-sm font-mono">{v.vaultId}</span>
+										<span className="text-xs opacity-70">
+											{v.role === "owner"
+												? Messages.sync.role_owner
+												: Messages.sync.role_member}
+											{" · "}
+											{Messages.sync.vault_switcher_created}:{" "}
+											{formatDate(v.createdAt)}
+											{isCurrent && (
+												<>
+													{" · "}
+													<span className="text-primary-400">
+														{Messages.sync.vault_switcher_current}
+													</span>
+												</>
+											)}
+										</span>
+									</div>
+									{!isCurrent && (
+										<OkButton
+											testId={`select-vault-${v.vaultId}`}
+											onClick={() => selectVaultForTabAndReload(v.vaultId)}
+											title={Messages.sync.vault_switcher_use}
+										/>
+									)}
+								</li>
+							);
+						})}
+					</ul>
+				)}
+			</VerticalSpace>
+		</section>
 	);
 });
