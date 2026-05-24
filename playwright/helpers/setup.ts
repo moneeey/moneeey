@@ -2,12 +2,27 @@ import type { Page } from "@playwright/test";
 
 export async function resetAppState(page: Page) {
 	await page.goto("/");
-	await page.evaluate(() => {
+	await page.evaluate(async () => {
 		while (window.localStorage.length) {
 			const key = window.localStorage.key(0);
 			if (key) window.localStorage.removeItem(key);
 		}
-		window.indexedDB.deleteDatabase("moneeey");
+		try {
+			window.sessionStorage.clear();
+		} catch {
+			/* ignore */
+		}
+		const idb = window.indexedDB as IDBFactory & {
+			databases?: () => Promise<{ name?: string }[]>;
+		};
+		const dbs = (await idb.databases?.()) ?? [];
+		const names = new Set<string>(["moneeey"]);
+		for (const db of dbs) {
+			if (db.name?.startsWith("moneeey")) names.add(db.name);
+		}
+		for (const name of names) {
+			window.indexedDB.deleteDatabase(name);
+		}
 	});
 }
 

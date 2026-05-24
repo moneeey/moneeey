@@ -320,6 +320,177 @@ test.describe("passkey cross-context sync", () => {
 	});
 });
 
+async function openSyncSettings(page: Page) {
+	await page.evaluate(() => {
+		window.location.hash = "/settings";
+	});
+	await expect(page.getByTestId("settingsTabs_moneeey")).toBeVisible({
+		timeout: 15_000,
+	});
+	await page.getByTestId("settingsTabs_moneeey").click();
+}
+
+test.describe("vault membership management", () => {
+	test.skip(
+		({ browserName }) => browserName !== "chromium",
+		"credential bridging uses Chrome DevTools Protocol",
+	);
+
+	test("owner can see members and kick a joined invitee", async ({
+		browser,
+		baseURL,
+	}) => {
+		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
+			test.skip(true, "backend not reachable at baseURL");
+		}
+
+		const contextA = await browser.newContext({ baseURL });
+		const contextB = await browser.newContext({ baseURL });
+		const pageA = await contextA.newPage();
+		const pageB = await contextB.newPage();
+		const authA = await enableVirtualAuthenticator(pageA);
+		const authB = await enableVirtualAuthenticator(pageB);
+		const emailA = uniqueTestEmail("kickA");
+		const emailB = uniqueTestEmail("kickB");
+		const accountFromA = `KickAcc-${Date.now()}`;
+
+		try {
+			await resetAppState(pageA);
+			await landThroughLanguage(pageA);
+			await signupViaPasskey(pageA, emailA);
+			await pickDefaultCurrencyBRL(pageA);
+			await createFirstAccount(pageA, accountFromA);
+
+			const inviteUrl = await pageA.evaluate(async () => {
+				const res = await fetch("/api/auth/passkey/invite/create", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Accept: "application/json",
+					},
+					body: "{}",
+				});
+				if (!res.ok) throw new Error(`invite/create failed: ${res.status}`);
+				const json = (await res.json()) as { inviteUrl: string };
+				return json.inviteUrl;
+			});
+			const hashMatch = inviteUrl.match(/#\/invite\/[a-f0-9]+/);
+			if (!hashMatch) throw new Error("invite URL missing hash");
+			await pageB.goto(`/${hashMatch[0]}`);
+			await landThroughLanguage(pageB);
+			await expect(pageB.getByTestId("inviteEmail")).toBeVisible({
+				timeout: 15_000,
+			});
+			await pageB.getByTestId("inviteEmail").fill(emailB);
+			await pageB.getByRole("button", { name: "Join with passkey" }).click();
+			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
+				timeout: 30_000,
+			});
+			await pageB.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
+			await pageB.getByRole("button", { name: "Unlock" }).click();
+			await dismissLandingTour(pageB);
+
+			await openSyncSettings(pageA);
+			await expect(pageA.getByTestId("membersSection")).toBeVisible({
+				timeout: 15_000,
+			});
+			await expect(pageA.getByTestId(`member-row-${emailB}`)).toBeVisible({
+				timeout: 15_000,
+			});
+			await expect(pageA.getByTestId(`member-row-${emailA}`)).toBeVisible();
+
+			await pageA.getByTestId(`kick-${emailB}`).click();
+			await expect(pageA.getByTestId("confirm-kick")).toBeVisible();
+			await pageA.getByTestId("confirm-kick-button").click();
+
+			await expect(pageA.getByTestId(`member-row-${emailB}`)).toHaveCount(0, {
+				timeout: 15_000,
+			});
+		} finally {
+			await authA.remove();
+			await authB.remove();
+			await contextA.close();
+			await contextB.close();
+		}
+	});
+
+	test("owner can transfer ownership to another member", async ({
+		browser,
+		baseURL,
+	}) => {
+		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
+			test.skip(true, "backend not reachable at baseURL");
+		}
+
+		const contextA = await browser.newContext({ baseURL });
+		const contextB = await browser.newContext({ baseURL });
+		const pageA = await contextA.newPage();
+		const pageB = await contextB.newPage();
+		const authA = await enableVirtualAuthenticator(pageA);
+		const authB = await enableVirtualAuthenticator(pageB);
+		const emailA = uniqueTestEmail("xferA");
+		const emailB = uniqueTestEmail("xferB");
+		const accountFromA = `XferAcc-${Date.now()}`;
+
+		try {
+			await resetAppState(pageA);
+			await landThroughLanguage(pageA);
+			await signupViaPasskey(pageA, emailA);
+			await pickDefaultCurrencyBRL(pageA);
+			await createFirstAccount(pageA, accountFromA);
+
+			const inviteUrl = await pageA.evaluate(async () => {
+				const res = await fetch("/api/auth/passkey/invite/create", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Accept: "application/json",
+					},
+					body: "{}",
+				});
+				if (!res.ok) throw new Error(`invite/create failed: ${res.status}`);
+				const json = (await res.json()) as { inviteUrl: string };
+				return json.inviteUrl;
+			});
+			const hashMatch = inviteUrl.match(/#\/invite\/[a-f0-9]+/);
+			if (!hashMatch) throw new Error("invite URL missing hash");
+			await pageB.goto(`/${hashMatch[0]}`);
+			await landThroughLanguage(pageB);
+			await pageB.getByTestId("inviteEmail").fill(emailB);
+			await pageB.getByRole("button", { name: "Join with passkey" }).click();
+			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
+				timeout: 30_000,
+			});
+			await pageB.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
+			await pageB.getByRole("button", { name: "Unlock" }).click();
+			await dismissLandingTour(pageB);
+
+			await openSyncSettings(pageA);
+			await expect(pageA.getByTestId(`member-row-${emailB}`)).toBeVisible({
+				timeout: 15_000,
+			});
+
+			await pageA.getByTestId(`transfer-${emailB}`).click();
+			await expect(pageA.getByTestId("confirm-transfer")).toBeVisible();
+			await pageA.getByTestId("confirm-transfer-button").click();
+
+			await expect(pageA.getByTestId(`kick-${emailA}`)).toHaveCount(0, {
+				timeout: 15_000,
+			});
+
+			await openSyncSettings(pageB);
+			await expect(pageB.getByTestId(`kick-${emailA}`)).toBeVisible({
+				timeout: 15_000,
+			});
+		} finally {
+			await authA.remove();
+			await authB.remove();
+			await contextA.close();
+			await contextB.close();
+		}
+	});
+});
+
 test.describe("passkey logout-login regression", () => {
 	test.skip(
 		({ browserName }) => browserName !== "chromium",
