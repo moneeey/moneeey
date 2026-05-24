@@ -1,5 +1,5 @@
 import { keys } from "lodash";
-import { type ReactElement, useEffect, useState } from "react";
+import { type ReactElement, useEffect, useMemo, useState } from "react";
 import {
 	Bar,
 	BarChart,
@@ -15,8 +15,6 @@ import type { NameType } from "recharts/types/component/DefaultTooltipContent";
 import type { ValueType } from "tailwindcss/types/config";
 
 import Loading from "../../components/Loading";
-import { Checkbox } from "../../components/base/Input";
-import Space from "../../components/base/Space";
 import { TextTitle } from "../../components/base/Text";
 import type { IAccount } from "../../entities/Account";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
@@ -24,21 +22,26 @@ import type { TDate } from "../../utils/Date";
 
 import useMessages from "../../utils/Messages";
 
-import DateGroupingSelector from "./DateGroupingSelector";
+import ReportControls, { effectiveAccountIds } from "./ReportControls";
 import {
 	type AsyncProcessTransactionFn,
 	NewReportDataMap,
 	type PeriodGroup,
-	PeriodGroups,
 	type ReportDataMap,
 	asyncProcessTransactionsForAccounts,
+	periodByKey,
 } from "./ReportUtils";
+import { type IReportStateApi, useReportState } from "./useReportState";
 
 interface BaseReportProps {
 	title: string;
 	accounts: IAccount[];
 	processFn: AsyncProcessTransactionFn;
 	chartFn: (data: ReportDataMap, period: PeriodGroup) => ReactElement;
+	showCurrency?: boolean;
+	showCompare?: boolean;
+	showAccounts?: boolean;
+	state?: IReportStateApi;
 }
 
 const roundCofficient = 1e5;
@@ -50,22 +53,48 @@ export const BaseReport = ({
 	processFn,
 	title,
 	chartFn,
+	showCurrency = true,
+	showCompare = true,
+	showAccounts = true,
+	state: externalState,
 }: BaseReportProps) => {
 	const Messages = useMessages();
-	const [data, setData] = useState(NewReportDataMap());
-	const [selectedAccounts, setSelectedAccounts] = useState(accounts);
-	const [period, setPeriod] = useState(PeriodGroups(Messages).Month);
-	const [progress, setProgress] = useState(0);
 	const moneeeyStore = useMoneeeyStore();
+	const internalState = useReportState();
+	const state = externalState ?? internalState;
+	const period = useMemo(
+		() => periodByKey(Messages, state.period),
+		[Messages, state.period],
+	);
+	const [data, setData] = useState(NewReportDataMap());
+	const [progress, setProgress] = useState(0);
+
+	const accountIdsKey = useMemo(
+		() => effectiveAccountIds(accounts, state.accountIds).join(","),
+		[accounts, state.accountIds],
+	);
+	const accountIds = useMemo(
+		() => (accountIdsKey ? accountIdsKey.split(",") : []),
+		[accountIdsKey],
+	);
+	const range = useMemo(
+		() => ({ from: state.from, to: state.to }),
+		[state.from, state.to],
+	);
+
 	useEffect(() => {
+		let cancelled = false;
 		(async () => {
 			const currentData = await asyncProcessTransactionsForAccounts({
 				moneeeyStore,
-				accounts: selectedAccounts.map((act) => act.id),
+				accounts: accountIds,
 				processFn,
 				period,
 				setProgress,
+				range,
+				currency: state.currency,
 			});
+			if (cancelled) return;
 			setProgress(0);
 			for (const points of Array.from(currentData.points.values())) {
 				for (const label of keys(points)) {
@@ -74,37 +103,35 @@ export const BaseReport = ({
 			}
 			setData(currentData);
 		})();
-	}, [moneeeyStore, processFn, period, selectedAccounts]);
+		return () => {
+			cancelled = true;
+		};
+	}, [moneeeyStore, processFn, period, range, state.currency, accountIds]);
+
+	const hasData = data.points.size > 0;
 
 	return (
-		<section className="grow bg-background-800 p-2 md:p-4">
-			<h2>{title}</h2>
+		<section className="flex grow flex-col gap-3 bg-background-800 p-2 md:p-4">
+			<h2 className="text-lg font-semibold">{title}</h2>
+			<ReportControls
+				state={state}
+				accounts={accounts}
+				showCurrency={showCurrency}
+				showCompare={showCompare}
+				showAccounts={showAccounts}
+			/>
 			<Loading loading={progress !== 0} progress={progress}>
-				<section>{chartFn(data, period)}</section>
-			</Loading>
-			<DateGroupingSelector setPeriod={setPeriod} period={period} />
-			<Space className="flex-wrap">
-				{Messages.reports.include_accounts}
-				{accounts.map((account) => (
-					<Checkbox
-						testId={`accountVisible_${account.id}`}
-						key={account.id}
-						value={Boolean(
-							selectedAccounts.find((act) => act.id === account.id),
-						)}
-						onChange={(checked) =>
-							setSelectedAccounts(
-								selectedAccounts
-									.filter((act) => act.id !== account.id)
-									.concat(checked ? [account] : []),
-							)
-						}
-						placeholder={account.name}
+				{hasData ? (
+					<section className="min-h-[24em]">{chartFn(data, period)}</section>
+				) : (
+					<section
+						data-testid="reportEmpty"
+						className="flex min-h-[24em] items-center justify-center text-foreground/60"
 					>
-						{account.name}
-					</Checkbox>
-				))}
-			</Space>
+						{Messages.reports.no_data}
+					</section>
+				)}
+			</Loading>
 		</section>
 	);
 };
@@ -114,9 +141,9 @@ type ColorGeneratorFn = () => string;
 export const ChartColorGeneratorForColors = (colors: string[]) => {
 	let index = 0;
 	return () => {
-		index += 1;
-		index %= colors.length;
-		return colors[index];
+		const result = colors[index];
+		index = (index + 1) % colors.length;
+		return result;
 	};
 };
 
@@ -216,10 +243,12 @@ export const BaseColumnChart = ({
 	data,
 	colorGenerator,
 	xFormatter,
+	stacked = true,
 }: {
 	data: ReportDataMap;
 	colorGenerator?: () => ColorGeneratorFn;
 	xFormatter: (v: TDate) => string;
+	stacked?: boolean;
 }) => (
 	<BaseChart
 		colorGenerator={colorGenerator || ChartColorGenerator}
@@ -243,7 +272,7 @@ export const BaseColumnChart = ({
 							type="monotone"
 							dataKey={column}
 							className={nextColor()}
-							stackId="onlyonestackintheworldaaaaaaa"
+							stackId={stacked ? "stack" : column}
 						/>
 					))}
 				</BarChart>

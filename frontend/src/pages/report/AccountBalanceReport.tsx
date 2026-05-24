@@ -1,4 +1,5 @@
 import { observer } from "mobx-react";
+import { useMemo } from "react";
 
 import {
 	AccountKind,
@@ -68,11 +69,15 @@ const AccountBalanceReport = observer(() => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { accounts } = moneeeyStore;
+	const processFn = useMemo(
+		() => accountBalanceReport(moneeeyStore),
+		[moneeeyStore],
+	);
 
 	return (
 		<BaseReport
 			accounts={accounts.allNonPayees}
-			processFn={accountBalanceReport(moneeeyStore)}
+			processFn={processFn}
 			title={Messages.reports.account_balance}
 			chartFn={(data, period) => (
 				<BaseColumnChart data={data} xFormatter={period.formatter} />

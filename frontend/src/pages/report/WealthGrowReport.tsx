@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { AccountKind, type TAccountUUID } from "../../entities/Account";
 import type { ITransaction } from "../../entities/Transaction";
 import type { TMonetary } from "../../shared/Entity";
@@ -48,38 +50,42 @@ const wealthGrowProcess =
 		);
 	};
 
+const withRunningBalance = (
+	data: ReportDataMap,
+	category: string,
+): ReportDataMap => {
+	const sorted = Array.from(data.points.entries()).sort(([a], [b]) =>
+		compareDates(a, b),
+	);
+	const next = new Map<string, Record<string, number>>();
+	let running = 0;
+	for (const [key, record] of sorted) {
+		running += record[category] || 0;
+		next.set(key, { [category]: running });
+	}
+	return { columns: data.columns, points: next };
+};
+
 const WealthGrowReport = () => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { accounts } = moneeeyStore;
+	const processFn = useMemo(
+		() => wealthGrowProcess(moneeeyStore, Messages),
+		[moneeeyStore, Messages],
+	);
 
 	return (
 		<BaseReport
 			accounts={accounts.allPayees}
-			processFn={wealthGrowProcess(moneeeyStore, Messages)}
+			processFn={processFn}
 			title={Messages.reports.wealth_growth}
-			chartFn={(data, period) => {
-				const sorted = Array.from(data.points.entries()).sort(
-					([keyA], [keyB]) => compareDates(keyA, keyB),
-				);
-				sorted.forEach(([key, points], index) => {
-					const category = Messages.reports.wealth;
-					const previousKey =
-						index > 0 && sorted[index - 1] && sorted[index - 1][0];
-					let previous = 0;
-					if (previousKey) {
-						const previousRecord = data.points.get(previousKey);
-						if (previousRecord) {
-							previous = previousRecord[category] || 0;
-						}
-					}
-					const current = points[category];
-					const withPrevious = current + previous;
-					data.points.set(key, { [category]: withPrevious });
-				});
-
-				return <BaseLineChart data={data} xFormatter={period.formatter} />;
-			}}
+			chartFn={(data, period) => (
+				<BaseLineChart
+					data={withRunningBalance(data, Messages.reports.wealth)}
+					xFormatter={period.formatter}
+				/>
+			)}
 		/>
 	);
 };

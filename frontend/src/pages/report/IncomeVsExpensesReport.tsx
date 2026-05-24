@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { AccountKind, type TAccountUUID } from "../../entities/Account";
 import type { ITransaction } from "../../entities/Transaction";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
@@ -60,16 +62,21 @@ const IncomeVsExpensesReport = () => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { accounts } = moneeeyStore;
+	const processFn = useMemo(
+		() => incomeVsExpensesProcess(moneeeyStore, Messages),
+		[moneeeyStore, Messages],
+	);
 
 	return (
 		<BaseReport
 			accounts={accounts.allPayees}
-			processFn={incomeVsExpensesProcess(moneeeyStore, Messages)}
+			processFn={processFn}
 			title={Messages.reports.income_vs_expenses}
 			chartFn={(data, period) => (
 				<BaseColumnChart
 					data={data}
 					xFormatter={period.formatter}
+					stacked={false}
 					colorGenerator={() =>
 						ChartColorGeneratorForColors([
 							"text-green-600 fill-green-300 stroke-green-300",

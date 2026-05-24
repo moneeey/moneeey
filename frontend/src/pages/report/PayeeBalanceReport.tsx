@@ -1,4 +1,5 @@
 import { observer } from "mobx-react";
+import { useMemo } from "react";
 
 import { AccountKind } from "../../entities/Account";
 import type MoneeeyStore from "../../shared/MoneeeyStore";
@@ -6,7 +7,6 @@ import useMoneeeyStore from "../../shared/useMoneeeyStore";
 
 import useMessages from "../../utils/Messages";
 
-import { keys } from "lodash";
 import { baseAccountBalanceReport } from "./AccountBalanceReport";
 import { BaseColumnChart, BaseReport } from "./BaseReport";
 
@@ -21,20 +21,29 @@ const PayeeBalanceReport = observer(() => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { accounts } = moneeeyStore;
+	const processFn = useMemo(
+		() => payeeBalanceReport(moneeeyStore),
+		[moneeeyStore],
+	);
 
 	return (
 		<BaseReport
 			accounts={accounts.allPayees}
-			processFn={payeeBalanceReport(moneeeyStore)}
+			processFn={processFn}
 			title={Messages.reports.payee_balance}
 			chartFn={(data, period) => {
-				const allPositiveData = { ...data };
-				for (const v of allPositiveData.points.values()) {
-					for (const k of keys(v)) {
-						v[k] = Math.abs(v[k]);
+				const positivePoints = new Map<string, Record<string, number>>();
+				for (const [date, record] of data.points.entries()) {
+					const absRecord: Record<string, number> = {};
+					for (const k of Object.keys(record)) {
+						absRecord[k] = Math.abs(record[k]);
 					}
+					positivePoints.set(date, absRecord);
 				}
-				return <BaseColumnChart data={data} xFormatter={period.formatter} />;
+				const positiveData = { columns: data.columns, points: positivePoints };
+				return (
+					<BaseColumnChart data={positiveData} xFormatter={period.formatter} />
+				);
 			}}
 		/>
 	);

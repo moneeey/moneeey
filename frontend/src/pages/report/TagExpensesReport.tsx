@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { AccountKind, type TAccountUUID } from "../../entities/Account";
 import type { ITransaction } from "../../entities/Transaction";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
@@ -42,11 +44,15 @@ const TagExpensesReport = () => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { accounts } = moneeeyStore;
+	const processFn = useMemo(
+		() => tagExpensesProcess(moneeeyStore),
+		[moneeeyStore],
+	);
 
 	return (
 		<BaseReport
 			accounts={accounts.allPayees}
-			processFn={tagExpensesProcess(moneeeyStore)}
+			processFn={processFn}
 			title={Messages.reports.tag_expenses}
 			chartFn={(data, period) => (
 				<BaseColumnChart data={data} xFormatter={period.formatter} />
