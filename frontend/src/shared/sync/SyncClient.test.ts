@@ -57,8 +57,9 @@ const freshStore = async () => {
 };
 
 const flushMicrotasks = async () => {
-	await new Promise<void>((r) => setTimeout(r, 0));
-	await new Promise<void>((r) => setTimeout(r, 0));
+	for (let i = 0; i < 8; i++) {
+		await new Promise<void>((r) => setTimeout(r, 0));
+	}
 };
 
 const buildClient = async (
