@@ -18,9 +18,9 @@ Deno.test(async function passkeyRegisterOptionsBadEmail() {
 Deno.test(async function passkeyRegisterOptionsUserExists() {
 	await withSpying({
 		object: authPasskeyInternals,
-		method: "getUserByEmail",
+		method: "userBlocksReuse",
 		action: async (stub) => {
-			stub.resolves({ email: "test@test.com" });
+			stub.resolves(true);
 			const { resp } = await runServerRequest(
 				"POST",
 				"/api/auth/passkey/register/options",
@@ -34,9 +34,9 @@ Deno.test(async function passkeyRegisterOptionsUserExists() {
 Deno.test(async function passkeyRegisterOptionsSuccess() {
 	await withSpying({
 		object: authPasskeyInternals,
-		method: "getUserByEmail",
-		action: async (getUserStub) => {
-			getUserStub.resolves(null);
+		method: "userBlocksReuse",
+		action: async (blocksStub) => {
+			blocksStub.resolves(false);
 			await withSpying({
 				object: authPasskeyInternals,
 				method: "generateRegistrationOptions",
@@ -52,6 +52,31 @@ Deno.test(async function passkeyRegisterOptionsSuccess() {
 					assert.assertEquals(body.options.challenge, "test-challenge");
 					assert.assertEquals(typeof body.flowToken, "string");
 					assert.assertEquals(body.flowToken.length > 0, true);
+				},
+			});
+		},
+	});
+});
+
+Deno.test(async function passkeyRegisterOptionsAllowsKickedUserWithoutVaults() {
+	await withSpying({
+		object: authPasskeyInternals,
+		method: "userBlocksReuse",
+		action: async (blocksStub) => {
+			blocksStub.resolves(false);
+			await withSpying({
+				object: authPasskeyInternals,
+				method: "generateRegistrationOptions",
+				action: async (genStub) => {
+					genStub.resolves({ challenge: "kicked-challenge", rp: {} });
+					const { resp } = await runServerRequest(
+						"POST",
+						"/api/auth/passkey/register/options",
+						{ email: "kicked@test.com" },
+					);
+					assert.assertEquals(resp.status, 200);
+					const body = await resp.json();
+					assert.assertEquals(body.options.challenge, "kicked-challenge");
 				},
 			});
 		},
@@ -145,6 +170,15 @@ Deno.test(async function passkeyInviteInfoNotFound() {
 			assertResponse(resp, 404, { error: "invite not found" });
 		},
 	});
+});
+
+Deno.test(async function passkeyInviteAcceptNotAuthenticated() {
+	const { resp } = await runServerRequest(
+		"POST",
+		"/api/auth/passkey/invite/accept",
+		{ token: "anything" },
+	);
+	assertResponse(resp, 401, { error: "not authenticated" });
 });
 
 Deno.test(async function passkeyInviteInfoSuccess() {

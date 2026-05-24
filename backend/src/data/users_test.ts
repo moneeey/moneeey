@@ -7,6 +7,7 @@ import {
 	createUser,
 	getUserByEmail,
 	getUserById,
+	replaceCredentials,
 	updateCredentialCounter,
 } from "./users.ts";
 
@@ -85,6 +86,39 @@ Deno.test(async function updateCredentialCounterPersists() {
 		await updateCredentialCounter(t.storage, "x@y.z", "c1", 42);
 		const u = await getUserByEmail(t.storage, "x@y.z");
 		assert.assertEquals(u?.credentials[0].counter, 42);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function replaceCredentialsSwapsAllCredentials() {
+	const t = makeTempStorage();
+	try {
+		await createUser(t.storage, "kicked@x.io", sampleCredential("old"));
+		await addCredential(t.storage, "kicked@x.io", sampleCredential("old2"));
+		const updated = await replaceCredentials(
+			t.storage,
+			"kicked@x.io",
+			sampleCredential("fresh"),
+		);
+		assert.assertEquals(
+			updated.credentials.map((c) => c.credentialId),
+			["fresh"],
+		);
+		const fetched = await getUserByEmail(t.storage, "kicked@x.io");
+		assert.assertEquals(fetched?.credentials.length, 1);
+		assert.assertEquals(fetched?.credentials[0].credentialId, "fresh");
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function replaceCredentialsRejectsUnknownUser() {
+	const t = makeTempStorage();
+	try {
+		await assert.assertRejects(() =>
+			replaceCredentials(t.storage, "nobody@x.io", sampleCredential()),
+		);
 	} finally {
 		t.cleanup();
 	}

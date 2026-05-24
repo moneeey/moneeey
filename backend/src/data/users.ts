@@ -60,6 +60,23 @@ export async function createUser(
 	return { id, email, credentials: [credential], createdAt };
 }
 
+export async function replaceCredentials(
+	storage: Storage,
+	email: string,
+	credential: StoredCredential,
+): Promise<UserRecord> {
+	const user = await getUserByEmail(storage, email);
+	if (!user) throw new Error("user not found");
+	const next = [credential];
+	await storage.withMeta((db) => {
+		db.prepare("UPDATE users SET credentials = ? WHERE id = ?").run(
+			JSON.stringify(next),
+			user.id,
+		);
+	});
+	return { ...user, credentials: next };
+}
+
 export async function addCredential(
 	storage: Storage,
 	email: string,
