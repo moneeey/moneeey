@@ -198,7 +198,9 @@ const VirtualGrid = ({
 		onScroll={({ scrollLeft, scrollTop }) =>
 			setScroll?.({ scrollLeft, scrollTop })
 		}
-		itemKey={({ columnIndex, rowIndex }) => `${rowIndex}-${columnIndex}`}
+		itemKey={({ columnIndex, rowIndex }) =>
+			`${rows[rowIndex]?.entityId ?? rowIndex}-${columnIndex}`
+		}
 	>
 		{({ columnIndex, rowIndex, style }) => (
 			<RenderCell
