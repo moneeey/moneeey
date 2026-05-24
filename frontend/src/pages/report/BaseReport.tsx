@@ -1,294 +1,295 @@
 import { keys } from "lodash";
-import { type ReactElement, useEffect, useState } from "react";
 import {
-	Bar,
-	BarChart,
-	CartesianGrid,
-	Line,
-	LineChart,
-	ResponsiveContainer,
-	Tooltip,
-	type TooltipProps,
-	XAxis,
-} from "recharts";
-import type { NameType } from "recharts/types/component/DefaultTooltipContent";
-import type { ValueType } from "tailwindcss/types/config";
+	type ReactElement,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 
 import Loading from "../../components/Loading";
-import { Checkbox } from "../../components/base/Input";
-import Space from "../../components/base/Space";
-import { TextTitle } from "../../components/base/Text";
 import type { IAccount } from "../../entities/Account";
+import type { ITransaction } from "../../entities/Transaction";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
-import type { TDate } from "../../utils/Date";
 
+import { type TDate, parseDate } from "../../utils/Date";
 import useMessages from "../../utils/Messages";
 
-import DateGroupingSelector from "./DateGroupingSelector";
+import ChartLegend from "./ChartLegend";
+import DrillDownPanel, { type DrillDownInfo } from "./DrillDownPanel";
+import ReportControls, { effectiveAccountIds } from "./ReportControls";
 import {
 	type AsyncProcessTransactionFn,
 	NewReportDataMap,
 	type PeriodGroup,
-	PeriodGroups,
 	type ReportDataMap,
 	asyncProcessTransactionsForAccounts,
+	dateToPeriod,
+	periodByKey,
 } from "./ReportUtils";
+import { mergeComparison, shiftRangeBackwards } from "./comparison";
+import { type IReportStateApi, useReportState } from "./useReportState";
+
+export interface ChartHelpers {
+	hiddenSeries: ReadonlySet<string>;
+	onSeriesClick: (info: DrillDownInfo) => void;
+	colorMap?: Record<string, string>;
+	dimmedSeries?: ReadonlySet<string>;
+}
 
 interface BaseReportProps {
 	title: string;
 	accounts: IAccount[];
 	processFn: AsyncProcessTransactionFn;
-	chartFn: (data: ReportDataMap, period: PeriodGroup) => ReactElement;
+	chartFn: (
+		data: ReportDataMap,
+		period: PeriodGroup,
+		helpers: ChartHelpers,
+	) => ReactElement;
+	showCurrency?: boolean;
+	showCompare?: boolean;
+	showAccounts?: boolean;
+	state?: IReportStateApi;
+	renderKpis?: (data: ReportDataMap) => ReactElement;
+	extraControls?: ReactElement;
+	colorMap?: Record<string, string>;
+	resolveDrillDown?: (
+		info: DrillDownInfo,
+		ctx: {
+			period: PeriodGroup;
+			accounts: string[];
+			allTransactions: ITransaction[];
+		},
+	) => ITransaction[];
 }
 
 const roundCofficient = 1e5;
 const roundPoint = (value: number) =>
 	Math.round(value * roundCofficient) / roundCofficient;
 
+const defaultDrillDownByPeriod = (
+	info: DrillDownInfo,
+	ctx: { period: PeriodGroup; allTransactions: ITransaction[] },
+): ITransaction[] => {
+	return ctx.allTransactions.filter((t) => {
+		const bucket = dateToPeriod(ctx.period, t.date);
+		return bucket === info.period;
+	});
+};
+
 export const BaseReport = ({
 	accounts,
 	processFn,
 	title,
 	chartFn,
+	showCurrency = true,
+	showCompare = true,
+	showAccounts = true,
+	state: externalState,
+	renderKpis,
+	extraControls,
+	colorMap,
+	resolveDrillDown,
 }: BaseReportProps) => {
 	const Messages = useMessages();
-	const [data, setData] = useState(NewReportDataMap());
-	const [selectedAccounts, setSelectedAccounts] = useState(accounts);
-	const [period, setPeriod] = useState(PeriodGroups(Messages).Month);
-	const [progress, setProgress] = useState(0);
 	const moneeeyStore = useMoneeeyStore();
+	const internalState = useReportState();
+	const state = externalState ?? internalState;
+	const period = useMemo(
+		() => periodByKey(Messages, state.period),
+		[Messages, state.period],
+	);
+	const [data, setData] = useState(NewReportDataMap());
+	const [comparisonSeries, setComparisonSeries] = useState<ReadonlySet<string>>(
+		() => new Set(),
+	);
+	const [progress, setProgress] = useState(0);
+	const [hiddenSeries, setHiddenSeries] = useState<ReadonlySet<string>>(
+		() => new Set(),
+	);
+	const [drillDown, setDrillDown] = useState<DrillDownInfo | null>(null);
+
+	const accountIdsKey = useMemo(
+		() => effectiveAccountIds(accounts, state.accountIds).join(","),
+		[accounts, state.accountIds],
+	);
+	const accountIds = useMemo(
+		() => (accountIdsKey ? accountIdsKey.split(",") : []),
+		[accountIdsKey],
+	);
+	const range = useMemo(
+		() => ({ from: state.from, to: state.to }),
+		[state.from, state.to],
+	);
+
 	useEffect(() => {
+		let cancelled = false;
 		(async () => {
 			const currentData = await asyncProcessTransactionsForAccounts({
 				moneeeyStore,
-				accounts: selectedAccounts.map((act) => act.id),
+				accounts: accountIds,
 				processFn,
 				period,
 				setProgress,
+				range,
+				currency: state.currency,
 			});
-			setProgress(0);
+			if (cancelled) return;
 			for (const points of Array.from(currentData.points.values())) {
 				for (const label of keys(points)) {
 					points[label] = roundPoint(points[label]);
 				}
 			}
-			setData(currentData);
+
+			let finalData = currentData;
+			let comparison: ReadonlySet<string> = new Set();
+			if (state.compare !== "none" && range.from && range.to) {
+				const shifted = shiftRangeBackwards(
+					{ from: range.from, to: range.to },
+					state.compare,
+				);
+				if (shifted) {
+					const previousData = await asyncProcessTransactionsForAccounts({
+						moneeeyStore,
+						accounts: accountIds,
+						processFn,
+						period,
+						setProgress,
+						range: shifted,
+						currency: state.currency,
+					});
+					if (cancelled) return;
+					for (const points of Array.from(previousData.points.values())) {
+						for (const label of keys(points)) {
+							points[label] = roundPoint(points[label]);
+						}
+					}
+					const merged = mergeComparison(
+						currentData,
+						previousData,
+						state.compare,
+						range.from,
+						range.to,
+					);
+					finalData = merged.merged;
+					comparison = merged.comparisonSeries;
+				}
+			}
+
+			setProgress(0);
+			setData(finalData);
+			setComparisonSeries(comparison);
+			setDrillDown(null);
 		})();
-	}, [moneeeyStore, processFn, period, selectedAccounts]);
+		return () => {
+			cancelled = true;
+		};
+	}, [
+		moneeeyStore,
+		processFn,
+		period,
+		range,
+		state.currency,
+		state.compare,
+		accountIds,
+	]);
+
+	const toggleSeries = useCallback((s: string) => {
+		setHiddenSeries((prev) => {
+			const next = new Set(prev);
+			if (next.has(s)) next.delete(s);
+			else next.add(s);
+			return next;
+		});
+	}, []);
+
+	const onSeriesClick = useCallback((info: DrillDownInfo) => {
+		setDrillDown(info);
+	}, []);
+
+	const chartHelpers = useMemo<ChartHelpers>(
+		() => ({
+			hiddenSeries,
+			onSeriesClick,
+			colorMap,
+			dimmedSeries: comparisonSeries,
+		}),
+		[hiddenSeries, onSeriesClick, colorMap, comparisonSeries],
+	);
+
+	const seriesList = useMemo(() => Array.from(data.columns), [data]);
+
+	const drillTransactions = useMemo<ITransaction[]>(() => {
+		if (!drillDown) return [];
+		const allTransactions =
+			moneeeyStore.transactions.viewAllWithAccounts(accountIds);
+		const inRange = allTransactions.filter((t) => {
+			if (range.from && t.date < range.from) return false;
+			if (range.to && t.date > range.to) return false;
+			return true;
+		});
+		const baseCtx = {
+			period,
+			accounts: accountIds,
+			allTransactions: inRange,
+		};
+		const candidates = resolveDrillDown
+			? resolveDrillDown(drillDown, baseCtx)
+			: defaultDrillDownByPeriod(drillDown, baseCtx);
+		return candidates.sort(
+			(a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime(),
+		);
+	}, [drillDown, moneeeyStore, accountIds, range, period, resolveDrillDown]);
+
+	const hasData = data.points.size > 0;
 
 	return (
-		<section className="grow bg-background-800 p-2 md:p-4">
-			<h2>{title}</h2>
+		<section className="flex grow flex-col gap-3 bg-background-800 p-2 md:p-4">
+			<h2 className="text-lg font-semibold">{title}</h2>
+			<ReportControls
+				state={state}
+				accounts={accounts}
+				showCurrency={showCurrency}
+				showCompare={showCompare}
+				showAccounts={showAccounts}
+			/>
+			{extraControls}
+			{renderKpis && hasData && (
+				<div className="mt-1" data-testid="reportKpis">
+					{renderKpis(data)}
+				</div>
+			)}
 			<Loading loading={progress !== 0} progress={progress}>
-				<section>{chartFn(data, period)}</section>
-			</Loading>
-			<DateGroupingSelector setPeriod={setPeriod} period={period} />
-			<Space className="flex-wrap">
-				{Messages.reports.include_accounts}
-				{accounts.map((account) => (
-					<Checkbox
-						testId={`accountVisible_${account.id}`}
-						key={account.id}
-						value={Boolean(
-							selectedAccounts.find((act) => act.id === account.id),
-						)}
-						onChange={(checked) =>
-							setSelectedAccounts(
-								selectedAccounts
-									.filter((act) => act.id !== account.id)
-									.concat(checked ? [account] : []),
-							)
-						}
-						placeholder={account.name}
+				{hasData ? (
+					<section className="min-h-[24em]">
+						{chartFn(data, period, chartHelpers)}
+					</section>
+				) : (
+					<section
+						data-testid="reportEmpty"
+						className="flex min-h-[24em] items-center justify-center text-foreground/60"
 					>
-						{account.name}
-					</Checkbox>
-				))}
-			</Space>
+						{Messages.reports.no_data}
+					</section>
+				)}
+			</Loading>
+			{hasData && seriesList.length > 1 && (
+				<ChartLegend
+					series={seriesList}
+					hidden={hiddenSeries}
+					onToggle={toggleSeries}
+					colorMap={colorMap}
+					dimmedSeries={comparisonSeries}
+				/>
+			)}
+			{drillDown && (
+				<DrillDownPanel
+					info={drillDown}
+					transactions={drillTransactions}
+					onClose={() => setDrillDown(null)}
+					periodLabel={period.formatter(drillDown.period as TDate)}
+				/>
+			)}
 		</section>
 	);
 };
-
-type ColorGeneratorFn = () => string;
-
-export const ChartColorGeneratorForColors = (colors: string[]) => {
-	let index = 0;
-	return () => {
-		index += 1;
-		index %= colors.length;
-		return colors[index];
-	};
-};
-
-const ChartColorGenerator = (): ColorGeneratorFn =>
-	ChartColorGeneratorForColors([
-		"text-emerald-600 fill-emerald-400 stroke-emerald-400",
-		"text-cyan-600 fill-cyan-400 stroke-cyan-400",
-		"text-yellow-600 fill-yellow-400 stroke-yellow-400",
-		"text-orange-600 fill-orange-400 stroke-orange-400",
-		"text-violet-600 fill-violet-400 stroke-violet-400",
-		"text-teal-600 fill-teal-400 stroke-teal-400",
-		"text-blue-600 fill-blue-400 stroke-blue-400",
-		"text-green-600 fill-green-400 stroke-green-400",
-		"text-fuchsia-600 fill-fuchsia-400 stroke-fuchsia-400",
-		"text-lime-600 fill-lime-400 stroke-lime-400",
-		"text-pink-600 fill-pink-400 stroke-pink-400",
-		"text-purple-600 fill-purple-400 stroke-purple-400",
-		"text-sky-600 fill-sky-400 stroke-sky-400",
-		"text-red-600 fill-red-400 stroke-red-400",
-		"text-white-600 fill-white-400 stroke-white-400",
-		"text-amber-600 fill-amber-400 stroke-amber-400",
-		"text-indigo-600 fill-indigo-400 stroke-indigo-400",
-	]);
-
-interface ChartRenderProps {
-	columns: string[];
-	rows: object[];
-	width: number;
-	height: number;
-	colorGenerator: () => ColorGeneratorFn;
-}
-
-const BaseChart = ({
-	data,
-	colorGenerator,
-	Chart,
-}: {
-	data: ReportDataMap;
-	colorGenerator: () => ColorGeneratorFn;
-	Chart: (props: ChartRenderProps) => ReactElement;
-}) => {
-	const columns = Array.from(data.columns.keys());
-	const rows = Array.from(data.points.entries()).map(([date, points]) => ({
-		date,
-		...points,
-	}));
-
-	return (
-		<ResponsiveContainer width="100%" height="100%" minHeight="24em">
-			<Chart
-				width={0}
-				height={0}
-				columns={columns}
-				rows={rows}
-				colorGenerator={colorGenerator}
-			/>
-		</ResponsiveContainer>
-	);
-};
-
-const CustomTooltip = ({
-	active,
-	payload,
-	label,
-}: TooltipProps<ValueType, NameType>) => {
-	if (active && payload && payload.length) {
-		return (
-			<div className="rounded bg-background-100 p-2">
-				<TextTitle className="text-info-800">{label}</TextTitle>
-				{payload
-					.sort((a, b) => Number(b?.value) - Number(a?.value))
-					.map((pld) => (
-						<p
-							key={pld.name}
-							className={(pld as unknown as { className: string }).className}
-						>
-							{pld.name}: {pld.value}
-						</p>
-					))}
-			</div>
-		);
-	}
-
-	return null;
-};
-
-const BaseTooltip = (xFormatter: (v: TDate) => string) => (
-	<Tooltip
-		content={CustomTooltip}
-		labelFormatter={(label: string) => (
-			<span className="text-foreground">{xFormatter(label)}</span>
-		)}
-	/>
-);
-
-export const BaseColumnChart = ({
-	data,
-	colorGenerator,
-	xFormatter,
-}: {
-	data: ReportDataMap;
-	colorGenerator?: () => ColorGeneratorFn;
-	xFormatter: (v: TDate) => string;
-}) => (
-	<BaseChart
-		colorGenerator={colorGenerator || ChartColorGenerator}
-		data={data}
-		Chart={(props: ChartRenderProps) => {
-			const nextColor = props.colorGenerator();
-
-			return (
-				<BarChart
-					width={props.width}
-					height={props.height}
-					data={props.rows}
-					margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-				>
-					<XAxis dataKey="date" tickFormatter={xFormatter} />
-					<CartesianGrid stroke="#fafafa" strokeDasharray="3 3" />
-					{BaseTooltip(xFormatter)}
-					{props.columns.map((column) => (
-						<Bar
-							key={column}
-							type="monotone"
-							dataKey={column}
-							className={nextColor()}
-							stackId="onlyonestackintheworldaaaaaaa"
-						/>
-					))}
-				</BarChart>
-			);
-		}}
-	/>
-);
-
-export const BaseLineChart = ({
-	data,
-	colorGenerator,
-	xFormatter,
-}: {
-	data: ReportDataMap;
-	colorGenerator?: () => ColorGeneratorFn;
-	xFormatter: (v: TDate) => string;
-}) => (
-	<BaseChart
-		data={data}
-		colorGenerator={colorGenerator || ChartColorGenerator}
-		Chart={(props: ChartRenderProps) => {
-			const nextColor = ChartColorGenerator();
-
-			return (
-				<LineChart
-					width={props.width}
-					height={props.height}
-					data={props.rows}
-					margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-				>
-					<XAxis dataKey="date" tickFormatter={xFormatter} />
-					{BaseTooltip(xFormatter)}
-					<CartesianGrid stroke="#fafafa" strokeDasharray="3 3" />
-					{props.columns.map((column, index) => (
-						<Line
-							key={column}
-							type="monotone"
-							dataKey={column}
-							strokeWidth={2}
-							className={nextColor()}
-							yAxisId={index}
-						/>
-					))}
-				</LineChart>
-			);
-		}}
-	/>
-);

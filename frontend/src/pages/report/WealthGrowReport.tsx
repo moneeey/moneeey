@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { AccountKind, type TAccountUUID } from "../../entities/Account";
 import type { ITransaction } from "../../entities/Transaction";
 import type { TMonetary } from "../../shared/Entity";
@@ -8,12 +10,20 @@ import type MoneeeyStore from "../../shared/MoneeeyStore";
 
 import useMessages, { type TMessages } from "../../utils/Messages";
 
-import { BaseLineChart, BaseReport } from "./BaseReport";
+import { BaseReport } from "./BaseReport";
+import KpiCard, { KpiGrid } from "./KpiCard";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
 	dateToPeriod,
 } from "./ReportUtils";
+import ReportLineChart from "./charts/ReportLineChart";
+import {
+	formatNumber,
+	formatSigned,
+	lowestPeriod,
+	peakPeriod,
+} from "./kpiCalcs";
 
 const wealthGrowProcess =
 	(moneeeyStore: MoneeeyStore, Messages: TMessages) =>
@@ -48,38 +58,100 @@ const wealthGrowProcess =
 		);
 	};
 
+const withRunningBalance = (data: ReportDataMap): ReportDataMap => {
+	const sorted = Array.from(data.points.entries()).sort(([a], [b]) =>
+		compareDates(a, b),
+	);
+	const next = new Map<string, Record<string, number>>();
+	const running: Record<string, number> = {};
+	for (const col of data.columns) running[col] = 0;
+	for (const [key, record] of sorted) {
+		const out: Record<string, number> = {};
+		for (const col of data.columns) {
+			running[col] += record[col] || 0;
+			out[col] = running[col];
+		}
+		next.set(key, out);
+	}
+	return { columns: data.columns, points: next };
+};
+
 const WealthGrowReport = () => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { accounts } = moneeeyStore;
+	const processFn = useMemo(
+		() => wealthGrowProcess(moneeeyStore, Messages),
+		[moneeeyStore, Messages],
+	);
+
+	const renderKpis = (data: ReportDataMap) => {
+		const running = withRunningBalance(data);
+		const sorted = Array.from(running.points.entries()).sort(([a], [b]) =>
+			compareDates(a, b),
+		);
+		const last = sorted.length ? sorted[sorted.length - 1][1] : null;
+		const first = sorted.length ? sorted[0][1] : null;
+		const current = last?.[Messages.reports.wealth] ?? 0;
+		const startVal = first?.[Messages.reports.wealth] ?? 0;
+		const change = current - startVal;
+		const avg = sorted.length > 1 ? change / (sorted.length - 1) : 0;
+		const peak = peakPeriod(data);
+		const low = lowestPeriod(data);
+		return (
+			<KpiGrid>
+				<KpiCard
+					testId="kpiCurrentWealth"
+					label={Messages.reports.kpi_current_wealth}
+					value={formatNumber(current)}
+					tone={current >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiTotalChange"
+					label={Messages.reports.kpi_total_change}
+					value={formatSigned(change)}
+					tone={change >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiAvgGrowth"
+					label={Messages.reports.kpi_avg_growth}
+					value={formatSigned(avg)}
+					tone={avg >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiBestPeriod"
+					label={Messages.reports.kpi_best_period}
+					value={formatSigned(peak.value)}
+					hint={peak.period ?? ""}
+					tone={peak.value >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiWorstPeriod"
+					label={Messages.reports.kpi_worst_period}
+					value={formatSigned(low.value)}
+					hint={low.period ?? ""}
+					tone={low.value >= 0 ? "positive" : "negative"}
+				/>
+			</KpiGrid>
+		);
+	};
 
 	return (
 		<BaseReport
 			accounts={accounts.allPayees}
-			processFn={wealthGrowProcess(moneeeyStore, Messages)}
+			processFn={processFn}
 			title={Messages.reports.wealth_growth}
-			chartFn={(data, period) => {
-				const sorted = Array.from(data.points.entries()).sort(
-					([keyA], [keyB]) => compareDates(keyA, keyB),
-				);
-				sorted.forEach(([key, points], index) => {
-					const category = Messages.reports.wealth;
-					const previousKey =
-						index > 0 && sorted[index - 1] && sorted[index - 1][0];
-					let previous = 0;
-					if (previousKey) {
-						const previousRecord = data.points.get(previousKey);
-						if (previousRecord) {
-							previous = previousRecord[category] || 0;
-						}
-					}
-					const current = points[category];
-					const withPrevious = current + previous;
-					data.points.set(key, { [category]: withPrevious });
-				});
-
-				return <BaseLineChart data={data} xFormatter={period.formatter} />;
-			}}
+			renderKpis={renderKpis}
+			chartFn={(data, period, helpers) => (
+				<ReportLineChart
+					data={withRunningBalance(data)}
+					xFormatter={period.formatter}
+					enableArea={true}
+					hiddenSeries={helpers.hiddenSeries}
+					dimmedSeries={helpers.dimmedSeries}
+					onPointClick={helpers.onSeriesClick}
+				/>
+			)}
 		/>
 	);
 };

@@ -1,4 +1,5 @@
 import { observer } from "mobx-react";
+import { useMemo } from "react";
 
 import {
 	AccountKind,
@@ -14,12 +15,21 @@ import type MoneeeyStore from "../../shared/MoneeeyStore";
 
 import useMessages from "../../utils/Messages";
 
-import { BaseColumnChart, BaseReport } from "./BaseReport";
+import { BaseReport } from "./BaseReport";
+import KpiCard, { KpiGrid } from "./KpiCard";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
 	dateToPeriod,
 } from "./ReportUtils";
+import ReportBarChart from "./charts/ReportBarChart";
+import {
+	averagePerPeriod,
+	formatNumber,
+	peakPeriod,
+	topSeries,
+	totalSum,
+} from "./kpiCalcs";
 
 export const baseAccountBalanceReport =
 	(
@@ -68,14 +78,59 @@ const AccountBalanceReport = observer(() => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { accounts } = moneeeyStore;
+	const processFn = useMemo(
+		() => accountBalanceReport(moneeeyStore),
+		[moneeeyStore],
+	);
+
+	const renderKpis = (data: ReportDataMap) => {
+		const total = totalSum(data);
+		const avg = averagePerPeriod(data);
+		const peak = peakPeriod(data);
+		const top = topSeries(data, 1)[0];
+		return (
+			<KpiGrid>
+				<KpiCard
+					testId="kpiTotalChange"
+					label={Messages.reports.kpi_total_change}
+					value={formatNumber(total)}
+					tone={total >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiAvgPerPeriod"
+					label={Messages.reports.kpi_avg_per_period}
+					value={formatNumber(avg)}
+				/>
+				<KpiCard
+					testId="kpiPeak"
+					label={Messages.reports.kpi_peak_period}
+					value={formatNumber(peak.value)}
+					hint={peak.period ?? ""}
+				/>
+				<KpiCard
+					testId="kpiTopAccount"
+					label={Messages.reports.kpi_top_account}
+					value={top?.series ?? "—"}
+					hint={top ? formatNumber(top.total) : ""}
+				/>
+			</KpiGrid>
+		);
+	};
 
 	return (
 		<BaseReport
 			accounts={accounts.allNonPayees}
-			processFn={accountBalanceReport(moneeeyStore)}
+			processFn={processFn}
 			title={Messages.reports.account_balance}
-			chartFn={(data, period) => (
-				<BaseColumnChart data={data} xFormatter={period.formatter} />
+			renderKpis={renderKpis}
+			chartFn={(data, period, helpers) => (
+				<ReportBarChart
+					data={data}
+					xFormatter={period.formatter}
+					hiddenSeries={helpers.hiddenSeries}
+					dimmedSeries={helpers.dimmedSeries}
+					onBarClick={helpers.onSeriesClick}
+				/>
 			)}
 		/>
 	);

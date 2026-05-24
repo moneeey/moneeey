@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { AccountKind, type TAccountUUID } from "../../entities/Account";
 import type { ITransaction } from "../../entities/Transaction";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
@@ -8,16 +10,16 @@ import type { TDate } from "../../utils/Date";
 
 import useMessages, { type TMessages } from "../../utils/Messages";
 
-import {
-	BaseColumnChart,
-	BaseReport,
-	ChartColorGeneratorForColors,
-} from "./BaseReport";
+import { BaseReport } from "./BaseReport";
+import KpiCard, { KpiGrid } from "./KpiCard";
 import {
 	type PeriodGroup,
 	type ReportDataMap,
 	dateToPeriod,
 } from "./ReportUtils";
+import ReportBarChart from "./charts/ReportBarChart";
+import { formatNumber, formatPercent, seriesTotal } from "./kpiCalcs";
+import { SIGN_PALETTE } from "./nivoTheme";
 
 const incomeVsExpensesProcess =
 	(moneeeyStore: MoneeeyStore, Messages: TMessages) =>
@@ -60,22 +62,70 @@ const IncomeVsExpensesReport = () => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
 	const { accounts } = moneeeyStore;
+	const processFn = useMemo(
+		() => incomeVsExpensesProcess(moneeeyStore, Messages),
+		[moneeeyStore, Messages],
+	);
+
+	const renderKpis = (data: ReportDataMap) => {
+		const income = seriesTotal(data, Messages.reports.income);
+		const expense = seriesTotal(data, Messages.reports.expense);
+		const net = income - expense;
+		const rate = income > 0 ? net / income : 0;
+		return (
+			<KpiGrid>
+				<KpiCard
+					testId="kpiTotalIncome"
+					label={Messages.reports.kpi_total_income}
+					value={formatNumber(income)}
+					tone="positive"
+				/>
+				<KpiCard
+					testId="kpiTotalExpense"
+					label={Messages.reports.kpi_total_expense}
+					value={formatNumber(expense)}
+					tone="negative"
+				/>
+				<KpiCard
+					testId="kpiNetSavings"
+					label={Messages.reports.kpi_net_savings}
+					value={formatNumber(net)}
+					tone={net >= 0 ? "positive" : "negative"}
+				/>
+				<KpiCard
+					testId="kpiSavingsRate"
+					label={Messages.reports.kpi_savings_rate}
+					value={formatPercent(rate)}
+					tone={rate >= 0 ? "positive" : "negative"}
+				/>
+			</KpiGrid>
+		);
+	};
+
+	const colorMap = useMemo(
+		() => ({
+			[Messages.reports.income]: SIGN_PALETTE.positive,
+			[Messages.reports.expense]: SIGN_PALETTE.negative,
+		}),
+		[Messages.reports.income, Messages.reports.expense],
+	);
 
 	return (
 		<BaseReport
 			accounts={accounts.allPayees}
-			processFn={incomeVsExpensesProcess(moneeeyStore, Messages)}
+			processFn={processFn}
 			title={Messages.reports.income_vs_expenses}
-			chartFn={(data, period) => (
-				<BaseColumnChart
+			renderKpis={renderKpis}
+			colorMap={colorMap}
+			chartFn={(data, period, helpers) => (
+				<ReportBarChart
 					data={data}
 					xFormatter={period.formatter}
-					colorGenerator={() =>
-						ChartColorGeneratorForColors([
-							"text-green-600 fill-green-300 stroke-green-300",
-							"text-red-600 fill-red-300 stroke-red-300",
-						])
-					}
+					stacked={false}
+					hiddenSeries={helpers.hiddenSeries}
+					dimmedSeries={helpers.dimmedSeries}
+					onBarClick={helpers.onSeriesClick}
+					colorMap={helpers.colorMap}
 				/>
 			)}
 		/>
