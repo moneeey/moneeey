@@ -1,4 +1,4 @@
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 import { TabsContent, TabsHeader } from "../../components/base/Tabs";
 import type MoneeeyStore from "../../shared/MoneeeyStore";
 import type { ImportTask } from "../../shared/import/ImportContent";

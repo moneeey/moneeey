@@ -1,5 +1,5 @@
 import { compact } from "lodash";
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 
 import { MultiSelect } from "../components/base/Select";
 import Space from "../components/base/Space";

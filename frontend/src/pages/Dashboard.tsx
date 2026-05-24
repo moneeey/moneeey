@@ -1,4 +1,4 @@
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 
 import type { ITransaction } from "../entities/Transaction";
 import useMoneeeyStore from "../shared/useMoneeeyStore";

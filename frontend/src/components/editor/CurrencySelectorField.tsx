@@ -1,5 +1,5 @@
 import { map } from "lodash";
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import Select from "../base/Select";

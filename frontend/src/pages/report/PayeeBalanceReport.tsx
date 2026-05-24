@@ -1,4 +1,4 @@
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 
 import { AccountKind } from "../../entities/Account";

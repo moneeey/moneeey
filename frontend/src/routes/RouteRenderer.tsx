@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 

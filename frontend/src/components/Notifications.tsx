@@ -1,5 +1,5 @@
 import { isEmpty } from "lodash";
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 
 import type { NotificationData } from "../shared/Navigation";

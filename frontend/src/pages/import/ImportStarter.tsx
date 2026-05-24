@@ -1,5 +1,5 @@
 import { head, isEmpty, last } from "lodash";
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 import { type Dispatch, useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Select from "../../components/base/Select";

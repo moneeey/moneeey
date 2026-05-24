@@ -6,7 +6,7 @@ import { VaultProtocol } from "./protocol.ts";
 
 const logger = Logger("sync/vault");
 
-export const hub = new VaultHub();
+const hub = new VaultHub();
 
 export function setupVaultSync(router: oak.Router) {
 	router.get("/vault", async (ctx) => {

@@ -1,5 +1,5 @@
 import { uniq } from "lodash";
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 import { useCallback, useMemo, useState } from "react";
 
 import type { IBaseEntity } from "../shared/Entity";
@@ -40,13 +40,12 @@ export default observer(
 			store.getUuid(store.factory()),
 		);
 
-		const storeIds = store.ids;
+		const storeRows = store.all;
 
 		const entities = useMemo(
 			() =>
 				uniq(
-					storeIds
-						.map((id) => store.byUuid(id) as T)
+					storeRows
 						.filter((row) => {
 							const isSchemaFiltered = !schemaFilter || schemaFilter(row);
 							const isNewEntityId = store.getUuid(row) === newEntityId;
@@ -63,7 +62,7 @@ export default observer(
 						})
 						.concat(creatable === false ? [] : [newEntityId]),
 				).map((entityId) => ({ entityId })),
-			[creatable, storeIds, store, schemaFilter, newEntityId, factory],
+			[creatable, storeRows, store, schemaFilter, newEntityId, factory],
 		);
 
 		const columns = useMemo((): ColumnDef[] => {

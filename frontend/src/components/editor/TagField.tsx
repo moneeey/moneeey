@@ -1,4 +1,4 @@
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import { MultiSelect } from "../base/Select";
