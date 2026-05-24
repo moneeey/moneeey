@@ -28,7 +28,6 @@ const AccountTransactions = observer(
 		const account = accounts.find(
 			(acc: IAccount) => slugify(acc.name) === account_name,
 		);
-		const runningBalanceVersion = transactions.runningBalanceVersion;
 		const account_uuid = account?.id || "";
 		const filterByAccount = transactions.filterByAccounts(
 			compact([account_uuid]),
@@ -55,7 +54,7 @@ const AccountTransactions = observer(
 
 		return (
 			<TransactionTable
-				tableId={`accountTransactions${account_uuid}_${account_name}__${globalSearchTags.join("_")}_${runningBalanceVersion}`}
+				tableId={`accountTransactions${account_uuid}_${account_name}__${globalSearchTags.join("_")}`}
 				{...{
 					transactions,
 					accounts,
