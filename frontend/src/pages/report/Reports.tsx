@@ -4,11 +4,13 @@ import useMessages from "../../utils/Messages";
 
 import AccountBalanceReport from "./AccountBalanceReport";
 import BudgetVsActualReport from "./BudgetVsActualReport";
+import CashFlowReport from "./CashFlowReport";
 import IncomeVsExpensesReport from "./IncomeVsExpensesReport";
 import NetWorthReport from "./NetWorthReport";
 import PayeeBalanceReport from "./PayeeBalanceReport";
 import RecurringReport from "./RecurringReport";
 import TagExpensesReport from "./TagExpensesReport";
+import TagExplorerReport from "./TagExplorerReport";
 import WealthGrowReport from "./WealthGrowReport";
 
 const availableReports = (Messages: ReturnType<typeof useMessages>) => [
@@ -33,6 +35,11 @@ const availableReports = (Messages: ReturnType<typeof useMessages>) => [
 		children: <TagExpensesReport />,
 	},
 	{
+		label: Messages.reports.tag_explorer,
+		key: Messages.reports.tag_explorer,
+		children: <TagExplorerReport />,
+	},
+	{
 		label: Messages.reports.income_vs_expenses,
 		key: Messages.reports.income_vs_expenses,
 		children: <IncomeVsExpensesReport />,
@@ -46,6 +53,11 @@ const availableReports = (Messages: ReturnType<typeof useMessages>) => [
 		label: Messages.reports.recurring,
 		key: Messages.reports.recurring,
 		children: <RecurringReport />,
+	},
+	{
+		label: Messages.reports.cash_flow,
+		key: Messages.reports.cash_flow,
+		children: <CashFlowReport />,
 	},
 	{
 		label: Messages.reports.wealth_growth,

@@ -30,10 +30,15 @@ function assertNoLoop(sink: ConsoleSink) {
 }
 
 const REPORT_TABS = [
+	"Net worth",
 	"Account balance",
 	"Payee balance",
 	"Tag expenses",
+	"Tag explorer",
 	"Income vs Expenses",
+	"Budget vs Actual",
+	"Recurring expenses",
+	"Cash flow",
 	"Wealth growth",
 ];
 

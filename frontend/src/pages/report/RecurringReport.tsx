@@ -10,8 +10,8 @@ import useMessages from "../../utils/Messages";
 
 import KpiCard, { KpiGrid } from "./KpiCard";
 import ReportControls, { effectiveAccountIds } from "./ReportControls";
-import { ALL_CURRENCIES, useReportState } from "./useReportState";
 import { formatNumber } from "./kpiCalcs";
+import { ALL_CURRENCIES, useReportState } from "./useReportState";
 
 const median = (values: number[]): number => {
 	if (values.length === 0) return 0;
@@ -202,9 +202,7 @@ const RecurringReport = observer(() => {
 					<table className="min-w-full text-sm">
 						<thead className="text-left opacity-70">
 							<tr>
-								<th className="px-2 py-1">
-									{Messages.transactions.account}
-								</th>
+								<th className="px-2 py-1">{Messages.transactions.account}</th>
 								<th className="px-2 py-1 text-right">
 									{Messages.reports.recurring_monthly}
 								</th>

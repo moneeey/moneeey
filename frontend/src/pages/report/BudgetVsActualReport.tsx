@@ -30,7 +30,9 @@ const budgetVsActualProcess =
 		) {
 			return;
 		}
-		const fromTags = moneeeyStore.accounts.accountTags(transaction.from_account);
+		const fromTags = moneeeyStore.accounts.accountTags(
+			transaction.from_account,
+		);
 		const toTags = moneeeyStore.accounts.accountTags(transaction.to_account);
 		const allTags = new Set([...fromTags, ...toTags, ...transaction.tags]);
 

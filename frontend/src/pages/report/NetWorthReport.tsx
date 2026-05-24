@@ -95,9 +95,7 @@ const NetWorthReport = observer(() => {
 
 	const reportAccounts = useMemo(
 		() =>
-			accounts.all.filter(
-				(a) => (isAsset(a) || isLiability(a)) && !a.archived,
-			),
+			accounts.all.filter((a) => (isAsset(a) || isLiability(a)) && !a.archived),
 		[accounts.all],
 	);
 
