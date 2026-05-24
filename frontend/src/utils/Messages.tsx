@@ -38,6 +38,15 @@ function LanguageForCode<L extends LanguageCode>(
 
 export type TMessages = ReturnType<typeof LanguageForCode>;
 
+const messagesCache = new Map<LanguageCode, TMessages>();
+const cachedMessages = (code: LanguageCode): TMessages => {
+	const hit = messagesCache.get(code);
+	if (hit) return hit;
+	const built = LanguageForCode(code);
+	messagesCache.set(code, built);
+	return built;
+};
+
 const MessagesContext = React.createContext({
 	currentLanguage: LanguageUnset as LanguageCode,
 	selectLanguage: (code: LanguageCode) => identity(code),
@@ -71,7 +80,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 }
 
 export default function useMessages(): TMessages {
-	return LanguageForCode(React.useContext(MessagesContext).currentLanguage);
+	return cachedMessages(React.useContext(MessagesContext).currentLanguage);
 }
 
 export function WithMessages({
@@ -91,7 +100,7 @@ export function useLanguageSwitcher() {
 			selectLanguage(code);
 		},
 		messagesForLanguage(code: LanguageCode) {
-			return LanguageForCode(code);
+			return cachedMessages(code);
 		},
 	};
 }

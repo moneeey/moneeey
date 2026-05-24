@@ -28,6 +28,7 @@ interface BaseReportProps {
 	showAccounts?: boolean;
 	state?: IReportStateApi;
 	kpis?: ReactElement;
+	extraControls?: ReactElement;
 }
 
 const roundCofficient = 1e5;
@@ -44,6 +45,7 @@ export const BaseReport = ({
 	showAccounts = true,
 	state: externalState,
 	kpis,
+	extraControls,
 }: BaseReportProps) => {
 	const Messages = useMessages();
 	const moneeeyStore = useMoneeeyStore();
@@ -107,6 +109,7 @@ export const BaseReport = ({
 				showCompare={showCompare}
 				showAccounts={showAccounts}
 			/>
+			{extraControls}
 			{kpis && hasData && <div className="mt-1">{kpis}</div>}
 			<Loading loading={progress !== 0} progress={progress}>
 				{hasData ? (

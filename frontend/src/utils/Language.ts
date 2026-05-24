@@ -530,6 +530,13 @@ export default {
 		},
 	},
 	util: {
+		all: {
+			en: "All",
+			pt: "Todos",
+			es: "Todos",
+			hi: "सभी",
+			cn: "全部",
+		},
 		name: {
 			en: "Name",
 			pt: "Nome",
@@ -1317,6 +1324,13 @@ export default {
 			es: "Sin datos en el período seleccionado",
 			hi: "चयनित सीमा में कोई डेटा नहीं",
 			cn: "所选范围内无数据",
+		},
+		tag_depth: {
+			en: "Tag depth",
+			pt: "Profundidade de tag",
+			es: "Profundidad de etiqueta",
+			hi: "टैग गहराई",
+			cn: "标签深度",
 		},
 	},
 
