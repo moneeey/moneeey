@@ -7,6 +7,13 @@ export default defineConfig({
 	server: {
 		port: 4270,
 		host: "0.0.0.0",
+		proxy: {
+			"/api": {
+				target: process.env.VITE_API_TARGET || "http://localhost:4269",
+				changeOrigin: true,
+				ws: true,
+			},
+		},
 	},
 	build: {
 		chunkSizeWarningLimit: 32 * 1024 * 1024,

@@ -52,10 +52,10 @@ export default function NewAccount() {
 		);
 		let initialAccountId: string;
 		if (existingInitialAccount) {
-			initialAccountId = existingInitialAccount.account_uuid;
+			initialAccountId = existingInitialAccount.id;
 		} else {
 			const newInitialAccount = accounts.factory();
-			initialAccountId = newInitialAccount.account_uuid;
+			initialAccountId = newInitialAccount.id;
 			accounts.merge({
 				...newInitialAccount,
 				name: initialBalanceName,

@@ -4,7 +4,6 @@ import {
 	startRegistration,
 } from "@simplewebauthn/browser";
 import type { SyncConfig } from "../../entities/Config";
-import { getCurrentHost } from "../../utils/Utils";
 
 type RegistrationOptionsJSON = StartRegistrationOpts["optionsJSON"];
 type AuthenticationOptionsJSON = Parameters<
@@ -15,8 +14,8 @@ type FlowResponse<O> = { options: O; flowToken: string };
 
 type AuthResponse = {
 	authenticated: boolean;
-	database: string;
-	accessToken: string;
+	vaultId: string;
+	sessionToken: string;
 };
 
 type InviteInfoResponse = {
@@ -41,9 +40,8 @@ const post = async <T>(url: string, body: object): Promise<T> => {
 
 function toSyncConfig(auth: AuthResponse): SyncConfig {
 	return {
-		url: `${getCurrentHost()}/db/${auth.database}`,
-		username: "JWT",
-		password: auth.accessToken,
+		vaultId: auth.vaultId,
+		sessionToken: auth.sessionToken,
 		enabled: true,
 	};
 }
@@ -76,7 +74,7 @@ export const loginPasskey = async (email: string): Promise<SyncConfig> => {
 
 export const fetchPasskeyAuthState = async (): Promise<SyncConfig | null> => {
 	try {
-		const response = await fetch("/api/auth/couch", {
+		const response = await fetch("/api/auth/session", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -86,7 +84,7 @@ export const fetchPasskeyAuthState = async (): Promise<SyncConfig | null> => {
 		});
 		if (!response.ok) return null;
 		const auth = (await response.json()) as AuthResponse;
-		if (!auth.authenticated || !auth.database || !auth.accessToken) return null;
+		if (!auth.authenticated || !auth.vaultId || !auth.sessionToken) return null;
 		return toSyncConfig(auth);
 	} catch {
 		return null;

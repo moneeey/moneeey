@@ -26,7 +26,7 @@ export default defineConfig({
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
 		/* Base URL to use in actions like `await page.goto('/')`. */
-		baseURL: isCI ? "http://127.0.0.1:4270/" : "http://localhost:4280",
+		baseURL: isCI ? "http://localhost:4270/" : "http://localhost:4280",
 
 		/* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
 		trace: isCI ? "off" : "on-first-retry",
@@ -76,7 +76,7 @@ export default defineConfig({
 	/* Run your local dev server before starting the tests */
 	webServer: {
 		command: "cd ../frontend && yarn install --immutable && yarn dev",
-		url: "http://127.0.0.1:4270/",
+		url: "http://localhost:4270/",
 		reuseExistingServer: !isCI,
 	},
 });

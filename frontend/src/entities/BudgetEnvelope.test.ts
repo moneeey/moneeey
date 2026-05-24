@@ -92,21 +92,21 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 
 		// Two on-budget accounts, one per currency.
 		makeAccount(store.accounts, {
-			account_uuid: "acc-brl",
+			id: "acc-brl",
 			name: "BRL Checking",
 			currency_uuid: "cur-brl",
 			kind: AccountKind.CHECKING,
 			offbudget: false,
 		});
 		makeAccount(store.accounts, {
-			account_uuid: "acc-btc",
+			id: "acc-btc",
 			name: "BTC Wallet",
 			currency_uuid: "cur-btc",
 			kind: AccountKind.CHECKING,
 			offbudget: false,
 		});
 		makeAccount(store.accounts, {
-			account_uuid: "acc-payee",
+			id: "acc-payee",
 			name: "Restaurant",
 			currency_uuid: "cur-brl",
 			kind: AccountKind.PAYEE,
@@ -115,7 +115,7 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 
 		// Budget is just a tag search — no currency_uuid.
 		makeBudget(store.budget, {
-			budget_uuid: "b1",
+			id: "b1",
 			name: "Food",
 			tags: ["food"],
 		});
@@ -123,7 +123,7 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 		// Both transactions tag themselves via `#food` in the memo — the new
 		// Transaction.merge pipeline derives `tags` straight from memo hashtags.
 		makeTransaction(store.transactions, {
-			transaction_uuid: "t1",
+			id: "t1",
 			date: "2024-01-15",
 			from_account: "acc-brl",
 			to_account: "acc-payee",
@@ -134,7 +134,7 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 		});
 
 		makeTransaction(store.transactions, {
-			transaction_uuid: "t2",
+			id: "t2",
 			date: "2024-01-20",
 			from_account: "acc-btc",
 			to_account: "acc-payee",
@@ -174,33 +174,33 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 		const store = makeTestStore();
 
 		makeAccount(store.accounts, {
-			account_uuid: "acc-brl",
+			id: "acc-brl",
 			name: "BRL Checking",
 			currency_uuid: "cur-brl",
 			kind: AccountKind.CHECKING,
 		});
 		makeAccount(store.accounts, {
-			account_uuid: "acc-btc",
+			id: "acc-btc",
 			name: "BTC Wallet",
 			currency_uuid: "cur-btc",
 			kind: AccountKind.CHECKING,
 		});
 		makeAccount(store.accounts, {
-			account_uuid: "acc-payee",
+			id: "acc-payee",
 			name: "Restaurant",
 			currency_uuid: "cur-brl",
 			kind: AccountKind.PAYEE,
 		});
 
 		makeBudget(store.budget, {
-			budget_uuid: "b1",
+			id: "b1",
 			name: "Food",
 			tags: ["food"],
 		});
 
 		// BRL transaction in January only.
 		makeTransaction(store.transactions, {
-			transaction_uuid: "t1",
+			id: "t1",
 			date: "2024-01-15",
 			from_account: "acc-brl",
 			to_account: "acc-payee",
@@ -210,7 +210,7 @@ describe("BudgetEnvelope multi-currency aggregation", () => {
 		});
 		// BTC transaction in February only.
 		makeTransaction(store.transactions, {
-			transaction_uuid: "t2",
+			id: "t2",
 			date: "2024-02-10",
 			from_account: "acc-btc",
 			to_account: "acc-payee",

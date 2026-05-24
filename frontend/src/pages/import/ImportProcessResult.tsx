@@ -37,8 +37,8 @@ function classAlreadyExist<TValue>(
 	read: (entity: ITransaction) => TValue,
 ) {
 	return (transaction: ITransaction, rowIndex: number) => {
-		const { transaction_uuid } = transaction;
-		const alreadyExists = transactions.byUuid(transaction_uuid);
+		const { id } = transaction;
+		const alreadyExists = transactions.byUuid(id);
 		if (alreadyExists) {
 			if (read(transaction) !== read(alreadyExists)) {
 				return classUpdated[rowIndex % 2];
@@ -73,9 +73,8 @@ function ImportProcessResultTable({
 	const { currencies, accounts, transactions } = moneeeyStore;
 	const readAccountOptionsForTransaction = (t: ITransaction) =>
 		compact([
-			...map(
-				result.recommendedAccounts[t.transaction_uuid],
-				(cur_account_uuid) => accounts.byUuid(cur_account_uuid),
+			...map(result.recommendedAccounts[t.id], (cur_account_uuid) =>
+				accounts.byUuid(cur_account_uuid),
 			),
 			...accounts.allActive,
 		]);

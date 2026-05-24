@@ -59,7 +59,7 @@ export default function <TEntity>({
 							compact([
 								...map(readOptions(entity), (account) => ({
 									label: account.name,
-									value: account.account_uuid,
+									value: account.id,
 								})),
 							]),
 							"value",
@@ -88,7 +88,7 @@ export default function <TEntity>({
 									)[0] || config.main.default_currency;
 							}
 							accounts.merge(account);
-							commit({ ...entity, ...delta(account.account_uuid, entity) });
+							commit({ ...entity, ...delta(account.id, entity) });
 						}}
 					/>
 				);

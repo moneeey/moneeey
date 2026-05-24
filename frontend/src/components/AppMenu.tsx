@@ -186,19 +186,19 @@ const Menu = observer(
 							...activeAccounts
 								.sort((a, b) => a.currency_uuid?.localeCompare(b.currency_uuid))
 								.map((acct) => ({
-									key: `account_${acct._id || ""}`,
+									key: `account_${acct.id || ""}`,
 									label: `${getAccountCurrency(acct)} ${acct.name}`,
 									icon: <WalletIcon />,
 									customLabel: (
 										<TextNormal
 											title={Messages.menu.balance(
-												runningBalances.get(acct.account_uuid) || "loading",
+												runningBalances.get(acct.id) || "loading",
 											)}
 										>
 											<TextSecondary>{getAccountCurrency(acct)}</TextSecondary>{" "}
 											{acct.name}{" "}
 											<span className="text-muted text-xs">
-												{runningBalances.get(acct.account_uuid)}
+												{runningBalances.get(acct.id)}
 											</span>
 										</TextNormal>
 									),

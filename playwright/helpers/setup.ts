@@ -5,11 +5,13 @@ export async function resetAppState(page: Page) {
 	await page.evaluate(() => {
 		while (window.localStorage.length) {
 			const key = window.localStorage.key(0);
-			if (key) {
-				window.localStorage.removeItem(key);
-			}
+			if (key) window.localStorage.removeItem(key);
 		}
-		window.indexedDB.deleteDatabase("_pouch_moneeey");
-		window.indexedDB.deleteDatabase("_pouch_moneeey-encrypted");
+		window.indexedDB.deleteDatabase("moneeey");
 	});
+}
+
+export function uniqueTestEmail(prefix = "u"): string {
+	const slug = Math.random().toString(36).slice(2, 10);
+	return `${prefix}-${Date.now()}-${slug}@playwright.local`;
 }

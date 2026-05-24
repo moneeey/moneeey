@@ -12,28 +12,28 @@ import {
 
 const sampleTransactions: ITransaction[] = [
 	mockTransaction({
-		transaction_uuid: "t1",
+		id: "t1",
 		from_account: "banco",
 		to_account: "fernando",
 		memo: "transfer to fernando",
 		from_value: 123,
 	}),
 	mockTransaction({
-		transaction_uuid: "t2",
+		id: "t2",
 		from_account: "banco",
 		to_account: "chocolate",
 		memo: "transfer to chocolate",
 		from_value: 20,
 	}),
 	mockTransaction({
-		transaction_uuid: "t3",
+		id: "t3",
 		from_account: "banco",
 		to_account: "lua",
 		memo: "transfer to lua",
 		from_value: 20,
 	}),
 	mockTransaction({
-		transaction_uuid: "t4",
+		id: "t4",
 		from_account: "banco",
 		to_account: "market_dolly",
 		memo: "groceries dolly market",
@@ -41,14 +41,14 @@ const sampleTransactions: ITransaction[] = [
 		from_value: 20,
 	}),
 	mockTransaction({
-		transaction_uuid: "t5",
+		id: "t5",
 		from_account: "xyz_company",
 		to_account: "banco",
 		memo: "salary xyz company",
 		from_value: 300,
 	}),
 	mockTransaction({
-		transaction_uuid: "t6",
+		id: "t6",
 		from_account: "banco",
 		to_account: "market_super",
 		memo: "super market",
@@ -84,7 +84,7 @@ describe("Importer", () => {
 
 	it("shinglesForTransaction", () => {
 		const transaction = mockTransaction({
-			transaction_uuid: "t1",
+			id: "t1",
 			from_account: "a",
 			to_account: "b",
 			from_value: 12,

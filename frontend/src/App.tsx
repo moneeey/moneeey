@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { observer } from "mobx-react";
 
@@ -9,7 +9,7 @@ import Navigator from "./components/Navigator";
 import Notifications from "./components/Notifications";
 import type { UnlockResult } from "./components/tour/EncryptionGate";
 import MoneeeyStore from "./shared/MoneeeyStore";
-import { openRawDatabase } from "./shared/encryption/encryptedPouch";
+import { LocalStore } from "./shared/storage/LocalStore";
 import useMoneeeyStore, {
 	MoneeeyStoreProvider,
 } from "./shared/useMoneeeyStore";
@@ -90,31 +90,49 @@ const AppContent = observer(() => {
 const AppBoot = observer(() => {
 	const { currentLanguage } = useLanguageSwitcher();
 	const [moneeeyStore, setMoneeeyStore] = useState<MoneeeyStore | null>(null);
-	const rawDb = useMemo(() => openRawDatabase(), []);
+	const [localStoreReady, setLocalStoreReady] = useState(false);
+	const localStore = useMemo(() => new LocalStore(), []);
+
+	useEffect(() => {
+		let cancelled = false;
+		localStore.open().then(() => {
+			if (!cancelled) setLocalStoreReady(true);
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [localStore]);
 
 	const onUnlocked = useCallback(
 		async ({ dataKey, syncConfig }: UnlockResult) => {
-			const store = new MoneeeyStore(() => rawDb);
+			const store = new MoneeeyStore(localStore);
 			store.persistence.setDataKey(dataKey);
 			await store.load();
 			if (syncConfig) {
 				store.config.merge({
 					...store.config.main,
-					couchSync: syncConfig,
+					moneeeySync: syncConfig,
 				});
 				store.persistence.sync(syncConfig);
 			}
+			if (window.location.hash.startsWith("#/invite/")) {
+				window.location.hash = "/dashboard";
+			}
 			setMoneeeyStore(store);
 		},
-		[rawDb],
+		[localStore],
 	);
 
 	if (showInitialLanguageSelector({ currentLanguage })) {
 		return <InitialLanguageSelector />;
 	}
 
+	if (!localStoreReady) {
+		return <AppLoading />;
+	}
+
 	if (!moneeeyStore) {
-		return <EncryptionGate db={rawDb} onUnlocked={onUnlocked} />;
+		return <EncryptionGate store={localStore} onUnlocked={onUnlocked} />;
 	}
 
 	return (

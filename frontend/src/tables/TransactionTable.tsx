@@ -73,16 +73,14 @@ export default observer(
 			});
 
 		const getReferenceBalance = (
-			transaction_uuid: string,
+			id: string,
 			{
 				from_account,
 				to_account,
 			}: { from_account: TAccountUUID | null; to_account: TAccountUUID | null },
 		) => {
 			const balance =
-				transactions.runningBalance.transactionRunningBalance.get(
-					transaction_uuid,
-				);
+				transactions.runningBalance.transactionRunningBalance.get(id);
 			if (referenceAccount === to_account) return balance?.to_balance ?? 0;
 			if (referenceAccount === from_account) return balance?.from_balance ?? 0;
 			return 0;
@@ -224,15 +222,15 @@ export default observer(
 							title: Messages.transactions.running_balance,
 							width: 120,
 							customClass: ({
-								transaction_uuid,
+								id,
 								from_account,
 								to_account,
 							}: {
-								transaction_uuid: string;
+								id: string;
 								from_account: TAccountUUID | null;
 								to_account: TAccountUUID | null;
 							}) => {
-								const amount = getReferenceBalance(transaction_uuid, {
+								const amount = getReferenceBalance(id, {
 									from_account,
 									to_account,
 								});
@@ -240,9 +238,9 @@ export default observer(
 							},
 							validate: () => ({ valid: true }),
 							...CurrencyAmountField<ITransaction>({
-								read: ({ transaction_uuid, from_account, to_account }) => ({
+								read: ({ id, from_account, to_account }) => ({
 									currency: currencyForAccount(referenceAccount),
-									amount: getReferenceBalance(transaction_uuid, {
+									amount: getReferenceBalance(id, {
 										from_account,
 										to_account,
 									}),

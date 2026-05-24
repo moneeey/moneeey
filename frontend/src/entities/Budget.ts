@@ -18,7 +18,6 @@ interface IBudgetEnvelope {
 }
 
 export interface IBudget extends IBaseEntity {
-	budget_uuid: TBudgetUUID;
 	name: string;
 	archived: boolean;
 	envelopes: IBudgetEnvelope[];
@@ -29,16 +28,14 @@ export class BudgetStore extends MappedStore<IBudget> {
 
 	constructor(moneeeyStore: MoneeeyStore) {
 		super(moneeeyStore, {
-			getUuid: (a: IBudget) => a.budget_uuid,
-
 			factory: (id?: string) => ({
+				id: id || uuid(),
 				entity_type: EntityType.BUDGET,
 				name: "",
-				budget_uuid: id || uuid(),
 				tags: [],
 				envelopes: [],
 				created: currentDateTime(),
-				updated: currentDateTime(),
+				updated_at: currentDateTime(),
 				archived: false,
 			}),
 		});
@@ -79,7 +76,7 @@ export class BudgetStore extends MappedStore<IBudget> {
 		currency_uuid: TCurrencyUUID,
 		allocated: number,
 	) {
-		const latest = this.byUuid(entity.budget_uuid);
+		const latest = this.byUuid(entity.id);
 		if (latest) {
 			const realEnvelope = this.getRealEnvelope(
 				latest,

@@ -3,12 +3,13 @@ import { action, makeObservable, observable } from "mobx";
 import Logger from "./Logger";
 import {
 	type EncryptionErrorCode,
+	type MetaStore,
 	changePassphrase as changePassphraseInMeta,
 	encryptionError,
 	setupNewEncryption,
 	unlockExistingEncryption,
 	verifyPassphrase,
-} from "./encryption/encryptedPouch";
+} from "./encryption/codec";
 
 export const MIN_PASSPHRASE_LENGTH = 8;
 
@@ -31,20 +32,20 @@ export default class EncryptionStore {
 	}
 
 	async changePassphrase(
-		db: PouchDB.Database,
+		store: MetaStore,
 		currentDataKey: CryptoKey,
 		newPassphrase: string,
 	): Promise<void> {
 		if (newPassphrase.length < MIN_PASSPHRASE_LENGTH) {
 			throw encryptionError("passphrase_too_short");
 		}
-		await changePassphraseInMeta(db, currentDataKey, newPassphrase);
+		await changePassphraseInMeta(store, currentDataKey, newPassphrase);
 		window.location.reload();
 	}
 }
 
 export const openEncryptedDatabase = async (
-	db: PouchDB.Database,
+	store: MetaStore,
 	passphrase: string,
 	mode: "setup" | "unlock",
 ): Promise<CryptoKey> => {
@@ -52,8 +53,8 @@ export const openEncryptedDatabase = async (
 		throw encryptionError("passphrase_too_short");
 	}
 	return mode === "setup"
-		? setupNewEncryption(db, passphrase)
-		: unlockExistingEncryption(db, passphrase);
+		? setupNewEncryption(store, passphrase)
+		: unlockExistingEncryption(store, passphrase);
 };
 
 export type { EncryptionErrorCode };

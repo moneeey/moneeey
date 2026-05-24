@@ -29,7 +29,7 @@ const AccountTransactions = observer(
 			(acc: IAccount) => slugify(acc.name) === account_name,
 		);
 		const runningBalanceVersion = transactions.runningBalanceVersion;
-		const account_uuid = account?.account_uuid || "";
+		const account_uuid = account?.id || "";
 		const filterByAccount = transactions.filterByAccounts(
 			compact([account_uuid]),
 		);

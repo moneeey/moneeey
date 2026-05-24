@@ -10,8 +10,6 @@ import { Status } from "../components/Status";
 import { OkButton, SecondaryButton } from "../components/base/Button";
 import { Input } from "../components/base/Input";
 import { VerticalSpace } from "../components/base/Space";
-import Tabs from "../components/base/Tabs";
-import SelfHostedSyncForm from "../components/sync/SelfHostedSyncForm";
 import {
 	createInviteLink,
 	loginPasskey,
@@ -30,7 +28,7 @@ export const MoneeeyLogin = ({
 	const onLogin = async () => {
 		try {
 			const syncConfig = await loginPasskey(state.email);
-			management.complete(syncConfig.password, syncConfig.url);
+			management.complete(syncConfig.sessionToken, syncConfig.vaultId);
 			setMessage(<Status type="info">{Messages.sync.login_success}</Status>);
 		} catch (_err) {
 			setMessage(<Status type="error">{Messages.sync.login_error}</Status>);
@@ -40,7 +38,7 @@ export const MoneeeyLogin = ({
 	const onRegister = async () => {
 		try {
 			const syncConfig = await registerPasskey(state.email);
-			management.complete(syncConfig.password, syncConfig.url);
+			management.complete(syncConfig.sessionToken, syncConfig.vaultId);
 			setMessage(<Status type="info">{Messages.sync.login_success}</Status>);
 		} catch (_err) {
 			setMessage(<Status type="error">{Messages.sync.login_error}</Status>);
@@ -166,74 +164,13 @@ export const MoneeeyAccountConfig = observer(() => {
 	);
 });
 
-export const DatabaseConfig = () => {
-	const Messages = useMessages();
-	const { persistence, config } = useMoneeeyStore();
-	const initialCfg = config.main.couchSync || {
-		url: "",
-		username: "",
-		password: "",
-		enabled: false,
-	};
-	const onSubmit = (cfg: {
-		url: string;
-		username: string;
-		password: string;
-	}) => {
-		const newState = { ...cfg, enabled: true };
-		config.merge({ ...config.main, couchSync: newState });
-		persistence.sync(newState);
-	};
-	const onStop = () => {
-		const newState = { ...initialCfg, enabled: false };
-		config.merge({ ...config.main, couchSync: newState });
-		persistence.sync(newState);
-	};
-
-	return (
-		<VerticalSpace>
-			<p className="text-sm opacity-80">{Messages.sync.couchdb_description}</p>
-			<a
-				href="https://couchdb.apache.org/"
-				target="_blank"
-				rel="noreferrer noopener"
-				className="text-xs underline opacity-70 hover:opacity-100"
-			>
-				{Messages.sync.couchdb_learn_more}
-			</a>
-			<SelfHostedSyncForm
-				initial={initialCfg}
-				submitTitle={Messages.sync.start}
-				onSubmit={onSubmit}
-			/>
-			{initialCfg.enabled && (
-				<OkButton onClick={onStop} title={Messages.sync.stop} />
-			)}
-		</VerticalSpace>
-	);
-};
-
 export default function Sync() {
 	const Messages = useMessages();
 
 	return (
 		<div className="bg-background-800 p-2">
 			<span className="white-space-preline">{Messages.sync.intro}</span>
-			<Tabs
-				testId="syncSettings"
-				items={[
-					{
-						key: "moneeeyAccount",
-						label: Messages.sync.moneeey_sync,
-						children: <MoneeeyAccountConfig />,
-					},
-					{
-						key: "database",
-						label: Messages.sync.database_sync,
-						children: <DatabaseConfig />,
-					},
-				]}
-			/>
+			<MoneeeyAccountConfig />
 		</div>
 	);
 }

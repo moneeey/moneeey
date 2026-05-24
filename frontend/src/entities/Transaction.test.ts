@@ -54,7 +54,7 @@ describe("isTransaction", () => {
 describe("mockTransaction", () => {
 	it("returns a complete transaction with defaults", () => {
 		const tx = mockTransaction({
-			transaction_uuid: "t1",
+			id: "t1",
 			from_account: "a1",
 			to_account: "a2",
 			from_value: 100,
@@ -68,7 +68,7 @@ describe("mockTransaction", () => {
 
 	it("allows overriding defaults", () => {
 		const tx = mockTransaction({
-			transaction_uuid: "t1",
+			id: "t1",
 			from_account: "a1",
 			to_account: "a2",
 			from_value: 100,
@@ -101,65 +101,65 @@ describe("TransactionStore", () => {
 			expect(tx.to_value).toBe(0);
 			expect(tx.from_account).toBe("");
 			expect(tx.to_account).toBe("");
-			expect(tx.transaction_uuid).toBeTruthy();
+			expect(tx.id).toBeTruthy();
 		});
 
 		it("uses provided id", () => {
 			const tx = store.factory("custom-id");
-			expect(tx.transaction_uuid).toBe("custom-id");
+			expect(tx.id).toBe("custom-id");
 		});
 	});
 
 	describe("merge", () => {
 		it("adds a transaction to the store", () => {
-			makeTx(store, { transaction_uuid: "t1", from_value: 50, to_value: 50 });
+			makeTx(store, { id: "t1", from_value: 50, to_value: 50 });
 			expect(store.byUuid("t1")).toBeDefined();
 			expect(store.byUuid("t1")?.from_value).toBe(50);
 		});
 
 		it("throws on negative from_value", () => {
-			expect(() =>
-				makeTx(store, { transaction_uuid: "t1", from_value: -10 }),
-			).toThrow("Transaction amounts must be positive numbers");
+			expect(() => makeTx(store, { id: "t1", from_value: -10 })).toThrow(
+				"Transaction amounts must be positive numbers",
+			);
 		});
 
 		it("throws on negative to_value", () => {
-			expect(() =>
-				makeTx(store, { transaction_uuid: "t1", to_value: -10 }),
-			).toThrow("Transaction amounts must be positive numbers");
+			expect(() => makeTx(store, { id: "t1", to_value: -10 })).toThrow(
+				"Transaction amounts must be positive numbers",
+			);
 		});
 
 		it("tracks newest_dt", () => {
-			makeTx(store, { transaction_uuid: "t1", date: "2099-12-31" });
+			makeTx(store, { id: "t1", date: "2099-12-31" });
 			expect(store.newest_dt.getFullYear()).toBe(2099);
 		});
 
 		it("tracks oldest_dt", () => {
-			makeTx(store, { transaction_uuid: "t1", date: "1990-01-01" });
+			makeTx(store, { id: "t1", date: "1990-01-01" });
 			expect(store.oldest_dt.getFullYear()).toBe(1990);
 		});
 	});
 
 	describe("sortTransactions / sorted", () => {
 		it("sorts transactions by date ascending", () => {
-			makeTx(store, { transaction_uuid: "t1", date: "2024-03-01" });
-			makeTx(store, { transaction_uuid: "t2", date: "2024-01-01" });
-			makeTx(store, { transaction_uuid: "t3", date: "2024-02-01" });
-			const ids = store.sorted.map((t) => t.transaction_uuid);
+			makeTx(store, { id: "t1", date: "2024-03-01" });
+			makeTx(store, { id: "t2", date: "2024-01-01" });
+			makeTx(store, { id: "t3", date: "2024-02-01" });
+			const ids = store.sorted.map((t) => t.id);
 			expect(ids).toEqual(["t2", "t3", "t1"]);
 		});
 	});
 
 	describe("findAllAfter", () => {
 		beforeEach(() => {
-			makeTx(store, { transaction_uuid: "t1", date: "2024-01-01" });
-			makeTx(store, { transaction_uuid: "t2", date: "2024-06-01" });
-			makeTx(store, { transaction_uuid: "t3", date: "2024-12-01" });
+			makeTx(store, { id: "t1", date: "2024-01-01" });
+			makeTx(store, { id: "t2", date: "2024-06-01" });
+			makeTx(store, { id: "t3", date: "2024-12-01" });
 		});
 
 		it("returns transactions on or after the date", () => {
 			const results = store.findAllAfter("2024-06-01");
-			const ids = results.map((t) => t.transaction_uuid);
+			const ids = results.map((t) => t.id);
 			expect(ids).toEqual(["t2", "t3"]);
 		});
 
@@ -171,19 +171,19 @@ describe("TransactionStore", () => {
 	describe("filterByAccounts / viewAllWithAccount(s)", () => {
 		beforeEach(() => {
 			makeTx(store, {
-				transaction_uuid: "t1",
+				id: "t1",
 				from_account: "bank",
 				to_account: "grocery",
 				date: "2024-01-01",
 			});
 			makeTx(store, {
-				transaction_uuid: "t2",
+				id: "t2",
 				from_account: "bank",
 				to_account: "gas",
 				date: "2024-02-01",
 			});
 			makeTx(store, {
-				transaction_uuid: "t3",
+				id: "t3",
 				from_account: "card",
 				to_account: "restaurant",
 				date: "2024-03-01",
@@ -192,12 +192,12 @@ describe("TransactionStore", () => {
 
 		it("viewAllWithAccount matches from or to", () => {
 			const results = store.viewAllWithAccount("bank");
-			expect(results.map((t) => t.transaction_uuid)).toEqual(["t1", "t2"]);
+			expect(results.map((t) => t.id)).toEqual(["t1", "t2"]);
 		});
 
 		it("viewAllWithAccounts matches multiple accounts", () => {
 			const results = store.viewAllWithAccounts(["grocery", "restaurant"]);
-			expect(results.map((t) => t.transaction_uuid)).toEqual(["t1", "t3"]);
+			expect(results.map((t) => t.id)).toEqual(["t1", "t3"]);
 		});
 
 		it("returns sorted results", () => {
@@ -209,19 +209,19 @@ describe("TransactionStore", () => {
 	describe("viewAllUnclassified", () => {
 		it("returns transactions with empty from or to account", () => {
 			makeTx(store, {
-				transaction_uuid: "t1",
+				id: "t1",
 				from_account: "",
 				to_account: "grocery",
 				date: "2024-01-01",
 			});
 			makeTx(store, {
-				transaction_uuid: "t2",
+				id: "t2",
 				from_account: "bank",
 				to_account: "gas",
 				date: "2024-02-01",
 			});
 			const results = store.viewAllUnclassified();
-			expect(results.map((t) => t.transaction_uuid)).toEqual(["t1"]);
+			expect(results.map((t) => t.id)).toEqual(["t1"]);
 		});
 	});
 
@@ -237,7 +237,7 @@ describe("TransactionStore", () => {
 			accountsStore.merge(
 				{
 					...acctBase,
-					account_uuid: "bank",
+					id: "bank",
 					name: "MyBank",
 					tags: ["finance"],
 				},
@@ -246,7 +246,7 @@ describe("TransactionStore", () => {
 			accountsStore.merge(
 				{
 					...acctBase,
-					account_uuid: "grocery",
+					id: "grocery",
 					name: "Grocery",
 					tags: ["food"],
 				},
@@ -256,7 +256,7 @@ describe("TransactionStore", () => {
 
 		it("getAllTransactionTags combines account tags and memo-derived tags", () => {
 			const tx = makeTx(store, {
-				transaction_uuid: "t1",
+				id: "t1",
 				from_account: "bank",
 				to_account: "grocery",
 				memo: "shopping #weekly",
@@ -272,43 +272,43 @@ describe("TransactionStore", () => {
 
 		it("filterByTag matches case-insensitively", () => {
 			makeTx(store, {
-				transaction_uuid: "t1",
+				id: "t1",
 				from_account: "bank",
 				to_account: "grocery",
 				date: "2024-01-01",
 			});
 			makeTx(store, {
-				transaction_uuid: "t2",
+				id: "t2",
 				from_account: "grocery",
 				to_account: "bank",
 				date: "2024-02-01",
 			});
 			const predicate = store.filterByTag("FINANCE", accountsStore);
 			const results = store.all.filter(predicate);
-			expect(results.map((t) => t.transaction_uuid)).toEqual(["t1", "t2"]);
+			expect(results.map((t) => t.id)).toEqual(["t1", "t2"]);
 		});
 
 		it("viewAllWithTag returns sorted filtered results", () => {
 			makeTx(store, {
-				transaction_uuid: "t1",
+				id: "t1",
 				from_account: "bank",
 				to_account: "grocery",
 				memo: "#special",
 				date: "2024-03-01",
 			});
 			makeTx(store, {
-				transaction_uuid: "t2",
+				id: "t2",
 				from_account: "bank",
 				to_account: "grocery",
 				date: "2024-01-01",
 			});
 			const results = store.viewAllWithTag("special", accountsStore);
-			expect(results.map((t) => t.transaction_uuid)).toEqual(["t1"]);
+			expect(results.map((t) => t.id)).toEqual(["t1"]);
 		});
 
 		it("getSearchBuffer includes tags, memo, and date", () => {
 			const tx = makeTx(store, {
-				transaction_uuid: "t1",
+				id: "t1",
 				from_account: "bank",
 				to_account: "grocery",
 				memo: "weekly groceries",
@@ -324,19 +324,19 @@ describe("TransactionStore", () => {
 	describe("replaceAccount", () => {
 		it("replaces account references in all matching transactions", () => {
 			makeTx(store, {
-				transaction_uuid: "t1",
+				id: "t1",
 				from_account: "old",
 				to_account: "other",
 				date: "2024-01-01",
 			});
 			makeTx(store, {
-				transaction_uuid: "t2",
+				id: "t2",
 				from_account: "other",
 				to_account: "old",
 				date: "2024-02-01",
 			});
 			makeTx(store, {
-				transaction_uuid: "t3",
+				id: "t3",
 				from_account: "other",
 				to_account: "another",
 				date: "2024-03-01",

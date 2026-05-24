@@ -38,30 +38,37 @@ Deno.test(async function appError() {
 Deno.test(async function runTheServer() {
 	await withSpying({
 		object: serverInternals,
-		method: "ensureUsersDbExists",
+		method: "ensureMetaInitialized",
 		action: async (ensureStub) => {
 			ensureStub.resolves();
-			await withSpyingLogger(async (logger) => {
-				const app = createServer();
-				await withSpying({
-					object: app,
-					method: "listen",
-					expect: [
-						[
-							{
-								port: 4269,
+			await withSpying({
+				object: serverInternals,
+				method: "runDevJanitor",
+				action: async (janitorStub) => {
+					janitorStub.resolves();
+					await withSpyingLogger(async (logger) => {
+						const app = createServer();
+						await withSpying({
+							object: app,
+							method: "listen",
+							expect: [
+								[
+									{
+										port: 4269,
+									},
+								],
+							],
+							action: async (stub) => {
+								stub.resolves(true);
+								await runServer(app);
 							},
-						],
-					],
-					action: (stub) => {
-						stub.resolves(true);
-						runServer(app);
-					},
-				});
+						});
 
-				assert.assertEquals(logger.args, [
-					["info", "[runServer] Moneeey API listening", { port: 4269 }],
-				]);
+						assert.assertEquals(logger.args, [
+							["info", "[runServer] Moneeey API listening", { port: 4269 }],
+						]);
+					});
+				},
 			});
 		},
 	});

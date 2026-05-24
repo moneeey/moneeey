@@ -48,12 +48,12 @@ describe("AccountStore", () => {
 			expect(account.offbudget).toBe(false);
 			expect(account.archived).toBe(false);
 			expect(account.currency_uuid).toBe("cur-default");
-			expect(account.account_uuid).toBeTruthy();
+			expect(account.id).toBeTruthy();
 		});
 
 		it("uses provided id", () => {
 			const account = store.factory("custom-id");
-			expect(account.account_uuid).toBe("custom-id");
+			expect(account.id).toBe("custom-id");
 		});
 	});
 
@@ -65,7 +65,7 @@ describe("AccountStore", () => {
 
 		it("unregisters old name when renamed", () => {
 			const account = makeAccount(store, {
-				account_uuid: "a1",
+				id: "a1",
 				name: "OldName",
 			});
 			store.merge({ ...account, name: "NewName" });
@@ -76,9 +76,9 @@ describe("AccountStore", () => {
 
 	describe("allActive", () => {
 		it("filters out archived accounts", () => {
-			makeAccount(store, { account_uuid: "a1", name: "Active" });
+			makeAccount(store, { id: "a1", name: "Active" });
 			makeAccount(store, {
-				account_uuid: "a2",
+				id: "a2",
 				name: "Archived",
 				archived: true,
 			});
@@ -89,17 +89,17 @@ describe("AccountStore", () => {
 	describe("allPayees / allNonPayees", () => {
 		beforeEach(() => {
 			makeAccount(store, {
-				account_uuid: "a1",
+				id: "a1",
 				name: "Bank",
 				kind: AccountKind.CHECKING,
 			});
 			makeAccount(store, {
-				account_uuid: "a2",
+				id: "a2",
 				name: "Grocery",
 				kind: AccountKind.PAYEE,
 			});
 			makeAccount(store, {
-				account_uuid: "a3",
+				id: "a3",
 				name: "Card",
 				kind: AccountKind.CREDIT_CARD,
 			});
@@ -116,8 +116,8 @@ describe("AccountStore", () => {
 
 	describe("byName / uuidByName", () => {
 		it("finds account by name", () => {
-			makeAccount(store, { account_uuid: "a1", name: "MyBank" });
-			expect(store.byName("MyBank")?.account_uuid).toBe("a1");
+			makeAccount(store, { id: "a1", name: "MyBank" });
+			expect(store.byName("MyBank")?.id).toBe("a1");
 			expect(store.uuidByName("MyBank")).toBe("a1");
 		});
 
@@ -129,7 +129,7 @@ describe("AccountStore", () => {
 	describe("accountTags", () => {
 		it("returns name, tags, and currency tags for known account", () => {
 			makeAccount(store, {
-				account_uuid: "a1",
+				id: "a1",
 				name: "Bank",
 				tags: ["personal"],
 			});
@@ -145,7 +145,7 @@ describe("AccountStore", () => {
 
 	describe("nameForUuid", () => {
 		it("returns name for known account", () => {
-			makeAccount(store, { account_uuid: "a1", name: "Bank" });
+			makeAccount(store, { id: "a1", name: "Bank" });
 			expect(store.nameForUuid("a1")).toBe("Bank");
 		});
 
@@ -156,12 +156,12 @@ describe("AccountStore", () => {
 
 	describe("isArchived", () => {
 		it("returns false for non-archived account", () => {
-			makeAccount(store, { account_uuid: "a1", archived: false });
+			makeAccount(store, { id: "a1", archived: false });
 			expect(store.isArchived("a1")).toBe(false);
 		});
 
 		it("returns true for archived account", () => {
-			makeAccount(store, { account_uuid: "a1", archived: true });
+			makeAccount(store, { id: "a1", archived: true });
 			expect(store.isArchived("a1")).toBe(true);
 		});
 
@@ -172,12 +172,12 @@ describe("AccountStore", () => {
 
 	describe("isOffBudget", () => {
 		it("returns false for on-budget account", () => {
-			makeAccount(store, { account_uuid: "a1", offbudget: false });
+			makeAccount(store, { id: "a1", offbudget: false });
 			expect(store.isOffBudget("a1")).toBe(false);
 		});
 
 		it("returns true for off-budget account", () => {
-			makeAccount(store, { account_uuid: "a1", offbudget: true });
+			makeAccount(store, { id: "a1", offbudget: true });
 			expect(store.isOffBudget("a1")).toBe(true);
 		});
 

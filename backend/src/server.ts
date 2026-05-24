@@ -1,11 +1,23 @@
 import { setupAuth } from "./auth.ts";
-import { PORT } from "./config.ts";
+import { MONEEEY_ENV, PORT } from "./config.ts";
+import { getStorage } from "./data/storage_singleton.ts";
 import { oak } from "./deps.ts";
+import { purgeStaleTestUsers } from "./janitor.ts";
 import { Logger } from "./logger.ts";
-import { ensureUsersDbExists } from "./users.ts";
+import { setupVaultSync } from "./sync/vault.ts";
+
+async function ensureMetaInitialized() {
+	await getStorage().withMeta(() => {});
+}
+
+async function runDevJanitor() {
+	if (MONEEEY_ENV !== "dev") return;
+	await purgeStaleTestUsers(getStorage());
+}
 
 export const serverInternals = {
-	ensureUsersDbExists,
+	ensureMetaInitialized,
+	runDevJanitor,
 };
 
 export function createServer() {
@@ -21,6 +33,10 @@ export function createServer() {
 
 	setupAuth(app, router);
 
+	const apiRouter = new oak.Router({ prefix: "/api" });
+	setupVaultSync(apiRouter);
+	router.use(apiRouter.routes(), apiRouter.allowedMethods());
+
 	app.use(router.routes());
 	app.use(router.allowedMethods());
 	app.addEventListener("error", (err) => {
@@ -31,7 +47,8 @@ export function createServer() {
 }
 
 export async function runServer(app: ReturnType<typeof createServer>) {
-	await serverInternals.ensureUsersDbExists();
+	await serverInternals.ensureMetaInitialized();
+	await serverInternals.runDevJanitor();
 	const port = PORT;
 	Logger("runServer").info("Moneeey API listening", { port });
 	await app.listen({ port });

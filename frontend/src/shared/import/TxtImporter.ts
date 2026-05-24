@@ -73,7 +73,7 @@ const txtImportFromLines = ({
 						tokenMap,
 						[other],
 					);
-					const other_account = accounts[0]?.account_uuid || "";
+					const other_account = accounts[0]?.id || "";
 					const { transaction, existing } = importTransaction({
 						date,
 						line,
@@ -83,9 +83,7 @@ const txtImportFromLines = ({
 						importer,
 					});
 					stt.localTransactions.merge(transaction);
-					stt.recommendedAccounts[transaction.transaction_uuid] = accounts.map(
-						(a) => a.account_uuid,
-					);
+					stt.recommendedAccounts[transaction.id] = accounts.map((a) => a.id);
 				} catch (err) {
 					logger.error("process line error", { err, line });
 					stt.errors.push({

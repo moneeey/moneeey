@@ -194,7 +194,7 @@ export const importTransaction = ({
 }) => {
 	const transaction: ITransaction = {
 		entity_type: EntityType.TRANSACTION,
-		transaction_uuid: uuid(),
+		id: uuid(),
 		date,
 		memo: line,
 		tags: [],
@@ -203,12 +203,12 @@ export const importTransaction = ({
 		from_value: Math.abs(value),
 		to_value: Math.abs(value),
 		import_data: line,
-		updated: currentDateTime(),
+		updated_at: currentDateTime(),
 	};
 	const import_id = importer.importIds(transaction);
 	const existing = importer.findForImportId(import_id);
 	if (existing) {
-		transaction.transaction_uuid = existing.transaction_uuid;
+		transaction.id = existing.id;
 		transaction.memo = existing.memo;
 		if ((transaction.memo || "").indexOf(line) === -1) {
 			transaction.memo = `${transaction.memo};${line}`;
@@ -217,7 +217,6 @@ export const importTransaction = ({
 		transaction.from_account =
 			transaction.from_account || existing.from_account;
 		transaction.to_account = transaction.to_account || existing.to_account;
-		transaction._rev = existing._rev;
 	}
 
 	return { transaction, existing };

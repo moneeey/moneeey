@@ -346,7 +346,6 @@ export const DefaultCurrencies = [
 ];
 
 export interface ICurrency extends IBaseEntity {
-	currency_uuid: TCurrencyUUID;
 	name: string;
 	short: string;
 	suffix: string;
@@ -362,18 +361,17 @@ export type CurrencyAmount = {
 export class CurrencyStore extends MappedStore<ICurrency> {
 	constructor(moneeeyStore: MoneeeyStore) {
 		super(moneeeyStore, {
-			getUuid: (c) => c.currency_uuid,
 			factory: (id?: string) =>
 				({
+					id: id || uuid(),
 					entity_type: EntityType.CURRENCY,
-					currency_uuid: id || uuid(),
 					name: "",
 					short: "",
 					prefix: "",
 					suffix: "",
 					decimals: 2,
 					tags: [],
-					updated: currentDateTime(),
+					updated_at: currentDateTime(),
 					created: currentDateTime(),
 				}) as ICurrency,
 		});
@@ -386,7 +384,7 @@ export class CurrencyStore extends MappedStore<ICurrency> {
 	}
 
 	findUuidByName(name: string) {
-		return this.findByName(name).currency_uuid;
+		return this.findByName(name).id;
 	}
 
 	format(currency: ICurrency, value: TMonetary) {

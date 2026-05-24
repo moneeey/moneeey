@@ -20,7 +20,6 @@ export enum AccountKind {
 }
 
 export interface IAccount extends IBaseEntity {
-	account_uuid: TAccountUUID;
 	currency_uuid: TCurrencyUUID;
 	name: string;
 	created: TDate;
@@ -32,20 +31,20 @@ export interface IAccount extends IBaseEntity {
 export class AccountStore extends MappedStore<IAccount> {
 	constructor(moneeeyStore: MoneeeyStore) {
 		super(moneeeyStore, {
-			getUuid: (a: IAccount) => a.account_uuid,
 			factory: (id?: string) => ({
+				id: id || uuid(),
 				entity_type: EntityType.ACCOUNT,
 				name: "",
-				account_uuid: id || uuid(),
 				tags: [],
 				offbudget: false,
 				archived: false,
 				currency_uuid:
 					moneeeyStore.config.main.default_currency ||
-					moneeeyStore.currencies.all[0]?.currency_uuid,
+					moneeeyStore.currencies.all[0]?.id ||
+					"",
 				kind: AccountKind.CHECKING,
 				created: currentDateTime(),
-				updated: currentDateTime(),
+				updated_at: currentDateTime(),
 			}),
 		});
 
@@ -60,7 +59,7 @@ export class AccountStore extends MappedStore<IAccount> {
 		item: IAccount,
 		options: { setUpdated: boolean } = { setUpdated: true },
 	) {
-		const oldName = this.byUuid(item.account_uuid)?.name || "";
+		const oldName = this.byUuid(item.id)?.name || "";
 		super.merge(item, options);
 		if (item.name !== oldName) {
 			this.moneeeyStore.tags.unregister(oldName);
@@ -85,7 +84,7 @@ export class AccountStore extends MappedStore<IAccount> {
 	}
 
 	uuidByName(name: string) {
-		return this.byName(name).account_uuid;
+		return this.byName(name).id;
 	}
 
 	accountTags(account_uuid: TAccountUUID) {

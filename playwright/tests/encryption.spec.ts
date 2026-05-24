@@ -33,7 +33,7 @@ test("Landing wizard — language selector offers pt/es/en and translates the CT
 });
 
 test.describe("Encryption gate", () => {
-	test("setup flow: three-way chooser → create new → advances to currency picker", async ({
+	test("setup flow: chooser → create new → advances to currency picker", async ({
 		seededPage: page,
 	}) => {
 		await pickLanguageEn(page);
@@ -44,11 +44,6 @@ test.describe("Encryption gate", () => {
 		await expect(
 			page.getByRole("button", { name: "Online account (passkey)" }),
 		).toBeVisible();
-		await expect(
-			page.getByRole("button", {
-				name: "Sign in with self-hosted CouchDB",
-			}),
-		).toBeVisible();
 
 		await completeEncryptionSetup(page);
 
@@ -56,7 +51,7 @@ test.describe("Encryption gate", () => {
 
 		const hasMeta = await page.evaluate(async () => {
 			const dbs = await window.indexedDB.databases?.();
-			return Boolean(dbs?.find((d) => d.name === "_pouch_moneeey"));
+			return Boolean(dbs?.find((d) => d.name === "moneeey"));
 		});
 		expect(hasMeta).toBe(true);
 	});

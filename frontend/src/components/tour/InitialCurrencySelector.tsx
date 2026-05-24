@@ -31,7 +31,7 @@ export default function InitialCurrencySelector() {
 							<b>{currency.short}</b> {currency.name}
 						</span>
 					),
-					value: currency.currency_uuid,
+					value: currency.id,
 				}))}
 				onChange={(value: string) => setDefaultCurrency(value)}
 			/>

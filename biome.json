@@ -6,6 +6,7 @@
 			"**/src/polyfills.ts",
 			"./docker/*",
 			"**/playwright-report/*",
+			"**/test-results/*",
 			"**/sw.bundle.js",
 			"**/coverage/*"
 		]

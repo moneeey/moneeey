@@ -9,9 +9,8 @@ import { TDateFormat, currentDateTime } from "../utils/Date";
 import type { TCurrencyUUID } from "./Currency";
 
 export type SyncConfig = {
-	url: string;
-	username: string;
-	password: string;
+	vaultId: string;
+	sessionToken: string;
 	enabled: boolean;
 };
 
@@ -21,35 +20,28 @@ export interface IConfig extends IBaseEntity {
 	thousand_separator: string;
 	default_currency: TCurrencyUUID;
 	view_archived: boolean;
-	couchSync?: SyncConfig;
 	moneeeySync?: SyncConfig;
 }
 
 export class ConfigStore extends MappedStore<IConfig> {
 	constructor(moneeeyStore: MoneeeyStore) {
 		super(moneeeyStore, {
-			getUuid: () => "CONFIG",
 			factory: () =>
 				({
+					id: "CONFIG",
 					entity_type: EntityType.CONFIG,
 					date_format: TDateFormat,
 					decimal_separator: ",",
 					thousand_separator: ".",
 					default_currency: "",
 					view_archived: false,
-					couchSync: {
-						enabled: false,
-						url: "",
-						username: "",
-						password: "",
-					},
+					tags: [],
 					moneeeySync: {
 						enabled: false,
-						url: "",
-						username: "",
-						password: "",
+						vaultId: "",
+						sessionToken: "",
 					},
-					updated: currentDateTime(),
+					updated_at: currentDateTime(),
 					created: currentDateTime(),
 				}) as IConfig,
 		});

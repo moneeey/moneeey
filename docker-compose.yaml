@@ -15,23 +15,10 @@ services:
     restart: unless-stopped
     networks:
       - moneeey-network
-    depends_on:
-      - couchdb
     volumes:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend/env.example:/run/secret/dev.env:z,ro
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app:z
-
-  couchdb:
-    image: couchdb:3.2
-    restart: unless-stopped
-    networks:
-      - moneeey-network
-    environment:
-      - COUCHDB_USER=dev
-      - COUCHDB_PASSWORD=dev
-    volumes:
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/couchdb_data:/opt/couchdb/data:z
-      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/couchdb.dev.ini:/opt/couchdb/etc/local.d/local.ini:z
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/backend_data:/data:z,U
 
   caddy:
     image: caddy:2.6.4-alpine

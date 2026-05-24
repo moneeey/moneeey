@@ -60,7 +60,7 @@ export default observer(
 		<BaseFormEditor
 			className={className}
 			testId={testId}
-			key={`${entity._id}_${entity._rev || ""}`}
+			key={`${entity.id}_${entity.updated_at || ""}`}
 			items={schema.map((field) => ({
 				label: field.title,
 				error:
@@ -68,7 +68,7 @@ export default observer(
 					undefined,
 				editor: (
 					<field.render
-						rev={entity?._rev || ""}
+						rev={entity?.updated_at || ""}
 						entity={entity}
 						field={field}
 						commit={(updated) => store.merge(updated)}
