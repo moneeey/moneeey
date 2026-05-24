@@ -1,4 +1,4 @@
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 
 import { tagsForText } from "../../utils/Tags";
 import { Input } from "../base/Input";

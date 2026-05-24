@@ -1,5 +1,5 @@
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 import type { ReactElement, ReactNode } from "react";
 
 import type { NavigationModal } from "../../shared/Navigation";

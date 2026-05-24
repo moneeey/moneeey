@@ -1,4 +1,4 @@
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 
 import { InputNumber, type InputNumberProps } from "../base/Input";
 

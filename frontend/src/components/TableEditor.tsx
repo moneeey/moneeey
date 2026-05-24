@@ -1,5 +1,5 @@
 import { uniq } from "lodash";
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
 import { useCallback, useMemo, useState } from "react";
 
 import type { IBaseEntity } from "../shared/Entity";
