@@ -332,6 +332,43 @@ test.describe("vault membership management", () => {
 				timeout: 15_000,
 			});
 
+			const vaultIdA = await ownerVaultId(pageA);
+
+			const kickedVaultList = await pageB.evaluate(async () => {
+				const res = await fetch("/api/auth/vaults/list", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: "{}",
+				});
+				if (!res.ok) return { vaults: [] };
+				return (await res.json()) as {
+					vaults: { vaultId: string }[];
+				};
+			});
+			expect(
+				kickedVaultList.vaults.find((v) => v.vaultId === vaultIdA),
+			).toBeUndefined();
+
+			const kickedMembersResp = await pageB.evaluate(async (vaultId) => {
+				const res = await fetch("/api/auth/vault/members", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ vaultId }),
+				});
+				return res.status;
+			}, vaultIdA);
+			expect(kickedMembersResp).toBe(403);
+
+			const kickedSelectResp = await pageB.evaluate(async (vaultId) => {
+				const res = await fetch("/api/auth/vault/select", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ vaultId }),
+				});
+				return res.status;
+			}, vaultIdA);
+			expect(kickedSelectResp).toBe(403);
+
 			await contextB.clearCookies();
 			await resetAppState(pageB);
 			await landThroughLanguage(pageB);
@@ -457,9 +494,9 @@ test.describe("sign out + sign back in", () => {
 			await page.waitForTimeout(1500);
 
 			await page.getByTestId("appMenu_signout").click();
-			await expect(page.getByTestId("nm-modal-title")).toContainText(
-				/sign out/i,
-			);
+			await expect(
+				page.getByRole("heading", { name: /sign out & delete/i }),
+			).toBeVisible();
 			await page.getByTestId("signout-confirm").click();
 
 			await expect(page.getByTestId("languageSelector_en")).toBeVisible({

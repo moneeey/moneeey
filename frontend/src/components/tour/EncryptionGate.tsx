@@ -27,12 +27,9 @@ import {
 	selectVaultForTabAndReload,
 } from "../../shared/storage/tabVault";
 import useMessages, { type TMessages } from "../../utils/Messages";
-import {
-	CancelButton,
-	DeleteButton,
-	OkButton,
-	SecondaryButton,
-} from "../base/Button";
+import SignOutConfirm from "../SignOutConfirm";
+import { DeleteButton, OkButton, SecondaryButton } from "../base/Button";
+
 import { Input } from "../base/Input";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
 
@@ -467,36 +464,14 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 
 	if (state.kind === "confirm-signout") {
 		return (
-			<MinimalBasicScreen>
-				<h2 className="text-xl font-semibold text-danger-300">
-					{Messages.menu.signout_title}
-				</h2>
-				<p className="text-sm opacity-80">{Messages.menu.signout_body}</p>
-				<p className="text-sm font-semibold text-danger-300">
-					{Messages.menu.signout_warning}
-				</p>
-				{busy && (
-					<p className="text-sm opacity-80">
-						{Messages.menu.signout_in_progress}
-					</p>
-				)}
-				<div className="flex gap-2">
-					<CancelButton
-						onClick={() => setState(state.returnTo)}
-						disabled={busy}
-					/>
-					<DeleteButton
-						testId="signout-confirm"
-						disabled={busy}
-						onClick={async () => {
-							setBusy(true);
-							await signOut();
-						}}
-					>
-						{busy ? Messages.menu.signout_in_progress : Messages.menu.signout}
-					</DeleteButton>
-				</div>
-			</MinimalBasicScreen>
+			<SignOutConfirm
+				busy={busy}
+				onCancel={() => setState(state.returnTo)}
+				onConfirm={async () => {
+					setBusy(true);
+					await signOut();
+				}}
+			/>
 		);
 	}
 

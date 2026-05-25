@@ -41,7 +41,9 @@ test("Settings — language, theme, tour, sign out cancel + confirm", async ({
 
 	await test.step("sign out — cancel leaves app intact", async () => {
 		await page.getByTestId("appMenu_signout").click();
-		await expect(page.getByTestId("nm-modal-title")).toContainText(/sign out/i);
+		await expect(
+			page.getByRole("heading", { name: /sign out & delete/i }),
+		).toBeVisible();
 		await page.getByTestId("signout-cancel").click();
 		await expect(page.getByTestId("appMenu_lock")).toBeVisible();
 	});
