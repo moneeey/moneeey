@@ -366,24 +366,21 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 						{error}
 					</p>
 				)}
-				<div className="flex flex-wrap justify-center gap-2">
+				<div className="flex gap-2">
 					<SecondaryButton
 						onClick={goChoose}
 						title={Messages.util.cancel}
 						disabled={busy}
-						className="px-3 py-1.5"
 					/>
 					<SecondaryButton
 						onClick={onPasskeyLogin}
 						title={Messages.encryption.passkey_login}
 						disabled={busy}
-						className="px-3 py-1.5"
 					/>
 					<OkButton
 						onClick={onPasskeyRegister}
 						title={Messages.encryption.passkey_register}
 						disabled={busy || displayName.trim().length === 0}
-						className="px-3 py-1.5"
 					/>
 				</div>
 			</MinimalBasicScreen>
@@ -420,18 +417,16 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 						{error}
 					</p>
 				)}
-				<div className="flex flex-wrap justify-center gap-2">
+				<div className="flex gap-2">
 					<SecondaryButton
 						onClick={goChoose}
 						title={Messages.util.cancel}
 						disabled={busy}
-						className="px-3 py-1.5"
 					/>
 					<OkButton
 						onClick={() => onInviteRegister(state.token)}
 						title={Messages.encryption.invite_join}
 						disabled={busy || displayName.trim().length === 0}
-						className="px-3 py-1.5"
 					/>
 				</div>
 			</MinimalBasicScreen>
@@ -533,17 +528,15 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 				<p className="text-sm opacity-80">{Messages.encryption.unlocking}</p>
 			)}
 			{isSetup ? (
-				<div className="flex flex-wrap justify-center gap-2">
+				<div className="flex gap-2">
 					<SecondaryButton
 						onClick={goChoose}
 						title={Messages.util.cancel}
 						disabled={busy}
-						className="px-3 py-1.5"
 					/>
 					<OkButton
 						disabled={busy || passphrase.length === 0}
 						onClick={onSubmit}
-						className="px-3 py-1.5"
 					>
 						<span className="flex items-center gap-1">
 							{Messages.encryption.setup_submit}
@@ -551,13 +544,12 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 					</OkButton>
 				</div>
 			) : (
-				<div className="flex justify-between w-full max-w-sm gap-2">
+				<div className="flex justify-between w-full max-w-sm">
 					<DeleteButton
 						onClick={() =>
 							setState({ kind: "confirm-delete", returnTo: state })
 						}
 						disabled={busy}
-						className="px-3 py-1.5"
 					>
 						<span className="flex items-center gap-1">
 							<TrashIcon className="h-4 w-4 shrink-0" />
@@ -567,7 +559,6 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 					<OkButton
 						disabled={busy || passphrase.length === 0}
 						onClick={onSubmit}
-						className="px-3 py-1.5"
 					>
 						<span className="flex items-center gap-1">
 							<LockOpenIcon className="h-4 w-4 shrink-0" />

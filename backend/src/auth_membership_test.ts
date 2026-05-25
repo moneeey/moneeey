@@ -440,11 +440,9 @@ Deno.test(async function vaultTransferSuccess() {
 
 Deno.test(async function vaultCreateRequiresAuth() {
 	await stubAuthed(null, async () => {
-		const { resp } = await runServerRequest(
-			"POST",
-			"/api/auth/vault/create",
-			{ name: "x" },
-		);
+		const { resp } = await runServerRequest("POST", "/api/auth/vault/create", {
+			name: "x",
+		});
 		assertResponse(resp, 401, { error: "not authenticated" });
 	});
 });
@@ -518,11 +516,9 @@ Deno.test(async function vaultCreateFallsBackToDisplayName() {
 
 Deno.test(async function vaultDeleteRequiresAuth() {
 	await stubAuthed(null, async () => {
-		const { resp } = await runServerRequest(
-			"POST",
-			"/api/auth/vault/delete",
-			{ vaultId: "v1" },
-		);
+		const { resp } = await runServerRequest("POST", "/api/auth/vault/delete", {
+			vaultId: "v1",
+		});
 		assertResponse(resp, 401, { error: "not authenticated" });
 	});
 });
