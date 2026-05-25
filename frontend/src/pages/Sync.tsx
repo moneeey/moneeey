@@ -159,7 +159,7 @@ export const InviteSection = () => {
 };
 
 const SectionCard = ({ children }: { children: React.ReactNode }) => (
-	<section className="rounded-lg border border-background-700 bg-background-900 p-4">
+	<section className="rounded-lg border border-background-700 bg-background-900 p-5 md:p-6">
 		{children}
 	</section>
 );
@@ -199,8 +199,10 @@ export default function Sync() {
 	const Messages = useMessages();
 
 	return (
-		<div className="bg-background-800 p-2">
-			<span className="white-space-preline">{Messages.sync.intro}</span>
+		<div className="bg-background-800 p-4 md:p-6">
+			<p className="white-space-preline mb-4 text-sm opacity-80">
+				{Messages.sync.intro}
+			</p>
 			<MoneeeyAccountConfig />
 		</div>
 	);

@@ -168,6 +168,11 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 			label: Messages.encryption.pulling_from_remote,
 		});
 		try {
+			const localVaultId = await store.getVaultId();
+			if (localVaultId && localVaultId !== remote.vaultId) {
+				await store.destroy();
+				await store.open();
+			}
 			const { SyncClient, wsVaultUrl } = await import(
 				"../../shared/sync/SyncClient"
 			);

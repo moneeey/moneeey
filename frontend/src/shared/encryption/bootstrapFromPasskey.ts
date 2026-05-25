@@ -173,6 +173,16 @@ export const renameVault = async (
 	await post("/api/auth/vault/rename", { vaultId, name });
 };
 
+export const createVault = async (
+	name?: string,
+): Promise<{ vaultId: string; name: string; createdAt: string }> => {
+	return await post("/api/auth/vault/create", { name: name ?? "" });
+};
+
+export const deleteVault = async (vaultId: string): Promise<void> => {
+	await post("/api/auth/vault/delete", { vaultId });
+};
+
 export type VaultListItem = {
 	vaultId: string;
 	name: string;

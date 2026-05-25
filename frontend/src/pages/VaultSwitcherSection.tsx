@@ -2,11 +2,17 @@ import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 
 import { Status } from "../components/Status";
-import { OkButton, SecondaryButton } from "../components/base/Button";
+import {
+	DeleteButton,
+	OkButton,
+	SecondaryButton,
+} from "../components/base/Button";
 import { Input } from "../components/base/Input";
 import { VerticalSpace } from "../components/base/Space";
 import {
 	type VaultListItem,
+	deleteVault as apiDeleteVault,
+	createVault,
 	listMyVaults,
 	renameVault,
 } from "../shared/encryption/bootstrapFromPasskey";
@@ -29,6 +35,11 @@ export const VaultSwitcherSection = observer(() => {
 	const [error, setError] = useState<string | null>(null);
 	const [renaming, setRenaming] = useState<string | null>(null);
 	const [renameValue, setRenameValue] = useState("");
+	const [creating, setCreating] = useState(false);
+	const [createValue, setCreateValue] = useState("");
+	const [confirmDelete, setConfirmDelete] = useState<VaultListItem | null>(
+		null,
+	);
 	const [busy, setBusy] = useState(false);
 
 	const refresh = useCallback(async () => {
@@ -62,10 +73,44 @@ export const VaultSwitcherSection = observer(() => {
 		}
 	};
 
+	const onCreate = async () => {
+		setBusy(true);
+		setError(null);
+		try {
+			await createVault(createValue.trim() || undefined);
+			setCreating(false);
+			setCreateValue("");
+			await refresh();
+		} catch (err) {
+			console.error("create vault failed", err);
+			setError(Messages.sync.members_action_error);
+		} finally {
+			setBusy(false);
+		}
+	};
+
+	const onConfirmDelete = async () => {
+		if (!confirmDelete) return;
+		setBusy(true);
+		setError(null);
+		try {
+			await apiDeleteVault(confirmDelete.vaultId);
+			setConfirmDelete(null);
+			await refresh();
+		} catch (err) {
+			console.error("delete vault failed", err);
+			setError(Messages.sync.members_action_error);
+		} finally {
+			setBusy(false);
+		}
+	};
+
 	if (!error && !vaults) return null;
 
+	const ownedCount = (vaults ?? []).filter((v) => v.role === "owner").length;
+
 	return (
-		<section className="rounded-lg border border-background-700 bg-background-900 p-4">
+		<section className="rounded-lg border border-background-700 bg-background-900 p-5 md:p-6">
 			<VerticalSpace testId="vaultSwitcherSection">
 				<h3 className="text-base font-semibold">
 					{Messages.sync.vault_switcher_title}
@@ -79,6 +124,8 @@ export const VaultSwitcherSection = observer(() => {
 						{vaults.map((v) => {
 							const isCurrent = v.vaultId === management.vaultId;
 							const isRenaming = renaming === v.vaultId;
+							const canDelete =
+								v.role === "owner" && !isCurrent && ownedCount > 1;
 							return (
 								<li
 									key={v.vaultId}
@@ -93,6 +140,7 @@ export const VaultSwitcherSection = observer(() => {
 												placeholder={v.name}
 												onChange={setRenameValue}
 												containerArea
+												immediate
 											/>
 										) : (
 											<span
@@ -150,6 +198,15 @@ export const VaultSwitcherSection = observer(() => {
 													compact
 												/>
 											))}
+										{canDelete && !isRenaming && (
+											<DeleteButton
+												testId={`vault-delete-${v.vaultId}`}
+												onClick={() => setConfirmDelete(v)}
+												disabled={busy}
+											>
+												<span className="px-1">{Messages.util.delete}</span>
+											</DeleteButton>
+										)}
 										{!isCurrent && !isRenaming && (
 											<OkButton
 												testId={`select-vault-${v.vaultId}`}
@@ -162,6 +219,68 @@ export const VaultSwitcherSection = observer(() => {
 							);
 						})}
 					</ul>
+				)}
+				{creating ? (
+					<div className="flex flex-wrap items-end gap-2">
+						<div className="flex-1 min-w-[12rem]">
+							<Input
+								testId="vault-create-input"
+								value={createValue}
+								placeholder={Messages.sync.vault_create_placeholder}
+								onChange={setCreateValue}
+								containerArea
+								immediate
+							/>
+						</div>
+						<SecondaryButton
+							onClick={() => {
+								setCreating(false);
+								setCreateValue("");
+							}}
+							title={Messages.util.cancel}
+							disabled={busy}
+							compact
+						/>
+						<OkButton
+							testId="vault-create-confirm"
+							onClick={onCreate}
+							title={Messages.sync.vault_create}
+							disabled={busy}
+						/>
+					</div>
+				) : (
+					<div>
+						<SecondaryButton
+							testId="vault-create"
+							onClick={() => setCreating(true)}
+							title={Messages.sync.vault_create_new}
+						/>
+					</div>
+				)}
+				{confirmDelete && (
+					<div
+						data-testid="confirm-vault-delete"
+						className="rounded border border-danger-700 bg-background-900 p-3"
+					>
+						<p className="mb-2 text-sm">
+							{Messages.sync.vault_delete_confirm}{" "}
+							<span className="font-mono">{confirmDelete.name}</span>
+						</p>
+						<div className="flex gap-2">
+							<SecondaryButton
+								onClick={() => setConfirmDelete(null)}
+								title={Messages.util.cancel}
+								disabled={busy}
+							/>
+							<DeleteButton
+								testId="confirm-vault-delete-button"
+								onClick={onConfirmDelete}
+								disabled={busy}
+							>
+								<span className="px-1">{Messages.util.delete}</span>
+							</DeleteButton>
+						</div>
+					</div>
 				)}
 			</VerticalSpace>
 		</section>
