@@ -15,12 +15,5 @@ if (import.meta.main) {
 .env
   JWT_PUBLIC_KEY="${exportable(publicKeyStr)}"
   JWT_PRIVATE_KEY="${exportable(privateKeyStr)}"
-
-couchdb.ini
-  [chttpd]
-  authentication_handlers = {chttpd_auth, cookie_authentication_handler}, {chttpd_auth, jwt_authentication_handler}, {chttpd_auth, default_authentication_handler}
-
-  [jwt_keys]
-  rsa:moneeeyKeyId = ${publicKeyStr.replace(/\n|\r/g, "\\n")}
 `);
 }
