@@ -19,7 +19,7 @@ type UserId = {
 	userId: string;
 };
 
-async function resolvePrimaryVaultId(userId: string): Promise<string> {
+export async function resolvePrimaryVaultId(userId: string): Promise<string> {
 	const storage = getStorage();
 	const vaults = await getVaultsByUser(storage, userId);
 	if (vaults.length > 0) return vaults[0].id;

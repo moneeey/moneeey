@@ -337,6 +337,18 @@ test.describe("vault membership management", () => {
 			await expect(pageA.getByTestId(`member-row-${emailB}`)).toHaveCount(0, {
 				timeout: 15_000,
 			});
+
+			// Kicked member must still be able to log back in (regression: server
+			// used to 500 when the user had zero vaults after a kick).
+			await resetAppState(pageB);
+			await landThroughLanguage(pageB);
+			await pageB
+				.getByRole("button", { name: "Online account (passkey)" })
+				.click();
+			await pageB.getByRole("button", { name: "Sign in" }).click();
+			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
+				timeout: 30_000,
+			});
 		} finally {
 			await authA.remove();
 			await authB.remove();

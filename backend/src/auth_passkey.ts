@@ -1,4 +1,7 @@
-import { authenticateAndRespond } from "./auth_session.ts";
+import {
+	authenticateAndRespond,
+	resolvePrimaryVaultId,
+} from "./auth_session.ts";
 import {
 	APP_URL,
 	WEBAUTHN_ORIGIN,
@@ -89,6 +92,7 @@ export const authPasskeyInternals = {
 	createUserVaultAndPasskey,
 	createUserWithInviteAndPasskey,
 	getPrimaryVaultId,
+	resolvePrimaryVaultId,
 	createInviteForOwner,
 	findInvite: (token: string) => dataFindInvite(getStorage(), token),
 	acceptInviteForUser: async (userId: string, token: string) => ({
@@ -301,13 +305,7 @@ export function setupPasskey(authRouter: oak.Router) {
 				verification.authenticationInfo.newCounter,
 			);
 
-			const vaultId = await authPasskeyInternals.getPrimaryVaultId(user.id);
-			if (!vaultId) {
-				respond(ctx, oak.Status.InternalServerError, {
-					error: "user has no vault",
-				});
-				return;
-			}
+			const vaultId = await authPasskeyInternals.resolvePrimaryVaultId(user.id);
 
 			const result = await authPasskeyInternals.authenticateAndRespond(
 				ctx,
