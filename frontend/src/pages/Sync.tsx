@@ -79,6 +79,7 @@ export const MoneeeyLogin = ({
 								testId="displayName"
 								type="text"
 								autoComplete="username"
+								immediate
 								value={displayName}
 								placeholder={Messages.encryption.display_name_placeholder}
 								onChange={(value) => setDisplayName(value)}

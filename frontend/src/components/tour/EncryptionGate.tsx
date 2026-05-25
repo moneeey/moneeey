@@ -334,6 +334,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 						testId="displayName"
 						type="text"
 						autoComplete="username"
+						immediate
 						placeholder={Messages.encryption.display_name_placeholder}
 						value={displayName}
 						disabled={busy}
@@ -395,6 +396,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 						testId="displayName"
 						type="text"
 						autoComplete="username"
+						immediate
 						placeholder={Messages.encryption.display_name_placeholder}
 						value={displayName}
 						disabled={busy}

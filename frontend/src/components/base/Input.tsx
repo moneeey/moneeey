@@ -24,6 +24,7 @@ export type InputProps<T> = WithDataTestId & {
 	containerArea?: boolean;
 	type?: "text" | "password" | "email";
 	autoComplete?: string;
+	immediate?: boolean;
 };
 
 type AddonType = string | ReactNode | undefined;
@@ -80,9 +81,10 @@ const Input = ({
 	isError,
 	type = "text",
 	autoComplete,
+	immediate: immediateProp,
 }: InputProps<string>) => {
 	const [currentValue, setCurrentValue] = useState<string>(value);
-	const immediate = type === "password" || type === "email";
+	const immediate = immediateProp || type === "password" || type === "email";
 
 	useEffect(() => {
 		setCurrentValue(value);
