@@ -8,14 +8,20 @@ import {
 	openEncryptedDatabase,
 } from "../../shared/EncryptionStore";
 import {
+	fetchPasskeyAuthState,
 	getInviteInfo,
 	loginPasskey,
 	registerPasskey,
 	registerViaInvite,
+	selectVault,
 } from "../../shared/encryption/bootstrapFromPasskey";
 import { hasEncryptionMeta } from "../../shared/encryption/codec";
 import { isWebCryptoAvailable } from "../../shared/encryption/crypto";
 import type { LocalStore } from "../../shared/storage/LocalStore";
+import {
+	getTabVaultId,
+	selectVaultForTabAndReload,
+} from "../../shared/storage/tabVault";
 import useMessages, { type TMessages } from "../../utils/Messages";
 import {
 	CancelButton,
@@ -73,18 +79,26 @@ function parseInviteToken(): string | null {
 	return match ? match[1] : null;
 }
 
-const detectInitialState = async (store: LocalStore): Promise<GateState> => {
+type InitialDecision =
+	| { kind: "state"; state: GateState }
+	| { kind: "auto-pull"; remote: SyncConfig };
+
+const decideInitial = async (store: LocalStore): Promise<InitialDecision> => {
 	if (await hasEncryptionMeta(store)) {
-		return { kind: "unlock" };
+		return { kind: "state", state: { kind: "unlock" } };
+	}
+	const auth = await fetchPasskeyAuthState();
+	if (auth) {
+		return { kind: "auto-pull", remote: auth };
 	}
 	const inviteToken = parseInviteToken();
 	if (inviteToken) {
 		const info = await getInviteInfo(inviteToken);
 		if (info?.valid) {
-			return { kind: "invite", token: inviteToken };
+			return { kind: "state", state: { kind: "invite", token: inviteToken } };
 		}
 	}
-	return { kind: "choose" };
+	return { kind: "state", state: { kind: "choose" } };
 };
 
 export default function EncryptionGate({ store, onUnlocked }: Props) {
@@ -99,12 +113,18 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 
 	useEffect(() => {
 		let cancelled = false;
-		detectInitialState(store).then((next) => {
-			if (!cancelled) setState(next);
+		decideInitial(store).then((decision) => {
+			if (cancelled) return;
+			if (decision.kind === "auto-pull") {
+				pullFromRemote(decision.remote);
+				return;
+			}
+			setState(decision.state);
 		});
 		return () => {
 			cancelled = true;
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [store]);
 
 	const reset = () => {
@@ -167,19 +187,27 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 			kind: "pulling",
 			label: Messages.encryption.pulling_from_remote,
 		});
-		try {
-			const localVaultId = await store.getVaultId();
-			if (localVaultId && localVaultId !== remote.vaultId) {
-				await store.destroy();
-				await store.open();
+		let effective = remote;
+		const tabVault = getTabVaultId();
+		if (tabVault && tabVault !== remote.vaultId) {
+			try {
+				effective = await selectVault(tabVault);
+			} catch (err) {
+				console.warn("tab vault no longer accessible, using cookie vault", err);
 			}
+		}
+		if (getTabVaultId() !== effective.vaultId) {
+			selectVaultForTabAndReload(effective.vaultId);
+			return;
+		}
+		try {
 			const { SyncClient, wsVaultUrl } = await import(
 				"../../shared/sync/SyncClient"
 			);
 			await new Promise<void>((resolve, reject) => {
 				const client = new SyncClient({
 					url: wsVaultUrl(),
-					sessionToken: remote.sessionToken,
+					sessionToken: effective.sessionToken,
 					localStore: store,
 					events: {
 						onReconcileDone: () => {
@@ -195,7 +223,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 				client.start();
 			});
 
-			pendingSyncRef.current = remote;
+			pendingSyncRef.current = effective;
 
 			if (await hasEncryptionMeta(store)) {
 				reset();

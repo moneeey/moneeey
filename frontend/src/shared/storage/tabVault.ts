@@ -1,7 +1,7 @@
 const TAB_VAULT_KEY = "tabVaultId";
 const LAST_VAULT_KEY = "lastVaultId";
-const PRIMARY_VAULT_KEY = "primaryVaultId";
-const LEGACY_DB_NAME = "moneeey";
+const DB_NAME_PREFIX = "moneeey";
+const BOOTSTRAP_DB_NAME = `${DB_NAME_PREFIX}-bootstrap`;
 
 const readSession = (key: string): string | null => {
 	try {
@@ -41,18 +41,17 @@ export function getTabVaultId(): string | null {
 
 export function getTabLocalStoreName(): string {
 	const tabVault = readSession(TAB_VAULT_KEY);
-	if (!tabVault) return LEGACY_DB_NAME;
-	const primary = readLocal(PRIMARY_VAULT_KEY);
-	if (primary && primary === tabVault) return LEGACY_DB_NAME;
-	return `${LEGACY_DB_NAME}-${tabVault}`;
+	if (!tabVault) return BOOTSTRAP_DB_NAME;
+	return `${DB_NAME_PREFIX}-${tabVault}`;
 }
 
 export function rememberLastVault(vaultId: string): void {
 	if (!vaultId) return;
 	writeLocal(LAST_VAULT_KEY, vaultId);
-	if (!readLocal(PRIMARY_VAULT_KEY)) {
-		writeLocal(PRIMARY_VAULT_KEY, vaultId);
-	}
+}
+
+export function getLastVaultId(): string | null {
+	return readLocal(LAST_VAULT_KEY);
 }
 
 export function selectVaultForTabAndReload(vaultId: string): void {

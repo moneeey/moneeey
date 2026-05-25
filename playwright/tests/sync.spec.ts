@@ -338,8 +338,7 @@ test.describe("vault membership management", () => {
 				timeout: 15_000,
 			});
 
-			// Kicked member must still be able to log back in (regression: server
-			// used to 500 when the user had zero vaults after a kick).
+			await contextB.clearCookies();
 			await resetAppState(pageB);
 			await landThroughLanguage(pageB);
 			await pageB
@@ -616,6 +615,131 @@ test.describe("existing user joins another vault via invite", () => {
 			await authB.remove();
 			await contextA.close();
 			await contextB.close();
+		}
+	});
+});
+
+test.describe("vault create / delete", () => {
+	test.skip(
+		({ browserName }) => browserName !== "chromium",
+		"WebAuthn virtual authenticator is chromium-only",
+	);
+
+	test("owner can create a new vault from settings", async ({
+		page,
+		baseURL,
+	}) => {
+		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
+			test.skip(true, "backend not reachable at baseURL");
+		}
+		const auth = await enableVirtualAuthenticator(page);
+		try {
+			await resetAppState(page);
+			await landThroughLanguage(page);
+			await signupViaPasskey(page, uniqueTestDisplayName("createVault"));
+			await pickDefaultCurrencyBRL(page);
+			await createFirstAccount(page, `Acc-${Date.now()}`);
+
+			await openSyncSettings(page);
+			await expect(page.getByTestId("vaultSwitcherSection")).toBeVisible({
+				timeout: 15_000,
+			});
+
+			const newName = `Family-${Date.now()}`;
+			await page.getByTestId("vault-create").click();
+			await page.getByTestId("vault-create-input").fill(newName);
+			await page.getByTestId("vault-create-confirm").click();
+
+			await expect(page.getByText(newName)).toBeVisible({ timeout: 15_000 });
+		} finally {
+			await auth.remove();
+		}
+	});
+
+	test("owner can delete a non-current vault when another remains", async ({
+		page,
+		baseURL,
+	}) => {
+		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
+			test.skip(true, "backend not reachable at baseURL");
+		}
+		const auth = await enableVirtualAuthenticator(page);
+		try {
+			await resetAppState(page);
+			await landThroughLanguage(page);
+			await signupViaPasskey(page, uniqueTestDisplayName("deleteVault"));
+			await pickDefaultCurrencyBRL(page);
+			await createFirstAccount(page, `Acc-${Date.now()}`);
+
+			await openSyncSettings(page);
+
+			await expect(page.locator('[data-testid^="vault-delete-"]')).toHaveCount(
+				0,
+			);
+
+			const secondName = `ToDelete-${Date.now()}`;
+			await page.getByTestId("vault-create").click();
+			await page.getByTestId("vault-create-input").fill(secondName);
+			await page.getByTestId("vault-create-confirm").click();
+			await expect(page.getByText(secondName)).toBeVisible({ timeout: 15_000 });
+
+			const row = page
+				.getByTestId("vaultSwitcherSection")
+				.locator(`li:has-text("${secondName}")`);
+			await row.getByTestId(/^vault-delete-/).click();
+
+			await expect(page.getByTestId("confirm-vault-delete")).toBeVisible();
+			await page.getByTestId("confirm-vault-delete-button").click();
+
+			await expect(page.getByText(secondName)).toHaveCount(0, {
+				timeout: 15_000,
+			});
+		} finally {
+			await auth.remove();
+		}
+	});
+});
+
+test.describe("vault IndexedDB isolation", () => {
+	test.skip(
+		({ browserName }) => browserName !== "chromium",
+		"WebAuthn virtual authenticator is chromium-only",
+	);
+
+	test("switching to a new vault opens a fresh DB (no data poisoning)", async ({
+		page,
+		baseURL,
+	}) => {
+		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
+			test.skip(true, "backend not reachable at baseURL");
+		}
+		const auth = await enableVirtualAuthenticator(page);
+		try {
+			await resetAppState(page);
+			await landThroughLanguage(page);
+			await signupViaPasskey(page, uniqueTestDisplayName("isolation"));
+			await pickDefaultCurrencyBRL(page);
+			await createFirstAccount(page, `AccA-${Date.now()}`);
+
+			await openSyncSettings(page);
+
+			const secondName = `Second-${Date.now()}`;
+			await page.getByTestId("vault-create").click();
+			await page.getByTestId("vault-create-input").fill(secondName);
+			await page.getByTestId("vault-create-confirm").click();
+			const secondRow = page
+				.getByTestId("vaultSwitcherSection")
+				.locator(`li:has-text("${secondName}")`);
+			await secondRow.getByTestId(/^select-vault-/).click();
+
+			await expect(page.getByTestId("encryptionPassphrase")).toBeVisible({
+				timeout: 30_000,
+			});
+			await expect(
+				page.getByTestId("encryptionPassphraseConfirm"),
+			).toBeVisible();
+		} finally {
+			await auth.remove();
 		}
 	});
 });

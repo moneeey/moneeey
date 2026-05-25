@@ -23,6 +23,6 @@ const BaseSpace = (baseClassname: ClassNameType) =>
 		);
 	};
 
-export const Space = BaseSpace("flex flex-row items-center gap-4");
-export const VerticalSpace = BaseSpace("flex flex-col gap-4");
+export const Space = BaseSpace("flex flex-row items-center gap-4 p-2");
+export const VerticalSpace = BaseSpace("flex flex-col gap-4 p-2");
 export default Space;

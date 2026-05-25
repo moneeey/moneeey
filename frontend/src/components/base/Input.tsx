@@ -9,7 +9,7 @@ export const BaseInputClzz: ClassNameType =
 	"w-full color-inherit bg-transparent outline-none" as const;
 
 const OuterShellClzz: ClassNameType =
-	"w-full color-inherit outline-none" as const;
+	"w-full color-inherit outline-none flex h-full" as const;
 
 export type InputProps<T> = WithDataTestId & {
 	className?: string;
@@ -51,7 +51,7 @@ export const InputContainer = ({
 	return (
 		<div
 			data-testid={`inputContainer${testId}`}
-			className={`${baseClassname || OuterShellClzz} flex h-full focus-within:ring-1 focus-within:ring-inset ${
+			className={`${baseClassname || OuterShellClzz} focus-within:ring-1 focus-within:ring-inset ${
 				isError
 					? "border border-red-400 focus-within:ring-red-400"
 					: "focus-within:ring-primary-500"

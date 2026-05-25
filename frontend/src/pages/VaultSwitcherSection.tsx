@@ -8,7 +8,7 @@ import {
 	SecondaryButton,
 } from "../components/base/Button";
 import { Input } from "../components/base/Input";
-import { VerticalSpace } from "../components/base/Space";
+import Space, { VerticalSpace } from "../components/base/Space";
 import {
 	type VaultListItem,
 	deleteVault as apiDeleteVault,
@@ -110,7 +110,7 @@ export const VaultSwitcherSection = observer(() => {
 	const totalVaults = vaults?.length ?? 0;
 
 	return (
-		<section className="rounded-lg border border-background-700 bg-background-900 p-5 md:p-6">
+		<section className="rounded-lg border border-background-700 bg-background-900 p-4">
 			<VerticalSpace testId="vaultSwitcherSection">
 				<h3 className="text-base font-semibold">
 					{Messages.sync.vault_switcher_title}
@@ -130,7 +130,7 @@ export const VaultSwitcherSection = observer(() => {
 								<li
 									key={v.vaultId}
 									data-testid={`vault-${v.vaultId}`}
-									className={`flex items-center justify-between gap-2 rounded border p-2 ${isCurrent ? "border-primary-500 bg-background-800" : "border-background-700 bg-background-900"}`}
+									className={`flex items-baseline justify-between gap-2 rounded border px-3 py-2 ${isCurrent ? "border-primary-500 bg-background-800" : "border-background-700 bg-background-900"}`}
 								>
 									<div className="flex flex-col flex-1 min-w-0">
 										{isRenaming ? (
@@ -167,7 +167,7 @@ export const VaultSwitcherSection = observer(() => {
 											)}
 										</span>
 									</div>
-									<div className="flex gap-2">
+									<Space>
 										{v.role === "owner" &&
 											(isRenaming ? (
 												<>
@@ -178,7 +178,6 @@ export const VaultSwitcherSection = observer(() => {
 														}}
 														title={Messages.util.cancel}
 														disabled={busy}
-														compact
 													/>
 													<OkButton
 														testId={`vault-rename-save-${v.vaultId}`}
@@ -195,7 +194,6 @@ export const VaultSwitcherSection = observer(() => {
 														setRenameValue(v.name);
 													}}
 													title={Messages.sync.vault_rename}
-													compact
 												/>
 											))}
 										{canDelete && !isRenaming && (
@@ -204,7 +202,7 @@ export const VaultSwitcherSection = observer(() => {
 												onClick={() => setConfirmDelete(v)}
 												disabled={busy}
 											>
-												<span className="px-1">{Messages.util.delete}</span>
+												{Messages.util.delete}
 											</DeleteButton>
 										)}
 										{!isCurrent && !isRenaming && (
@@ -214,14 +212,14 @@ export const VaultSwitcherSection = observer(() => {
 												title={Messages.sync.vault_switcher_use}
 											/>
 										)}
-									</div>
+									</Space>
 								</li>
 							);
 						})}
 					</ul>
 				)}
 				{creating ? (
-					<div className="flex flex-wrap items-end gap-2">
+					<Space>
 						<div className="flex-1 min-w-[12rem]">
 							<Input
 								testId="vault-create-input"
@@ -239,7 +237,6 @@ export const VaultSwitcherSection = observer(() => {
 							}}
 							title={Messages.util.cancel}
 							disabled={busy}
-							compact
 						/>
 						<OkButton
 							testId="vault-create-confirm"
@@ -247,7 +244,7 @@ export const VaultSwitcherSection = observer(() => {
 							title={Messages.sync.vault_create}
 							disabled={busy}
 						/>
-					</div>
+					</Space>
 				) : (
 					<div>
 						<SecondaryButton
@@ -258,15 +255,15 @@ export const VaultSwitcherSection = observer(() => {
 					</div>
 				)}
 				{confirmDelete && (
-					<div
-						data-testid="confirm-vault-delete"
-						className="rounded border border-danger-700 bg-background-900 p-3"
+					<VerticalSpace
+						testId="confirm-vault-delete"
+						className="rounded border border-danger-700 bg-background-900"
 					>
-						<p className="mb-2 text-sm">
+						<p className="text-sm">
 							{Messages.sync.vault_delete_confirm}{" "}
 							<span className="font-mono">{confirmDelete.name}</span>
 						</p>
-						<div className="flex gap-2">
+						<Space>
 							<SecondaryButton
 								onClick={() => setConfirmDelete(null)}
 								title={Messages.util.cancel}
@@ -277,10 +274,10 @@ export const VaultSwitcherSection = observer(() => {
 								onClick={onConfirmDelete}
 								disabled={busy}
 							>
-								<span className="px-1">{Messages.util.delete}</span>
+								{Messages.util.delete}
 							</DeleteButton>
-						</div>
-					</div>
+						</Space>
+					</VerticalSpace>
 				)}
 			</VerticalSpace>
 		</section>

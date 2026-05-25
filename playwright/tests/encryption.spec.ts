@@ -51,7 +51,7 @@ test.describe("Encryption gate", () => {
 
 		const hasMeta = await page.evaluate(async () => {
 			const dbs = await window.indexedDB.databases?.();
-			return Boolean(dbs?.find((d) => d.name === "moneeey"));
+			return Boolean(dbs?.find((d) => d.name?.startsWith("moneeey")));
 		});
 		expect(hasMeta).toBe(true);
 	});
