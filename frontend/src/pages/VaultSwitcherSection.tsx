@@ -107,7 +107,7 @@ export const VaultSwitcherSection = observer(() => {
 
 	if (!error && !vaults) return null;
 
-	const ownedCount = (vaults ?? []).filter((v) => v.role === "owner").length;
+	const totalVaults = vaults?.length ?? 0;
 
 	return (
 		<section className="rounded-lg border border-background-700 bg-background-900 p-5 md:p-6">
@@ -125,7 +125,7 @@ export const VaultSwitcherSection = observer(() => {
 							const isCurrent = v.vaultId === management.vaultId;
 							const isRenaming = renaming === v.vaultId;
 							const canDelete =
-								v.role === "owner" && !isCurrent && ownedCount > 1;
+								v.role === "owner" && !isCurrent && totalVaults > 1;
 							return (
 								<li
 									key={v.vaultId}
