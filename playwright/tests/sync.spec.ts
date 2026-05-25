@@ -55,7 +55,7 @@ test.describe("passkey signup / delete", () => {
 		}
 	});
 
-	test("delete data wipes local store and returns to landing", async ({
+	test("sign out wipes local data and returns to landing", async ({
 		page,
 		baseURL,
 	}) => {
@@ -66,7 +66,7 @@ test.describe("passkey signup / delete", () => {
 		try {
 			await page.goto("/");
 			await landThroughLanguage(page);
-			await signupViaPasskey(page, uniqueTestDisplayName("delete"));
+			await signupViaPasskey(page, uniqueTestDisplayName("signout"));
 			await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible({
 				timeout: 15_000,
 			});
@@ -74,14 +74,8 @@ test.describe("passkey signup / delete", () => {
 			await expect(page.getByTestId("encryptionPassphrase")).toBeVisible({
 				timeout: 15_000,
 			});
-			await page
-				.getByRole("button", { name: /Delete data|Apagar dados/i })
-				.first()
-				.click();
-			await page
-				.getByRole("button", { name: /Delete data|Apagar dados/i })
-				.last()
-				.click();
+			await page.getByTestId("signout").click();
+			await page.getByTestId("signout-confirm").click();
 			await expect(page.getByTestId("languageSelector_en")).toBeVisible({
 				timeout: 15_000,
 			});
@@ -433,13 +427,13 @@ test.describe("vault membership management", () => {
 	});
 });
 
-test.describe("passkey logout-login regression", () => {
+test.describe("sign out + sign back in", () => {
 	test.skip(
 		({ browserName }) => browserName !== "chromium",
 		"WebAuthn virtual authenticator is chromium-only",
 	);
 
-	test("logout then reload shows unlock (not setup) and unlocks back to local data", async ({
+	test("sign out from menu wipes local + cookie, sign back in restores from server", async ({
 		page,
 		baseURL,
 	}) => {
@@ -447,31 +441,36 @@ test.describe("passkey logout-login regression", () => {
 			test.skip(true, "backend not reachable at baseURL");
 		}
 		const auth = await enableVirtualAuthenticator(page);
-		const email = uniqueTestDisplayName("logoutLogin");
-		const accountName = `AccountKept-${Date.now()}`;
+		const displayName = uniqueTestDisplayName("signoutLogin");
+		const accountName = `AccountFromServer-${Date.now()}`;
 
 		try {
 			await resetAppState(page);
 			await landThroughLanguage(page);
-			await signupViaPasskey(page, email);
+			await signupViaPasskey(page, displayName);
 			await pickDefaultCurrencyBRL(page);
 			await createFirstAccount(page, accountName);
 			await openAccountSettings(page);
 			await expect(page.getByText(accountName)).toBeVisible({
 				timeout: 15_000,
 			});
+			await page.waitForTimeout(1500);
 
-			await page.evaluate(() => {
-				window.location.hash = "/settings";
+			await page.getByTestId("appMenu_signout").click();
+			await expect(page.getByTestId("nm-modal-title")).toContainText(
+				/sign out/i,
+			);
+			await page.getByTestId("signout-confirm").click();
+
+			await expect(page.getByTestId("languageSelector_en")).toBeVisible({
+				timeout: 30_000,
 			});
-			await expect(page.getByTestId("settingsTabs_moneeey")).toBeVisible({
-				timeout: 15_000,
-			});
-			await page.getByTestId("settingsTabs_moneeey").click();
-			await page.getByRole("button", { name: "Logout" }).click();
 
-			await page.reload();
-
+			await landThroughLanguage(page);
+			await page
+				.getByRole("button", { name: "Online account (passkey)" })
+				.click();
+			await page.getByRole("button", { name: "Sign in" }).click();
 			await expect(page.getByTestId("encryptionPassphrase")).toBeVisible({
 				timeout: 30_000,
 			});

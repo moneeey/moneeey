@@ -14,7 +14,7 @@ async function pickLanguageEn(page: import("@playwright/test").Page) {
 	await page.getByTestId("ok-button").click();
 }
 
-test("Settings — language, theme, tour, and delete data cancel + confirm", async ({
+test("Settings — language, theme, tour, sign out cancel + confirm", async ({
 	wizardPage: page,
 }) => {
 	await clickMenuByTestId(page, SETTINGS_MENU_TESTID);
@@ -39,21 +39,16 @@ test("Settings — language, theme, tour, and delete data cancel + confirm", asy
 		await page.getByTestId("nm-modal-card").getByTestId("close").click();
 	});
 
-	await page.getByTestId("settingsTabs_data").click();
-
-	await test.step("delete data — cancel leaves settings intact", async () => {
-		await page.getByRole("button", { name: /delete data/i }).click();
-		await expect(page.getByText(/permanently delete/i)).toBeVisible();
-		await page.getByRole("button", { name: /cancel/i }).click();
-		await expect(page.getByTestId("settingsTabs_data")).toBeVisible();
+	await test.step("sign out — cancel leaves app intact", async () => {
+		await page.getByTestId("appMenu_signout").click();
+		await expect(page.getByTestId("nm-modal-title")).toContainText(/sign out/i);
+		await page.getByTestId("signout-cancel").click();
+		await expect(page.getByTestId("appMenu_lock")).toBeVisible();
 	});
 
-	await test.step("delete data — confirm destroys database and returns to wizard", async () => {
-		await page.getByRole("button", { name: /delete data/i }).click();
-		await page
-			.getByRole("button", { name: /delete data/i })
-			.last()
-			.click();
+	await test.step("sign out — confirm wipes local data and returns to wizard", async () => {
+		await page.getByTestId("appMenu_signout").click();
+		await page.getByTestId("signout-confirm").click();
 		await expect(page.getByTestId("minimalScreenTitle")).toContainText(
 			"Moneeey",
 		);
@@ -71,7 +66,7 @@ test("Menu footer — sync status navigates to settings, lock returns to unlock"
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
 });
 
-test("Unlock screen — delete data with cancel and confirm", async ({
+test("Unlock screen — sign out with cancel and confirm", async ({
 	seededPage: page,
 }) => {
 	await pickLanguageEn(page);
@@ -81,16 +76,13 @@ test("Unlock screen — delete data with cancel and confirm", async ({
 	await page.reload();
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
 
-	await page.getByRole("button", { name: /delete data/i }).click();
-	await expect(page.getByText(/permanently delete/i)).toBeVisible();
+	await page.getByTestId("signout").click();
+	await expect(page.getByText(/your local copy of this vault/i)).toBeVisible();
 	await page.getByRole("button", { name: /cancel/i }).click();
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible();
 
-	await page.getByRole("button", { name: /delete data/i }).click();
-	await page
-		.getByRole("button", { name: /delete data/i })
-		.last()
-		.click();
+	await page.getByTestId("signout").click();
+	await page.getByTestId("signout-confirm").click();
 
 	await expect(page.getByTestId("minimalScreenTitle")).toContainText("Moneeey");
 	await expect(page.getByTestId("languageSelector_en")).toBeVisible();

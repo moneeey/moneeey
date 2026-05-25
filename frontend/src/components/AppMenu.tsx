@@ -1,5 +1,6 @@
 import {
 	ArrowDownOnSquareStackIcon,
+	ArrowRightStartOnRectangleIcon,
 	Bars3Icon,
 	BookOpenIcon,
 	BookmarkSlashIcon,
@@ -32,6 +33,7 @@ import ImportRoute from "../routes/ImportRoute";
 import { PayeeSettingsRoute } from "../routes/PayeeSettingsRoute";
 import ReportsRoute from "../routes/ReportsRoute";
 import SettingsRoute from "../routes/SettingsRoute";
+import { NavigationModal } from "../shared/Navigation";
 import { Status } from "../shared/Persistence";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import { StorageKind, getStorage, setStorage } from "../utils/Utils";
@@ -150,6 +152,18 @@ const Menu = observer(
 								<LockClosedIcon />
 							</Icon>{" "}
 							{expanded ? Messages.menu.lock : ""}
+						</LinkButton>
+						<LinkButton
+							compact
+							className="flex items-center gap-1 py-0.5 px-2 no-underline hover:bg-background-900 hover:opacity-75 h-11 lg:h-6"
+							testId="appMenu_signout"
+							onClick={() => navigation.openModal(NavigationModal.SIGN_OUT)}
+							title={Messages.menu.signout}
+						>
+							<Icon>
+								<ArrowRightStartOnRectangleIcon />
+							</Icon>{" "}
+							{expanded ? Messages.menu.signout : ""}
 						</LinkButton>
 					</>
 				}

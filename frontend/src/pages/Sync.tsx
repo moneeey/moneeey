@@ -165,12 +165,9 @@ const SectionCard = ({ children }: { children: React.ReactNode }) => (
 );
 
 export const MoneeeyAccountConfig = observer(() => {
-	const Messages = useMessages();
 	const { management } = useMoneeeyStore();
 	const [message, setMessage] = useState(undefined as ReactElement | undefined);
 	const { loggedIn } = management;
-
-	const onLogout = () => management.logout();
 
 	return (
 		<VerticalSpace>
@@ -184,9 +181,6 @@ export const MoneeeyAccountConfig = observer(() => {
 					<SectionCard>
 						<InviteSection />
 					</SectionCard>
-					<div>
-						<SecondaryButton onClick={onLogout} title={Messages.login.logout} />
-					</div>
 				</>
 			) : (
 				<MoneeeyLogin setMessage={setMessage} />

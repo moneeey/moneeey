@@ -1,4 +1,7 @@
-import { LockOpenIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+	ArrowRightStartOnRectangleIcon,
+	LockOpenIcon,
+} from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 
 import type { SyncConfig } from "../../entities/Config";
@@ -17,6 +20,7 @@ import {
 } from "../../shared/encryption/bootstrapFromPasskey";
 import { hasEncryptionMeta } from "../../shared/encryption/codec";
 import { isWebCryptoAvailable } from "../../shared/encryption/crypto";
+import { signOut } from "../../shared/signOut";
 import type { LocalStore } from "../../shared/storage/LocalStore";
 import {
 	getTabVaultId,
@@ -50,7 +54,7 @@ type GateState =
 	| { kind: "passkey" }
 	| { kind: "invite"; token: string }
 	| { kind: "pulling"; label: string }
-	| { kind: "confirm-delete"; returnTo: GateState };
+	| { kind: "confirm-signout"; returnTo: GateState };
 
 const messageForError = (err: unknown, Messages: TMessages): string => {
 	const code = (err as Error | undefined)?.message as
@@ -461,29 +465,35 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 		);
 	}
 
-	if (state.kind === "confirm-delete") {
+	if (state.kind === "confirm-signout") {
 		return (
 			<MinimalBasicScreen>
 				<h2 className="text-xl font-semibold text-danger-300">
-					{Messages.menu.delete_data}
+					{Messages.menu.signout_title}
 				</h2>
-				<p className="text-sm opacity-80">
-					{Messages.menu.delete_data_confirm}
+				<p className="text-sm opacity-80">{Messages.menu.signout_body}</p>
+				<p className="text-sm font-semibold text-danger-300">
+					{Messages.menu.signout_warning}
 				</p>
+				{busy && (
+					<p className="text-sm opacity-80">
+						{Messages.menu.signout_in_progress}
+					</p>
+				)}
 				<div className="flex gap-2">
-					<CancelButton onClick={() => setState(state.returnTo)} />
+					<CancelButton
+						onClick={() => setState(state.returnTo)}
+						disabled={busy}
+					/>
 					<DeleteButton
+						testId="signout-confirm"
+						disabled={busy}
 						onClick={async () => {
-							await store.destroy();
-							window.localStorage.clear();
-							window.sessionStorage.clear();
-							window.location.reload();
+							setBusy(true);
+							await signOut();
 						}}
 					>
-						<span className="flex items-center gap-1">
-							<TrashIcon className="h-4 w-4 shrink-0" />
-							{Messages.menu.delete_data}
-						</span>
+						{busy ? Messages.menu.signout_in_progress : Messages.menu.signout}
 					</DeleteButton>
 				</div>
 			</MinimalBasicScreen>
@@ -574,14 +584,15 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 			) : (
 				<div className="flex justify-between w-full max-w-sm">
 					<DeleteButton
+						testId="signout"
 						onClick={() =>
-							setState({ kind: "confirm-delete", returnTo: state })
+							setState({ kind: "confirm-signout", returnTo: state })
 						}
 						disabled={busy}
 					>
 						<span className="flex items-center gap-1">
-							<TrashIcon className="h-4 w-4 shrink-0" />
-							{Messages.menu.delete_data}
+							<ArrowRightStartOnRectangleIcon className="h-4 w-4 shrink-0" />
+							{Messages.menu.signout}
 						</span>
 					</DeleteButton>
 					<OkButton
