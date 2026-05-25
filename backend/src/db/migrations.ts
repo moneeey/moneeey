@@ -8,13 +8,24 @@ export const META_MIGRATIONS: Migration[] = [
 		sql: `
 			CREATE TABLE users (
 				id            TEXT PRIMARY KEY,
-				email         TEXT UNIQUE NOT NULL,
-				credentials   TEXT NOT NULL DEFAULT '[]',
+				display_name  TEXT NOT NULL,
 				created_at    TEXT NOT NULL
 			);
 
+			CREATE TABLE passkeys (
+				credential_id   TEXT PRIMARY KEY,
+				user_id         TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+				public_key      TEXT NOT NULL,
+				counter         INTEGER NOT NULL DEFAULT 0,
+				transports_json TEXT,
+				created_at      TEXT NOT NULL
+			);
+
+			CREATE INDEX passkeys_user_idx ON passkeys(user_id);
+
 			CREATE TABLE vaults (
 				id            TEXT PRIMARY KEY,
+				name          TEXT NOT NULL,
 				created_at    TEXT NOT NULL
 			);
 
@@ -24,15 +35,6 @@ export const META_MIGRATIONS: Migration[] = [
 				role          TEXT NOT NULL DEFAULT 'owner',
 				added_at      TEXT NOT NULL,
 				PRIMARY KEY (user_id, vault_id)
-			);
-
-			CREATE TABLE invites (
-				token_hash    TEXT PRIMARY KEY,
-				vault_id      TEXT NOT NULL REFERENCES vaults(id) ON DELETE CASCADE,
-				owner_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-				expires_at    TEXT NOT NULL,
-				redeemed_by   TEXT REFERENCES users(id),
-				created_at    TEXT NOT NULL
 			);
 		`,
 	},
@@ -47,6 +49,14 @@ export const VAULT_MIGRATIONS: Migration[] = [
 				updated_at    TEXT NOT NULL,
 				deleted_at    TEXT,
 				data          TEXT NOT NULL
+			);
+
+			CREATE TABLE invites (
+				token_hash    TEXT PRIMARY KEY,
+				owner_user_id TEXT NOT NULL,
+				expires_at    TEXT NOT NULL,
+				redeemed_by   TEXT,
+				created_at    TEXT NOT NULL
 			);
 		`,
 	},

@@ -30,7 +30,7 @@ import {
 	pickDefaultCurrencyBRL,
 	signupViaPasskey,
 } from "../helpers/passkey-flows";
-import { resetAppState, uniqueTestEmail } from "../helpers/setup";
+import { resetAppState, uniqueTestDisplayName } from "../helpers/setup";
 
 test.describe("passkey signup / delete", () => {
 	test.skip(
@@ -46,7 +46,7 @@ test.describe("passkey signup / delete", () => {
 		try {
 			await resetAppState(page);
 			await landThroughLanguage(page);
-			await signupViaPasskey(page, uniqueTestEmail("signup"));
+			await signupViaPasskey(page, uniqueTestDisplayName("signup"));
 			await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible({
 				timeout: 15_000,
 			});
@@ -55,7 +55,7 @@ test.describe("passkey signup / delete", () => {
 		}
 	});
 
-	test("delete data wipes local store and returns to landing", async ({
+	test("sign out wipes local data and returns to landing", async ({
 		page,
 		baseURL,
 	}) => {
@@ -66,7 +66,7 @@ test.describe("passkey signup / delete", () => {
 		try {
 			await page.goto("/");
 			await landThroughLanguage(page);
-			await signupViaPasskey(page, uniqueTestEmail("delete"));
+			await signupViaPasskey(page, uniqueTestDisplayName("signout"));
 			await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible({
 				timeout: 15_000,
 			});
@@ -74,14 +74,8 @@ test.describe("passkey signup / delete", () => {
 			await expect(page.getByTestId("encryptionPassphrase")).toBeVisible({
 				timeout: 15_000,
 			});
-			await page
-				.getByRole("button", { name: /Delete data|Apagar dados/i })
-				.first()
-				.click();
-			await page
-				.getByRole("button", { name: /Delete data|Apagar dados/i })
-				.last()
-				.click();
+			await page.getByTestId("signout").click();
+			await page.getByTestId("signout-confirm").click();
 			await expect(page.getByTestId("languageSelector_en")).toBeVisible({
 				timeout: 15_000,
 			});
@@ -111,8 +105,8 @@ test.describe("passkey cross-context sync", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const emailA = uniqueTestEmail("inviteA");
-		const emailB = uniqueTestEmail("inviteB");
+		const emailA = uniqueTestDisplayName("inviteA");
+		const emailB = uniqueTestDisplayName("inviteB");
 		const accountFromA = `AccountFromA-${Date.now()}`;
 		const accountFromB = `AccountFromB-${Date.now()}`;
 
@@ -140,15 +134,15 @@ test.describe("passkey cross-context sync", () => {
 				const json = (await res.json()) as { inviteUrl: string };
 				return json.inviteUrl;
 			});
-			const hashMatch = inviteUrl.match(/#\/invite\/[a-f0-9]+/);
+			const hashMatch = inviteUrl.match(/#\/invite\/[a-z0-9.]+/);
 			if (!hashMatch) throw new Error("invite URL missing hash");
 			await pageB.goto(`/${hashMatch[0]}`);
 			await landThroughLanguage(pageB);
 
-			await expect(pageB.getByTestId("inviteEmail")).toBeVisible({
+			await expect(pageB.getByTestId("displayName")).toBeVisible({
 				timeout: 15_000,
 			});
-			await pageB.getByTestId("inviteEmail").fill(emailB);
+			await pageB.getByTestId("displayName").fill(emailB);
 			await pageB.getByRole("button", { name: "Join with passkey" }).click();
 
 			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
@@ -196,7 +190,7 @@ test.describe("passkey cross-context sync", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const email = uniqueTestEmail("login");
+		const email = uniqueTestDisplayName("login");
 		const accountFromA = `AccountFromA-${Date.now()}`;
 		const accountFromB = `AccountFromB-${Date.now()}`;
 
@@ -220,7 +214,6 @@ test.describe("passkey cross-context sync", () => {
 			await pageB
 				.getByRole("button", { name: "Online account (passkey)" })
 				.click();
-			await pageB.getByTestId("passkeyEmail").fill(email);
 			await pageB.getByRole("button", { name: "Sign in" }).click();
 
 			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
@@ -282,8 +275,8 @@ test.describe("vault membership management", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const emailA = uniqueTestEmail("kickA");
-		const emailB = uniqueTestEmail("kickB");
+		const emailA = uniqueTestDisplayName("kickA");
+		const emailB = uniqueTestDisplayName("kickB");
 		const accountFromA = `KickAcc-${Date.now()}`;
 
 		try {
@@ -306,14 +299,14 @@ test.describe("vault membership management", () => {
 				const json = (await res.json()) as { inviteUrl: string };
 				return json.inviteUrl;
 			});
-			const hashMatch = inviteUrl.match(/#\/invite\/[a-f0-9]+/);
+			const hashMatch = inviteUrl.match(/#\/invite\/[a-z0-9.]+/);
 			if (!hashMatch) throw new Error("invite URL missing hash");
 			await pageB.goto(`/${hashMatch[0]}`);
 			await landThroughLanguage(pageB);
-			await expect(pageB.getByTestId("inviteEmail")).toBeVisible({
+			await expect(pageB.getByTestId("displayName")).toBeVisible({
 				timeout: 15_000,
 			});
-			await pageB.getByTestId("inviteEmail").fill(emailB);
+			await pageB.getByTestId("displayName").fill(emailB);
 			await pageB.getByRole("button", { name: "Join with passkey" }).click();
 			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
 				timeout: 30_000,
@@ -338,6 +331,54 @@ test.describe("vault membership management", () => {
 			await expect(pageA.getByTestId(`member-row-${emailB}`)).toHaveCount(0, {
 				timeout: 15_000,
 			});
+
+			const vaultIdA = await ownerVaultId(pageA);
+
+			const kickedVaultList = await pageB.evaluate(async () => {
+				const res = await fetch("/api/auth/vaults/list", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: "{}",
+				});
+				if (!res.ok) return { vaults: [] };
+				return (await res.json()) as {
+					vaults: { vaultId: string }[];
+				};
+			});
+			expect(
+				kickedVaultList.vaults.find((v) => v.vaultId === vaultIdA),
+			).toBeUndefined();
+
+			const kickedMembersResp = await pageB.evaluate(async (vaultId) => {
+				const res = await fetch("/api/auth/vault/members", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ vaultId }),
+				});
+				return res.status;
+			}, vaultIdA);
+			expect(kickedMembersResp).toBe(403);
+
+			const kickedSelectResp = await pageB.evaluate(async (vaultId) => {
+				const res = await fetch("/api/auth/vault/select", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ vaultId }),
+				});
+				return res.status;
+			}, vaultIdA);
+			expect(kickedSelectResp).toBe(403);
+
+			await contextB.clearCookies();
+			await resetAppState(pageB);
+			await landThroughLanguage(pageB);
+			await pageB
+				.getByRole("button", { name: "Online account (passkey)" })
+				.click();
+			await pageB.getByRole("button", { name: "Sign in" }).click();
+			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
+				timeout: 30_000,
+			});
 		} finally {
 			await authA.remove();
 			await authB.remove();
@@ -360,8 +401,8 @@ test.describe("vault membership management", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const emailA = uniqueTestEmail("xferA");
-		const emailB = uniqueTestEmail("xferB");
+		const emailA = uniqueTestDisplayName("xferA");
+		const emailB = uniqueTestDisplayName("xferB");
 		const accountFromA = `XferAcc-${Date.now()}`;
 
 		try {
@@ -384,11 +425,11 @@ test.describe("vault membership management", () => {
 				const json = (await res.json()) as { inviteUrl: string };
 				return json.inviteUrl;
 			});
-			const hashMatch = inviteUrl.match(/#\/invite\/[a-f0-9]+/);
+			const hashMatch = inviteUrl.match(/#\/invite\/[a-z0-9.]+/);
 			if (!hashMatch) throw new Error("invite URL missing hash");
 			await pageB.goto(`/${hashMatch[0]}`);
 			await landThroughLanguage(pageB);
-			await pageB.getByTestId("inviteEmail").fill(emailB);
+			await pageB.getByTestId("displayName").fill(emailB);
 			await pageB.getByRole("button", { name: "Join with passkey" }).click();
 			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
 				timeout: 30_000,
@@ -423,13 +464,13 @@ test.describe("vault membership management", () => {
 	});
 });
 
-test.describe("passkey logout-login regression", () => {
+test.describe("sign out + sign back in", () => {
 	test.skip(
 		({ browserName }) => browserName !== "chromium",
 		"WebAuthn virtual authenticator is chromium-only",
 	);
 
-	test("logout then reload shows unlock (not setup) and unlocks back to local data", async ({
+	test("sign out from menu wipes local + cookie, sign back in restores from server", async ({
 		page,
 		baseURL,
 	}) => {
@@ -437,31 +478,36 @@ test.describe("passkey logout-login regression", () => {
 			test.skip(true, "backend not reachable at baseURL");
 		}
 		const auth = await enableVirtualAuthenticator(page);
-		const email = uniqueTestEmail("logoutLogin");
-		const accountName = `AccountKept-${Date.now()}`;
+		const displayName = uniqueTestDisplayName("signoutLogin");
+		const accountName = `AccountFromServer-${Date.now()}`;
 
 		try {
 			await resetAppState(page);
 			await landThroughLanguage(page);
-			await signupViaPasskey(page, email);
+			await signupViaPasskey(page, displayName);
 			await pickDefaultCurrencyBRL(page);
 			await createFirstAccount(page, accountName);
 			await openAccountSettings(page);
 			await expect(page.getByText(accountName)).toBeVisible({
 				timeout: 15_000,
 			});
+			await page.waitForTimeout(1500);
 
-			await page.evaluate(() => {
-				window.location.hash = "/settings";
+			await page.getByTestId("appMenu_signout").click();
+			await expect(
+				page.getByRole("heading", { name: /sign out & delete/i }),
+			).toBeVisible();
+			await page.getByTestId("signout-confirm").click();
+
+			await expect(page.getByTestId("languageSelector_en")).toBeVisible({
+				timeout: 30_000,
 			});
-			await expect(page.getByTestId("settingsTabs_moneeey")).toBeVisible({
-				timeout: 15_000,
-			});
-			await page.getByTestId("settingsTabs_moneeey").click();
-			await page.getByRole("button", { name: "Logout" }).click();
 
-			await page.reload();
-
+			await landThroughLanguage(page);
+			await page
+				.getByRole("button", { name: "Online account (passkey)" })
+				.click();
+			await page.getByRole("button", { name: "Sign in" }).click();
 			await expect(page.getByTestId("encryptionPassphrase")).toBeVisible({
 				timeout: 30_000,
 			});
@@ -533,8 +579,8 @@ test.describe("existing user joins another vault via invite", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const emailA = uniqueTestEmail("joinA");
-		const emailB = uniqueTestEmail("joinB");
+		const emailA = uniqueTestDisplayName("joinA");
+		const emailB = uniqueTestDisplayName("joinB");
 		const accountFromA = `JoinAccA-${Date.now()}`;
 		const accountFromB = `JoinAccB-${Date.now()}`;
 
@@ -557,7 +603,7 @@ test.describe("existing user joins another vault via invite", () => {
 			expect(vaultIdB).not.toBe(vaultIdA);
 
 			const inviteUrl = await createInviteUrl(pageA);
-			const hashMatch = inviteUrl.match(/#\/invite\/([a-f0-9]+)/);
+			const hashMatch = inviteUrl.match(/#\/invite\/([a-z0-9.]+)/);
 			if (!hashMatch) throw new Error("invite URL missing hash");
 
 			await openAccountSettings(pageB);
@@ -607,67 +653,129 @@ test.describe("existing user joins another vault via invite", () => {
 			await contextB.close();
 		}
 	});
+});
 
-	test("unauth tab with existing email sees 'sign in first' on invite-register", async ({
-		browser,
+test.describe("vault create / delete", () => {
+	test.skip(
+		({ browserName }) => browserName !== "chromium",
+		"WebAuthn virtual authenticator is chromium-only",
+	);
+
+	test("owner can create a new vault from settings", async ({
+		page,
 		baseURL,
 	}) => {
 		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
 			test.skip(true, "backend not reachable at baseURL");
 		}
-
-		const contextA = await browser.newContext({ baseURL });
-		const contextB = await browser.newContext({ baseURL });
-		const pageA = await contextA.newPage();
-		const pageB = await contextB.newPage();
-		const authA = await enableVirtualAuthenticator(pageA);
-		const authB = await enableVirtualAuthenticator(pageB);
-		const emailA = uniqueTestEmail("unauthInviteA");
-		const emailB = uniqueTestEmail("unauthInviteB");
-
+		const auth = await enableVirtualAuthenticator(page);
 		try {
-			await resetAppState(pageA);
-			await landThroughLanguage(pageA);
-			await signupViaPasskey(pageA, emailA);
-			await pickDefaultCurrencyBRL(pageA);
-			await createFirstAccount(pageA, `Acc-${Date.now()}`);
+			await resetAppState(page);
+			await landThroughLanguage(page);
+			await signupViaPasskey(page, uniqueTestDisplayName("createVault"));
+			await pickDefaultCurrencyBRL(page);
+			await createFirstAccount(page, `Acc-${Date.now()}`);
 
-			await resetAppState(pageB);
-			await landThroughLanguage(pageB);
-			await signupViaPasskey(pageB, emailB);
-			await pickDefaultCurrencyBRL(pageB);
-			await createFirstAccount(pageB, `BAcc-${Date.now()}`);
+			await openSyncSettings(page);
+			await expect(page.getByTestId("vaultSwitcherSection")).toBeVisible({
+				timeout: 15_000,
+			});
 
-			const inviteUrl = await createInviteUrl(pageA);
-			const hashMatch = inviteUrl.match(/#\/invite\/([a-f0-9]+)/);
-			if (!hashMatch) throw new Error("invite URL missing hash");
+			const newName = `Family-${Date.now()}`;
+			await page.getByTestId("vault-create").click();
+			await page.getByTestId("vault-create-input").fill(newName);
+			await page.getByTestId("vault-create-confirm").click();
 
-			// pageC is a fresh unauthenticated tab — no local meta, no cookie.
-			const contextC = await browser.newContext({ baseURL });
-			const pageC = await contextC.newPage();
-			const authC = await enableVirtualAuthenticator(pageC);
-			try {
-				await pageC.goto(`/${hashMatch[0]}`);
-				await landThroughLanguage(pageC);
-				await expect(pageC.getByTestId("inviteEmail")).toBeVisible({
-					timeout: 15_000,
-				});
-				await pageC.getByTestId("inviteEmail").fill(emailB);
-				await pageC.getByRole("button", { name: "Join with passkey" }).click();
-
-				await expect(pageC.getByTestId("encryptionError")).toContainText(
-					/Sign in first|Faça login primeiro|Inicia sesión primero/,
-					{ timeout: 30_000 },
-				);
-			} finally {
-				await authC.remove();
-				await contextC.close();
-			}
+			await expect(page.getByText(newName)).toBeVisible({ timeout: 15_000 });
 		} finally {
-			await authA.remove();
-			await authB.remove();
-			await contextA.close();
-			await contextB.close();
+			await auth.remove();
+		}
+	});
+
+	test("owner can delete a non-current vault when another remains", async ({
+		page,
+		baseURL,
+	}) => {
+		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
+			test.skip(true, "backend not reachable at baseURL");
+		}
+		const auth = await enableVirtualAuthenticator(page);
+		try {
+			await resetAppState(page);
+			await landThroughLanguage(page);
+			await signupViaPasskey(page, uniqueTestDisplayName("deleteVault"));
+			await pickDefaultCurrencyBRL(page);
+			await createFirstAccount(page, `Acc-${Date.now()}`);
+
+			await openSyncSettings(page);
+
+			await expect(page.locator('[data-testid^="vault-delete-"]')).toHaveCount(
+				0,
+			);
+
+			const secondName = `ToDelete-${Date.now()}`;
+			await page.getByTestId("vault-create").click();
+			await page.getByTestId("vault-create-input").fill(secondName);
+			await page.getByTestId("vault-create-confirm").click();
+			await expect(page.getByText(secondName)).toBeVisible({ timeout: 15_000 });
+
+			const row = page
+				.getByTestId("vaultSwitcherSection")
+				.locator(`li:has-text("${secondName}")`);
+			await row.getByTestId(/^vault-delete-/).click();
+
+			await expect(page.getByTestId("confirm-vault-delete")).toBeVisible();
+			await page.getByTestId("confirm-vault-delete-button").click();
+
+			await expect(page.getByText(secondName)).toHaveCount(0, {
+				timeout: 15_000,
+			});
+		} finally {
+			await auth.remove();
+		}
+	});
+});
+
+test.describe("vault IndexedDB isolation", () => {
+	test.skip(
+		({ browserName }) => browserName !== "chromium",
+		"WebAuthn virtual authenticator is chromium-only",
+	);
+
+	test("switching to a new vault opens a fresh DB (no data poisoning)", async ({
+		page,
+		baseURL,
+	}) => {
+		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
+			test.skip(true, "backend not reachable at baseURL");
+		}
+		const auth = await enableVirtualAuthenticator(page);
+		try {
+			await resetAppState(page);
+			await landThroughLanguage(page);
+			await signupViaPasskey(page, uniqueTestDisplayName("isolation"));
+			await pickDefaultCurrencyBRL(page);
+			await createFirstAccount(page, `AccA-${Date.now()}`);
+
+			await openSyncSettings(page);
+
+			const secondName = `Second-${Date.now()}`;
+			await page.getByTestId("vault-create").click();
+			await page.getByTestId("vault-create-input").fill(secondName);
+			await page.getByTestId("vault-create-confirm").click();
+			const secondRow = page
+				.getByTestId("vaultSwitcherSection")
+				.locator(`li:has-text("${secondName}")`);
+			await secondRow.getByTestId(/^select-vault-/).click();
+
+			await expect(page.getByTestId("encryptionPassphrase")).toBeVisible({
+				timeout: 30_000,
+			});
+			await expect(
+				page.getByTestId("encryptionPassphraseConfirm"),
+			).toBeVisible();
+		} finally {
+			await auth.remove();
 		}
 	});
 });

@@ -28,7 +28,7 @@ import {
 	pickDefaultCurrencyBRL,
 	signupViaPasskey,
 } from "../helpers/passkey-flows";
-import { resetAppState, uniqueTestEmail } from "../helpers/setup";
+import { resetAppState, uniqueTestDisplayName } from "../helpers/setup";
 import { updateOnAccountTransactions } from "../helpers/transactions";
 
 const ONLINE_TIMEOUT = 60_000;
@@ -84,7 +84,7 @@ test.describe("PWA offline", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const email = uniqueTestEmail("offline");
+		const email = uniqueTestDisplayName("offline");
 		const accountName = "Wallet";
 		const onlineCounterpart = `OnlineSrc-${Date.now()}`;
 		const offlineCounterpart = `OfflineSrc-${Date.now()}`;
@@ -152,7 +152,6 @@ test.describe("PWA offline", () => {
 			await pageB
 				.getByRole("button", { name: "Online account (passkey)" })
 				.click();
-			await pageB.getByTestId("passkeyEmail").fill(email);
 			await pageB.getByRole("button", { name: "Sign in" }).click();
 			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
 				timeout: 30_000,

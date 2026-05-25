@@ -46,26 +46,26 @@ function toSyncConfig(auth: AuthResponse): SyncConfig {
 	};
 }
 
-export const registerPasskey = async (email: string): Promise<SyncConfig> => {
+export const registerPasskey = async (
+	displayName: string,
+): Promise<SyncConfig> => {
 	const { options, flowToken } = await post<
 		FlowResponse<RegistrationOptionsJSON>
-	>("/api/auth/passkey/register/options", { email });
+	>("/api/auth/passkey/register/options", { displayName });
 	const credential = await startRegistration({ optionsJSON: options });
 	const auth = await post<AuthResponse>("/api/auth/passkey/register/verify", {
-		email,
 		credential,
 		flowToken,
 	});
 	return toSyncConfig(auth);
 };
 
-export const loginPasskey = async (email: string): Promise<SyncConfig> => {
+export const loginPasskey = async (): Promise<SyncConfig> => {
 	const { options, flowToken } = await post<
 		FlowResponse<AuthenticationOptionsJSON>
-	>("/api/auth/passkey/login/options", { email });
+	>("/api/auth/passkey/login/options", {});
 	const credential = await startAuthentication({ optionsJSON: options });
 	const auth = await post<AuthResponse>("/api/auth/passkey/login/verify", {
-		email,
 		credential,
 		flowToken,
 	});
@@ -105,15 +105,15 @@ export const getInviteInfo = async (
 
 export const registerViaInvite = async (
 	token: string,
-	email: string,
+	displayName: string,
 ): Promise<SyncConfig> => {
 	const { options, flowToken } = await post<
 		FlowResponse<RegistrationOptionsJSON>
-	>("/api/auth/passkey/invite/register/options", { token, email });
+	>("/api/auth/passkey/invite/register/options", { token, displayName });
 	const credential = await startRegistration({ optionsJSON: options });
 	const auth = await post<AuthResponse>(
 		"/api/auth/passkey/invite/register/verify",
-		{ email, credential, flowToken },
+		{ credential, flowToken },
 	);
 	return toSyncConfig(auth);
 };
@@ -136,7 +136,7 @@ export const createInviteLink = async (): Promise<string> => {
 
 export type VaultMember = {
 	userId: string;
-	email: string;
+	displayName: string;
 	role: "owner" | "member";
 	addedAt: string;
 };
@@ -166,8 +166,26 @@ export const transferVaultOwnership = async (
 	await post("/api/auth/vault/transfer", { vaultId, userId });
 };
 
+export const renameVault = async (
+	vaultId: string,
+	name: string,
+): Promise<void> => {
+	await post("/api/auth/vault/rename", { vaultId, name });
+};
+
+export const createVault = async (
+	name?: string,
+): Promise<{ vaultId: string; name: string; createdAt: string }> => {
+	return await post("/api/auth/vault/create", { name: name ?? "" });
+};
+
+export const deleteVault = async (vaultId: string): Promise<void> => {
+	await post("/api/auth/vault/delete", { vaultId });
+};
+
 export type VaultListItem = {
 	vaultId: string;
+	name: string;
 	role: "owner" | "member";
 	createdAt: string;
 };

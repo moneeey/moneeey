@@ -1,4 +1,7 @@
-import { LockOpenIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+	ArrowRightStartOnRectangleIcon,
+	LockOpenIcon,
+} from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 
 import type { SyncConfig } from "../../entities/Config";
@@ -8,21 +11,25 @@ import {
 	openEncryptedDatabase,
 } from "../../shared/EncryptionStore";
 import {
+	fetchPasskeyAuthState,
 	getInviteInfo,
 	loginPasskey,
 	registerPasskey,
 	registerViaInvite,
+	selectVault,
 } from "../../shared/encryption/bootstrapFromPasskey";
 import { hasEncryptionMeta } from "../../shared/encryption/codec";
 import { isWebCryptoAvailable } from "../../shared/encryption/crypto";
+import { signOut } from "../../shared/signOut";
 import type { LocalStore } from "../../shared/storage/LocalStore";
-import useMessages, { type TMessages } from "../../utils/Messages";
 import {
-	CancelButton,
-	DeleteButton,
-	OkButton,
-	SecondaryButton,
-} from "../base/Button";
+	getTabVaultId,
+	selectVaultForTabAndReload,
+} from "../../shared/storage/tabVault";
+import useMessages, { type TMessages } from "../../utils/Messages";
+import SignOutConfirm from "../SignOutConfirm";
+import { DeleteButton, OkButton, SecondaryButton } from "../base/Button";
+
 import { Input } from "../base/Input";
 import MinimalBasicScreen from "../base/MinimalBaseScreen";
 
@@ -44,7 +51,7 @@ type GateState =
 	| { kind: "passkey" }
 	| { kind: "invite"; token: string }
 	| { kind: "pulling"; label: string }
-	| { kind: "confirm-delete"; returnTo: GateState };
+	| { kind: "confirm-signout"; returnTo: GateState };
 
 const messageForError = (err: unknown, Messages: TMessages): string => {
 	const code = (err as Error | undefined)?.message as
@@ -69,22 +76,30 @@ const messageForError = (err: unknown, Messages: TMessages): string => {
 
 function parseInviteToken(): string | null {
 	const hash = globalThis.location?.hash || "";
-	const match = hash.match(/#\/invite\/([a-f0-9]+)/);
+	const match = hash.match(/#\/invite\/([a-z0-9]+\.[a-f0-9]+)/);
 	return match ? match[1] : null;
 }
 
-const detectInitialState = async (store: LocalStore): Promise<GateState> => {
+type InitialDecision =
+	| { kind: "state"; state: GateState }
+	| { kind: "auto-pull"; remote: SyncConfig };
+
+const decideInitial = async (store: LocalStore): Promise<InitialDecision> => {
 	if (await hasEncryptionMeta(store)) {
-		return { kind: "unlock" };
+		return { kind: "state", state: { kind: "unlock" } };
+	}
+	const auth = await fetchPasskeyAuthState();
+	if (auth) {
+		return { kind: "auto-pull", remote: auth };
 	}
 	const inviteToken = parseInviteToken();
 	if (inviteToken) {
 		const info = await getInviteInfo(inviteToken);
 		if (info?.valid) {
-			return { kind: "invite", token: inviteToken };
+			return { kind: "state", state: { kind: "invite", token: inviteToken } };
 		}
 	}
-	return { kind: "choose" };
+	return { kind: "state", state: { kind: "choose" } };
 };
 
 export default function EncryptionGate({ store, onUnlocked }: Props) {
@@ -95,16 +110,22 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
 	const pendingSyncRef = useRef<SyncConfig | null>(null);
-	const [email, setEmail] = useState("");
+	const [displayName, setDisplayName] = useState("");
 
 	useEffect(() => {
 		let cancelled = false;
-		detectInitialState(store).then((next) => {
-			if (!cancelled) setState(next);
+		decideInitial(store).then((decision) => {
+			if (cancelled) return;
+			if (decision.kind === "auto-pull") {
+				pullFromRemote(decision.remote);
+				return;
+			}
+			setState(decision.state);
 		});
 		return () => {
 			cancelled = true;
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [store]);
 
 	const reset = () => {
@@ -167,6 +188,19 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 			kind: "pulling",
 			label: Messages.encryption.pulling_from_remote,
 		});
+		let effective = remote;
+		const tabVault = getTabVaultId();
+		if (tabVault && tabVault !== remote.vaultId) {
+			try {
+				effective = await selectVault(tabVault);
+			} catch (err) {
+				console.warn("tab vault no longer accessible, using cookie vault", err);
+			}
+		}
+		if (getTabVaultId() !== effective.vaultId) {
+			selectVaultForTabAndReload(effective.vaultId);
+			return;
+		}
 		try {
 			const { SyncClient, wsVaultUrl } = await import(
 				"../../shared/sync/SyncClient"
@@ -174,7 +208,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 			await new Promise<void>((resolve, reject) => {
 				const client = new SyncClient({
 					url: wsVaultUrl(),
-					sessionToken: remote.sessionToken,
+					sessionToken: effective.sessionToken,
 					localStore: store,
 					events: {
 						onReconcileDone: () => {
@@ -190,7 +224,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 				client.start();
 			});
 
-			pendingSyncRef.current = remote;
+			pendingSyncRef.current = effective;
 
 			if (await hasEncryptionMeta(store)) {
 				reset();
@@ -208,10 +242,15 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 	};
 
 	const onPasskeyRegister = async () => {
+		const name = displayName.trim();
+		if (name.length === 0) {
+			setError(Messages.encryption.display_name_required);
+			return;
+		}
 		setError(null);
 		setBusy(true);
 		try {
-			const syncConfig = await registerPasskey(email);
+			const syncConfig = await registerPasskey(name);
 			await pullFromRemote(syncConfig);
 		} catch (err) {
 			console.error("passkey register failed", err);
@@ -224,7 +263,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 		setError(null);
 		setBusy(true);
 		try {
-			const syncConfig = await loginPasskey(email);
+			const syncConfig = await loginPasskey();
 			await pullFromRemote(syncConfig);
 		} catch (err) {
 			console.error("passkey login failed", err);
@@ -234,19 +273,19 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 	};
 
 	const onInviteRegister = async (token: string) => {
+		const name = displayName.trim();
+		if (name.length === 0) {
+			setError(Messages.encryption.display_name_required);
+			return;
+		}
 		setError(null);
 		setBusy(true);
 		try {
-			const syncConfig = await registerViaInvite(token, email);
+			const syncConfig = await registerViaInvite(token, name);
 			await pullFromRemote(syncConfig);
 		} catch (err) {
 			console.error("invite register failed", err);
-			const msg = (err as Error).message;
-			setError(
-				msg === "user already exists"
-					? Messages.encryption.invite_sign_in_first
-					: Messages.encryption.passkey_error,
-			);
+			setError(Messages.encryption.passkey_error);
 			setBusy(false);
 		}
 	};
@@ -326,19 +365,23 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 				</p>
 				<div className="flex flex-col gap-4 w-full max-w-sm">
 					<Input
-						testId="passkeyEmail"
-						type="email"
-						autoComplete="username webauthn"
-						placeholder={Messages.login.email}
-						value={email}
+						testId="displayName"
+						type="text"
+						autoComplete="username"
+						immediate
+						placeholder={Messages.encryption.display_name_placeholder}
+						value={displayName}
 						disabled={busy}
 						containerArea
 						onChange={(value) => {
-							setEmail(value);
+							setDisplayName(value);
 							setError(null);
 						}}
 					/>
 				</div>
+				<p className="text-xs opacity-60">
+					{Messages.encryption.display_name_login_hint}
+				</p>
 				<a
 					href="https://fidoalliance.org/passkeys/"
 					target="_blank"
@@ -361,12 +404,12 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 					<SecondaryButton
 						onClick={onPasskeyLogin}
 						title={Messages.encryption.passkey_login}
-						disabled={busy || email.length === 0}
+						disabled={busy}
 					/>
 					<OkButton
 						onClick={onPasskeyRegister}
 						title={Messages.encryption.passkey_register}
-						disabled={busy || email.length === 0}
+						disabled={busy || displayName.trim().length === 0}
 					/>
 				</div>
 			</MinimalBasicScreen>
@@ -384,15 +427,16 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 				</p>
 				<div className="flex flex-col gap-4 w-full max-w-sm">
 					<Input
-						testId="inviteEmail"
-						type="email"
-						autoComplete="username webauthn"
-						placeholder={Messages.login.email}
-						value={email}
+						testId="displayName"
+						type="text"
+						autoComplete="username"
+						immediate
+						placeholder={Messages.encryption.display_name_placeholder}
+						value={displayName}
 						disabled={busy}
 						containerArea
 						onChange={(value) => {
-							setEmail(value);
+							setDisplayName(value);
 							setError(null);
 						}}
 					/>
@@ -411,39 +455,23 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 					<OkButton
 						onClick={() => onInviteRegister(state.token)}
 						title={Messages.encryption.invite_join}
-						disabled={busy || email.length === 0}
+						disabled={busy || displayName.trim().length === 0}
 					/>
 				</div>
 			</MinimalBasicScreen>
 		);
 	}
 
-	if (state.kind === "confirm-delete") {
+	if (state.kind === "confirm-signout") {
 		return (
-			<MinimalBasicScreen>
-				<h2 className="text-xl font-semibold text-danger-300">
-					{Messages.menu.delete_data}
-				</h2>
-				<p className="text-sm opacity-80">
-					{Messages.menu.delete_data_confirm}
-				</p>
-				<div className="flex gap-2">
-					<CancelButton onClick={() => setState(state.returnTo)} />
-					<DeleteButton
-						onClick={async () => {
-							await store.destroy();
-							window.localStorage.clear();
-							window.sessionStorage.clear();
-							window.location.reload();
-						}}
-					>
-						<span className="flex items-center gap-1">
-							<TrashIcon className="h-4 w-4 shrink-0" />
-							{Messages.menu.delete_data}
-						</span>
-					</DeleteButton>
-				</div>
-			</MinimalBasicScreen>
+			<SignOutConfirm
+				busy={busy}
+				onCancel={() => setState(state.returnTo)}
+				onConfirm={async () => {
+					setBusy(true);
+					await signOut();
+				}}
+			/>
 		);
 	}
 
@@ -531,14 +559,15 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 			) : (
 				<div className="flex justify-between w-full max-w-sm">
 					<DeleteButton
+						testId="signout"
 						onClick={() =>
-							setState({ kind: "confirm-delete", returnTo: state })
+							setState({ kind: "confirm-signout", returnTo: state })
 						}
 						disabled={busy}
 					>
 						<span className="flex items-center gap-1">
-							<TrashIcon className="h-4 w-4 shrink-0" />
-							{Messages.menu.delete_data}
+							<ArrowRightStartOnRectangleIcon className="h-4 w-4 shrink-0" />
+							{Messages.menu.signout}
 						</span>
 					</DeleteButton>
 					<OkButton

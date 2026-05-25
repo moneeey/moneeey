@@ -25,11 +25,11 @@ export const MoneeeyLogin = ({
 }: { setMessage: Dispatch<SetStateAction<ReactElement | undefined>> }) => {
 	const Messages = useMessages();
 	const { management } = useMoneeeyStore();
-	const [state, setState] = useState({ email: "" });
+	const [displayName, setDisplayName] = useState("");
 
 	const onLogin = async () => {
 		try {
-			const syncConfig = await loginPasskey(state.email);
+			const syncConfig = await loginPasskey();
 			management.complete(syncConfig.sessionToken, syncConfig.vaultId);
 			setMessage(<Status type="info">{Messages.sync.login_success}</Status>);
 		} catch (_err) {
@@ -38,8 +38,17 @@ export const MoneeeyLogin = ({
 	};
 
 	const onRegister = async () => {
+		const name = displayName.trim();
+		if (name.length === 0) {
+			setMessage(
+				<Status type="error">
+					{Messages.encryption.display_name_required}
+				</Status>,
+			);
+			return;
+		}
 		try {
-			const syncConfig = await registerPasskey(state.email);
+			const syncConfig = await registerPasskey(name);
 			management.complete(syncConfig.sessionToken, syncConfig.vaultId);
 			setMessage(<Status type="info">{Messages.sync.login_success}</Status>);
 		} catch (_err) {
@@ -64,15 +73,16 @@ export const MoneeeyLogin = ({
 				testId="providedSync"
 				items={[
 					{
-						label: Messages.login.email,
+						label: Messages.encryption.display_name_label,
 						editor: (
 							<Input
-								testId="email"
-								type="email"
-								autoComplete="username webauthn"
-								value={state.email}
-								placeholder={Messages.login.email}
-								onChange={(value) => setState({ ...state, email: value })}
+								testId="displayName"
+								type="text"
+								autoComplete="username"
+								immediate
+								value={displayName}
+								placeholder={Messages.encryption.display_name_placeholder}
+								onChange={(value) => setDisplayName(value)}
 							/>
 						),
 					},
@@ -155,12 +165,9 @@ const SectionCard = ({ children }: { children: React.ReactNode }) => (
 );
 
 export const MoneeeyAccountConfig = observer(() => {
-	const Messages = useMessages();
 	const { management } = useMoneeeyStore();
 	const [message, setMessage] = useState(undefined as ReactElement | undefined);
 	const { loggedIn } = management;
-
-	const onLogout = () => management.logout();
 
 	return (
 		<VerticalSpace>
@@ -174,9 +181,6 @@ export const MoneeeyAccountConfig = observer(() => {
 					<SectionCard>
 						<InviteSection />
 					</SectionCard>
-					<div>
-						<SecondaryButton onClick={onLogout} title={Messages.login.logout} />
-					</div>
 				</>
 			) : (
 				<MoneeeyLogin setMessage={setMessage} />

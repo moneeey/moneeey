@@ -6,28 +6,42 @@ export async function sha384(value: string): Promise<string> {
 		.join("");
 }
 
-export async function passkeyUserId(email: string): Promise<string> {
-	return `user:passkey${await sha384(`passkey:${email}`)}`;
-}
+const ID_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
+const ID_REJECT_THRESHOLD =
+	Math.floor(256 / ID_ALPHABET.length) * ID_ALPHABET.length;
 
-const VAULT_ID_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
-const VAULT_ID_REJECT_THRESHOLD =
-	Math.floor(256 / VAULT_ID_ALPHABET.length) * VAULT_ID_ALPHABET.length;
-
-export function generateVaultId(length = 21): string {
+function randomId(length: number): string {
 	const out: string[] = [];
 	const buf = new Uint8Array(length * 2);
 	while (out.length < length) {
 		crypto.getRandomValues(buf);
 		for (let i = 0; i < buf.length && out.length < length; i++) {
 			const byte = buf[i];
-			if (byte >= VAULT_ID_REJECT_THRESHOLD) continue;
-			out.push(VAULT_ID_ALPHABET[byte % VAULT_ID_ALPHABET.length]);
+			if (byte >= ID_REJECT_THRESHOLD) continue;
+			out.push(ID_ALPHABET[byte % ID_ALPHABET.length]);
 		}
 	}
 	return out.join("");
 }
 
-export function isTestEmail(email: string): boolean {
-	return email.toLowerCase().endsWith("@playwright.local");
+export function generateVaultId(length = 21): string {
+	return randomId(length);
+}
+
+export function generateUserId(length = 21): string {
+	return `u${randomId(length)}`;
+}
+
+export function randomTokenHex(bytes = 32): string {
+	const buf = new Uint8Array(bytes);
+	crypto.getRandomValues(buf);
+	return Array.from(buf)
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("");
+}
+
+export const TEST_DISPLAY_NAME_PREFIX = "playwright-test-";
+
+export function isTestDisplayName(displayName: string): boolean {
+	return displayName.startsWith(TEST_DISPLAY_NAME_PREFIX);
 }

@@ -16,7 +16,7 @@ Deno.test(function metaMigrationsCreateExpectedTables() {
 		.all<{ name: string }>()
 		.map((r: { name: string }) => r.name);
 	assert.assertEquals(tables, [
-		"invites",
+		"passkeys",
 		"schema_migrations",
 		"user_vaults",
 		"users",
@@ -34,7 +34,7 @@ Deno.test(function vaultMigrationsCreateDocumentsTable() {
 		.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
 		.all<{ name: string }>()
 		.map((r: { name: string }) => r.name);
-	assert.assertEquals(tables, ["documents", "schema_migrations"]);
+	assert.assertEquals(tables, ["documents", "invites", "schema_migrations"]);
 
 	const indexes = db
 		.prepare(

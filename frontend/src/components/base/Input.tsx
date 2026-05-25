@@ -9,7 +9,7 @@ export const BaseInputClzz: ClassNameType =
 	"w-full color-inherit bg-transparent outline-none" as const;
 
 const OuterShellClzz: ClassNameType =
-	"w-full color-inherit outline-none" as const;
+	"w-full color-inherit outline-none flex h-full" as const;
 
 export type InputProps<T> = WithDataTestId & {
 	className?: string;
@@ -24,6 +24,7 @@ export type InputProps<T> = WithDataTestId & {
 	containerArea?: boolean;
 	type?: "text" | "password" | "email";
 	autoComplete?: string;
+	immediate?: boolean;
 };
 
 type AddonType = string | ReactNode | undefined;
@@ -50,7 +51,7 @@ export const InputContainer = ({
 	return (
 		<div
 			data-testid={`inputContainer${testId}`}
-			className={`${baseClassname || OuterShellClzz} flex h-full focus-within:ring-1 focus-within:ring-inset ${
+			className={`${baseClassname || OuterShellClzz} focus-within:ring-1 focus-within:ring-inset ${
 				isError
 					? "border border-red-400 focus-within:ring-red-400"
 					: "focus-within:ring-primary-500"
@@ -80,9 +81,10 @@ const Input = ({
 	isError,
 	type = "text",
 	autoComplete,
+	immediate: immediateProp,
 }: InputProps<string>) => {
 	const [currentValue, setCurrentValue] = useState<string>(value);
-	const immediate = type === "password" || type === "email";
+	const immediate = immediateProp || type === "password" || type === "email";
 
 	useEffect(() => {
 		setCurrentValue(value);

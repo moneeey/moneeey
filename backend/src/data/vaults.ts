@@ -8,6 +8,7 @@ const logger = Logger("data/vaults");
 
 const VAULT_ID_ATTEMPTS = 5;
 export const MAX_USERS_PER_VAULT = 10;
+export const DEFAULT_VAULT_NAME = "My vault";
 
 export class VaultFullError extends Error {
 	constructor() {
@@ -16,7 +17,12 @@ export class VaultFullError extends Error {
 	}
 }
 
-type VaultRow = { id: string; created_at: string };
+export function defaultVaultNameFor(displayName: string): string {
+	const trimmed = displayName.trim();
+	return trimmed.length === 0 ? DEFAULT_VAULT_NAME : `${trimmed}'s vault`;
+}
+
+type VaultRow = { id: string; name: string; created_at: string };
 type MembershipRow = {
 	user_id: string;
 	vault_id: string;
@@ -26,6 +32,7 @@ type MembershipRow = {
 
 const toVault = (row: VaultRow): VaultRecord => ({
 	id: row.id,
+	name: row.name,
 	createdAt: row.created_at,
 });
 
@@ -39,17 +46,18 @@ const toMembership = (row: MembershipRow): Membership => ({
 export async function createVaultForUser(
 	storage: Storage,
 	userId: string,
+	name: string,
 ): Promise<VaultRecord> {
+	const safeName = name.trim().length === 0 ? DEFAULT_VAULT_NAME : name.trim();
 	for (let attempt = 1; attempt <= VAULT_ID_ATTEMPTS; attempt++) {
 		const id = generateVaultId();
 		const createdAt = new Date().toISOString();
 		const inserted = await storage.withMeta((db) => {
 			try {
 				db.exec("BEGIN");
-				db.prepare("INSERT INTO vaults (id, created_at) VALUES (?, ?)").run(
-					id,
-					createdAt,
-				);
+				db.prepare(
+					"INSERT INTO vaults (id, name, created_at) VALUES (?, ?, ?)",
+				).run(id, safeName, createdAt);
 				db.prepare(
 					"INSERT INTO user_vaults (user_id, vault_id, role, added_at) VALUES (?, ?, 'owner', ?)",
 				).run(userId, id, createdAt);
@@ -78,9 +86,24 @@ export async function createVaultForUser(
 			});
 			throw err;
 		}
-		return { id, createdAt };
+		return { id, name: safeName, createdAt };
 	}
 	throw new Error("failed to allocate vault id after retries");
+}
+
+export async function renameVault(
+	storage: Storage,
+	vaultId: string,
+	name: string,
+): Promise<void> {
+	const safeName = name.trim();
+	if (safeName.length === 0) throw new Error("vault_name_empty");
+	await storage.withMeta((db) => {
+		const changes = db
+			.prepare("UPDATE vaults SET name = ? WHERE id = ?")
+			.run(safeName, vaultId);
+		if (changes === 0) throw new Error("vault_not_found");
+	});
 }
 
 export async function getVaultsByUser(
@@ -90,7 +113,7 @@ export async function getVaultsByUser(
 	return await storage.withMeta((db) => {
 		const rows = db
 			.prepare(
-				`SELECT v.id AS id, v.created_at AS created_at
+				`SELECT v.id AS id, v.name AS name, v.created_at AS created_at
 				 FROM vaults v
 				 INNER JOIN user_vaults uv ON uv.vault_id = v.id
 				 WHERE uv.user_id = ?
@@ -175,7 +198,7 @@ export async function userHasAccess(
 	return (await getMembership(storage, userId, vaultId)) !== null;
 }
 
-export type VaultMember = Membership & { email: string };
+export type VaultMember = Membership & { displayName: string };
 
 export async function listVaultMembers(
 	storage: Storage,
@@ -185,14 +208,17 @@ export async function listVaultMembers(
 		const rows = db
 			.prepare(
 				`SELECT uv.user_id AS user_id, uv.vault_id AS vault_id, uv.role AS role,
-				        uv.added_at AS added_at, u.email AS email
+				        uv.added_at AS added_at, u.display_name AS display_name
 				 FROM user_vaults uv
 				 INNER JOIN users u ON u.id = uv.user_id
 				 WHERE uv.vault_id = ?
 				 ORDER BY CASE uv.role WHEN 'owner' THEN 0 ELSE 1 END, uv.added_at`,
 			)
-			.all<MembershipRow & { email: string }>(vaultId);
-		return rows.map((row) => ({ ...toMembership(row), email: row.email }));
+			.all<MembershipRow & { display_name: string }>(vaultId);
+		return rows.map((row) => ({
+			...toMembership(row),
+			displayName: row.display_name,
+		}));
 	});
 }
 

@@ -3,6 +3,7 @@
 	"files": {
 		"ignore": [
 			"**/dist/*",
+			"**/dev-dist/*",
 			"**/src/polyfills.ts",
 			"./docker/*",
 			"**/playwright-report/*",

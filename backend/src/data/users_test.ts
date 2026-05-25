@@ -1,17 +1,15 @@
 import { assert } from "../test.ts";
-import { passkeyUserId } from "./ids.ts";
 import { makeTempStorage } from "./test_storage.ts";
-import type { StoredCredential } from "./types.ts";
+import type { StoredPasskey } from "./types.ts";
 import {
-	addCredential,
+	addPasskey,
 	createUser,
-	getUserByEmail,
+	getUserByCredentialId,
 	getUserById,
-	replaceCredentials,
-	updateCredentialCounter,
+	updatePasskeyCounter,
 } from "./users.ts";
 
-const sampleCredential = (id = "cred-1"): StoredCredential => ({
+const samplePasskey = (id = "cred-1"): Omit<StoredPasskey, "userId"> => ({
 	credentialId: id,
 	publicKey: "AAAA",
 	counter: 0,
@@ -22,114 +20,72 @@ const sampleCredential = (id = "cred-1"): StoredCredential => ({
 Deno.test(async function createUserPersistsAndReturnsRecord() {
 	const t = makeTempStorage();
 	try {
-		const created = await createUser(t.storage, "a@b.co", sampleCredential());
-		const expectedId = await passkeyUserId("a@b.co");
-		assert.assertEquals(created.id, expectedId);
-		assert.assertEquals(created.email, "a@b.co");
-		assert.assertEquals(created.credentials.length, 1);
+		const created = await createUser(t.storage, "Alice");
+		assert.assertEquals(created.displayName, "Alice");
+		assert.assertEquals(typeof created.id, "string");
+		assert.assertEquals(created.id.startsWith("u"), true);
 
-		const fetched = await getUserByEmail(t.storage, "a@b.co");
-		assert.assertEquals(fetched?.id, expectedId);
-
-		const byId = await getUserById(t.storage, expectedId);
-		assert.assertEquals(byId?.email, "a@b.co");
+		const byId = await getUserById(t.storage, created.id);
+		assert.assertEquals(byId?.displayName, "Alice");
 	} finally {
 		t.cleanup();
 	}
 });
 
-Deno.test(async function getUserByEmailReturnsNullWhenMissing() {
+Deno.test(async function getUserByIdReturnsNullWhenMissing() {
 	const t = makeTempStorage();
 	try {
-		assert.assertEquals(await getUserByEmail(t.storage, "nope@x.io"), null);
+		assert.assertEquals(await getUserById(t.storage, "u-nope"), null);
 	} finally {
 		t.cleanup();
 	}
 });
 
-Deno.test(async function createUserRejectsDuplicateEmail() {
+Deno.test(async function addPasskeyPersistsAndLooksUpByCredential() {
 	const t = makeTempStorage();
 	try {
-		await createUser(t.storage, "dup@x.io", sampleCredential());
-		await assert.assertRejects(() =>
-			createUser(t.storage, "dup@x.io", sampleCredential("c2")),
-		);
+		const user = await createUser(t.storage, "Bob");
+		await addPasskey(t.storage, user.id, samplePasskey("cred-x"));
+		const lookup = await getUserByCredentialId(t.storage, "cred-x");
+		assert.assertExists(lookup);
+		assert.assertEquals(lookup?.user.id, user.id);
+		assert.assertEquals(lookup?.passkey.credentialId, "cred-x");
+		assert.assertEquals(lookup?.passkey.userId, user.id);
 	} finally {
 		t.cleanup();
 	}
 });
 
-Deno.test(async function addCredentialAppendsToList() {
+Deno.test(async function getUserByCredentialIdReturnsNullForUnknown() {
 	const t = makeTempStorage();
 	try {
-		await createUser(t.storage, "x@y.z", sampleCredential("c1"));
-		const updated = await addCredential(
-			t.storage,
-			"x@y.z",
-			sampleCredential("c2"),
-		);
 		assert.assertEquals(
-			updated.credentials.map((c) => c.credentialId),
-			["c1", "c2"],
+			await getUserByCredentialId(t.storage, "no-such"),
+			null,
 		);
-		const fetched = await getUserByEmail(t.storage, "x@y.z");
-		assert.assertEquals(fetched?.credentials.length, 2);
 	} finally {
 		t.cleanup();
 	}
 });
 
-Deno.test(async function updateCredentialCounterPersists() {
+Deno.test(async function updatePasskeyCounterPersists() {
 	const t = makeTempStorage();
 	try {
-		await createUser(t.storage, "x@y.z", sampleCredential("c1"));
-		await updateCredentialCounter(t.storage, "x@y.z", "c1", 42);
-		const u = await getUserByEmail(t.storage, "x@y.z");
-		assert.assertEquals(u?.credentials[0].counter, 42);
+		const user = await createUser(t.storage, "Dan");
+		await addPasskey(t.storage, user.id, samplePasskey("c1"));
+		await updatePasskeyCounter(t.storage, "c1", 42);
+		const lookup = await getUserByCredentialId(t.storage, "c1");
+		assert.assertEquals(lookup?.passkey.counter, 42);
 	} finally {
 		t.cleanup();
 	}
 });
 
-Deno.test(async function replaceCredentialsSwapsAllCredentials() {
-	const t = makeTempStorage();
-	try {
-		await createUser(t.storage, "kicked@x.io", sampleCredential("old"));
-		await addCredential(t.storage, "kicked@x.io", sampleCredential("old2"));
-		const updated = await replaceCredentials(
-			t.storage,
-			"kicked@x.io",
-			sampleCredential("fresh"),
-		);
-		assert.assertEquals(
-			updated.credentials.map((c) => c.credentialId),
-			["fresh"],
-		);
-		const fetched = await getUserByEmail(t.storage, "kicked@x.io");
-		assert.assertEquals(fetched?.credentials.length, 1);
-		assert.assertEquals(fetched?.credentials[0].credentialId, "fresh");
-	} finally {
-		t.cleanup();
-	}
-});
-
-Deno.test(async function replaceCredentialsRejectsUnknownUser() {
+Deno.test(async function updatePasskeyCounterRejectsUnknownCredential() {
 	const t = makeTempStorage();
 	try {
 		await assert.assertRejects(() =>
-			replaceCredentials(t.storage, "nobody@x.io", sampleCredential()),
-		);
-	} finally {
-		t.cleanup();
-	}
-});
-
-Deno.test(async function updateCredentialCounterRejectsUnknownCredential() {
-	const t = makeTempStorage();
-	try {
-		await createUser(t.storage, "x@y.z", sampleCredential("c1"));
-		await assert.assertRejects(() =>
-			updateCredentialCounter(t.storage, "x@y.z", "missing", 1),
+			updatePasskeyCounter(t.storage, "missing", 1),
 		);
 	} finally {
 		t.cleanup();

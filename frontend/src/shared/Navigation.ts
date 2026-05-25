@@ -13,6 +13,7 @@ export enum NavigationModal {
 	SYNC = "SYNC",
 	MERGE_ACCOUNTS = "MERGE_ACCOUNTS",
 	ADD_ACCOUNT = "ADD_ACCOUNT",
+	SIGN_OUT = "SIGN_OUT",
 }
 
 type NotificationType = StatusType;

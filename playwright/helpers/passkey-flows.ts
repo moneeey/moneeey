@@ -7,9 +7,9 @@ export async function landThroughLanguage(page: Page) {
 	await page.getByTestId("ok-button").click();
 }
 
-export async function signupViaPasskey(page: Page, email: string) {
+export async function signupViaPasskey(page: Page, displayName: string) {
 	await page.getByRole("button", { name: "Online account (passkey)" }).click();
-	await page.getByTestId("passkeyEmail").fill(email);
+	await page.getByTestId("displayName").fill(displayName);
 	await page.getByRole("button", { name: "Sign up" }).click();
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible({
 		timeout: 30_000,

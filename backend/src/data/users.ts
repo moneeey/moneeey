@@ -1,34 +1,38 @@
 import type { Storage } from "../db/storage.ts";
-import { passkeyUserId } from "./ids.ts";
-import type { StoredCredential, UserRecord } from "./types.ts";
+import { generateUserId } from "./ids.ts";
+import type { StoredPasskey, UserRecord } from "./types.ts";
 
 type UserRow = {
 	id: string;
-	email: string;
-	credentials: string;
+	display_name: string;
+	created_at: string;
+};
+
+type PasskeyRow = {
+	credential_id: string;
+	user_id: string;
+	public_key: string;
+	counter: number;
+	transports_json: string | null;
 	created_at: string;
 };
 
 const toUser = (row: UserRow): UserRecord => ({
 	id: row.id,
-	email: row.email,
-	credentials: JSON.parse(row.credentials) as StoredCredential[],
+	displayName: row.display_name,
 	createdAt: row.created_at,
 });
 
-export async function getUserByEmail(
-	storage: Storage,
-	email: string,
-): Promise<UserRecord | null> {
-	return await storage.withMeta((db) => {
-		const row = db
-			.prepare(
-				"SELECT id, email, credentials, created_at FROM users WHERE email = ?",
-			)
-			.get<UserRow>(email);
-		return row ? toUser(row) : null;
-	});
-}
+const toPasskey = (row: PasskeyRow): StoredPasskey => ({
+	credentialId: row.credential_id,
+	userId: row.user_id,
+	publicKey: row.public_key,
+	counter: row.counter,
+	transports: row.transports_json
+		? (JSON.parse(row.transports_json) as StoredPasskey["transports"])
+		: undefined,
+	createdAt: row.created_at,
+});
 
 export async function getUserById(
 	storage: Storage,
@@ -36,79 +40,76 @@ export async function getUserById(
 ): Promise<UserRecord | null> {
 	return await storage.withMeta((db) => {
 		const row = db
-			.prepare(
-				"SELECT id, email, credentials, created_at FROM users WHERE id = ?",
-			)
+			.prepare("SELECT id, display_name, created_at FROM users WHERE id = ?")
 			.get<UserRow>(userId);
 		return row ? toUser(row) : null;
 	});
 }
 
+export async function getUserByCredentialId(
+	storage: Storage,
+	credentialId: string,
+): Promise<{ user: UserRecord; passkey: StoredPasskey } | null> {
+	return await storage.withMeta((db) => {
+		const passkeyRow = db
+			.prepare(
+				`SELECT credential_id, user_id, public_key, counter, transports_json, created_at
+				 FROM passkeys WHERE credential_id = ?`,
+			)
+			.get<PasskeyRow>(credentialId);
+		if (!passkeyRow) return null;
+		const userRow = db
+			.prepare("SELECT id, display_name, created_at FROM users WHERE id = ?")
+			.get<UserRow>(passkeyRow.user_id);
+		if (!userRow) return null;
+		return { user: toUser(userRow), passkey: toPasskey(passkeyRow) };
+	});
+}
+
 export async function createUser(
 	storage: Storage,
-	email: string,
-	credential: StoredCredential,
+	displayName: string,
 ): Promise<UserRecord> {
-	const id = await passkeyUserId(email);
+	const id = generateUserId();
 	const createdAt = new Date().toISOString();
-	const credentials = JSON.stringify([credential]);
 	await storage.withMeta((db) => {
 		db.prepare(
-			"INSERT INTO users (id, email, credentials, created_at) VALUES (?, ?, ?, ?)",
-		).run(id, email, credentials, createdAt);
+			"INSERT INTO users (id, display_name, created_at) VALUES (?, ?, ?)",
+		).run(id, displayName, createdAt);
 	});
-	return { id, email, credentials: [credential], createdAt };
+	return { id, displayName, createdAt };
 }
 
-export async function replaceCredentials(
+export async function addPasskey(
 	storage: Storage,
-	email: string,
-	credential: StoredCredential,
-): Promise<UserRecord> {
-	const user = await getUserByEmail(storage, email);
-	if (!user) throw new Error("user not found");
-	const next = [credential];
+	userId: string,
+	passkey: Omit<StoredPasskey, "userId">,
+): Promise<StoredPasskey> {
 	await storage.withMeta((db) => {
-		db.prepare("UPDATE users SET credentials = ? WHERE id = ?").run(
-			JSON.stringify(next),
-			user.id,
+		db.prepare(
+			`INSERT INTO passkeys (credential_id, user_id, public_key, counter, transports_json, created_at)
+			 VALUES (?, ?, ?, ?, ?, ?)`,
+		).run(
+			passkey.credentialId,
+			userId,
+			passkey.publicKey,
+			passkey.counter,
+			passkey.transports ? JSON.stringify(passkey.transports) : null,
+			passkey.createdAt,
 		);
 	});
-	return { ...user, credentials: next };
+	return { ...passkey, userId };
 }
 
-export async function addCredential(
+export async function updatePasskeyCounter(
 	storage: Storage,
-	email: string,
-	credential: StoredCredential,
-): Promise<UserRecord> {
-	const user = await getUserByEmail(storage, email);
-	if (!user) throw new Error("user not found");
-	const next = [...user.credentials, credential];
-	await storage.withMeta((db) => {
-		db.prepare("UPDATE users SET credentials = ? WHERE id = ?").run(
-			JSON.stringify(next),
-			user.id,
-		);
-	});
-	return { ...user, credentials: next };
-}
-
-export async function updateCredentialCounter(
-	storage: Storage,
-	email: string,
 	credentialId: string,
 	newCounter: number,
 ): Promise<void> {
-	const user = await getUserByEmail(storage, email);
-	if (!user) throw new Error("user not found");
-	const cred = user.credentials.find((c) => c.credentialId === credentialId);
-	if (!cred) throw new Error("credential not found");
-	cred.counter = newCounter;
 	await storage.withMeta((db) => {
-		db.prepare("UPDATE users SET credentials = ? WHERE id = ?").run(
-			JSON.stringify(user.credentials),
-			user.id,
-		);
+		const changes = db
+			.prepare("UPDATE passkeys SET counter = ? WHERE credential_id = ?")
+			.run(newCounter, credentialId);
+		if (changes === 0) throw new Error("passkey not found");
 	});
 }

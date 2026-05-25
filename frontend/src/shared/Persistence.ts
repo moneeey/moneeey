@@ -177,6 +177,7 @@ export default class PersistenceStore {
 	async flush() {
 		this.scheduleFlush.cancel();
 		await this.doFlush();
+		await this.syncClient?.flush();
 	}
 
 	notifyDocument(doc: PersistedEntity) {

@@ -1,4 +1,4 @@
-import { QuestionMarkCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
 import LanguageSelector from "../components/LanguageSelector";
@@ -6,13 +6,11 @@ import Loading from "../components/Loading";
 import TableDensitySwitcher from "../components/TableDensitySwitcher";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import {
-	DeleteButton,
 	LinkButton,
 	PrimaryButton,
 	SecondaryButton,
 } from "../components/base/Button";
 import { Input, TextArea } from "../components/base/Input";
-import MinimalBasicScreen from "../components/base/MinimalBaseScreen";
 import Space from "../components/base/Space";
 import Tabs from "../components/base/Tabs";
 import {
@@ -35,7 +33,6 @@ type ActionState = {
 function DataTab() {
 	const Messages = useMessages();
 	const { persistence } = useMoneeeyStore();
-	const [confirmingDelete, setConfirmingDelete] = useState(false);
 	const [action, setAction] = useState<ActionState | undefined>(undefined);
 	const [loading, setLoading] = useState<number | false>(false);
 
@@ -75,36 +72,6 @@ function DataTab() {
 		});
 	};
 
-	if (confirmingDelete) {
-		return (
-			<div className="fixed inset-0 z-50">
-				<MinimalBasicScreen>
-					<h2 className="text-xl font-semibold text-danger-300">
-						{Messages.menu.delete_data}
-					</h2>
-					<p className="text-sm opacity-80">
-						{Messages.menu.delete_data_confirm}
-					</p>
-					<Space>
-						<SecondaryButton onClick={() => setConfirmingDelete(false)}>
-							{Messages.util.cancel}
-						</SecondaryButton>
-						<DeleteButton
-							onClick={() => {
-								persistence.truncateAll();
-							}}
-						>
-							<span className="flex items-center gap-1">
-								<TrashIcon className="h-4 w-4 shrink-0" />
-								{Messages.menu.delete_data}
-							</span>
-						</DeleteButton>
-					</Space>
-				</MinimalBasicScreen>
-			</div>
-		);
-	}
-
 	return (
 		<div className="flex flex-col gap-4 p-2">
 			<Space>
@@ -114,12 +81,6 @@ function DataTab() {
 				<SecondaryButton onClick={onImportData}>
 					{Messages.settings.import_data}
 				</SecondaryButton>
-				<DeleteButton onClick={() => setConfirmingDelete(true)}>
-					<span className="flex items-center gap-1">
-						<TrashIcon className="h-4 w-4 shrink-0" />
-						{Messages.menu.delete_data}
-					</span>
-				</DeleteButton>
 			</Space>
 			{action && (
 				<div className="flex flex-col gap-2">

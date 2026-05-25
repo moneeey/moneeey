@@ -1,5 +1,10 @@
 import { getStorage } from "./data/storage_singleton.ts";
-import { createVaultForUser, getVaultsByUser } from "./data/vaults.ts";
+import { getUserById } from "./data/users.ts";
+import {
+	createVaultForUser,
+	defaultVaultNameFor,
+	getVaultsByUser,
+} from "./data/vaults.ts";
 import { oak } from "./deps.ts";
 import { authJwt, sessionJwt } from "./jwt.ts";
 import { Logger } from "./logger.ts";
@@ -12,14 +17,15 @@ const SESSION_TOKEN_TTL = "36h";
 type UserId = {
 	strategy: string;
 	userId: string;
-	email: string;
 };
 
-async function resolvePrimaryVaultId(userId: string): Promise<string> {
+export async function resolvePrimaryVaultId(userId: string): Promise<string> {
 	const storage = getStorage();
 	const vaults = await getVaultsByUser(storage, userId);
 	if (vaults.length > 0) return vaults[0].id;
-	const vault = await createVaultForUser(storage, userId);
+	const user = await getUserById(storage, userId);
+	const name = defaultVaultNameFor(user?.displayName ?? "");
+	const vault = await createVaultForUser(storage, userId, name);
 	return vault.id;
 }
 
@@ -30,11 +36,10 @@ export const authSessionInternals = {
 export async function setAuthCookie(
 	ctx: oak.Context,
 	strategy: string,
-	email: string,
 	userId: string,
 ): Promise<string> {
 	const authToken = await authJwt.generate(
-		email,
+		userId,
 		{ strategy, userId },
 		AUTH_COOKIE_TTL,
 	);
@@ -45,28 +50,27 @@ export async function setAuthCookie(
 export async function authenticateAndRespond(
 	ctx: oak.Context,
 	strategy: string,
-	email: string,
 	userId: string,
 	vaultId: string,
 ): Promise<{ authenticated: true; vaultId: string; sessionToken: string }> {
-	await setAuthCookie(ctx, strategy, email, userId);
+	await setAuthCookie(ctx, strategy, userId);
 	const sessionToken = await sessionJwt.generate(
-		email,
+		userId,
 		{ vaultId, userId },
 		SESSION_TOKEN_TTL,
 	);
 	return { authenticated: true, vaultId, sessionToken };
 }
 
-async function loadSession({ strategy, email, userId }: UserId) {
-	if (!email || !userId) return { authenticated: false as const };
+async function loadSession({ strategy, userId }: UserId) {
+	if (!userId) return { authenticated: false as const };
 	const vaultId = await authSessionInternals.resolvePrimaryVaultId(userId);
 	const sessionToken = await sessionJwt.generate(
-		email,
+		userId,
 		{ vaultId, userId },
 		SESSION_TOKEN_TTL,
 	);
-	logger.info("session loaded", { strategy, email, vaultId });
+	logger.info("session loaded", { strategy, userId, vaultId });
 	return { authenticated: true as const, vaultId, sessionToken };
 }
 
@@ -80,11 +84,10 @@ export function setupSession(authRouter: oak.Router) {
 				return;
 			}
 			const validated = await authJwt.validate(authToken);
-			const email = validated.payload.sub || "";
 			const strategy = String(validated.payload.strategy || "");
 			const userId = String(validated.payload.userId || "");
 			ctx.response.body = JSON.stringify(
-				await loadSession({ strategy, email, userId }),
+				await loadSession({ strategy, userId }),
 			);
 		} catch (err) {
 			logger.error("/session error", { err });

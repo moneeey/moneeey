@@ -1,10 +1,10 @@
+import { TEST_DISPLAY_NAME_PREFIX } from "./data/ids.ts";
 import { deleteVault } from "./data/vaults.ts";
 import type { Storage } from "./db/storage.ts";
 import { Logger } from "./logger.ts";
 
 const logger = Logger("janitor");
 
-const TEST_EMAIL_SUFFIX = "@playwright.local";
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export type PurgeResult = {
@@ -20,9 +20,12 @@ export async function purgeStaleTestUsers(
 	const users = await storage.withMeta((db) =>
 		db
 			.prepare(
-				"SELECT id, email FROM users WHERE email LIKE ? AND created_at < ?",
+				"SELECT id, display_name FROM users WHERE display_name LIKE ? AND created_at < ?",
 			)
-			.all<{ id: string; email: string }>(`%${TEST_EMAIL_SUFFIX}`, threshold),
+			.all<{ id: string; display_name: string }>(
+				`${TEST_DISPLAY_NAME_PREFIX}%`,
+				threshold,
+			),
 	);
 	let vaultsDeleted = 0;
 	for (const user of users) {
