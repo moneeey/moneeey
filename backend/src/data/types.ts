@@ -15,10 +15,6 @@ export type UserRecord = {
 	createdAt: string;
 };
 
-export type UserWithPasskeys = UserRecord & {
-	passkeys: StoredPasskey[];
-};
-
 export type VaultRecord = {
 	id: string;
 	name: string;

@@ -16,7 +16,6 @@ import {
 	defaultVaultNameFor,
 	deleteVault,
 	getMembership,
-	getVaultById,
 	getVaultsByUser,
 	listVaultMembers,
 	removeMember,
@@ -76,8 +75,8 @@ Deno.test(async function renameVaultUpdatesName() {
 		const userId = await seedUser(t.storage, "Alice");
 		const v = await newVault(t.storage, userId);
 		await renameVault(t.storage, v.id, "Family vault");
-		const fetched = await getVaultById(t.storage, v.id);
-		assert.assertEquals(fetched?.name, "Family vault");
+		const vaults = await getVaultsByUser(t.storage, userId);
+		assert.assertEquals(vaults[0].name, "Family vault");
 	} finally {
 		t.cleanup();
 	}

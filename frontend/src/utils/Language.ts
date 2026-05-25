@@ -2194,13 +2194,6 @@ export default {
 			hi: "पासकी से शामिल हों",
 			cn: "使用 passkey 加入",
 		},
-		invite_sign_in_first: {
-			en: "You already have an account. Sign in first, then open this invite link again to accept it.",
-			pt: "Você já tem uma conta. Faça login primeiro e depois abra este link de convite novamente para aceitá-lo.",
-			es: "Ya tienes una cuenta. Inicia sesión primero y luego abre este enlace de invitación nuevamente para aceptarla.",
-			hi: "आपका पहले से एक खाता है। पहले साइन इन करें, फिर इस निमंत्रण लिंक को स्वीकार करने के लिए पुनः खोलें।",
-			cn: "您已有账户。请先登录，然后再次打开此邀请链接以接受邀请。",
-		},
 		self_hosted_description: {
 			en: "Point Moneeey at an existing CouchDB to pull your data.",
 			pt: "Aponte o Moneeey para um CouchDB existente para baixar seus dados.",

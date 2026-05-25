@@ -1,6 +1,5 @@
 import { authenticateAndRespond } from "./auth_session.ts";
 import { getStorage } from "./data/storage_singleton.ts";
-import { getUserById } from "./data/users.ts";
 import {
 	CannotRemoveOwnerError,
 	NotOwnerError,
@@ -54,7 +53,6 @@ export const authMembershipInternals = {
 	transferOwnership,
 	getMembership,
 	getVaultsByUser,
-	getUserById,
 	renameVault,
 	authenticateAndRespond,
 };

@@ -21,16 +21,6 @@ export async function signupViaPasskey(page: Page, displayName: string) {
 		.click();
 }
 
-export async function loginViaPasskey(page: Page) {
-	await page.getByRole("button", { name: "Online account (passkey)" }).click();
-	await page.getByRole("button", { name: "Sign in" }).click();
-	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible({
-		timeout: 30_000,
-	});
-	await page.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
-	await page.getByRole("button", { name: "Unlock" }).click();
-}
-
 export async function pickDefaultCurrencyBRL(page: Page) {
 	await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible({
 		timeout: 15_000,

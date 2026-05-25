@@ -1,6 +1,6 @@
 import type { Storage } from "../db/storage.ts";
 import { generateUserId } from "./ids.ts";
-import type { StoredPasskey, UserRecord, UserWithPasskeys } from "./types.ts";
+import type { StoredPasskey, UserRecord } from "./types.ts";
 
 type UserRow = {
 	id: string;
@@ -66,31 +66,6 @@ export async function getUserByCredentialId(
 	});
 }
 
-export async function getPasskeysByUserId(
-	storage: Storage,
-	userId: string,
-): Promise<StoredPasskey[]> {
-	return await storage.withMeta((db) => {
-		const rows = db
-			.prepare(
-				`SELECT credential_id, user_id, public_key, counter, transports_json, created_at
-				 FROM passkeys WHERE user_id = ? ORDER BY created_at`,
-			)
-			.all<PasskeyRow>(userId);
-		return rows.map(toPasskey);
-	});
-}
-
-export async function getUserWithPasskeys(
-	storage: Storage,
-	userId: string,
-): Promise<UserWithPasskeys | null> {
-	const user = await getUserById(storage, userId);
-	if (!user) return null;
-	const passkeys = await getPasskeysByUserId(storage, userId);
-	return { ...user, passkeys };
-}
-
 export async function createUser(
 	storage: Storage,
 	displayName: string,
@@ -103,19 +78,6 @@ export async function createUser(
 		).run(id, displayName, createdAt);
 	});
 	return { id, displayName, createdAt };
-}
-
-export async function updateDisplayName(
-	storage: Storage,
-	userId: string,
-	displayName: string,
-): Promise<void> {
-	await storage.withMeta((db) => {
-		db.prepare("UPDATE users SET display_name = ? WHERE id = ?").run(
-			displayName,
-			userId,
-		);
-	});
 }
 
 export async function addPasskey(
@@ -139,35 +101,6 @@ export async function addPasskey(
 	return { ...passkey, userId };
 }
 
-export async function replacePasskeys(
-	storage: Storage,
-	userId: string,
-	passkey: Omit<StoredPasskey, "userId">,
-): Promise<StoredPasskey> {
-	await storage.withMeta((db) => {
-		db.exec("BEGIN");
-		try {
-			db.prepare("DELETE FROM passkeys WHERE user_id = ?").run(userId);
-			db.prepare(
-				`INSERT INTO passkeys (credential_id, user_id, public_key, counter, transports_json, created_at)
-				 VALUES (?, ?, ?, ?, ?, ?)`,
-			).run(
-				passkey.credentialId,
-				userId,
-				passkey.publicKey,
-				passkey.counter,
-				passkey.transports ? JSON.stringify(passkey.transports) : null,
-				passkey.createdAt,
-			);
-			db.exec("COMMIT");
-		} catch (err) {
-			db.exec("ROLLBACK");
-			throw err;
-		}
-	});
-	return { ...passkey, userId };
-}
-
 export async function updatePasskeyCounter(
 	storage: Storage,
 	credentialId: string,
@@ -178,14 +111,5 @@ export async function updatePasskeyCounter(
 			.prepare("UPDATE passkeys SET counter = ? WHERE credential_id = ?")
 			.run(newCounter, credentialId);
 		if (changes === 0) throw new Error("passkey not found");
-	});
-}
-
-export async function deleteUser(
-	storage: Storage,
-	userId: string,
-): Promise<void> {
-	await storage.withMeta((db) => {
-		db.prepare("DELETE FROM users WHERE id = ?").run(userId);
 	});
 }

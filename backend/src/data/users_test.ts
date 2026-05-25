@@ -4,11 +4,8 @@ import type { StoredPasskey } from "./types.ts";
 import {
 	addPasskey,
 	createUser,
-	getPasskeysByUserId,
 	getUserByCredentialId,
 	getUserById,
-	replacePasskeys,
-	updateDisplayName,
 	updatePasskeyCounter,
 } from "./users.ts";
 
@@ -71,22 +68,6 @@ Deno.test(async function getUserByCredentialIdReturnsNullForUnknown() {
 	}
 });
 
-Deno.test(async function getPasskeysByUserIdReturnsAll() {
-	const t = makeTempStorage();
-	try {
-		const user = await createUser(t.storage, "Carol");
-		await addPasskey(t.storage, user.id, samplePasskey("c1"));
-		await addPasskey(t.storage, user.id, samplePasskey("c2"));
-		const passkeys = await getPasskeysByUserId(t.storage, user.id);
-		assert.assertEquals(passkeys.map((p) => p.credentialId).sort(), [
-			"c1",
-			"c2",
-		]);
-	} finally {
-		t.cleanup();
-	}
-});
-
 Deno.test(async function updatePasskeyCounterPersists() {
 	const t = makeTempStorage();
 	try {
@@ -106,33 +87,6 @@ Deno.test(async function updatePasskeyCounterRejectsUnknownCredential() {
 		await assert.assertRejects(() =>
 			updatePasskeyCounter(t.storage, "missing", 1),
 		);
-	} finally {
-		t.cleanup();
-	}
-});
-
-Deno.test(async function replacePasskeysSwapsAllPasskeys() {
-	const t = makeTempStorage();
-	try {
-		const user = await createUser(t.storage, "Eve");
-		await addPasskey(t.storage, user.id, samplePasskey("old1"));
-		await addPasskey(t.storage, user.id, samplePasskey("old2"));
-		await replacePasskeys(t.storage, user.id, samplePasskey("fresh"));
-		const passkeys = await getPasskeysByUserId(t.storage, user.id);
-		assert.assertEquals(passkeys.length, 1);
-		assert.assertEquals(passkeys[0].credentialId, "fresh");
-	} finally {
-		t.cleanup();
-	}
-});
-
-Deno.test(async function updateDisplayNameChangesIt() {
-	const t = makeTempStorage();
-	try {
-		const user = await createUser(t.storage, "Frank");
-		await updateDisplayName(t.storage, user.id, "Franklin");
-		const after = await getUserById(t.storage, user.id);
-		assert.assertEquals(after?.displayName, "Franklin");
 	} finally {
 		t.cleanup();
 	}

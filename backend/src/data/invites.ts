@@ -25,18 +25,9 @@ const toInvite = (row: InviteRow, vaultId: string): InviteRecord => ({
 	createdAt: row.created_at,
 });
 
-export class InviteTokenFormatError extends Error {
-	constructor() {
-		super("invite_token_format");
-		this.name = "InviteTokenFormatError";
-	}
-}
-
-function parseToken(token: string): { vaultId: string; secret: string } {
+function parseToken(token: string): { vaultId: string; secret: string } | null {
 	const sep = token.indexOf(TOKEN_SEPARATOR);
-	if (sep <= 0 || sep === token.length - 1) {
-		throw new InviteTokenFormatError();
-	}
+	if (sep <= 0 || sep === token.length - 1) return null;
 	return { vaultId: token.slice(0, sep), secret: token.slice(sep + 1) };
 }
 
@@ -90,12 +81,8 @@ export async function findInvite(
 	storage: Storage,
 	token: string,
 ): Promise<InviteRecord | null> {
-	let parsed: { vaultId: string; secret: string };
-	try {
-		parsed = parseToken(token);
-	} catch {
-		return null;
-	}
+	const parsed = parseToken(token);
+	if (!parsed) return null;
 	const tokenHash = await sha384(token);
 	const invite = await storage.withVault(parsed.vaultId, (db) => {
 		const row = db

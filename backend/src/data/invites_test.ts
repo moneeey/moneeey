@@ -2,7 +2,6 @@ import type { Storage } from "../db/storage.ts";
 import { assert } from "../test.ts";
 import {
 	INVITE_QUOTA_PER_OWNER,
-	InviteTokenFormatError,
 	createInvite,
 	findInvite,
 	redeemInvite,
@@ -164,9 +163,4 @@ Deno.test(async function findInviteRejectsExpired() {
 	} finally {
 		t.cleanup();
 	}
-});
-
-Deno.test(async function inviteTokenFormatErrorExists() {
-	const err = new InviteTokenFormatError();
-	assert.assertEquals(err.name, "InviteTokenFormatError");
 });

@@ -106,18 +106,6 @@ export async function renameVault(
 	});
 }
 
-export async function getVaultById(
-	storage: Storage,
-	vaultId: string,
-): Promise<VaultRecord | null> {
-	return await storage.withMeta((db) => {
-		const row = db
-			.prepare("SELECT id, name, created_at FROM vaults WHERE id = ?")
-			.get<VaultRow>(vaultId);
-		return row ? toVault(row) : null;
-	});
-}
-
 export async function getVaultsByUser(
 	storage: Storage,
 	userId: string,
