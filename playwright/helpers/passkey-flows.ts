@@ -7,9 +7,9 @@ export async function landThroughLanguage(page: Page) {
 	await page.getByTestId("ok-button").click();
 }
 
-export async function signupViaPasskey(page: Page, email: string) {
+export async function signupViaPasskey(page: Page, displayName: string) {
 	await page.getByRole("button", { name: "Online account (passkey)" }).click();
-	await page.getByTestId("passkeyEmail").fill(email);
+	await page.getByTestId("displayName").fill(displayName);
 	await page.getByRole("button", { name: "Sign up" }).click();
 	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible({
 		timeout: 30_000,
@@ -19,6 +19,16 @@ export async function signupViaPasskey(page: Page, email: string) {
 	await page
 		.getByRole("button", { name: "Create passphrase and continue" })
 		.click();
+}
+
+export async function loginViaPasskey(page: Page) {
+	await page.getByRole("button", { name: "Online account (passkey)" }).click();
+	await page.getByRole("button", { name: "Sign in" }).click();
+	await expect(page.getByTestId("encryptionPassphrase")).toBeVisible({
+		timeout: 30_000,
+	});
+	await page.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
+	await page.getByRole("button", { name: "Unlock" }).click();
 }
 
 export async function pickDefaultCurrencyBRL(page: Page) {

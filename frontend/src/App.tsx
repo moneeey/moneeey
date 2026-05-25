@@ -153,7 +153,9 @@ const AppBoot = observer(() => {
 const InviteGateOrApp = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
-	const inviteMatch = location.pathname.match(/^\/invite\/([a-f0-9]+)$/);
+	const inviteMatch = location.pathname.match(
+		/^\/invite\/([a-z0-9]+\.[a-f0-9]+)$/,
+	);
 	if (inviteMatch) {
 		const token = inviteMatch[1];
 		return (

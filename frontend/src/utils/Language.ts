@@ -656,6 +656,13 @@ export default {
 			hi: "रद्द करें",
 			cn: "取消",
 		},
+		save: {
+			en: "Save",
+			pt: "Salvar",
+			es: "Guardar",
+			hi: "सहेजें",
+			cn: "保存",
+		},
 		clear: {
 			en: "Clear",
 			pt: "Limpar",
@@ -1831,6 +1838,13 @@ export default {
 			hi: "बनाया गया",
 			cn: "创建时间",
 		},
+		vault_rename: {
+			en: "Rename",
+			pt: "Renomear",
+			es: "Renombrar",
+			hi: "नाम बदलें",
+			cn: "重命名",
+		},
 		join_vault_title: {
 			en: "Join a shared vault",
 			pt: "Entrar em um cofre compartilhado",
@@ -2116,6 +2130,34 @@ export default {
 			es: "Registrarse",
 			hi: "साइन अप करें",
 			cn: "注册",
+		},
+		display_name_label: {
+			en: "Display name",
+			pt: "Nome de exibição",
+			es: "Nombre visible",
+			hi: "प्रदर्शन नाम",
+			cn: "显示名称",
+		},
+		display_name_placeholder: {
+			en: "Pick a name (any name)",
+			pt: "Escolha um nome (qualquer nome)",
+			es: "Elige un nombre (cualquiera)",
+			hi: "कोई भी नाम चुनें",
+			cn: "选一个名字（任意名字）",
+		},
+		display_name_required: {
+			en: "Please choose a display name to sign up.",
+			pt: "Escolha um nome de exibição para se cadastrar.",
+			es: "Elige un nombre visible para registrarte.",
+			hi: "साइन अप करने के लिए एक प्रदर्शन नाम चुनें।",
+			cn: "请填写一个显示名称以注册。",
+		},
+		display_name_login_hint: {
+			en: "To sign in, just press Sign in — your browser will show your saved passkey.",
+			pt: "Para entrar, clique em Entrar — seu navegador mostrará seu passkey salvo.",
+			es: "Para iniciar sesión, solo presiona Iniciar sesión — tu navegador mostrará tu passkey guardado.",
+			hi: "साइन इन करने के लिए, बस साइन इन दबाएं — आपका ब्राउज़र आपका सहेजा हुआ पासकी दिखाएगा।",
+			cn: "登录时只需点击登录 — 您的浏览器会显示已保存的 passkey。",
 		},
 		passkey_login: {
 			en: "Sign in",

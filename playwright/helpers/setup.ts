@@ -26,7 +26,7 @@ export async function resetAppState(page: Page) {
 	});
 }
 
-export function uniqueTestEmail(prefix = "u"): string {
+export function uniqueTestDisplayName(prefix = "u"): string {
 	const slug = Math.random().toString(36).slice(2, 10);
-	return `${prefix}-${Date.now()}-${slug}@playwright.local`.toLowerCase();
+	return `playwright-test-${prefix}-${Date.now()}-${slug}`;
 }

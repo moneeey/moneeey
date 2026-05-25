@@ -44,17 +44,17 @@ Deno.test(async function withMetaCreatesFileAndAppliesMigrations() {
 	try {
 		await storage.withMeta((db) => {
 			db.prepare(
-				"INSERT INTO users (id, email, credentials, created_at) VALUES (?, ?, '[]', ?)",
-			).run("u1", "a@b.c", new Date().toISOString());
+				"INSERT INTO users (id, display_name, created_at) VALUES (?, ?, ?)",
+			).run("u1", "Alice", new Date().toISOString());
 		});
 		assert.assertEquals(fs.existsSync(`${root}/meta.sqlite`), true);
 		const row = await storage.withMeta(
 			(db) =>
 				db
-					.prepare("SELECT email FROM users WHERE id = ?")
-					.get<{ email: string }>("u1") ?? null,
+					.prepare("SELECT display_name FROM users WHERE id = ?")
+					.get<{ display_name: string }>("u1") ?? null,
 		);
-		assert.assertEquals(row?.email, "a@b.c");
+		assert.assertEquals(row?.display_name, "Alice");
 	} finally {
 		cleanup(root, storage);
 	}

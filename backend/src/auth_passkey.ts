@@ -11,22 +11,18 @@ import {
 	redeemInvite as dataRedeemInvite,
 } from "./data/invites.ts";
 import { getStorage } from "./data/storage_singleton.ts";
-import type {
-	InviteRecord,
-	StoredCredential,
-	UserRecord,
-} from "./data/types.ts";
+import type { StoredPasskey, UserRecord } from "./data/types.ts";
 import {
-	addCredential as dataAddCredential,
+	addPasskey as dataAddPasskey,
 	createUser as dataCreateUser,
-	getUserByEmail as dataGetUserByEmail,
-	replaceCredentials as dataReplaceCredentials,
-	updateCredentialCounter as dataUpdateCredentialCounter,
+	getUserByCredentialId as dataGetUserByCredentialId,
+	updatePasskeyCounter as dataUpdatePasskeyCounter,
 } from "./data/users.ts";
 import {
 	VaultFullError,
 	createVaultForUser as dataCreateVaultForUser,
 	getVaultsByUser as dataGetVaultsByUser,
+	defaultVaultNameFor,
 } from "./data/vaults.ts";
 import {
 	generateAuthenticationOptions,
@@ -44,46 +40,33 @@ import { Logger } from "./logger.ts";
 
 const logger = Logger("passkey");
 
-async function getUserByEmail(email: string): Promise<UserRecord | null> {
-	return await dataGetUserByEmail(getStorage(), email);
-}
+const MAX_DISPLAY_NAME_LENGTH = 64;
 
-async function createUserAndVault(
-	email: string,
-	credential: StoredCredential,
-): Promise<{ user: UserRecord; vaultId: string }> {
+async function createUserVaultAndPasskey(
+	displayName: string,
+	credential: Omit<StoredPasskey, "userId">,
+): Promise<{ user: UserRecord; vaultId: string; passkey: StoredPasskey }> {
 	const storage = getStorage();
-	const user = await dataCreateUser(storage, email, credential);
-	const vault = await dataCreateVaultForUser(storage, user.id);
-	return { user, vaultId: vault.id };
+	const user = await dataCreateUser(storage, displayName);
+	const passkey = await dataAddPasskey(storage, user.id, credential);
+	const vault = await dataCreateVaultForUser(
+		storage,
+		user.id,
+		defaultVaultNameFor(displayName),
+	);
+	return { user, vaultId: vault.id, passkey };
 }
 
-async function userBlocksReuse(email: string): Promise<boolean> {
-	const existing = await dataGetUserByEmail(getStorage(), email);
-	if (!existing) return false;
-	const vaults = await dataGetVaultsByUser(getStorage(), existing.id);
-	return vaults.length > 0;
-}
-
-async function reregisterUserWithFreshVault(
-	email: string,
-	credential: StoredCredential,
-): Promise<{ user: UserRecord; vaultId: string }> {
-	const storage = getStorage();
-	const user = await dataReplaceCredentials(storage, email, credential);
-	const vault = await dataCreateVaultForUser(storage, user.id);
-	return { user, vaultId: vault.id };
-}
-
-async function reregisterInvitee(
-	email: string,
-	credential: StoredCredential,
+async function createUserWithInviteAndPasskey(
+	displayName: string,
+	credential: Omit<StoredPasskey, "userId">,
 	inviteToken: string,
-): Promise<{ user: UserRecord; vaultId: string }> {
+): Promise<{ user: UserRecord; vaultId: string; passkey: StoredPasskey }> {
 	const storage = getStorage();
-	const user = await dataReplaceCredentials(storage, email, credential);
+	const user = await dataCreateUser(storage, displayName);
+	const passkey = await dataAddPasskey(storage, user.id, credential);
 	const vaultId = await dataRedeemInvite(storage, inviteToken, user.id);
-	return { user, vaultId };
+	return { user, vaultId, passkey };
 }
 
 async function getPrimaryVaultId(userId: string): Promise<string | null> {
@@ -92,72 +75,27 @@ async function getPrimaryVaultId(userId: string): Promise<string | null> {
 }
 
 async function createInviteForOwner(
-	ownerEmail: string,
+	ownerUserId: string,
 ): Promise<{ token: string; vaultId: string }> {
-	const owner = await dataGetUserByEmail(getStorage(), ownerEmail);
-	if (!owner) throw new Error("owner not found");
-	const vaultId = await getPrimaryVaultId(owner.id);
+	const vaultId = await getPrimaryVaultId(ownerUserId);
 	if (!vaultId) throw new Error("owner has no vault");
-	const token = await dataCreateInvite(getStorage(), owner.id, vaultId);
+	const token = await dataCreateInvite(getStorage(), ownerUserId, vaultId);
 	return { token, vaultId };
 }
 
-async function findInvite(token: string): Promise<InviteRecord | null> {
-	return await dataFindInvite(getStorage(), token);
-}
-
-async function acceptInviteForUser(
-	userId: string,
-	token: string,
-): Promise<{ vaultId: string }> {
-	const vaultId = await dataRedeemInvite(getStorage(), token, userId);
-	return { vaultId };
-}
-
-async function registerInvitee(
-	email: string,
-	credential: StoredCredential,
-	inviteToken: string,
-): Promise<{ user: UserRecord; vaultId: string }> {
-	const storage = getStorage();
-	const user = await dataCreateUser(storage, email, credential);
-	const vaultId = await dataRedeemInvite(storage, inviteToken, user.id);
-	return { user, vaultId };
-}
-
-async function updateCredentialCounter(
-	email: string,
-	credentialId: string,
-	newCounter: number,
-): Promise<void> {
-	await dataUpdateCredentialCounter(
-		getStorage(),
-		email,
-		credentialId,
-		newCounter,
-	);
-}
-
-async function addCredentialForEmail(
-	email: string,
-	credential: StoredCredential,
-): Promise<void> {
-	await dataAddCredential(getStorage(), email, credential);
-}
-
 export const authPasskeyInternals = {
-	getUserByEmail,
-	createUserAndVault,
+	getUserByCredentialId: (credentialId: string) =>
+		dataGetUserByCredentialId(getStorage(), credentialId),
+	createUserVaultAndPasskey,
+	createUserWithInviteAndPasskey,
 	getPrimaryVaultId,
 	createInviteForOwner,
-	findInvite,
-	acceptInviteForUser,
-	registerInvitee,
-	userBlocksReuse,
-	reregisterUserWithFreshVault,
-	reregisterInvitee,
-	updateCredentialCounter,
-	addCredentialForEmail,
+	findInvite: (token: string) => dataFindInvite(getStorage(), token),
+	acceptInviteForUser: async (userId: string, token: string) => ({
+		vaultId: await dataRedeemInvite(getStorage(), token, userId),
+	}),
+	updatePasskeyCounter: (credentialId: string, counter: number) =>
+		dataUpdatePasskeyCounter(getStorage(), credentialId, counter),
 	generateRegistrationOptions,
 	generateAuthenticationOptions,
 	verifyRegistrationResponse,
@@ -169,14 +107,12 @@ const getBodyJson = async (ctx: oak.Context) => {
 	return await ctx.request.body({ type: "json" }).value;
 };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-const parseEmail = (raw: unknown): string | null => {
+const parseDisplayName = (raw: unknown): string | null => {
 	if (typeof raw !== "string") return null;
-	const email = raw.toLowerCase().trim();
-	if (email.length > 254) return null;
-	if (!EMAIL_RE.test(email)) return null;
-	return email;
+	const trimmed = raw.trim();
+	if (trimmed.length === 0) return null;
+	if (trimmed.length > MAX_DISPLAY_NAME_LENGTH) return null;
+	return trimmed;
 };
 
 function respond(ctx: oak.Context, status: oak.Status, body: object) {
@@ -212,13 +148,13 @@ function credentialToStored(
 		};
 	},
 	transports?: string[],
-): StoredCredential {
+): Omit<StoredPasskey, "userId"> {
 	const { credential } = verification.registrationInfo;
 	return {
 		credentialId: credential.id,
 		publicKey: btoa(String.fromCharCode(...credential.publicKey)),
 		counter: credential.counter,
-		transports: transports as StoredCredential["transports"],
+		transports: transports as StoredPasskey["transports"],
 		createdAt: new Date().toISOString(),
 	};
 }
@@ -226,30 +162,26 @@ function credentialToStored(
 export function setupPasskey(authRouter: oak.Router) {
 	authRouter.post("/passkey/register/options", async (ctx) => {
 		try {
-			const { email: rawEmail } = await getBodyJson(ctx);
-			const email = parseEmail(rawEmail);
-			if (!email) {
-				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
-				return;
-			}
-
-			if (await authPasskeyInternals.userBlocksReuse(email)) {
-				respond(ctx, oak.Status.Conflict, { error: "user already exists" });
+			const { displayName: rawName } = await getBodyJson(ctx);
+			const displayName = parseDisplayName(rawName);
+			if (!displayName) {
+				respond(ctx, oak.Status.BadRequest, { error: "bad display name" });
 				return;
 			}
 
 			const options = await authPasskeyInternals.generateRegistrationOptions({
 				rpName: WEBAUTHN_RP_NAME,
 				rpID: WEBAUTHN_RP_ID,
-				userName: email,
+				userName: displayName,
+				userDisplayName: displayName,
 				attestationType: "none",
 				authenticatorSelection: {
-					residentKey: "preferred",
+					residentKey: "required",
 					userVerification: "preferred",
 				},
 			});
 
-			const flowToken = await makeFlowToken(options.challenge);
+			const flowToken = await makeFlowToken(options.challenge, { displayName });
 			respond(ctx, oak.Status.OK, { options, flowToken });
 		} catch (err) {
 			logger.error("register/options error", { err });
@@ -261,14 +193,15 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/register/verify", async (ctx) => {
 		try {
-			const { email: rawEmail, credential, flowToken } = await getBodyJson(ctx);
-			const email = parseEmail(rawEmail);
-			if (!email) {
-				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
+			const { credential, flowToken } = await getBodyJson(ctx);
+
+			const { challenge: expectedChallenge, claims } =
+				await readFlowToken(flowToken);
+			const displayName = parseDisplayName(claims.displayName);
+			if (!displayName) {
+				respond(ctx, oak.Status.BadRequest, { error: "bad display name" });
 				return;
 			}
-
-			const { challenge: expectedChallenge } = await readFlowToken(flowToken);
 			const verification =
 				await authPasskeyInternals.verifyRegistrationResponse({
 					response: credential as RegistrationResponseJSON,
@@ -288,14 +221,14 @@ export function setupPasskey(authRouter: oak.Router) {
 				},
 				(credential as RegistrationResponseJSON).response.transports,
 			);
-			const existing = await authPasskeyInternals.getUserByEmail(email);
-			const { user, vaultId } = existing
-				? await authPasskeyInternals.reregisterUserWithFreshVault(email, stored)
-				: await authPasskeyInternals.createUserAndVault(email, stored);
+			const { user, vaultId } =
+				await authPasskeyInternals.createUserVaultAndPasskey(
+					displayName,
+					stored,
+				);
 			const result = await authPasskeyInternals.authenticateAndRespond(
 				ctx,
 				"passkey",
-				email,
 				user.id,
 				vaultId,
 			);
@@ -310,25 +243,8 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/login/options", async (ctx) => {
 		try {
-			const { email: rawEmail } = await getBodyJson(ctx);
-			const email = parseEmail(rawEmail);
-			if (!email) {
-				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
-				return;
-			}
-
-			const user = await authPasskeyInternals.getUserByEmail(email);
-			if (!user) {
-				respond(ctx, oak.Status.NotFound, { error: "user not found" });
-				return;
-			}
-
 			const options = await authPasskeyInternals.generateAuthenticationOptions({
 				rpID: WEBAUTHN_RP_ID,
-				allowCredentials: user.credentials.map((c) => ({
-					id: c.credentialId,
-					transports: c.transports,
-				})),
 				userVerification: "preferred",
 			});
 
@@ -344,28 +260,18 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/login/verify", async (ctx) => {
 		try {
-			const { email: rawEmail, credential, flowToken } = await getBodyJson(ctx);
-			const email = parseEmail(rawEmail);
-			if (!email) {
-				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
-				return;
-			}
-
-			const user = await authPasskeyInternals.getUserByEmail(email);
-			if (!user) {
-				respond(ctx, oak.Status.NotFound, { error: "user not found" });
-				return;
-			}
+			const { credential, flowToken } = await getBodyJson(ctx);
 
 			const { challenge: expectedChallenge } = await readFlowToken(flowToken);
 			const authResponse = credential as AuthenticationResponseJSON;
-			const storedCred = user.credentials.find(
-				(c) => c.credentialId === authResponse.id,
+			const lookup = await authPasskeyInternals.getUserByCredentialId(
+				authResponse.id,
 			);
-			if (!storedCred) {
+			if (!lookup) {
 				respond(ctx, oak.Status.BadRequest, { error: "credential not found" });
 				return;
 			}
+			const { user, passkey } = lookup;
 
 			const verification =
 				await authPasskeyInternals.verifyAuthenticationResponse({
@@ -374,14 +280,14 @@ export function setupPasskey(authRouter: oak.Router) {
 					expectedOrigin: WEBAUTHN_ORIGIN,
 					expectedRPID: WEBAUTHN_RP_ID,
 					credential: {
-						id: storedCred.credentialId,
+						id: passkey.credentialId,
 						publicKey: new Uint8Array(
-							atob(storedCred.publicKey)
+							atob(passkey.publicKey)
 								.split("")
 								.map((c) => c.charCodeAt(0)),
 						),
-						counter: storedCred.counter,
-						transports: storedCred.transports,
+						counter: passkey.counter,
+						transports: passkey.transports,
 					},
 				});
 
@@ -390,9 +296,8 @@ export function setupPasskey(authRouter: oak.Router) {
 				return;
 			}
 
-			await authPasskeyInternals.updateCredentialCounter(
-				email,
-				storedCred.credentialId,
+			await authPasskeyInternals.updatePasskeyCounter(
+				passkey.credentialId,
 				verification.authenticationInfo.newCounter,
 			);
 
@@ -407,7 +312,6 @@ export function setupPasskey(authRouter: oak.Router) {
 			const result = await authPasskeyInternals.authenticateAndRespond(
 				ctx,
 				"passkey",
-				email,
 				user.id,
 				vaultId,
 			);
@@ -428,15 +332,15 @@ export function setupPasskey(authRouter: oak.Router) {
 				return;
 			}
 			const validated = await authJwt.validate(authToken);
-			const email = validated.payload.sub;
-			if (!email) {
+			const userId = String(validated.payload.userId || "");
+			if (!userId) {
 				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
 				return;
 			}
 
 			try {
 				const { token } =
-					await authPasskeyInternals.createInviteForOwner(email);
+					await authPasskeyInternals.createInviteForOwner(userId);
 				const inviteUrl = `${APP_URL}/#/invite/${token}`;
 				respond(ctx, oak.Status.OK, { inviteUrl, token });
 			} catch (err) {
@@ -525,10 +429,10 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/invite/register/options", async (ctx) => {
 		try {
-			const { token, email: rawEmail } = await getBodyJson(ctx);
-			const email = parseEmail(rawEmail);
-			if (!email) {
-				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
+			const { token, displayName: rawName } = await getBodyJson(ctx);
+			const displayName = parseDisplayName(rawName);
+			if (!displayName) {
+				respond(ctx, oak.Status.BadRequest, { error: "bad display name" });
 				return;
 			}
 
@@ -538,24 +442,21 @@ export function setupPasskey(authRouter: oak.Router) {
 				return;
 			}
 
-			if (await authPasskeyInternals.userBlocksReuse(email)) {
-				respond(ctx, oak.Status.Conflict, { error: "user already exists" });
-				return;
-			}
-
 			const options = await authPasskeyInternals.generateRegistrationOptions({
 				rpName: WEBAUTHN_RP_NAME,
 				rpID: WEBAUTHN_RP_ID,
-				userName: email,
+				userName: displayName,
+				userDisplayName: displayName,
 				attestationType: "none",
 				authenticatorSelection: {
-					residentKey: "preferred",
+					residentKey: "required",
 					userVerification: "preferred",
 				},
 			});
 
 			const flowToken = await makeFlowToken(options.challenge, {
 				inviteToken: token,
+				displayName,
 			});
 			respond(ctx, oak.Status.OK, { options, flowToken });
 		} catch (err) {
@@ -568,18 +469,18 @@ export function setupPasskey(authRouter: oak.Router) {
 
 	authRouter.post("/passkey/invite/register/verify", async (ctx) => {
 		try {
-			const { email: rawEmail, credential, flowToken } = await getBodyJson(ctx);
-			const email = parseEmail(rawEmail);
-			if (!email) {
-				respond(ctx, oak.Status.BadRequest, { error: "bad email" });
-				return;
-			}
+			const { credential, flowToken } = await getBodyJson(ctx);
 
 			const { challenge: expectedChallenge, claims } =
 				await readFlowToken(flowToken);
 			const inviteToken = claims.inviteToken;
 			if (typeof inviteToken !== "string" || inviteToken.length === 0) {
 				respond(ctx, oak.Status.BadRequest, { error: "no invite token" });
+				return;
+			}
+			const displayName = parseDisplayName(claims.displayName);
+			if (!displayName) {
+				respond(ctx, oak.Status.BadRequest, { error: "bad display name" });
 				return;
 			}
 
@@ -606,18 +507,12 @@ export function setupPasskey(authRouter: oak.Router) {
 			let user: UserRecord;
 			let vaultId: string;
 			try {
-				const existing = await authPasskeyInternals.getUserByEmail(email);
-				const registered = existing
-					? await authPasskeyInternals.reregisterInvitee(
-							email,
-							stored,
-							inviteToken,
-						)
-					: await authPasskeyInternals.registerInvitee(
-							email,
-							stored,
-							inviteToken,
-						);
+				const registered =
+					await authPasskeyInternals.createUserWithInviteAndPasskey(
+						displayName,
+						stored,
+						inviteToken,
+					);
 				user = registered.user;
 				vaultId = registered.vaultId;
 			} catch (err) {
@@ -642,7 +537,6 @@ export function setupPasskey(authRouter: oak.Router) {
 			const result = await authPasskeyInternals.authenticateAndRespond(
 				ctx,
 				"passkey",
-				email,
 				user.id,
 				vaultId,
 			);

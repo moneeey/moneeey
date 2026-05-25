@@ -1,12 +1,14 @@
 import { observer } from "mobx-react-lite";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Status } from "../components/Status";
-import { OkButton } from "../components/base/Button";
+import { OkButton, SecondaryButton } from "../components/base/Button";
+import { Input } from "../components/base/Input";
 import { VerticalSpace } from "../components/base/Space";
 import {
 	type VaultListItem,
 	listMyVaults,
+	renameVault,
 } from "../shared/encryption/bootstrapFromPasskey";
 import { selectVaultForTabAndReload } from "../shared/storage/tabVault";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
@@ -25,23 +27,42 @@ export const VaultSwitcherSection = observer(() => {
 	const { management } = useMoneeeyStore();
 	const [vaults, setVaults] = useState<VaultListItem[] | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const [renaming, setRenaming] = useState<string | null>(null);
+	const [renameValue, setRenameValue] = useState("");
+	const [busy, setBusy] = useState(false);
 
-	useEffect(() => {
-		let cancelled = false;
-		listMyVaults()
-			.then((vs) => {
-				if (!cancelled) setVaults(vs);
-			})
-			.catch((err) => {
-				console.error("vaults load failed", err);
-				if (!cancelled) setError(Messages.sync.members_load_error);
-			});
-		return () => {
-			cancelled = true;
-		};
+	const refresh = useCallback(async () => {
+		try {
+			const vs = await listMyVaults();
+			setVaults(vs);
+		} catch (err) {
+			console.error("vaults load failed", err);
+			setError(Messages.sync.members_load_error);
+		}
 	}, [Messages.sync.members_load_error]);
 
-	if (!error && (vaults === null || vaults.length < 2)) return null;
+	useEffect(() => {
+		refresh();
+	}, [refresh]);
+
+	const onSaveRename = async (vaultId: string) => {
+		const next = renameValue.trim();
+		if (next.length === 0) return;
+		setBusy(true);
+		try {
+			await renameVault(vaultId, next);
+			setRenaming(null);
+			setRenameValue("");
+			await refresh();
+		} catch (err) {
+			console.error("rename failed", err);
+			setError(Messages.sync.members_action_error);
+		} finally {
+			setBusy(false);
+		}
+	};
+
+	if (!error && !vaults) return null;
 
 	return (
 		<section className="rounded-lg border border-background-700 bg-background-900 p-4">
@@ -57,14 +78,30 @@ export const VaultSwitcherSection = observer(() => {
 					<ul className="flex flex-col gap-2">
 						{vaults.map((v) => {
 							const isCurrent = v.vaultId === management.vaultId;
+							const isRenaming = renaming === v.vaultId;
 							return (
 								<li
 									key={v.vaultId}
 									data-testid={`vault-${v.vaultId}`}
 									className={`flex items-center justify-between gap-2 rounded border p-2 ${isCurrent ? "border-primary-500 bg-background-800" : "border-background-700 bg-background-900"}`}
 								>
-									<div className="flex flex-col">
-										<span className="text-sm font-mono">{v.vaultId}</span>
+									<div className="flex flex-col flex-1 min-w-0">
+										{isRenaming ? (
+											<Input
+												testId={`vault-rename-input-${v.vaultId}`}
+												value={renameValue}
+												placeholder={v.name}
+												onChange={setRenameValue}
+												containerArea
+											/>
+										) : (
+											<span
+												className="text-sm font-medium"
+												data-testid={`vault-name-${v.vaultId}`}
+											>
+												{v.name}
+											</span>
+										)}
 										<span className="text-xs opacity-70">
 											{v.role === "owner"
 												? Messages.sync.role_owner
@@ -82,13 +119,45 @@ export const VaultSwitcherSection = observer(() => {
 											)}
 										</span>
 									</div>
-									{!isCurrent && (
-										<OkButton
-											testId={`select-vault-${v.vaultId}`}
-											onClick={() => selectVaultForTabAndReload(v.vaultId)}
-											title={Messages.sync.vault_switcher_use}
-										/>
-									)}
+									<div className="flex gap-2">
+										{v.role === "owner" &&
+											(isRenaming ? (
+												<>
+													<SecondaryButton
+														onClick={() => {
+															setRenaming(null);
+															setRenameValue("");
+														}}
+														title={Messages.util.cancel}
+														disabled={busy}
+														compact
+													/>
+													<OkButton
+														testId={`vault-rename-save-${v.vaultId}`}
+														onClick={() => onSaveRename(v.vaultId)}
+														title={Messages.util.save}
+														disabled={busy || renameValue.trim().length === 0}
+													/>
+												</>
+											) : (
+												<SecondaryButton
+													testId={`vault-rename-${v.vaultId}`}
+													onClick={() => {
+														setRenaming(v.vaultId);
+														setRenameValue(v.name);
+													}}
+													title={Messages.sync.vault_rename}
+													compact
+												/>
+											))}
+										{!isCurrent && !isRenaming && (
+											<OkButton
+												testId={`select-vault-${v.vaultId}`}
+												onClick={() => selectVaultForTabAndReload(v.vaultId)}
+												title={Messages.sync.vault_switcher_use}
+											/>
+										)}
+									</div>
 								</li>
 							);
 						})}

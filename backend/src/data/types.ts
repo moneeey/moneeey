@@ -1,7 +1,8 @@
 import type { AuthenticatorTransportFuture } from "../deps.ts";
 
-export type StoredCredential = {
+export type StoredPasskey = {
 	credentialId: string;
+	userId: string;
 	publicKey: string;
 	counter: number;
 	transports?: AuthenticatorTransportFuture[];
@@ -10,13 +11,17 @@ export type StoredCredential = {
 
 export type UserRecord = {
 	id: string;
-	email: string;
-	credentials: StoredCredential[];
+	displayName: string;
 	createdAt: string;
+};
+
+export type UserWithPasskeys = UserRecord & {
+	passkeys: StoredPasskey[];
 };
 
 export type VaultRecord = {
 	id: string;
+	name: string;
 	createdAt: string;
 };
 

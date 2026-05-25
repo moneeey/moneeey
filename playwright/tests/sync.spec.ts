@@ -30,7 +30,7 @@ import {
 	pickDefaultCurrencyBRL,
 	signupViaPasskey,
 } from "../helpers/passkey-flows";
-import { resetAppState, uniqueTestEmail } from "../helpers/setup";
+import { resetAppState, uniqueTestDisplayName } from "../helpers/setup";
 
 test.describe("passkey signup / delete", () => {
 	test.skip(
@@ -46,7 +46,7 @@ test.describe("passkey signup / delete", () => {
 		try {
 			await resetAppState(page);
 			await landThroughLanguage(page);
-			await signupViaPasskey(page, uniqueTestEmail("signup"));
+			await signupViaPasskey(page, uniqueTestDisplayName("signup"));
 			await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible({
 				timeout: 15_000,
 			});
@@ -66,7 +66,7 @@ test.describe("passkey signup / delete", () => {
 		try {
 			await page.goto("/");
 			await landThroughLanguage(page);
-			await signupViaPasskey(page, uniqueTestEmail("delete"));
+			await signupViaPasskey(page, uniqueTestDisplayName("delete"));
 			await expect(page.getByTestId("defaultCurrencySelector")).toBeVisible({
 				timeout: 15_000,
 			});
@@ -111,8 +111,8 @@ test.describe("passkey cross-context sync", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const emailA = uniqueTestEmail("inviteA");
-		const emailB = uniqueTestEmail("inviteB");
+		const emailA = uniqueTestDisplayName("inviteA");
+		const emailB = uniqueTestDisplayName("inviteB");
 		const accountFromA = `AccountFromA-${Date.now()}`;
 		const accountFromB = `AccountFromB-${Date.now()}`;
 
@@ -140,15 +140,15 @@ test.describe("passkey cross-context sync", () => {
 				const json = (await res.json()) as { inviteUrl: string };
 				return json.inviteUrl;
 			});
-			const hashMatch = inviteUrl.match(/#\/invite\/[a-f0-9]+/);
+			const hashMatch = inviteUrl.match(/#\/invite\/[a-z0-9.]+/);
 			if (!hashMatch) throw new Error("invite URL missing hash");
 			await pageB.goto(`/${hashMatch[0]}`);
 			await landThroughLanguage(pageB);
 
-			await expect(pageB.getByTestId("inviteEmail")).toBeVisible({
+			await expect(pageB.getByTestId("displayName")).toBeVisible({
 				timeout: 15_000,
 			});
-			await pageB.getByTestId("inviteEmail").fill(emailB);
+			await pageB.getByTestId("displayName").fill(emailB);
 			await pageB.getByRole("button", { name: "Join with passkey" }).click();
 
 			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
@@ -196,7 +196,7 @@ test.describe("passkey cross-context sync", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const email = uniqueTestEmail("login");
+		const email = uniqueTestDisplayName("login");
 		const accountFromA = `AccountFromA-${Date.now()}`;
 		const accountFromB = `AccountFromB-${Date.now()}`;
 
@@ -220,7 +220,6 @@ test.describe("passkey cross-context sync", () => {
 			await pageB
 				.getByRole("button", { name: "Online account (passkey)" })
 				.click();
-			await pageB.getByTestId("passkeyEmail").fill(email);
 			await pageB.getByRole("button", { name: "Sign in" }).click();
 
 			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
@@ -282,8 +281,8 @@ test.describe("vault membership management", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const emailA = uniqueTestEmail("kickA");
-		const emailB = uniqueTestEmail("kickB");
+		const emailA = uniqueTestDisplayName("kickA");
+		const emailB = uniqueTestDisplayName("kickB");
 		const accountFromA = `KickAcc-${Date.now()}`;
 
 		try {
@@ -306,14 +305,14 @@ test.describe("vault membership management", () => {
 				const json = (await res.json()) as { inviteUrl: string };
 				return json.inviteUrl;
 			});
-			const hashMatch = inviteUrl.match(/#\/invite\/[a-f0-9]+/);
+			const hashMatch = inviteUrl.match(/#\/invite\/[a-z0-9.]+/);
 			if (!hashMatch) throw new Error("invite URL missing hash");
 			await pageB.goto(`/${hashMatch[0]}`);
 			await landThroughLanguage(pageB);
-			await expect(pageB.getByTestId("inviteEmail")).toBeVisible({
+			await expect(pageB.getByTestId("displayName")).toBeVisible({
 				timeout: 15_000,
 			});
-			await pageB.getByTestId("inviteEmail").fill(emailB);
+			await pageB.getByTestId("displayName").fill(emailB);
 			await pageB.getByRole("button", { name: "Join with passkey" }).click();
 			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
 				timeout: 30_000,
@@ -360,8 +359,8 @@ test.describe("vault membership management", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const emailA = uniqueTestEmail("xferA");
-		const emailB = uniqueTestEmail("xferB");
+		const emailA = uniqueTestDisplayName("xferA");
+		const emailB = uniqueTestDisplayName("xferB");
 		const accountFromA = `XferAcc-${Date.now()}`;
 
 		try {
@@ -384,11 +383,11 @@ test.describe("vault membership management", () => {
 				const json = (await res.json()) as { inviteUrl: string };
 				return json.inviteUrl;
 			});
-			const hashMatch = inviteUrl.match(/#\/invite\/[a-f0-9]+/);
+			const hashMatch = inviteUrl.match(/#\/invite\/[a-z0-9.]+/);
 			if (!hashMatch) throw new Error("invite URL missing hash");
 			await pageB.goto(`/${hashMatch[0]}`);
 			await landThroughLanguage(pageB);
-			await pageB.getByTestId("inviteEmail").fill(emailB);
+			await pageB.getByTestId("displayName").fill(emailB);
 			await pageB.getByRole("button", { name: "Join with passkey" }).click();
 			await expect(pageB.getByTestId("encryptionPassphrase")).toBeVisible({
 				timeout: 30_000,
@@ -437,7 +436,7 @@ test.describe("passkey logout-login regression", () => {
 			test.skip(true, "backend not reachable at baseURL");
 		}
 		const auth = await enableVirtualAuthenticator(page);
-		const email = uniqueTestEmail("logoutLogin");
+		const email = uniqueTestDisplayName("logoutLogin");
 		const accountName = `AccountKept-${Date.now()}`;
 
 		try {
@@ -533,8 +532,8 @@ test.describe("existing user joins another vault via invite", () => {
 		const pageB = await contextB.newPage();
 		const authA = await enableVirtualAuthenticator(pageA);
 		const authB = await enableVirtualAuthenticator(pageB);
-		const emailA = uniqueTestEmail("joinA");
-		const emailB = uniqueTestEmail("joinB");
+		const emailA = uniqueTestDisplayName("joinA");
+		const emailB = uniqueTestDisplayName("joinB");
 		const accountFromA = `JoinAccA-${Date.now()}`;
 		const accountFromB = `JoinAccB-${Date.now()}`;
 
@@ -557,7 +556,7 @@ test.describe("existing user joins another vault via invite", () => {
 			expect(vaultIdB).not.toBe(vaultIdA);
 
 			const inviteUrl = await createInviteUrl(pageA);
-			const hashMatch = inviteUrl.match(/#\/invite\/([a-f0-9]+)/);
+			const hashMatch = inviteUrl.match(/#\/invite\/([a-z0-9.]+)/);
 			if (!hashMatch) throw new Error("invite URL missing hash");
 
 			await openAccountSettings(pageB);
@@ -600,69 +599,6 @@ test.describe("existing user joins another vault via invite", () => {
 				timeout: 15_000,
 			});
 			await expect(pageB.getByTestId(`vault-${vaultIdB}`)).toBeVisible();
-		} finally {
-			await authA.remove();
-			await authB.remove();
-			await contextA.close();
-			await contextB.close();
-		}
-	});
-
-	test("unauth tab with existing email sees 'sign in first' on invite-register", async ({
-		browser,
-		baseURL,
-	}) => {
-		if (!baseURL || !(await BACKEND_REACHABLE(baseURL))) {
-			test.skip(true, "backend not reachable at baseURL");
-		}
-
-		const contextA = await browser.newContext({ baseURL });
-		const contextB = await browser.newContext({ baseURL });
-		const pageA = await contextA.newPage();
-		const pageB = await contextB.newPage();
-		const authA = await enableVirtualAuthenticator(pageA);
-		const authB = await enableVirtualAuthenticator(pageB);
-		const emailA = uniqueTestEmail("unauthInviteA");
-		const emailB = uniqueTestEmail("unauthInviteB");
-
-		try {
-			await resetAppState(pageA);
-			await landThroughLanguage(pageA);
-			await signupViaPasskey(pageA, emailA);
-			await pickDefaultCurrencyBRL(pageA);
-			await createFirstAccount(pageA, `Acc-${Date.now()}`);
-
-			await resetAppState(pageB);
-			await landThroughLanguage(pageB);
-			await signupViaPasskey(pageB, emailB);
-			await pickDefaultCurrencyBRL(pageB);
-			await createFirstAccount(pageB, `BAcc-${Date.now()}`);
-
-			const inviteUrl = await createInviteUrl(pageA);
-			const hashMatch = inviteUrl.match(/#\/invite\/([a-f0-9]+)/);
-			if (!hashMatch) throw new Error("invite URL missing hash");
-
-			// pageC is a fresh unauthenticated tab — no local meta, no cookie.
-			const contextC = await browser.newContext({ baseURL });
-			const pageC = await contextC.newPage();
-			const authC = await enableVirtualAuthenticator(pageC);
-			try {
-				await pageC.goto(`/${hashMatch[0]}`);
-				await landThroughLanguage(pageC);
-				await expect(pageC.getByTestId("inviteEmail")).toBeVisible({
-					timeout: 15_000,
-				});
-				await pageC.getByTestId("inviteEmail").fill(emailB);
-				await pageC.getByRole("button", { name: "Join with passkey" }).click();
-
-				await expect(pageC.getByTestId("encryptionError")).toContainText(
-					/Sign in first|Faça login primeiro|Inicia sesión primero/,
-					{ timeout: 30_000 },
-				);
-			} finally {
-				await authC.remove();
-				await contextC.close();
-			}
 		} finally {
 			await authA.remove();
 			await authB.remove();

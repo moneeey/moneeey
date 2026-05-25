@@ -19,8 +19,8 @@ import useMoneeeyStore from "../shared/useMoneeeyStore";
 import useMessages from "../utils/Messages";
 
 type Confirm =
-	| { kind: "kick"; userId: string; email: string }
-	| { kind: "transfer"; userId: string; email: string }
+	| { kind: "kick"; userId: string; displayName: string }
+	| { kind: "transfer"; userId: string; displayName: string }
 	| null;
 
 const formatRole = (
@@ -46,12 +46,12 @@ const MemberRow = ({
 	const Messages = useMessages();
 	return (
 		<li
-			data-testid={`member-row-${member.email}`}
+			data-testid={`member-row-${member.displayName}`}
 			className="flex items-center justify-between gap-2 rounded border border-background-700 bg-background-900 p-2"
 		>
 			<div className="flex flex-col">
 				<span className="text-sm font-medium">
-					{member.email}
+					{member.displayName}
 					{isYou && (
 						<span className="ml-2 text-xs opacity-60">
 							({Messages.sync.you_label})
@@ -67,14 +67,14 @@ const MemberRow = ({
 					{member.role === "member" && (
 						<>
 							<SecondaryButton
-								testId={`transfer-${member.email}`}
+								testId={`transfer-${member.displayName}`}
 								onClick={onTransfer}
 								title={Messages.sync.member_transfer}
 								disabled={busy}
 								compact
 							/>
 							<DeleteButton
-								testId={`kick-${member.email}`}
+								testId={`kick-${member.displayName}`}
 								onClick={onKick}
 								disabled={busy}
 							>
@@ -164,14 +164,14 @@ export const MembersSection = observer(() => {
 								setConfirm({
 									kind: "kick",
 									userId: m.userId,
-									email: m.email,
+									displayName: m.displayName,
 								})
 							}
 							onTransfer={() =>
 								setConfirm({
 									kind: "transfer",
 									userId: m.userId,
-									email: m.email,
+									displayName: m.displayName,
 								})
 							}
 						/>
@@ -189,7 +189,7 @@ export const MembersSection = observer(() => {
 						{confirm.kind === "kick"
 							? Messages.sync.member_kick_confirm
 							: Messages.sync.member_transfer_confirm}{" "}
-						<span className="font-mono">{confirm.email}</span>
+						<span className="font-mono">{confirm.displayName}</span>
 					</p>
 					<div className="flex gap-2">
 						<LinkButton

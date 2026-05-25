@@ -69,7 +69,7 @@ const messageForError = (err: unknown, Messages: TMessages): string => {
 
 function parseInviteToken(): string | null {
 	const hash = globalThis.location?.hash || "";
-	const match = hash.match(/#\/invite\/([a-f0-9]+)/);
+	const match = hash.match(/#\/invite\/([a-z0-9]+\.[a-f0-9]+)/);
 	return match ? match[1] : null;
 }
 
@@ -95,7 +95,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
 	const pendingSyncRef = useRef<SyncConfig | null>(null);
-	const [email, setEmail] = useState("");
+	const [displayName, setDisplayName] = useState("");
 
 	useEffect(() => {
 		let cancelled = false;
@@ -208,10 +208,15 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 	};
 
 	const onPasskeyRegister = async () => {
+		const name = displayName.trim();
+		if (name.length === 0) {
+			setError(Messages.encryption.display_name_required);
+			return;
+		}
 		setError(null);
 		setBusy(true);
 		try {
-			const syncConfig = await registerPasskey(email);
+			const syncConfig = await registerPasskey(name);
 			await pullFromRemote(syncConfig);
 		} catch (err) {
 			console.error("passkey register failed", err);
@@ -224,7 +229,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 		setError(null);
 		setBusy(true);
 		try {
-			const syncConfig = await loginPasskey(email);
+			const syncConfig = await loginPasskey();
 			await pullFromRemote(syncConfig);
 		} catch (err) {
 			console.error("passkey login failed", err);
@@ -234,19 +239,19 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 	};
 
 	const onInviteRegister = async (token: string) => {
+		const name = displayName.trim();
+		if (name.length === 0) {
+			setError(Messages.encryption.display_name_required);
+			return;
+		}
 		setError(null);
 		setBusy(true);
 		try {
-			const syncConfig = await registerViaInvite(token, email);
+			const syncConfig = await registerViaInvite(token, name);
 			await pullFromRemote(syncConfig);
 		} catch (err) {
 			console.error("invite register failed", err);
-			const msg = (err as Error).message;
-			setError(
-				msg === "user already exists"
-					? Messages.encryption.invite_sign_in_first
-					: Messages.encryption.passkey_error,
-			);
+			setError(Messages.encryption.passkey_error);
 			setBusy(false);
 		}
 	};
@@ -326,19 +331,22 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 				</p>
 				<div className="flex flex-col gap-4 w-full max-w-sm">
 					<Input
-						testId="passkeyEmail"
-						type="email"
-						autoComplete="username webauthn"
-						placeholder={Messages.login.email}
-						value={email}
+						testId="displayName"
+						type="text"
+						autoComplete="username"
+						placeholder={Messages.encryption.display_name_placeholder}
+						value={displayName}
 						disabled={busy}
 						containerArea
 						onChange={(value) => {
-							setEmail(value);
+							setDisplayName(value);
 							setError(null);
 						}}
 					/>
 				</div>
+				<p className="text-xs opacity-60">
+					{Messages.encryption.display_name_login_hint}
+				</p>
 				<a
 					href="https://fidoalliance.org/passkeys/"
 					target="_blank"
@@ -361,12 +369,12 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 					<SecondaryButton
 						onClick={onPasskeyLogin}
 						title={Messages.encryption.passkey_login}
-						disabled={busy || email.length === 0}
+						disabled={busy}
 					/>
 					<OkButton
 						onClick={onPasskeyRegister}
 						title={Messages.encryption.passkey_register}
-						disabled={busy || email.length === 0}
+						disabled={busy || displayName.trim().length === 0}
 					/>
 				</div>
 			</MinimalBasicScreen>
@@ -384,15 +392,15 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 				</p>
 				<div className="flex flex-col gap-4 w-full max-w-sm">
 					<Input
-						testId="inviteEmail"
-						type="email"
-						autoComplete="username webauthn"
-						placeholder={Messages.login.email}
-						value={email}
+						testId="displayName"
+						type="text"
+						autoComplete="username"
+						placeholder={Messages.encryption.display_name_placeholder}
+						value={displayName}
 						disabled={busy}
 						containerArea
 						onChange={(value) => {
-							setEmail(value);
+							setDisplayName(value);
 							setError(null);
 						}}
 					/>
@@ -411,7 +419,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 					<OkButton
 						onClick={() => onInviteRegister(state.token)}
 						title={Messages.encryption.invite_join}
-						disabled={busy || email.length === 0}
+						disabled={busy || displayName.trim().length === 0}
 					/>
 				</div>
 			</MinimalBasicScreen>

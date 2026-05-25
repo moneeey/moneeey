@@ -26,23 +26,13 @@ class FakePeer implements PeerSink {
 	}
 }
 
-const cred = () => ({
-	credentialId: "c1",
-	publicKey: "AA",
-	counter: 0,
-	createdAt: new Date().toISOString(),
-});
-
-const buildSessionToken = async (
-	email: string,
-	userId: string,
-	vaultId: string,
-) => await sessionJwt.generate(email, { vaultId, userId }, "5min");
+const buildSessionToken = async (userId: string, vaultId: string) =>
+	await sessionJwt.generate(userId, { vaultId, userId }, "5min");
 
 const setupVault = async () => {
 	const t = makeTempStorage();
-	const user = await createUser(t.storage, "alice@example.com", cred());
-	const vault = await createVaultForUser(t.storage, user.id);
+	const user = await createUser(t.storage, "Alice");
+	const vault = await createVaultForUser(t.storage, user.id, "Alice's vault");
 	const hub = new VaultHub();
 	return { t, user, vault, hub };
 };
@@ -52,7 +42,7 @@ Deno.test(async function helloWithValidTokenSendsReady() {
 	try {
 		const peer = new FakePeer();
 		const protocol = new VaultProtocol(t.storage, hub, peer);
-		const token = await buildSessionToken(user.email, user.id, vault.id);
+		const token = await buildSessionToken(user.id, vault.id);
 		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
 		const last = peer.last();
 		assert.assertEquals(last?.type, "ready");
@@ -80,14 +70,10 @@ Deno.test(async function helloWithInvalidTokenCloses4401() {
 Deno.test(async function helloWithNonMemberCloses4403() {
 	const { t, vault, hub } = await setupVault();
 	try {
-		const stranger = await createUser(t.storage, "bob@example.com", cred());
+		const stranger = await createUser(t.storage, "Bob");
 		const peer = new FakePeer();
 		const protocol = new VaultProtocol(t.storage, hub, peer);
-		const token = await buildSessionToken(
-			stranger.email,
-			stranger.id,
-			vault.id,
-		);
+		const token = await buildSessionToken(stranger.id, vault.id);
 		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
 		assert.assertEquals(peer.closed?.code, CLOSE_FORBIDDEN);
 	} finally {
@@ -118,7 +104,7 @@ Deno.test(async function pushAcceptedBroadcastsChangesToOtherPeers() {
 		const peerB = new FakePeer();
 		const protoA = new VaultProtocol(t.storage, hub, peerA);
 		const protoB = new VaultProtocol(t.storage, hub, peerB);
-		const token = await buildSessionToken(user.email, user.id, vault.id);
+		const token = await buildSessionToken(user.id, vault.id);
 		await protoA.handleMessage(JSON.stringify({ type: "hello", token }));
 		await protoB.handleMessage(JSON.stringify({ type: "hello", token }));
 		peerA.sent.length = 0;
@@ -165,7 +151,7 @@ Deno.test(async function manifestComputesPullAndPushIds() {
 	try {
 		const peer = new FakePeer();
 		const protocol = new VaultProtocol(t.storage, hub, peer);
-		const token = await buildSessionToken(user.email, user.id, vault.id);
+		const token = await buildSessionToken(user.id, vault.id);
 		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
 		await protocol.handleMessage(
 			JSON.stringify({
@@ -222,7 +208,7 @@ Deno.test(async function fetchReturnsRequestedDocs() {
 	try {
 		const peer = new FakePeer();
 		const protocol = new VaultProtocol(t.storage, hub, peer);
-		const token = await buildSessionToken(user.email, user.id, vault.id);
+		const token = await buildSessionToken(user.id, vault.id);
 		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
 		await protocol.handleMessage(
 			JSON.stringify({
@@ -264,7 +250,7 @@ Deno.test(async function pingRespondsPongAfterHello() {
 	try {
 		const peer = new FakePeer();
 		const protocol = new VaultProtocol(t.storage, hub, peer);
-		const token = await buildSessionToken(user.email, user.id, vault.id);
+		const token = await buildSessionToken(user.id, vault.id);
 		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
 		await protocol.handleMessage(JSON.stringify({ type: "ping" }));
 		assert.assertEquals(peer.last()?.type, "pong");
@@ -291,7 +277,7 @@ Deno.test(async function helloTwiceRespondsError() {
 	try {
 		const peer = new FakePeer();
 		const protocol = new VaultProtocol(t.storage, hub, peer);
-		const token = await buildSessionToken(user.email, user.id, vault.id);
+		const token = await buildSessionToken(user.id, vault.id);
 		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
 		peer.sent.length = 0;
 		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
@@ -307,7 +293,7 @@ Deno.test(async function closeDeregistersPeer() {
 	try {
 		const peer = new FakePeer();
 		const protocol = new VaultProtocol(t.storage, hub, peer);
-		const token = await buildSessionToken(user.email, user.id, vault.id);
+		const token = await buildSessionToken(user.id, vault.id);
 		await protocol.handleMessage(JSON.stringify({ type: "hello", token }));
 		assert.assertEquals(hub.peerCount(vault.id), 1);
 		protocol.handleClose();
@@ -324,7 +310,7 @@ Deno.test(async function staleIncomingNotBroadcast() {
 		const peerB = new FakePeer();
 		const protoA = new VaultProtocol(t.storage, hub, peerA);
 		const protoB = new VaultProtocol(t.storage, hub, peerB);
-		const token = await buildSessionToken(user.email, user.id, vault.id);
+		const token = await buildSessionToken(user.id, vault.id);
 		await protoA.handleMessage(JSON.stringify({ type: "hello", token }));
 		await protoB.handleMessage(JSON.stringify({ type: "hello", token }));
 		await protoA.handleMessage(

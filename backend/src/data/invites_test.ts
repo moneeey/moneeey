@@ -2,12 +2,12 @@ import type { Storage } from "../db/storage.ts";
 import { assert } from "../test.ts";
 import {
 	INVITE_QUOTA_PER_OWNER,
+	InviteTokenFormatError,
 	createInvite,
 	findInvite,
 	redeemInvite,
 } from "./invites.ts";
 import { makeTempStorage } from "./test_storage.ts";
-import type { StoredCredential } from "./types.ts";
 import { createUser } from "./users.ts";
 import {
 	MAX_USERS_PER_VAULT,
@@ -16,24 +16,21 @@ import {
 	createVaultForUser,
 } from "./vaults.ts";
 
-const cred = (id = "c"): StoredCredential => ({
-	credentialId: id,
-	publicKey: "AAAA",
-	counter: 0,
-	createdAt: new Date().toISOString(),
-});
-
-const seedUser = async (storage: Storage, email: string) => {
-	const u = await createUser(storage, email, cred(`c-${email}`));
+const seedUser = async (storage: Storage, displayName: string) => {
+	const u = await createUser(storage, displayName);
 	return u.id;
 };
+
+const newVault = async (storage: Storage, userId: string) =>
+	createVaultForUser(storage, userId, "Test vault");
 
 Deno.test(async function createInviteAndFindRoundTrip() {
 	const t = makeTempStorage();
 	try {
-		const owner = await seedUser(t.storage, "owner@x.io");
-		const vault = await createVaultForUser(t.storage, owner);
+		const owner = await seedUser(t.storage, "Owner");
+		const vault = await newVault(t.storage, owner);
 		const token = await createInvite(t.storage, owner, vault.id);
+		assert.assertEquals(token.startsWith(`${vault.id}.`), true);
 		const found = await findInvite(t.storage, token);
 		assert.assertExists(found);
 		assert.assertEquals(found?.vaultId, vault.id);
@@ -46,7 +43,23 @@ Deno.test(async function createInviteAndFindRoundTrip() {
 Deno.test(async function findInviteReturnsNullForUnknownToken() {
 	const t = makeTempStorage();
 	try {
-		assert.assertEquals(await findInvite(t.storage, "nonexistent"), null);
+		const owner = await seedUser(t.storage, "Owner");
+		const vault = await newVault(t.storage, owner);
+		assert.assertEquals(
+			await findInvite(t.storage, `${vault.id}.nonexistent`),
+			null,
+		);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function findInviteReturnsNullForBadTokenFormat() {
+	const t = makeTempStorage();
+	try {
+		assert.assertEquals(await findInvite(t.storage, "noseparator"), null);
+		assert.assertEquals(await findInvite(t.storage, ".onlysuffix"), null);
+		assert.assertEquals(await findInvite(t.storage, "onlyprefix."), null);
 	} finally {
 		t.cleanup();
 	}
@@ -55,9 +68,9 @@ Deno.test(async function findInviteReturnsNullForUnknownToken() {
 Deno.test(async function redeemInviteAddsMembership() {
 	const t = makeTempStorage();
 	try {
-		const owner = await seedUser(t.storage, "owner@x.io");
-		const guest = await seedUser(t.storage, "guest@x.io");
-		const vault = await createVaultForUser(t.storage, owner);
+		const owner = await seedUser(t.storage, "Owner");
+		const guest = await seedUser(t.storage, "Guest");
+		const vault = await newVault(t.storage, owner);
 		const token = await createInvite(t.storage, owner, vault.id);
 		const vaultId = await redeemInvite(t.storage, token, guest);
 		assert.assertEquals(vaultId, vault.id);
@@ -77,10 +90,10 @@ Deno.test(async function redeemInviteAddsMembership() {
 Deno.test(async function redeemInviteCannotBeUsedTwice() {
 	const t = makeTempStorage();
 	try {
-		const owner = await seedUser(t.storage, "owner@x.io");
-		const g1 = await seedUser(t.storage, "g1@x.io");
-		const g2 = await seedUser(t.storage, "g2@x.io");
-		const vault = await createVaultForUser(t.storage, owner);
+		const owner = await seedUser(t.storage, "Owner");
+		const g1 = await seedUser(t.storage, "G1");
+		const g2 = await seedUser(t.storage, "G2");
+		const vault = await newVault(t.storage, owner);
 		const token = await createInvite(t.storage, owner, vault.id);
 		await redeemInvite(t.storage, token, g1);
 		await assert.assertRejects(
@@ -96,8 +109,8 @@ Deno.test(async function redeemInviteCannotBeUsedTwice() {
 Deno.test(async function createInviteEnforcesQuota() {
 	const t = makeTempStorage();
 	try {
-		const owner = await seedUser(t.storage, "owner@x.io");
-		const vault = await createVaultForUser(t.storage, owner);
+		const owner = await seedUser(t.storage, "Owner");
+		const vault = await newVault(t.storage, owner);
 		for (let i = 0; i < INVITE_QUOTA_PER_OWNER; i++) {
 			await createInvite(t.storage, owner, vault.id);
 		}
@@ -114,13 +127,13 @@ Deno.test(async function createInviteEnforcesQuota() {
 Deno.test(async function redeemInviteRejectsWhenVaultIsFull() {
 	const t = makeTempStorage();
 	try {
-		const owner = await seedUser(t.storage, "owner@x.io");
-		const vault = await createVaultForUser(t.storage, owner);
+		const owner = await seedUser(t.storage, "Owner");
+		const vault = await newVault(t.storage, owner);
 		for (let i = 1; i < MAX_USERS_PER_VAULT; i++) {
-			const u = await seedUser(t.storage, `u${i}@x.io`);
+			const u = await seedUser(t.storage, `u${i}`);
 			await addMember(t.storage, vault.id, u);
 		}
-		const guest = await seedUser(t.storage, "guest@x.io");
+		const guest = await seedUser(t.storage, "Guest");
 		const token = await createInvite(t.storage, owner, vault.id);
 		await assert.assertRejects(
 			() => redeemInvite(t.storage, token, guest),
@@ -137,12 +150,12 @@ Deno.test(async function redeemInviteRejectsWhenVaultIsFull() {
 Deno.test(async function findInviteRejectsExpired() {
 	const t = makeTempStorage();
 	try {
-		const owner = await seedUser(t.storage, "owner@x.io");
-		const vault = await createVaultForUser(t.storage, owner);
+		const owner = await seedUser(t.storage, "Owner");
+		const vault = await newVault(t.storage, owner);
 		const token = await createInvite(t.storage, owner, vault.id);
 		const found1 = await findInvite(t.storage, token);
 		assert.assertExists(found1);
-		await t.storage.withMeta((db) => {
+		await t.storage.withVault(vault.id, (db) => {
 			db.prepare("UPDATE invites SET expires_at = ?").run(
 				new Date(Date.now() - 1000).toISOString(),
 			);
@@ -151,4 +164,9 @@ Deno.test(async function findInviteRejectsExpired() {
 	} finally {
 		t.cleanup();
 	}
+});
+
+Deno.test(async function inviteTokenFormatErrorExists() {
+	const err = new InviteTokenFormatError();
+	assert.assertEquals(err.name, "InviteTokenFormatError");
 });

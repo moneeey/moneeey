@@ -1,16 +1,10 @@
+import { TEST_DISPLAY_NAME_PREFIX } from "./data/ids.ts";
 import { makeTempStorage } from "./data/test_storage.ts";
 import { createUser } from "./data/users.ts";
 import { addMember, createVaultForUser } from "./data/vaults.ts";
 import { fs } from "./deps.ts";
 import { purgeStaleTestUsers } from "./janitor.ts";
 import { assert } from "./test.ts";
-
-const cred = (id = "c") => ({
-	credentialId: id,
-	publicKey: "AA",
-	counter: 0,
-	createdAt: new Date().toISOString(),
-});
 
 const twoDaysAgo = () => new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
 
@@ -27,11 +21,18 @@ const backdateUser = async (
 	});
 };
 
+const testName = (suffix: string) => `${TEST_DISPLAY_NAME_PREFIX}${suffix}`;
+
+const seedVaultFor = async (
+	storage: Awaited<ReturnType<typeof makeTempStorage>>["storage"],
+	userId: string,
+) => createVaultForUser(storage, userId, "Test vault");
+
 Deno.test(async function purgesTestUserPlusOwnedVault() {
 	const t = makeTempStorage();
 	try {
-		const u = await createUser(t.storage, "old@playwright.local", cred());
-		const v = await createVaultForUser(t.storage, u.id);
+		const u = await createUser(t.storage, testName("old"));
+		const v = await seedVaultFor(t.storage, u.id);
 		await backdateUser(t.storage, u.id, twoDaysAgo());
 		const path = t.storage.vaultPath(v.id);
 		assert.assertEquals(fs.existsSync(path), true);
@@ -56,8 +57,8 @@ Deno.test(async function purgesTestUserPlusOwnedVault() {
 Deno.test(async function leavesNonTestUsersAlone() {
 	const t = makeTempStorage();
 	try {
-		const real = await createUser(t.storage, "alice@example.com", cred());
-		await createVaultForUser(t.storage, real.id);
+		const real = await createUser(t.storage, "Alice");
+		await seedVaultFor(t.storage, real.id);
 		await backdateUser(t.storage, real.id, twoDaysAgo());
 
 		const result = await purgeStaleTestUsers(t.storage);
@@ -71,8 +72,8 @@ Deno.test(async function leavesNonTestUsersAlone() {
 Deno.test(async function leavesRecentTestUsersAlone() {
 	const t = makeTempStorage();
 	try {
-		const u = await createUser(t.storage, "fresh@playwright.local", cred());
-		await createVaultForUser(t.storage, u.id);
+		const u = await createUser(t.storage, testName("fresh"));
+		await seedVaultFor(t.storage, u.id);
 		const result = await purgeStaleTestUsers(t.storage);
 		assert.assertEquals(result.usersDeleted, 0);
 		assert.assertEquals(result.vaultsDeleted, 0);
@@ -84,13 +85,9 @@ Deno.test(async function leavesRecentTestUsersAlone() {
 Deno.test(async function membershipsCascadeButSharedVaultSurvives() {
 	const t = makeTempStorage();
 	try {
-		const owner = await createUser(t.storage, "owner@example.com", cred("a"));
-		const guest = await createUser(
-			t.storage,
-			"guest@playwright.local",
-			cred("b"),
-		);
-		const vault = await createVaultForUser(t.storage, owner.id);
+		const owner = await createUser(t.storage, "Owner");
+		const guest = await createUser(t.storage, testName("guest"));
+		const vault = await seedVaultFor(t.storage, owner.id);
 		await addMember(t.storage, vault.id, guest.id);
 		await backdateUser(t.storage, guest.id, twoDaysAgo());
 
