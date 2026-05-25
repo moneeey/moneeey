@@ -437,3 +437,199 @@ Deno.test(async function vaultTransferSuccess() {
 		});
 	});
 });
+
+Deno.test(async function vaultCreateRequiresAuth() {
+	await stubAuthed(null, async () => {
+		const { resp } = await runServerRequest(
+			"POST",
+			"/api/auth/vault/create",
+			{ name: "x" },
+		);
+		assertResponse(resp, 401, { error: "not authenticated" });
+	});
+});
+
+Deno.test(async function vaultCreateUsesProvidedName() {
+	await stubAuthed({ userId: "u1" }, async () => {
+		await withSpying({
+			object: authMembershipInternals,
+			method: "createVaultForUser",
+			action: async (cstub) => {
+				cstub.resolves({
+					id: "vNEW",
+					name: "Family",
+					createdAt: "2026-01-01",
+				});
+				const { resp } = await runServerRequest(
+					"POST",
+					"/api/auth/vault/create",
+					{ name: "Family" },
+				);
+				assertResponse(resp, 200, {
+					vaultId: "vNEW",
+					name: "Family",
+					createdAt: "2026-01-01",
+				});
+				const [, , name] = cstub.firstCall.args as [unknown, string, string];
+				assert.assertEquals(name, "Family");
+			},
+		});
+	});
+});
+
+Deno.test(async function vaultCreateFallsBackToDisplayName() {
+	await stubAuthed({ userId: "u1" }, async () => {
+		await withSpying({
+			object: authMembershipInternals,
+			method: "getUserById",
+			action: async (ustub) => {
+				ustub.resolves({
+					id: "u1",
+					displayName: "Alice",
+					createdAt: "2026-01-01",
+				});
+				await withSpying({
+					object: authMembershipInternals,
+					method: "createVaultForUser",
+					action: async (cstub) => {
+						cstub.resolves({
+							id: "vNEW",
+							name: "Alice's vault",
+							createdAt: "2026-01-01",
+						});
+						const { resp } = await runServerRequest(
+							"POST",
+							"/api/auth/vault/create",
+							{ name: "   " },
+						);
+						assert.assertEquals(resp.status, 200);
+						const [, , name] = cstub.firstCall.args as [
+							unknown,
+							string,
+							string,
+						];
+						assert.assertEquals(name, "Alice's vault");
+					},
+				});
+			},
+		});
+	});
+});
+
+Deno.test(async function vaultDeleteRequiresAuth() {
+	await stubAuthed(null, async () => {
+		const { resp } = await runServerRequest(
+			"POST",
+			"/api/auth/vault/delete",
+			{ vaultId: "v1" },
+		);
+		assertResponse(resp, 401, { error: "not authenticated" });
+	});
+});
+
+Deno.test(async function vaultDeleteRejectsMissingVaultId() {
+	await stubAuthed({ userId: "u1" }, async () => {
+		const { resp } = await runServerRequest(
+			"POST",
+			"/api/auth/vault/delete",
+			{},
+		);
+		assertResponse(resp, 400, { error: "missing vaultId" });
+	});
+});
+
+Deno.test(async function vaultDeleteRejectsNonOwner() {
+	await stubAuthed({ userId: "u1" }, async () => {
+		await withSpying({
+			object: authMembershipInternals,
+			method: "getMembership",
+			action: async (mstub) => {
+				mstub.resolves({
+					userId: "u1",
+					vaultId: "v1",
+					role: "member",
+					addedAt: "2026-01-01",
+				});
+				const { resp } = await runServerRequest(
+					"POST",
+					"/api/auth/vault/delete",
+					{ vaultId: "v1" },
+				);
+				assertResponse(resp, 403, { error: "not owner" });
+			},
+		});
+	});
+});
+
+Deno.test(async function vaultDeleteRejectsLastVault() {
+	await stubAuthed({ userId: "u1" }, async () => {
+		await withSpying({
+			object: authMembershipInternals,
+			method: "getMembership",
+			action: async (mstub) => {
+				mstub.resolves({
+					userId: "u1",
+					vaultId: "v1",
+					role: "owner",
+					addedAt: "2026-01-01",
+				});
+				await withSpying({
+					object: authMembershipInternals,
+					method: "getVaultsByUser",
+					action: async (vstub) => {
+						vstub.resolves([
+							{ id: "v1", name: "Only", createdAt: "2026-01-01" },
+						]);
+						const { resp } = await runServerRequest(
+							"POST",
+							"/api/auth/vault/delete",
+							{ vaultId: "v1" },
+						);
+						assertResponse(resp, 400, { error: "last_vault" });
+					},
+				});
+			},
+		});
+	});
+});
+
+Deno.test(async function vaultDeleteSucceedsWhenAnotherVaultRemains() {
+	await stubAuthed({ userId: "u1" }, async () => {
+		await withSpying({
+			object: authMembershipInternals,
+			method: "getMembership",
+			action: async (mstub) => {
+				mstub.resolves({
+					userId: "u1",
+					vaultId: "v1",
+					role: "owner",
+					addedAt: "2026-01-01",
+				});
+				await withSpying({
+					object: authMembershipInternals,
+					method: "getVaultsByUser",
+					action: async (vstub) => {
+						vstub.resolves([
+							{ id: "v1", name: "First", createdAt: "2026-01-01" },
+							{ id: "v2", name: "Second", createdAt: "2026-01-02" },
+						]);
+						await withSpying({
+							object: authMembershipInternals,
+							method: "deleteVault",
+							action: async (dstub) => {
+								dstub.resolves(undefined);
+								const { resp } = await runServerRequest(
+									"POST",
+									"/api/auth/vault/delete",
+									{ vaultId: "v1" },
+								);
+								assertResponse(resp, 200, { deleted: true });
+								assert.assertEquals(dstub.callCount, 1);
+							},
+						});
+					},
+				});
+			},
+		});
+	});
+});
