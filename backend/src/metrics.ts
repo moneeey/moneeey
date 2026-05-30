@@ -82,6 +82,12 @@ const DEFAULT_BUCKETS = [
 	0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5,
 ];
 
+// Sub-millisecond resolution for in-process DB ops (50us .. 100ms).
+const FINE_BUCKETS = [
+	0.00005, 0.0001, 0.00025, 0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05,
+	0.1,
+];
+
 class Histogram {
 	private buckets: Map<string, number[]> = new Map();
 	private sums = new Map<string, number>();
@@ -159,6 +165,7 @@ export const metrics = {
 	dbDuration: new Histogram(
 		"moneeey_db_op_duration_seconds",
 		"data-layer DB operation duration by op",
+		FINE_BUCKETS,
 	),
 	errors: new Counter("moneeey_errors_total", "Errors by area"),
 };

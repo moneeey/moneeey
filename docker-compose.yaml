@@ -15,6 +15,8 @@ services:
     restart: unless-stopped
     networks:
       - moneeey-network
+    ports:
+      - 4269:4269
     volumes:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend/env.example:/run/secret/dev.env:z,ro
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app:z
