@@ -1,4 +1,4 @@
-import type { Storage } from "../db/storage.ts";
+import type { Storage } from "../db/engine.ts";
 
 export type IncomingDoc = {
 	id: string;
@@ -41,14 +41,11 @@ export async function getManifest(
 	storage: Storage,
 	vaultId: string,
 ): Promise<ManifestEntry[]> {
-	return await storage.withVault(vaultId, (db) =>
-		db
-			.prepare("SELECT id, updated_at FROM documents")
-			.all<ManifestEntry>()
-			.map((row: ManifestEntry) => ({
-				id: row.id,
-				updated_at: row.updated_at,
-			})),
+	return await storage.withRead((conn) =>
+		conn.query<ManifestEntry>(
+			"SELECT id, updated_at FROM documents WHERE vault_id = ?",
+			vaultId,
+		),
 	);
 }
 
@@ -58,14 +55,14 @@ export async function getDocs(
 	ids: string[],
 ): Promise<DocRecord[]> {
 	if (ids.length === 0) return [];
-	return await storage.withVault(vaultId, (db) => {
+	return await storage.withRead(async (conn) => {
 		const placeholders = ids.map(() => "?").join(",");
-		return db
-			.prepare(
-				`SELECT id, updated_at, deleted_at, data FROM documents WHERE id IN (${placeholders})`,
-			)
-			.all<DocRow>(...ids)
-			.map(toRecord);
+		const rows = await conn.query<DocRow>(
+			`SELECT id, updated_at, deleted_at, data FROM documents WHERE vault_id = ? AND id IN (${placeholders})`,
+			vaultId,
+			...ids,
+		);
+		return rows.map(toRecord);
 	});
 }
 
@@ -75,19 +72,15 @@ export async function bulkUpsert(
 	docs: IncomingDoc[],
 ): Promise<UpsertResult[]> {
 	if (docs.length === 0) return [];
-	return await storage.withVault(vaultId, (db) => {
-		db.exec("BEGIN");
-		try {
+	return await storage.withConn((conn) =>
+		conn.transaction(async (tx) => {
 			const results: UpsertResult[] = [];
-			const getStored = db.prepare(
-				"SELECT updated_at FROM documents WHERE id = ?",
-			);
-			const upsert = db.prepare(
-				`INSERT INTO documents (id, updated_at, deleted_at, data) VALUES (?, ?, ?, ?)
-				 ON CONFLICT(id) DO UPDATE SET updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, data = excluded.data`,
-			);
 			for (const incoming of docs) {
-				const stored = getStored.get<{ updated_at: string }>(incoming.id);
+				const stored = await tx.get<{ updated_at: string }>(
+					"SELECT updated_at FROM documents WHERE vault_id = ? AND id = ?",
+					vaultId,
+					incoming.id,
+				);
 				if (stored && stored.updated_at > incoming.updated_at) {
 					results.push({
 						id: incoming.id,
@@ -96,7 +89,10 @@ export async function bulkUpsert(
 					});
 					continue;
 				}
-				upsert.run(
+				await tx.run(
+					`INSERT INTO documents (vault_id, id, updated_at, deleted_at, data) VALUES (?, ?, ?, ?, ?)
+					 ON CONFLICT(vault_id, id) DO UPDATE SET updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, data = excluded.data`,
+					vaultId,
 					incoming.id,
 					incoming.updated_at,
 					incoming.deleted_at,
@@ -104,11 +100,7 @@ export async function bulkUpsert(
 				);
 				results.push({ id: incoming.id, status: "accepted" });
 			}
-			db.exec("COMMIT");
 			return results;
-		} catch (err) {
-			db.exec("ROLLBACK");
-			throw err;
-		}
-	});
+		}),
+	);
 }

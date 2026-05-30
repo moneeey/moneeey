@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Moneeey is a personal budgeting app with E2E encryption. React+MobX+IndexedDB frontend, Deno+Oak backend backed by SQLite (one `.sqlite` file per vault under `/data/vaults/ab/cd/<id>.sqlite`, plus `meta.sqlite` for users/vaults/invites), Caddy reverse proxy. All orchestrated via podman-compose.
+Moneeey is a personal budgeting app with E2E encryption. React+MobX+IndexedDB frontend, Deno+Oak backend backed by a single SQLite file at `/data/moneeey.sqlite` (all users/vaults/invites/documents, keyed by `vault_id`), Caddy reverse proxy. All orchestrated via podman-compose.
 
 ## Commands
 
@@ -13,7 +13,7 @@ Moneeey is a personal budgeting app with E2E encryption. React+MobX+IndexedDB fr
 podman-compose up                    # Start everything (frontend :4270, backend :4269, caddy :4280)
 podman-compose down && podman-compose up  # Restart (required after yarn add/remove)
 ```
-Access at http://localhost:4280. Vault SQLite files live under `./docker/volume/backend_data/` on the host (bind-mounted to `/data` in the backend container). To inspect: `sqlite3 ./docker/volume/moneeey/meta.sqlite` or `sqlite3 ./docker/volume/moneeey/vaults/ab/cd/<id>.sqlite`. To back up a vault: `sqlite3 vault.sqlite ".backup target.sqlite"` (do not `cp` while the backend is running).
+Access at http://localhost:4280. The SQLite database lives under `./docker/volume/backend_data/` on the host (bind-mounted to `/data` in the backend container). To inspect: `sqlite3 ./docker/volume/backend_data/moneeey.sqlite`. To back up: `sqlite3 moneeey.sqlite ".backup target.sqlite"` (do not `cp` while the backend is running).
 
 ### Frontend (working directory: frontend/)
 ```bash
@@ -55,7 +55,7 @@ yarn ci                              # Biome CI (read-only check)
 
 ### Stack
 - **Frontend**: React 18, MobX 6, raw IndexedDB (no PouchDB), Vite, TailwindCSS, TypeScript — PWA with service worker
-- **Backend**: Deno, Oak framework, `@db/sqlite` (FFI-backed libsqlite), JWT auth (jose), passkey/WebAuthn auth (@simplewebauthn). One SQLite file per vault under `/btech/moneeey/vaults/`, plus `meta.sqlite` for cross-vault tables.
+- **Backend**: Deno, Oak framework, JWT auth (jose), passkey/WebAuthn auth (@simplewebauthn). Storage is a single SQLite file (`@db/sqlite` FFI) with all tables keyed by `vault_id`, accessed through a `StorageEngine` (`src/db/engine.ts`) over an async `SqlConn`.
 - **Proxy**: Caddy routes `/api/*` → backend, `/` → frontend. No direct database route — every read/write flows through the backend.
 
 ### Frontend Data Flow
@@ -65,17 +65,17 @@ yarn ci                              # Biome CI (read-only check)
 - **SyncClient** (`shared/sync/SyncClient.ts`) owns the `/api/vault` WebSocket — sends `hello` + JWT, runs pull-on-ready, debounced batched push, processes inbound `changes` frames, reconnects with exponential backoff
 - **Persistence** (`shared/Persistence.ts`) wires MappedStore observers to encryption → outbox → SyncClient. Each MappedStore change triggers `commit(doc)` → encrypted via `encryption/codec.ts` → written to LocalStore + enqueued. Remote `changes` decrypt and feed watchers.
 - **Encryption**: AES-GCM body encryption, data key wrapped by PBKDF2-derived KEK from the user's passphrase. The wrapped key lives in a reserved doc with `_id="ENCRYPTION-META"` that syncs like any other doc so a second device can join with the same passphrase.
-- **Entity types**: ACCOUNT, TRANSACTION, BUDGET, CURRENCY, CONFIG — all extend IBaseEntity with `_id`/`updated` fields. The server-assigned monotonic `seq` per vault is the pull cursor + LWW tiebreak; there is no per-doc `_rev` chain anymore.
+- **Entity types**: ACCOUNT, TRANSACTION, BUDGET, CURRENCY, CONFIG — all extend IBaseEntity with `_id`/`updated` fields. Sync reconciles via a per-vault manifest of `(id, updated_at)`; conflicts are last-write-wins by `updated_at`. There is no per-doc `_rev` chain.
 - **Routing**: HashRouter with custom route registry in `frontend/src/routes/`
 
 ### Backend Structure
-- Entry: `backend/main.ts` → `src/server.ts` (Oak app + router; runs meta migrations on boot; in DEV mode also runs the test-user janitor once on boot)
-- Storage seam: `src/db/storage.ts` (`withMeta` / `withVault(id, ...)`, LRU cap 100 open vault handles, no idle timer) + `src/db/migrations.ts` (inline `META_MIGRATIONS` and `VAULT_MIGRATIONS` arrays, applied lazily per file)
-- Data layer: `src/data/{users,vaults,invites,documents}.ts` — pure SQL functions taking a `Storage`
+- Entry: `backend/main.ts` → `src/server.ts` (Oak app + router; runs migrations on boot; in DEV mode also runs the test-user janitor once on boot)
+- Storage seam: `src/db/engine.ts` (`StorageEngine` — `withConn(fn)` for writes, `withRead(fn)` for reads on a separate connection; impl `src/db/sqlite.ts` over an async `SqlConn`) + `src/db/migrations.ts` (single `MIGRATIONS` array, applied lazily on open)
+- Data layer: `src/data/{users,vaults,invites,documents}.ts` — pure SQL functions taking a `Storage`, all tables keyed by `vault_id`
 - Auth: `src/auth_session.ts` (`/api/auth/session` returns `{vaultId, sessionToken}`) + `src/auth_passkey.ts` (WebAuthn ceremonies, calls SQL data layer)
 - Sync: `src/sync/protocol.ts` (Hello → Ready → Closed handler-strategy chain) + `src/sync/hub.ts` (in-process `Map<vaultId, Set<WebSocket>>` for change broadcast) + `src/sync/vault.ts` (Oak WS endpoint at `/api/vault`)
-- Janitor: `src/janitor.ts` — `purgeStaleTestUsers()` deletes `*@playwright.local` users older than 1 day and unlinks their owned vault files
-- Config: loads from `/run/secret/prod.env`, `/run/secret/dev.env`, `./env`, `./env.example`. Required env: `MONEEEY_META_PATH`, `MONEEEY_VAULTS_DIR`, `MONEEEY_ENV` (`prod` or `dev`), plus the JWT keys.
+- Janitor: `src/janitor.ts` — `purgeStaleTestUsers()` deletes stale test users older than 1 day and their owned vaults' rows
+- Config: loads from `/run/secret/prod.env`, `/run/secret/dev.env`, `./env`, `./env.example`. Required env: `MONEEEY_SQLITE_PATH`, `MONEEEY_ENV` (`prod` or `dev`), plus the JWT keys.
 - Endpoints: `GET /api` (info), `POST /api/auth/passkey/*` (WebAuthn), `POST /api/auth/session` (vaultId+sessionToken), `POST /api/auth/logout`, `GET /api/vault` (WebSocket upgrade — the entire data plane)
 
 ### Key Conventions

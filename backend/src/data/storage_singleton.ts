@@ -1,14 +1,14 @@
-import { Storage } from "../db/storage.ts";
+import { type StorageEngine, createEngine } from "../db/engine.ts";
 
-let instance: Storage | null = null;
+let instance: StorageEngine | null = null;
 
-export function getStorage(): Storage {
+export function getStorage(): StorageEngine {
 	if (!instance) {
-		instance = new Storage();
+		instance = createEngine();
 	}
 	return instance;
 }
 
-export function setStorageForTest(storage: Storage | null): void {
+export function setStorageForTest(storage: StorageEngine | null): void {
 	instance = storage;
 }
