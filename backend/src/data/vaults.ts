@@ -53,7 +53,7 @@ export async function createVaultForUser(
 		const createdAt = new Date().toISOString();
 		let inserted = true;
 		try {
-			await storage.withMeta((conn) =>
+			await storage.withConn((conn) =>
 				conn.transaction(async (tx) => {
 					await tx.run(
 						"INSERT INTO vaults (id, name, created_at) VALUES (?, ?, ?)",
@@ -90,7 +90,7 @@ export async function renameVault(
 ): Promise<void> {
 	const safeName = name.trim();
 	if (safeName.length === 0) throw new Error("vault_name_empty");
-	await storage.withMeta(async (conn) => {
+	await storage.withConn(async (conn) => {
 		const changes = await conn.run(
 			"UPDATE vaults SET name = ? WHERE id = ?",
 			safeName,
@@ -104,7 +104,7 @@ export async function getVaultsByUser(
 	storage: Storage,
 	userId: string,
 ): Promise<VaultRecord[]> {
-	return await storage.withMeta(async (conn) => {
+	return await storage.withConn(async (conn) => {
 		const rows = await conn.query<VaultRow>(
 			`SELECT v.id AS id, v.name AS name, v.created_at AS created_at
 				 FROM vaults v
@@ -121,7 +121,7 @@ export async function countMembers(
 	storage: Storage,
 	vaultId: string,
 ): Promise<number> {
-	return await storage.withMeta(async (conn) => {
+	return await storage.withConn(async (conn) => {
 		const row = await conn.get<{ n: number }>(
 			"SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?",
 			vaultId,
@@ -137,7 +137,7 @@ export async function addMember(
 	role: "owner" | "member" = "member",
 ): Promise<void> {
 	const addedAt = new Date().toISOString();
-	await storage.withMeta((conn) =>
+	await storage.withConn((conn) =>
 		conn.transaction(async (tx) => {
 			const existing = await tx.get<{ one: number }>(
 				"SELECT 1 AS one FROM user_vaults WHERE user_id = ? AND vault_id = ?",
@@ -170,7 +170,7 @@ export async function getMembership(
 	userId: string,
 	vaultId: string,
 ): Promise<Membership | null> {
-	return await storage.withMeta(async (conn) => {
+	return await storage.withConn(async (conn) => {
 		const row = await conn.get<MembershipRow>(
 			"SELECT user_id, vault_id, role, added_at FROM user_vaults WHERE user_id = ? AND vault_id = ?",
 			userId,
@@ -194,7 +194,7 @@ export async function listVaultMembers(
 	storage: Storage,
 	vaultId: string,
 ): Promise<VaultMember[]> {
-	return await storage.withMeta(async (conn) => {
+	return await storage.withConn(async (conn) => {
 		const rows = await conn.query<MembershipRow & { display_name: string }>(
 			`SELECT uv.user_id AS user_id, uv.vault_id AS vault_id, uv.role AS role,
 				        uv.added_at AS added_at, u.display_name AS display_name
@@ -223,7 +223,7 @@ export async function removeMember(
 	vaultId: string,
 	userId: string,
 ): Promise<void> {
-	await storage.withMeta(async (conn) => {
+	await storage.withConn(async (conn) => {
 		const row = await conn.get<{ role: string }>(
 			"SELECT role FROM user_vaults WHERE user_id = ? AND vault_id = ?",
 			userId,
@@ -260,7 +260,7 @@ export async function transferOwnership(
 	toUserId: string,
 ): Promise<void> {
 	if (fromUserId === toUserId) return;
-	await storage.withMeta((conn) =>
+	await storage.withConn((conn) =>
 		conn.transaction(async (tx) => {
 			const from = await tx.get<{ role: string }>(
 				"SELECT role FROM user_vaults WHERE user_id = ? AND vault_id = ?",
@@ -296,7 +296,7 @@ export async function deleteVault(
 	storage: Storage,
 	vaultId: string,
 ): Promise<void> {
-	await storage.withMeta((conn) =>
+	await storage.withConn((conn) =>
 		conn.transaction(async (tx) => {
 			await tx.run("DELETE FROM vaults WHERE id = ?", vaultId);
 		}),

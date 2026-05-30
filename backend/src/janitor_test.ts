@@ -12,7 +12,7 @@ const backdateUser = async (
 	userId: string,
 	when: Date,
 ) => {
-	await storage.withMeta((conn) =>
+	await storage.withConn((conn) =>
 		conn.run(
 			"UPDATE users SET created_at = ? WHERE id = ?",
 			when.toISOString(),
@@ -41,7 +41,7 @@ Deno.test(async function purgesTestUserPlusOwnedVault() {
 		assert.assertEquals(result.vaultsDeleted, 1);
 		assert.assertEquals(await userHasAccess(t.storage, u.id, v.id), false);
 
-		const remaining = await t.storage.withMeta(async (conn) => {
+		const remaining = await t.storage.withConn(async (conn) => {
 			const row = await conn.get<{ n: number }>(
 				"SELECT COUNT(*) AS n FROM users WHERE id = ?",
 				u.id,
@@ -99,7 +99,7 @@ Deno.test(async function membershipsCascadeButSharedVaultSurvives() {
 			await userHasAccess(t.storage, owner.id, vault.id),
 			true,
 		);
-		const membersLeft = await t.storage.withMeta(async (conn) => {
+		const membersLeft = await t.storage.withConn(async (conn) => {
 			const row = await conn.get<{ n: number }>(
 				"SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?",
 				vault.id,

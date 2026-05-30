@@ -8,7 +8,7 @@ import { renderMetrics } from "./metrics.ts";
 import { setupVaultSync } from "./sync/vault.ts";
 
 async function ensureMetaInitialized() {
-	await getStorage().withMeta(() => Promise.resolve());
+	await getStorage().withConn(() => Promise.resolve());
 }
 
 async function runDevJanitor() {

@@ -2,7 +2,7 @@ import type { Database } from "../deps.ts";
 
 export type Migration = { name: string; sql: string };
 
-export const META_MIGRATIONS: Migration[] = [
+export const MIGRATIONS: Migration[] = [
 	{
 		name: "0001_init",
 		sql: `
@@ -36,14 +36,9 @@ export const META_MIGRATIONS: Migration[] = [
 				added_at      TEXT NOT NULL,
 				PRIMARY KEY (user_id, vault_id)
 			);
-		`,
-	},
-];
 
-export const VAULT_MIGRATIONS: Migration[] = [
-	{
-		name: "0001_init",
-		sql: `
+			CREATE INDEX user_vaults_vault_idx ON user_vaults(vault_id);
+
 			CREATE TABLE documents (
 				vault_id      TEXT NOT NULL,
 				id            TEXT NOT NULL,
@@ -64,11 +59,6 @@ export const VAULT_MIGRATIONS: Migration[] = [
 			);
 		`,
 	},
-];
-
-export const COMBINED_MIGRATIONS: Migration[] = [
-	...META_MIGRATIONS.map((m) => ({ name: `meta_${m.name}`, sql: m.sql })),
-	...VAULT_MIGRATIONS.map((m) => ({ name: `vault_${m.name}`, sql: m.sql })),
 ];
 
 export function runMigrations(

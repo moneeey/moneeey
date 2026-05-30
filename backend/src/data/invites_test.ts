@@ -73,7 +73,7 @@ Deno.test(async function redeemInviteAddsMembership() {
 		const token = await createInvite(t.storage, owner, vault.id);
 		const vaultId = await redeemInvite(t.storage, token, guest);
 		assert.assertEquals(vaultId, vault.id);
-		const accessible = await t.storage.withMeta((conn) =>
+		const accessible = await t.storage.withConn((conn) =>
 			conn.get<{ role: string }>(
 				"SELECT role FROM user_vaults WHERE user_id = ? AND vault_id = ?",
 				guest,
@@ -154,7 +154,7 @@ Deno.test(async function findInviteRejectsExpired() {
 		const token = await createInvite(t.storage, owner, vault.id);
 		const found1 = await findInvite(t.storage, token);
 		assert.assertExists(found1);
-		await t.storage.withVault(vault.id, (conn) =>
+		await t.storage.withConn((conn) =>
 			conn.run(
 				"UPDATE invites SET expires_at = ? WHERE vault_id = ?",
 				new Date(Date.now() - 1000).toISOString(),

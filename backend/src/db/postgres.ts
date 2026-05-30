@@ -2,7 +2,7 @@ import { MONEEEY_PG_POOL_SIZE, MONEEEY_PG_URL } from "../config.ts";
 import { PgPool, type PgPoolClient } from "../deps.ts";
 import { Logger } from "../logger.ts";
 import type { EngineConfig, StorageEngine } from "./engine.ts";
-import { COMBINED_MIGRATIONS, type Migration } from "./migrations.ts";
+import { MIGRATIONS, type Migration } from "./migrations.ts";
 import type { SqlConn } from "./sql.ts";
 
 const logger = Logger("db/postgres");
@@ -134,11 +134,7 @@ export class PostgresEngine implements StorageEngine {
 		const pool = new PgPool(this.url, this.size, true);
 		const client = await pool.connect();
 		try {
-			await runPgMigrations(
-				client,
-				COMBINED_MIGRATIONS,
-				new Date().toISOString(),
-			);
+			await runPgMigrations(client, MIGRATIONS, new Date().toISOString());
 		} finally {
 			client.release();
 		}
@@ -147,7 +143,7 @@ export class PostgresEngine implements StorageEngine {
 		return pool;
 	}
 
-	async withMeta<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T> {
+	async withConn<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T> {
 		const pool = await this.ensure();
 		const client = await pool.connect();
 		try {
@@ -157,15 +153,8 @@ export class PostgresEngine implements StorageEngine {
 		}
 	}
 
-	withVault<T>(
-		_vaultId: string,
-		fn: (conn: SqlConn) => Promise<T>,
-	): Promise<T> {
-		return this.withMeta(fn);
-	}
-
 	async deleteVaultStore(vaultId: string): Promise<void> {
-		await this.withMeta((conn) =>
+		await this.withConn((conn) =>
 			conn.transaction(async (tx) => {
 				await tx.run("DELETE FROM documents WHERE vault_id = ?", vaultId);
 				await tx.run("DELETE FROM invites WHERE vault_id = ?", vaultId);

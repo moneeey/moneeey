@@ -17,7 +17,7 @@ export async function purgeStaleTestUsers(
 	now: Date = new Date(),
 ): Promise<PurgeResult> {
 	const threshold = new Date(now.getTime() - ONE_DAY_MS).toISOString();
-	const users = await storage.withMeta((conn) =>
+	const users = await storage.withConn((conn) =>
 		conn.query<{ id: string; display_name: string }>(
 			"SELECT id, display_name FROM users WHERE display_name LIKE ? AND created_at < ?",
 			`${TEST_DISPLAY_NAME_PREFIX}%`,
@@ -26,7 +26,7 @@ export async function purgeStaleTestUsers(
 	);
 	let vaultsDeleted = 0;
 	for (const user of users) {
-		const ownedVaultIds = await storage.withMeta(async (conn) => {
+		const ownedVaultIds = await storage.withConn(async (conn) => {
 			const rows = await conn.query<{ id: string }>(
 				`SELECT v.id AS id FROM vaults v
 					 INNER JOIN user_vaults uv ON uv.vault_id = v.id
@@ -43,7 +43,7 @@ export async function purgeStaleTestUsers(
 				logger.warn("failed to delete stale vault", { vaultId, err });
 			}
 		}
-		await storage.withMeta((conn) =>
+		await storage.withConn((conn) =>
 			conn.run("DELETE FROM users WHERE id = ?", user.id),
 		);
 	}

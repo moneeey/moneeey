@@ -5,8 +5,7 @@ import { SqliteEngine } from "./sqlite.ts";
 export type DbEngineKind = "sqlite" | "postgres";
 
 export interface StorageEngine {
-	withMeta<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T>;
-	withVault<T>(vaultId: string, fn: (conn: SqlConn) => Promise<T>): Promise<T>;
+	withConn<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T>;
 	deleteVaultStore(vaultId: string): Promise<void>;
 	closeAll(): void;
 }
