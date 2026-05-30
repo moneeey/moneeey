@@ -1,4 +1,4 @@
-import { MONEEEY_META_PATH } from "../config.ts";
+import { MONEEEY_SQLITE_PATH } from "../config.ts";
 import { Logger } from "../logger.ts";
 import type { EngineConfig, StorageEngine } from "./engine.ts";
 import { MIGRATIONS, runMigrations } from "./migrations.ts";
@@ -13,7 +13,7 @@ export class SqliteEngine implements StorageEngine {
 	private conn: SqliteConn | null = null;
 
 	constructor(config: EngineConfig = {}) {
-		this.path = config.sqlitePath ?? MONEEEY_META_PATH;
+		this.path = config.sqlitePath ?? MONEEEY_SQLITE_PATH;
 	}
 
 	async withConn<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T> {

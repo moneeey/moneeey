@@ -22,7 +22,7 @@ if (!env) {
 
 export const PORT = Number.parseInt(env.PORT);
 export const APP_URL = env.APP_URL;
-export const MONEEEY_META_PATH = env.MONEEEY_META_PATH;
+export const MONEEEY_SQLITE_PATH = env.MONEEEY_SQLITE_PATH;
 const rawEnv = env.MONEEEY_ENV;
 if (rawEnv !== "prod" && rawEnv !== "dev") {
 	throw new Error(`MONEEEY_ENV must be "prod" or "dev", got: ${rawEnv}`);

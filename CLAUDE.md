@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Moneeey is a personal budgeting app with E2E encryption. React+MobX+IndexedDB frontend, Deno+Oak backend with a pluggable storage engine (default: a single SQLite file at `/data/meta.sqlite` holding all users/vaults/invites/documents, keyed by `vault_id`; optionally PostgreSQL via `MONEEEY_DB_ENGINE=postgres`), Caddy reverse proxy. All orchestrated via podman-compose.
+Moneeey is a personal budgeting app with E2E encryption. React+MobX+IndexedDB frontend, Deno+Oak backend with a pluggable storage engine (default: a single SQLite file at `/data/moneeey.sqlite` holding all users/vaults/invites/documents, keyed by `vault_id`; optionally PostgreSQL via `MONEEEY_DB_ENGINE=postgres`), Caddy reverse proxy. All orchestrated via podman-compose.
 
 ## Commands
 
@@ -13,7 +13,7 @@ Moneeey is a personal budgeting app with E2E encryption. React+MobX+IndexedDB fr
 podman-compose up                    # Start everything (frontend :4270, backend :4269, caddy :4280)
 podman-compose down && podman-compose up  # Restart (required after yarn add/remove)
 ```
-Access at http://localhost:4280. The SQLite database lives under `./docker/volume/backend_data/` on the host (bind-mounted to `/data` in the backend container). To inspect: `sqlite3 ./docker/volume/backend_data/meta.sqlite`. To back up: `sqlite3 meta.sqlite ".backup target.sqlite"` (do not `cp` while the backend is running). For the Postgres engine, data lives in the `postgres` compose service.
+Access at http://localhost:4280. The SQLite database lives under `./docker/volume/backend_data/` on the host (bind-mounted to `/data` in the backend container). To inspect: `sqlite3 ./docker/volume/backend_data/moneeey.sqlite`. To back up: `sqlite3 moneeey.sqlite ".backup target.sqlite"` (do not `cp` while the backend is running). For the Postgres engine, data lives in the `postgres` compose service.
 
 ### Frontend (working directory: frontend/)
 ```bash
@@ -69,13 +69,13 @@ yarn ci                              # Biome CI (read-only check)
 - **Routing**: HashRouter with custom route registry in `frontend/src/routes/`
 
 ### Backend Structure
-- Entry: `backend/main.ts` → `src/server.ts` (Oak app + router; runs meta migrations on boot; in DEV mode also runs the test-user janitor once on boot)
-- Storage seam: `src/db/storage.ts` (`withMeta` / `withVault(id, ...)`, LRU cap 100 open vault handles, no idle timer) + `src/db/migrations.ts` (inline `META_MIGRATIONS` and `VAULT_MIGRATIONS` arrays, applied lazily per file)
-- Data layer: `src/data/{users,vaults,invites,documents}.ts` — pure SQL functions taking a `Storage`
+- Entry: `backend/main.ts` → `src/server.ts` (Oak app + router; runs migrations on boot; in DEV mode also runs the test-user janitor once on boot)
+- Storage seam: `src/db/engine.ts` (`StorageEngine` interface — `withConn(fn)` + `deleteVaultStore`, selected by `MONEEEY_DB_ENGINE`; impls `src/db/sqlite.ts` and `src/db/postgres.ts` over an async `SqlConn`) + `src/db/migrations.ts` (single `MIGRATIONS` array, applied lazily on open)
+- Data layer: `src/data/{users,vaults,invites,documents}.ts` — pure SQL functions taking a `Storage`, all tables keyed by `vault_id`
 - Auth: `src/auth_session.ts` (`/api/auth/session` returns `{vaultId, sessionToken}`) + `src/auth_passkey.ts` (WebAuthn ceremonies, calls SQL data layer)
 - Sync: `src/sync/protocol.ts` (Hello → Ready → Closed handler-strategy chain) + `src/sync/hub.ts` (in-process `Map<vaultId, Set<WebSocket>>` for change broadcast) + `src/sync/vault.ts` (Oak WS endpoint at `/api/vault`)
-- Janitor: `src/janitor.ts` — `purgeStaleTestUsers()` deletes `*@playwright.local` users older than 1 day and unlinks their owned vault files
-- Config: loads from `/run/secret/prod.env`, `/run/secret/dev.env`, `./env`, `./env.example`. Required env: `MONEEEY_META_PATH`, `MONEEEY_VAULTS_DIR`, `MONEEEY_ENV` (`prod` or `dev`), plus the JWT keys.
+- Janitor: `src/janitor.ts` — `purgeStaleTestUsers()` deletes stale test users older than 1 day and their owned vaults' rows
+- Config: loads from `/run/secret/prod.env`, `/run/secret/dev.env`, `./env`, `./env.example`. Required env: `MONEEEY_SQLITE_PATH`, `MONEEEY_ENV` (`prod` or `dev`), plus the JWT keys. `MONEEEY_DB_ENGINE` (`sqlite` default | `postgres`); for postgres also `MONEEEY_PG_URL`.
 - Endpoints: `GET /api` (info), `POST /api/auth/passkey/*` (WebAuthn), `POST /api/auth/session` (vaultId+sessionToken), `POST /api/auth/logout`, `GET /api/vault` (WebSocket upgrade — the entire data plane)
 
 ### Key Conventions
