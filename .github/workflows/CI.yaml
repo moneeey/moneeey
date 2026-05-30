@@ -104,6 +104,18 @@ jobs:
 
   BACKEND:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: moneeey
+          POSTGRES_PASSWORD: moneeey
+          POSTGRES_DB: moneeey_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U moneeey -d moneeey_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     defaults:
       run:
         working-directory: backend
@@ -127,6 +139,8 @@ jobs:
 
       - run: deno task test
         name: Test
+        env:
+          MONEEEY_PG_TEST_URL: postgres://moneeey:moneeey@localhost:5432/moneeey_test
 
   LINT:
     runs-on: ubuntu-latest

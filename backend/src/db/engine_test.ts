@@ -1,98 +1,175 @@
 import { bulkUpsert, getDocs, getManifest } from "../data/documents.ts";
 import { createInvite, findInvite, redeemInvite } from "../data/invites.ts";
-import { makeTempStorage } from "../data/test_storage.ts";
 import { createUser } from "../data/users.ts";
 import {
+	MAX_USERS_PER_VAULT,
+	VaultFullError,
+	addMember,
 	createVaultForUser,
 	deleteVault,
 	userHasAccess,
 } from "../data/vaults.ts";
 import { assert } from "../test.ts";
-import type { DbEngineKind } from "./engine.ts";
+import {
+	type DbEngineKind,
+	type StorageEngine,
+	createEngine,
+} from "./engine.ts";
 
-const KINDS: DbEngineKind[] = ["sqlite"];
+const PG_URL = Deno.env.get("MONEEEY_PG_TEST_URL") ?? "";
+const KINDS: DbEngineKind[] = PG_URL ? ["sqlite", "postgres"] : ["sqlite"];
+
+const engineTest = (name: string, fn: () => Promise<void>) =>
+	Deno.test({ name, sanitizeResources: false, sanitizeOps: false, fn });
+
+function makeStorage(kind: DbEngineKind): {
+	storage: StorageEngine;
+	cleanup: () => void;
+} {
+	if (kind === "postgres") {
+		const storage = createEngine({ kind, pgUrl: PG_URL });
+		return { storage, cleanup: () => storage.closeAll() };
+	}
+	const root = Deno.makeTempDirSync({ prefix: "moneeey-engine-test-" });
+	const storage = createEngine({ kind, sqlitePath: `${root}/moneeey.sqlite` });
+	return {
+		storage,
+		cleanup: () => {
+			storage.closeAll();
+			Deno.removeSync(root, { recursive: true });
+		},
+	};
+}
 
 for (const kind of KINDS) {
-	Deno.test(`[${kind}] document round-trip`, async () => {
-		const t = makeTempStorage(kind);
+	engineTest(
+		`[${kind}] document upsert, update and stale rejection`,
+		async () => {
+			const { storage, cleanup } = makeStorage(kind);
+			try {
+				const alice = await createUser(storage, "Alice");
+				const vault = await createVaultForUser(storage, alice.id, "Vault");
+
+				const accepted = await bulkUpsert(storage, vault.id, [
+					{ id: "d1", updated_at: "2026-01-01", deleted_at: null, data: "x" },
+				]);
+				assert.assertEquals(accepted[0].status, "accepted");
+
+				const manifest = await getManifest(storage, vault.id);
+				assert.assertEquals(manifest.length, 1);
+				assert.assertEquals(manifest[0].id, "d1");
+				assert.assertEquals(
+					(await getDocs(storage, vault.id, ["d1"]))[0].data,
+					"x",
+				);
+
+				const updated = await bulkUpsert(storage, vault.id, [
+					{
+						id: "d1",
+						updated_at: "2026-06-01",
+						deleted_at: "2026-06-01",
+						data: "y",
+					},
+				]);
+				assert.assertEquals(updated[0].status, "accepted");
+				const doc = (await getDocs(storage, vault.id, ["d1"]))[0];
+				assert.assertEquals(doc.data, "y");
+				assert.assertEquals(doc.deleted_at, "2026-06-01");
+
+				const stale = await bulkUpsert(storage, vault.id, [
+					{ id: "d1", updated_at: "2025-01-01", deleted_at: null, data: "old" },
+				]);
+				assert.assertEquals(stale[0].status, "stale");
+				assert.assertEquals(
+					(await getDocs(storage, vault.id, ["d1"]))[0].data,
+					"y",
+				);
+			} finally {
+				cleanup();
+			}
+		},
+	);
+
+	engineTest(`[${kind}] vaults are isolated`, async () => {
+		const { storage, cleanup } = makeStorage(kind);
 		try {
-			const alice = await createUser(t.storage, "Alice");
-			const vault = await createVaultForUser(t.storage, alice.id, "Vault");
+			const alice = await createUser(storage, "Alice");
+			const bob = await createUser(storage, "Bob");
+			const va = await createVaultForUser(storage, alice.id, "A");
+			const vb = await createVaultForUser(storage, bob.id, "B");
 
-			const accepted = await bulkUpsert(t.storage, vault.id, [
-				{ id: "d1", updated_at: "2026-01-01", deleted_at: null, data: "x" },
-			]);
-			assert.assertEquals(accepted[0].status, "accepted");
-
-			const manifest = await getManifest(t.storage, vault.id);
-			assert.assertEquals(manifest.length, 1);
-			assert.assertEquals(manifest[0].id, "d1");
-
-			const docs = await getDocs(t.storage, vault.id, ["d1"]);
-			assert.assertEquals(docs[0].data, "x");
-
-			const stale = await bulkUpsert(t.storage, vault.id, [
-				{ id: "d1", updated_at: "2025-01-01", deleted_at: null, data: "old" },
-			]);
-			assert.assertEquals(stale[0].status, "stale");
-		} finally {
-			t.cleanup();
-		}
-	});
-
-	Deno.test(`[${kind}] vaults are isolated`, async () => {
-		const t = makeTempStorage(kind);
-		try {
-			const alice = await createUser(t.storage, "Alice");
-			const bob = await createUser(t.storage, "Bob");
-			const va = await createVaultForUser(t.storage, alice.id, "A");
-			const vb = await createVaultForUser(t.storage, bob.id, "B");
-
-			await bulkUpsert(t.storage, va.id, [
+			await bulkUpsert(storage, va.id, [
 				{ id: "same", updated_at: "2026-01-01", deleted_at: null, data: "a" },
 			]);
-			await bulkUpsert(t.storage, vb.id, [
+			await bulkUpsert(storage, vb.id, [
 				{ id: "same", updated_at: "2026-02-02", deleted_at: null, data: "b" },
 			]);
 
-			const aDocs = await getDocs(t.storage, va.id, ["same"]);
-			const bDocs = await getDocs(t.storage, vb.id, ["same"]);
-			assert.assertEquals(aDocs[0].data, "a");
-			assert.assertEquals(bDocs[0].data, "b");
-			assert.assertEquals((await getManifest(t.storage, va.id)).length, 1);
+			assert.assertEquals(
+				(await getDocs(storage, va.id, ["same"]))[0].data,
+				"a",
+			);
+			assert.assertEquals(
+				(await getDocs(storage, vb.id, ["same"]))[0].data,
+				"b",
+			);
+			assert.assertEquals((await getManifest(storage, va.id)).length, 1);
 		} finally {
-			t.cleanup();
+			cleanup();
 		}
 	});
 
-	Deno.test(`[${kind}] invite round-trip and vault deletion`, async () => {
-		const t = makeTempStorage(kind);
+	engineTest(`[${kind}] invite round-trip and vault deletion`, async () => {
+		const { storage, cleanup } = makeStorage(kind);
 		try {
-			const owner = await createUser(t.storage, "Owner");
-			const guest = await createUser(t.storage, "Guest");
-			const vault = await createVaultForUser(t.storage, owner.id, "Vault");
+			const owner = await createUser(storage, "Owner");
+			const guest = await createUser(storage, "Guest");
+			const vault = await createVaultForUser(storage, owner.id, "Vault");
 
-			const token = await createInvite(t.storage, owner.id, vault.id);
-			const found = await findInvite(t.storage, token);
-			assert.assertEquals(found?.vaultId, vault.id);
-			const redeemedVault = await redeemInvite(t.storage, token, guest.id);
-			assert.assertEquals(redeemedVault, vault.id);
+			const token = await createInvite(storage, owner.id, vault.id);
 			assert.assertEquals(
-				await userHasAccess(t.storage, guest.id, vault.id),
+				(await findInvite(storage, token))?.vaultId,
+				vault.id,
+			);
+			assert.assertEquals(
+				await redeemInvite(storage, token, guest.id),
+				vault.id,
+			);
+			assert.assertEquals(
+				await userHasAccess(storage, guest.id, vault.id),
 				true,
 			);
 
-			await bulkUpsert(t.storage, vault.id, [
+			await bulkUpsert(storage, vault.id, [
 				{ id: "d1", updated_at: "2026-01-01", deleted_at: null, data: "x" },
 			]);
-			await deleteVault(t.storage, vault.id);
-			assert.assertEquals((await getManifest(t.storage, vault.id)).length, 0);
+			await deleteVault(storage, vault.id);
+			assert.assertEquals((await getManifest(storage, vault.id)).length, 0);
 			assert.assertEquals(
-				await userHasAccess(t.storage, owner.id, vault.id),
+				await userHasAccess(storage, owner.id, vault.id),
 				false,
 			);
 		} finally {
-			t.cleanup();
+			cleanup();
+		}
+	});
+
+	engineTest(`[${kind}] membership cap is enforced`, async () => {
+		const { storage, cleanup } = makeStorage(kind);
+		try {
+			const owner = await createUser(storage, "Owner");
+			const vault = await createVaultForUser(storage, owner.id, "Vault");
+			for (let i = 1; i < MAX_USERS_PER_VAULT; i++) {
+				const member = await createUser(storage, `member-${i}`);
+				await addMember(storage, vault.id, member.id);
+			}
+			const extra = await createUser(storage, "Extra");
+			await assert.assertRejects(
+				() => addMember(storage, vault.id, extra.id),
+				VaultFullError,
+			);
+		} finally {
+			cleanup();
 		}
 	});
 }
