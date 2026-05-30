@@ -33,6 +33,8 @@ export const MONEEEY_DB_ENGINE = env.MONEEEY_DB_ENGINE ?? "sqlite-per-vault";
 export const MONEEEY_MAX_VAULT_HANDLES = Number(
 	env.MONEEEY_MAX_VAULT_HANDLES ?? "3000",
 );
+export const MONEEEY_PG_URL = env.MONEEEY_PG_URL ?? "";
+export const MONEEEY_PG_POOL_SIZE = Number(env.MONEEEY_PG_POOL_SIZE ?? "16");
 export const JWT_SESSION_KEY_ID = env.JWT_SESSION_KEY_ID;
 export const JWT_CHALLENGE_KEY_ID = env.JWT_CHALLENGE_KEY_ID;
 export const JWT_AUTH_KEY_ID = env.JWT_AUTH_KEY_ID;

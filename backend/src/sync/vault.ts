@@ -1,6 +1,7 @@
 import { getStorage } from "../data/storage_singleton.ts";
 import { oak } from "../deps.ts";
 import { Logger } from "../logger.ts";
+import { metrics } from "../metrics.ts";
 import { type PeerSink, VaultHub } from "./hub.ts";
 import { VaultProtocol } from "./protocol.ts";
 
@@ -33,13 +34,21 @@ export function setupVaultSync(router: oak.Router) {
 			},
 		};
 		const protocol = new VaultProtocol(getStorage(), hub, peer);
+		metrics.wsConnections.inc();
+		let closed = false;
+		const onClosed = () => {
+			if (closed) return;
+			closed = true;
+			metrics.wsConnections.dec();
+			protocol.handleClose();
+		};
 		ws.onmessage = (event) => {
 			protocol.handleMessage(String(event.data));
 		};
-		ws.onclose = () => protocol.handleClose();
+		ws.onclose = onClosed;
 		ws.onerror = (event) => {
 			logger.warn("ws error", { event });
-			protocol.handleClose();
+			onClosed();
 		};
 	});
 }

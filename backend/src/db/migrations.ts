@@ -66,6 +66,11 @@ export const VAULT_MIGRATIONS: Migration[] = [
 	},
 ];
 
+export const COMBINED_MIGRATIONS: Migration[] = [
+	...META_MIGRATIONS.map((m) => ({ name: `meta_${m.name}`, sql: m.sql })),
+	...VAULT_MIGRATIONS.map((m) => ({ name: `vault_${m.name}`, sql: m.sql })),
+];
+
 export function runMigrations(
 	db: Database,
 	migrations: Migration[],

@@ -20,6 +20,18 @@ services:
       - ${LOCAL_WORKSPACE_FOLDER:-.}/backend:/app:z
       - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/backend_data:/data:z,U
 
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    networks:
+      - moneeey-network
+    environment:
+      - POSTGRES_USER=moneeey
+      - POSTGRES_PASSWORD=moneeey
+      - POSTGRES_DB=moneeey
+    volumes:
+      - ${LOCAL_WORKSPACE_FOLDER:-.}/docker/volume/postgres_data:/var/lib/postgresql/data:z
+
   caddy:
     image: caddy:2.6.4-alpine
     restart: unless-stopped

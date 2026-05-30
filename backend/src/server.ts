@@ -4,6 +4,7 @@ import { getStorage } from "./data/storage_singleton.ts";
 import { oak } from "./deps.ts";
 import { purgeStaleTestUsers } from "./janitor.ts";
 import { Logger } from "./logger.ts";
+import { renderMetrics } from "./metrics.ts";
 import { setupVaultSync } from "./sync/vault.ts";
 
 async function ensureMetaInitialized() {
@@ -29,6 +30,10 @@ export function createServer() {
 	});
 	router.get("/api", ({ response }) => {
 		response.body = JSON.stringify({ hello: "Welcome to Moneeey API" });
+	});
+	router.get("/api/metrics", ({ response }) => {
+		response.headers.set("content-type", "text/plain; version=0.0.4");
+		response.body = renderMetrics();
 	});
 
 	setupAuth(app, router);

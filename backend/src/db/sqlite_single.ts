@@ -1,25 +1,12 @@
 import { MONEEEY_META_PATH } from "../config.ts";
 import { Logger } from "../logger.ts";
 import type { EngineConfig, StorageEngine } from "./engine.ts";
-import {
-	META_MIGRATIONS,
-	type Migration,
-	VAULT_MIGRATIONS,
-	runMigrations,
-} from "./migrations.ts";
+import { COMBINED_MIGRATIONS, runMigrations } from "./migrations.ts";
 import type { SqlConn } from "./sql.ts";
 import { SqliteConn } from "./sqlite_conn.ts";
 import { ensureDir, openSqlite } from "./sqlite_util.ts";
 
 const logger = Logger("db/sqlite-single");
-
-const prefixed = (prefix: string, migrations: Migration[]): Migration[] =>
-	migrations.map((m) => ({ name: `${prefix}_${m.name}`, sql: m.sql }));
-
-const SINGLE_MIGRATIONS: Migration[] = [
-	...prefixed("meta", META_MIGRATIONS),
-	...prefixed("vault", VAULT_MIGRATIONS),
-];
 
 export class SqliteSingleEngine implements StorageEngine {
 	private path: string;
@@ -70,7 +57,7 @@ export class SqliteSingleEngine implements StorageEngine {
 		if (this.conn) return this.conn;
 		await ensureDir(this.path);
 		const db = openSqlite(this.path);
-		runMigrations(db, SINGLE_MIGRATIONS);
+		runMigrations(db, COMBINED_MIGRATIONS);
 		this.conn = new SqliteConn(db);
 		return this.conn;
 	}

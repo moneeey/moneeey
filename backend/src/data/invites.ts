@@ -146,7 +146,7 @@ export async function redeemInvite(
 	if (!wasAlreadyMember) {
 		await storage.withMeta(async (conn) => {
 			await conn.run(
-				"INSERT OR IGNORE INTO user_vaults (user_id, vault_id, role, added_at) VALUES (?, ?, 'member', ?)",
+				"INSERT INTO user_vaults (user_id, vault_id, role, added_at) VALUES (?, ?, 'member', ?) ON CONFLICT DO NOTHING",
 				redeemerUserId,
 				vaultId,
 				new Date().toISOString(),

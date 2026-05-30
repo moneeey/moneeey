@@ -10,6 +10,7 @@ import { userHasAccess } from "../data/vaults.ts";
 import type { Storage } from "../db/storage.ts";
 import { authJwt, sessionJwt } from "../jwt.ts";
 import { Logger } from "../logger.ts";
+import { metrics } from "../metrics.ts";
 import type { PeerSink, VaultHub } from "./hub.ts";
 
 const logger = Logger("sync/protocol");
@@ -162,15 +163,24 @@ class ReadyHandler implements MessageHandler {
 			case "ping":
 				this.ctx.peer.send({ type: "pong" });
 				return this;
-			case "manifest":
+			case "manifest": {
+				const t = performance.now();
 				await this.handleManifest(msg as ManifestMsg);
+				metrics.manifestDuration.observe((performance.now() - t) / 1000);
 				return this;
-			case "fetch":
+			}
+			case "fetch": {
+				const t = performance.now();
 				await this.handleFetch(msg as FetchMsg);
+				metrics.fetchDuration.observe((performance.now() - t) / 1000);
 				return this;
-			case "push":
+			}
+			case "push": {
+				const t = performance.now();
 				await this.handlePush(msg as PushMsg);
+				metrics.pushDuration.observe((performance.now() - t) / 1000);
 				return this;
+			}
 			default:
 				sendError(
 					this.ctx.peer,
@@ -320,6 +330,7 @@ class ReadyHandler implements MessageHandler {
 		const acceptedIds = new Set(
 			results.filter((r) => r.status === "accepted").map((r) => r.id),
 		);
+		metrics.syncPushDocs.inc({}, acceptedIds.size);
 		if (acceptedIds.size === 0) return;
 		const broadcastDocs: DocRecord[] = incoming
 			.filter((d) => acceptedIds.has(d.id))
@@ -354,9 +365,11 @@ export class VaultProtocol {
 			sendError(this.ctx.peer, undefined, "bad_request", "invalid JSON");
 			return;
 		}
+		metrics.wsMessages.inc({ type: String(msg.type ?? "unknown") });
 		try {
 			this.handler = await this.handler.handle(msg);
 		} catch (err) {
+			metrics.errors.inc({ area: "protocol" });
 			logger.error("handler error", { err, type: msg.type });
 			const requestId = (msg as { request_id?: string }).request_id;
 			sendError(
