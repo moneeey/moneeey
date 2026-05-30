@@ -63,10 +63,9 @@ jobs:
       - name: Start backend
         working-directory: backend
         run: |
-          mkdir -p /tmp/moneeey-data/vaults
+          mkdir -p /tmp/moneeey-data
           sed \
-            -e "s|MONEEEY_META_PATH=.*|MONEEEY_META_PATH=/tmp/moneeey-data/meta.sqlite|" \
-            -e "s|MONEEEY_VAULTS_DIR=.*|MONEEEY_VAULTS_DIR=/tmp/moneeey-data/vaults|" \
+            -e "s|MONEEEY_SQLITE_PATH=.*|MONEEEY_SQLITE_PATH=/tmp/moneeey-data/moneeey.sqlite|" \
             -e "s|APP_URL=.*|APP_URL=http://localhost:4270|" \
             env.example > env
           nohup deno run --allow-read --allow-write --allow-env --allow-net --allow-ffi --allow-import main.ts > /tmp/backend.log 2>&1 &
