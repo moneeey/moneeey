@@ -73,12 +73,12 @@ Deno.test(async function redeemInviteAddsMembership() {
 		const token = await createInvite(t.storage, owner, vault.id);
 		const vaultId = await redeemInvite(t.storage, token, guest);
 		assert.assertEquals(vaultId, vault.id);
-		const accessible = await t.storage.withMeta((db) =>
-			db
-				.prepare(
-					"SELECT role FROM user_vaults WHERE user_id = ? AND vault_id = ?",
-				)
-				.get<{ role: string }>(guest, vault.id),
+		const accessible = await t.storage.withMeta((conn) =>
+			conn.get<{ role: string }>(
+				"SELECT role FROM user_vaults WHERE user_id = ? AND vault_id = ?",
+				guest,
+				vault.id,
+			),
 		);
 		assert.assertEquals(accessible?.role, "member");
 	} finally {
@@ -154,11 +154,13 @@ Deno.test(async function findInviteRejectsExpired() {
 		const token = await createInvite(t.storage, owner, vault.id);
 		const found1 = await findInvite(t.storage, token);
 		assert.assertExists(found1);
-		await t.storage.withVault(vault.id, (db) => {
-			db.prepare("UPDATE invites SET expires_at = ?").run(
+		await t.storage.withVault(vault.id, (conn) =>
+			conn.run(
+				"UPDATE invites SET expires_at = ? WHERE vault_id = ?",
 				new Date(Date.now() - 1000).toISOString(),
-			);
-		});
+				vault.id,
+			),
+		);
 		assert.assertEquals(await findInvite(t.storage, token), null);
 	} finally {
 		t.cleanup();

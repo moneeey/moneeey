@@ -29,6 +29,10 @@ if (rawEnv !== "prod" && rawEnv !== "dev") {
 	throw new Error(`MONEEEY_ENV must be "prod" or "dev", got: ${rawEnv}`);
 }
 export const MONEEEY_ENV: "prod" | "dev" = rawEnv;
+export const MONEEEY_DB_ENGINE = env.MONEEEY_DB_ENGINE ?? "sqlite-per-vault";
+export const MONEEEY_MAX_VAULT_HANDLES = Number(
+	env.MONEEEY_MAX_VAULT_HANDLES ?? "3000",
+);
 export const JWT_SESSION_KEY_ID = env.JWT_SESSION_KEY_ID;
 export const JWT_CHALLENGE_KEY_ID = env.JWT_CHALLENGE_KEY_ID;
 export const JWT_AUTH_KEY_ID = env.JWT_AUTH_KEY_ID;

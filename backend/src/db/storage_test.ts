@@ -1,10 +1,10 @@
 import { fs } from "../deps.ts";
 import { assert } from "../test.ts";
-import { Storage } from "./storage.ts";
+import { SqlitePerVaultEngine } from "./storage.ts";
 
 const makeStorage = () => {
 	const root = Deno.makeTempDirSync({ prefix: "moneeey-storage-test-" });
-	const storage = new Storage({
+	const storage = new SqlitePerVaultEngine({
 		metaPath: `${root}/meta.sqlite`,
 		vaultsDir: `${root}/vaults`,
 		maxCachedHandles: 3,
@@ -12,12 +12,12 @@ const makeStorage = () => {
 	return { root, storage };
 };
 
-const cleanup = (root: string, storage: Storage) => {
+const cleanup = (root: string, storage: SqlitePerVaultEngine) => {
 	storage.closeAll();
 	Deno.removeSync(root, { recursive: true });
 };
 
-Deno.test(async function vaultPathShardsByFirstFourChars() {
+Deno.test(function vaultPathShardsByFirstFourChars() {
 	const { root, storage } = makeStorage();
 	try {
 		const id = "abcdefghijklmnop";
@@ -42,17 +42,20 @@ Deno.test(function vaultPathRejectsShortIds() {
 Deno.test(async function withMetaCreatesFileAndAppliesMigrations() {
 	const { root, storage } = makeStorage();
 	try {
-		await storage.withMeta((db) => {
-			db.prepare(
+		await storage.withMeta((conn) =>
+			conn.run(
 				"INSERT INTO users (id, display_name, created_at) VALUES (?, ?, ?)",
-			).run("u1", "Alice", new Date().toISOString());
-		});
+				"u1",
+				"Alice",
+				new Date().toISOString(),
+			),
+		);
 		assert.assertEquals(fs.existsSync(`${root}/meta.sqlite`), true);
-		const row = await storage.withMeta(
-			(db) =>
-				db
-					.prepare("SELECT display_name FROM users WHERE id = ?")
-					.get<{ display_name: string }>("u1") ?? null,
+		const row = await storage.withMeta((conn) =>
+			conn.get<{ display_name: string }>(
+				"SELECT display_name FROM users WHERE id = ?",
+				"u1",
+			),
 		);
 		assert.assertEquals(row?.display_name, "Alice");
 	} finally {
@@ -64,17 +67,23 @@ Deno.test(async function withVaultCreatesShardedFileAndAppliesMigrations() {
 	const { root, storage } = makeStorage();
 	try {
 		const id = "abcdefghijklmnopqrstu";
-		await storage.withVault(id, (db) => {
-			db.prepare(
-				"INSERT INTO documents (id, updated_at, deleted_at, data) VALUES (?, ?, NULL, ?)",
-			).run("doc1", new Date().toISOString(), "cipher");
-		});
+		await storage.withVault(id, (conn) =>
+			conn.run(
+				"INSERT INTO documents (vault_id, id, updated_at, deleted_at, data) VALUES (?, ?, ?, NULL, ?)",
+				id,
+				"doc1",
+				new Date().toISOString(),
+				"cipher",
+			),
+		);
 		const expectedPath = `${root}/vaults/ab/cd/${id}.sqlite`;
 		assert.assertEquals(fs.existsSync(expectedPath), true);
-		const row = await storage.withVault(id, (db) =>
-			db
-				.prepare("SELECT data FROM documents WHERE id = ?")
-				.get<{ data: string }>("doc1"),
+		const row = await storage.withVault(id, (conn) =>
+			conn.get<{ data: string }>(
+				"SELECT data FROM documents WHERE vault_id = ? AND id = ?",
+				id,
+				"doc1",
+			),
 		);
 		assert.assertEquals(row?.data, "cipher");
 	} finally {
@@ -86,9 +95,9 @@ Deno.test(async function vaultHandleIsCachedAcrossCalls() {
 	const { root, storage } = makeStorage();
 	try {
 		const id = "abcdefghijklmnopqrstu";
-		await storage.withVault(id, () => {});
+		await storage.withVault(id, () => Promise.resolve());
 		assert.assertEquals(storage.cachedVaultCount(), 1);
-		await storage.withVault(id, () => {});
+		await storage.withVault(id, () => Promise.resolve());
 		assert.assertEquals(storage.cachedVaultCount(), 1);
 	} finally {
 		cleanup(root, storage);
@@ -105,7 +114,7 @@ Deno.test(async function lruEvictsOldestWhenCapExceeded() {
 			"ddddddddddddddddddddd",
 		];
 		for (const id of ids) {
-			await storage.withVault(id, () => {});
+			await storage.withVault(id, () => Promise.resolve());
 		}
 		assert.assertEquals(storage.cachedVaultCount(), 3);
 	} finally {
@@ -120,16 +129,16 @@ Deno.test(async function recentAccessKeepsHandleHotInLru() {
 		const b = "bbbbbbbbbbbbbbbbbbbbb";
 		const c = "ccccccccccccccccccccc";
 		const d = "ddddddddddddddddddddd";
-		await storage.withVault(a, () => {});
-		await storage.withVault(b, () => {});
-		await storage.withVault(c, () => {});
-		await storage.withVault(a, () => {});
-		await storage.withVault(d, () => {});
+		await storage.withVault(a, () => Promise.resolve());
+		await storage.withVault(b, () => Promise.resolve());
+		await storage.withVault(c, () => Promise.resolve());
+		await storage.withVault(a, () => Promise.resolve());
+		await storage.withVault(d, () => Promise.resolve());
 
-		const aRow = await storage.withVault(a, (db) =>
-			db
-				.prepare("SELECT name FROM sqlite_master WHERE name = 'documents'")
-				.get<{ name: string }>(),
+		const aRow = await storage.withVault(a, (conn) =>
+			conn.get<{ name: string }>(
+				"SELECT name FROM sqlite_master WHERE name = 'documents'",
+			),
 		);
 		assert.assertEquals(aRow?.name, "documents");
 		assert.assertEquals(storage.cachedVaultCount(), 3);
@@ -142,30 +151,35 @@ Deno.test(async function reopeningExistingFileIsNoOpForMigrations() {
 	const { root, storage } = makeStorage();
 	try {
 		const id = "abcdefghijklmnopqrstu";
-		await storage.withVault(id, (db) => {
-			db.prepare(
-				"INSERT INTO documents (id, updated_at, deleted_at, data) VALUES (?, ?, NULL, '')",
-			).run("doc1", new Date().toISOString());
-		});
+		await storage.withVault(id, (conn) =>
+			conn.run(
+				"INSERT INTO documents (vault_id, id, updated_at, deleted_at, data) VALUES (?, ?, ?, NULL, '')",
+				id,
+				"doc1",
+				new Date().toISOString(),
+			),
+		);
 		storage.closeAll();
 
-		const reopened = new Storage({
+		const reopened = new SqlitePerVaultEngine({
 			metaPath: `${root}/meta.sqlite`,
 			vaultsDir: `${root}/vaults`,
 		});
 		try {
-			const row = await reopened.withVault(id, (db) =>
-				db
-					.prepare("SELECT id FROM documents WHERE id = ?")
-					.get<{ id: string }>("doc1"),
+			const row = await reopened.withVault(id, (conn) =>
+				conn.get<{ id: string }>(
+					"SELECT id FROM documents WHERE vault_id = ? AND id = ?",
+					id,
+					"doc1",
+				),
 			);
 			assert.assertEquals(row?.id, "doc1");
-			const applied = await reopened.withVault(id, (db) =>
-				db
-					.prepare("SELECT name FROM schema_migrations ORDER BY name")
-					.all<{ name: string }>()
-					.map((r: { name: string }) => r.name),
-			);
+			const applied = await reopened.withVault(id, async (conn) => {
+				const rows = await conn.query<{ name: string }>(
+					"SELECT name FROM schema_migrations ORDER BY name",
+				);
+				return rows.map((r) => r.name);
+			});
 			assert.assertEquals(applied, ["0001_init"]);
 		} finally {
 			reopened.closeAll();
@@ -178,24 +192,24 @@ Deno.test(async function reopeningExistingFileIsNoOpForMigrations() {
 Deno.test(async function bootingTwiceAppliesMigrationsOnlyOnce() {
 	const root = Deno.makeTempDirSync({ prefix: "moneeey-boot-test-" });
 	try {
-		const first = new Storage({
+		const first = new SqlitePerVaultEngine({
 			metaPath: `${root}/meta.sqlite`,
 			vaultsDir: `${root}/vaults`,
 		});
-		await first.withMeta(() => {});
+		await first.withMeta(() => Promise.resolve());
 		first.closeAll();
 
-		const second = new Storage({
+		const second = new SqlitePerVaultEngine({
 			metaPath: `${root}/meta.sqlite`,
 			vaultsDir: `${root}/vaults`,
 		});
 		try {
-			const applied = await second.withMeta((db) =>
-				db
-					.prepare("SELECT name FROM schema_migrations ORDER BY name")
-					.all<{ name: string }>()
-					.map((r: { name: string }) => r.name),
-			);
+			const applied = await second.withMeta(async (conn) => {
+				const rows = await conn.query<{ name: string }>(
+					"SELECT name FROM schema_migrations ORDER BY name",
+				);
+				return rows.map((r) => r.name);
+			});
 			assert.assertEquals(applied, ["0001_init"]);
 		} finally {
 			second.closeAll();

@@ -38,10 +38,11 @@ export async function getUserById(
 	storage: Storage,
 	userId: string,
 ): Promise<UserRecord | null> {
-	return await storage.withMeta((db) => {
-		const row = db
-			.prepare("SELECT id, display_name, created_at FROM users WHERE id = ?")
-			.get<UserRow>(userId);
+	return await storage.withMeta(async (conn) => {
+		const row = await conn.get<UserRow>(
+			"SELECT id, display_name, created_at FROM users WHERE id = ?",
+			userId,
+		);
 		return row ? toUser(row) : null;
 	});
 }
@@ -50,17 +51,17 @@ export async function getUserByCredentialId(
 	storage: Storage,
 	credentialId: string,
 ): Promise<{ user: UserRecord; passkey: StoredPasskey } | null> {
-	return await storage.withMeta((db) => {
-		const passkeyRow = db
-			.prepare(
-				`SELECT credential_id, user_id, public_key, counter, transports_json, created_at
+	return await storage.withMeta(async (conn) => {
+		const passkeyRow = await conn.get<PasskeyRow>(
+			`SELECT credential_id, user_id, public_key, counter, transports_json, created_at
 				 FROM passkeys WHERE credential_id = ?`,
-			)
-			.get<PasskeyRow>(credentialId);
+			credentialId,
+		);
 		if (!passkeyRow) return null;
-		const userRow = db
-			.prepare("SELECT id, display_name, created_at FROM users WHERE id = ?")
-			.get<UserRow>(passkeyRow.user_id);
+		const userRow = await conn.get<UserRow>(
+			"SELECT id, display_name, created_at FROM users WHERE id = ?",
+			passkeyRow.user_id,
+		);
 		if (!userRow) return null;
 		return { user: toUser(userRow), passkey: toPasskey(passkeyRow) };
 	});
@@ -72,10 +73,13 @@ export async function createUser(
 ): Promise<UserRecord> {
 	const id = generateUserId();
 	const createdAt = new Date().toISOString();
-	await storage.withMeta((db) => {
-		db.prepare(
+	await storage.withMeta(async (conn) => {
+		await conn.run(
 			"INSERT INTO users (id, display_name, created_at) VALUES (?, ?, ?)",
-		).run(id, displayName, createdAt);
+			id,
+			displayName,
+			createdAt,
+		);
 	});
 	return { id, displayName, createdAt };
 }
@@ -85,11 +89,10 @@ export async function addPasskey(
 	userId: string,
 	passkey: Omit<StoredPasskey, "userId">,
 ): Promise<StoredPasskey> {
-	await storage.withMeta((db) => {
-		db.prepare(
+	await storage.withMeta(async (conn) => {
+		await conn.run(
 			`INSERT INTO passkeys (credential_id, user_id, public_key, counter, transports_json, created_at)
 			 VALUES (?, ?, ?, ?, ?, ?)`,
-		).run(
 			passkey.credentialId,
 			userId,
 			passkey.publicKey,
@@ -106,10 +109,12 @@ export async function updatePasskeyCounter(
 	credentialId: string,
 	newCounter: number,
 ): Promise<void> {
-	await storage.withMeta((db) => {
-		const changes = db
-			.prepare("UPDATE passkeys SET counter = ? WHERE credential_id = ?")
-			.run(newCounter, credentialId);
+	await storage.withMeta(async (conn) => {
+		const changes = await conn.run(
+			"UPDATE passkeys SET counter = ? WHERE credential_id = ?",
+			newCounter,
+			credentialId,
+		);
 		if (changes === 0) throw new Error("passkey not found");
 	});
 }

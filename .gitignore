@@ -30,3 +30,6 @@ undefined
 playwright/Import.webm
 playwright/Tour.webm
 docker/volume
+
+# bench: seeded users hold valid session tokens + credential private keys
+backend/bench/*.users.json

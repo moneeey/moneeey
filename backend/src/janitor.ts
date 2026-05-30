@@ -17,28 +17,24 @@ export async function purgeStaleTestUsers(
 	now: Date = new Date(),
 ): Promise<PurgeResult> {
 	const threshold = new Date(now.getTime() - ONE_DAY_MS).toISOString();
-	const users = await storage.withMeta((db) =>
-		db
-			.prepare(
-				"SELECT id, display_name FROM users WHERE display_name LIKE ? AND created_at < ?",
-			)
-			.all<{ id: string; display_name: string }>(
-				`${TEST_DISPLAY_NAME_PREFIX}%`,
-				threshold,
-			),
+	const users = await storage.withMeta((conn) =>
+		conn.query<{ id: string; display_name: string }>(
+			"SELECT id, display_name FROM users WHERE display_name LIKE ? AND created_at < ?",
+			`${TEST_DISPLAY_NAME_PREFIX}%`,
+			threshold,
+		),
 	);
 	let vaultsDeleted = 0;
 	for (const user of users) {
-		const ownedVaultIds = await storage.withMeta((db) =>
-			db
-				.prepare(
-					`SELECT v.id AS id FROM vaults v
+		const ownedVaultIds = await storage.withMeta(async (conn) => {
+			const rows = await conn.query<{ id: string }>(
+				`SELECT v.id AS id FROM vaults v
 					 INNER JOIN user_vaults uv ON uv.vault_id = v.id
 					 WHERE uv.user_id = ? AND uv.role = 'owner'`,
-				)
-				.all<{ id: string }>(user.id)
-				.map((r: { id: string }) => r.id),
-		);
+				user.id,
+			);
+			return rows.map((r) => r.id);
+		});
 		for (const vaultId of ownedVaultIds) {
 			try {
 				await deleteVault(storage, vaultId);
@@ -47,9 +43,9 @@ export async function purgeStaleTestUsers(
 				logger.warn("failed to delete stale vault", { vaultId, err });
 			}
 		}
-		await storage.withMeta((db) => {
-			db.prepare("DELETE FROM users WHERE id = ?").run(user.id);
-		});
+		await storage.withMeta((conn) =>
+			conn.run("DELETE FROM users WHERE id = ?", user.id),
+		);
 	}
 	if (users.length > 0) {
 		logger.info("purged stale test users", {

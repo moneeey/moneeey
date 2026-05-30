@@ -1,0 +1,77 @@
+import { MONEEEY_META_PATH } from "../config.ts";
+import { Logger } from "../logger.ts";
+import type { EngineConfig, StorageEngine } from "./engine.ts";
+import {
+	META_MIGRATIONS,
+	type Migration,
+	VAULT_MIGRATIONS,
+	runMigrations,
+} from "./migrations.ts";
+import type { SqlConn } from "./sql.ts";
+import { SqliteConn } from "./sqlite_conn.ts";
+import { ensureDir, openSqlite } from "./sqlite_util.ts";
+
+const logger = Logger("db/sqlite-single");
+
+const prefixed = (prefix: string, migrations: Migration[]): Migration[] =>
+	migrations.map((m) => ({ name: `${prefix}_${m.name}`, sql: m.sql }));
+
+const SINGLE_MIGRATIONS: Migration[] = [
+	...prefixed("meta", META_MIGRATIONS),
+	...prefixed("vault", VAULT_MIGRATIONS),
+];
+
+export class SqliteSingleEngine implements StorageEngine {
+	private path: string;
+	private conn: SqliteConn | null = null;
+
+	constructor(config: EngineConfig = {}) {
+		this.path = config.singlePath ?? config.metaPath ?? MONEEEY_META_PATH;
+	}
+
+	async withMeta<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T> {
+		const conn = await this.ensureConn();
+		return await conn.exclusive(fn);
+	}
+
+	async withVault<T>(
+		_vaultId: string,
+		fn: (conn: SqlConn) => Promise<T>,
+	): Promise<T> {
+		const conn = await this.ensureConn();
+		return await conn.exclusive(fn);
+	}
+
+	createVaultStore(_vaultId: string): Promise<void> {
+		return Promise.resolve();
+	}
+
+	async deleteVaultStore(vaultId: string): Promise<void> {
+		await this.withMeta((conn) =>
+			conn.transaction(async (tx) => {
+				await tx.run("DELETE FROM documents WHERE vault_id = ?", vaultId);
+				await tx.run("DELETE FROM invites WHERE vault_id = ?", vaultId);
+			}),
+		);
+	}
+
+	closeAll(): void {
+		if (this.conn) {
+			try {
+				this.conn.close();
+			} catch (err) {
+				logger.warn("failed to close single handle on shutdown", { err });
+			}
+			this.conn = null;
+		}
+	}
+
+	private async ensureConn(): Promise<SqliteConn> {
+		if (this.conn) return this.conn;
+		await ensureDir(this.path);
+		const db = openSqlite(this.path);
+		runMigrations(db, SINGLE_MIGRATIONS);
+		this.conn = new SqliteConn(db);
+		return this.conn;
+	}
+}

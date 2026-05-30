@@ -1,7 +1,10 @@
-import type { Storage } from "../db/storage.ts";
+import type { SqlitePerVaultEngine, Storage } from "../db/storage.ts";
 import { fs } from "../deps.ts";
 import { assert } from "../test.ts";
 import { makeTempStorage } from "./test_storage.ts";
+
+const vaultFilePath = (storage: Storage, vaultId: string) =>
+	(storage as SqlitePerVaultEngine).vaultPath(vaultId);
 import { createUser } from "./users.ts";
 import {
 	CannotRemoveOwnerError,
@@ -50,7 +53,7 @@ Deno.test(async function createVaultForUserCreatesRowMembershipAndFile() {
 		assert.assertEquals(typeof v.id, "string");
 		assert.assertEquals(v.id.length, 21);
 		assert.assertEquals(v.name, "Alice's vault");
-		assert.assertEquals(fs.existsSync(t.storage.vaultPath(v.id)), true);
+		assert.assertEquals(fs.existsSync(vaultFilePath(t.storage, v.id)), true);
 		const membership = await getMembership(t.storage, userId, v.id);
 		assert.assertEquals(membership?.role, "owner");
 	} finally {
@@ -147,7 +150,7 @@ Deno.test(async function deleteVaultRemovesRowsAndFile() {
 	try {
 		const owner = await seedUser(t.storage, "Owner");
 		const v = await newVault(t.storage, owner);
-		const path = t.storage.vaultPath(v.id);
+		const path = vaultFilePath(t.storage, v.id);
 		assert.assertEquals(fs.existsSync(path), true);
 		await deleteVault(t.storage, v.id);
 		assert.assertEquals(fs.existsSync(path), false);

@@ -45,18 +45,22 @@ export const VAULT_MIGRATIONS: Migration[] = [
 		name: "0001_init",
 		sql: `
 			CREATE TABLE documents (
-				id            TEXT PRIMARY KEY,
+				vault_id      TEXT NOT NULL,
+				id            TEXT NOT NULL,
 				updated_at    TEXT NOT NULL,
 				deleted_at    TEXT,
-				data          TEXT NOT NULL
+				data          TEXT NOT NULL,
+				PRIMARY KEY (vault_id, id)
 			);
 
 			CREATE TABLE invites (
-				token_hash    TEXT PRIMARY KEY,
+				vault_id      TEXT NOT NULL,
+				token_hash    TEXT NOT NULL,
 				owner_user_id TEXT NOT NULL,
 				expires_at    TEXT NOT NULL,
 				redeemed_by   TEXT,
-				created_at    TEXT NOT NULL
+				created_at    TEXT NOT NULL,
+				PRIMARY KEY (vault_id, token_hash)
 			);
 		`,
 	},

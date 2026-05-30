@@ -37,13 +37,14 @@ async function countActiveInvites(
 	ownerUserId: string,
 	nowIso: string,
 ): Promise<number> {
-	return await storage.withVault(vaultId, (db) => {
-		const row = db
-			.prepare(
-				`SELECT COUNT(*) AS n FROM invites
-				 WHERE owner_user_id = ? AND redeemed_by IS NULL AND expires_at > ?`,
-			)
-			.get<{ n: number }>(ownerUserId, nowIso);
+	return await storage.withVault(vaultId, async (conn) => {
+		const row = await conn.get<{ n: number }>(
+			`SELECT COUNT(*) AS n FROM invites
+				 WHERE vault_id = ? AND owner_user_id = ? AND redeemed_by IS NULL AND expires_at > ?`,
+			vaultId,
+			ownerUserId,
+			nowIso,
+		);
 		return row?.n ?? 0;
 	});
 }
@@ -68,11 +69,16 @@ export async function createInvite(
 	const token = `${vaultId}${TOKEN_SEPARATOR}${secret}`;
 	const tokenHash = await sha384(token);
 	const expiresAt = new Date(now + INVITE_TTL_MS).toISOString();
-	await storage.withVault(vaultId, (db) => {
-		db.prepare(
-			`INSERT INTO invites (token_hash, owner_user_id, expires_at, redeemed_by, created_at)
-			 VALUES (?, ?, ?, NULL, ?)`,
-		).run(tokenHash, ownerUserId, expiresAt, nowIso);
+	await storage.withVault(vaultId, async (conn) => {
+		await conn.run(
+			`INSERT INTO invites (vault_id, token_hash, owner_user_id, expires_at, redeemed_by, created_at)
+			 VALUES (?, ?, ?, ?, NULL, ?)`,
+			vaultId,
+			tokenHash,
+			ownerUserId,
+			expiresAt,
+			nowIso,
+		);
 	});
 	return token;
 }
@@ -84,12 +90,12 @@ export async function findInvite(
 	const parsed = parseToken(token);
 	if (!parsed) return null;
 	const tokenHash = await sha384(token);
-	const invite = await storage.withVault(parsed.vaultId, (db) => {
-		const row = db
-			.prepare(
-				"SELECT token_hash, owner_user_id, expires_at, redeemed_by, created_at FROM invites WHERE token_hash = ?",
-			)
-			.get<InviteRow>(tokenHash);
+	const invite = await storage.withVault(parsed.vaultId, async (conn) => {
+		const row = await conn.get<InviteRow>(
+			"SELECT token_hash, owner_user_id, expires_at, redeemed_by, created_at FROM invites WHERE vault_id = ? AND token_hash = ?",
+			parsed.vaultId,
+			tokenHash,
+		);
 		return row ? toInvite(row, parsed.vaultId) : null;
 	});
 	if (!invite) return null;
@@ -107,39 +113,44 @@ export async function redeemInvite(
 	if (!invite) throw new Error("invite_not_found");
 	const { vaultId } = invite;
 	const tokenHash = invite.tokenHash;
-	const wasAlreadyMember = await storage.withMeta((db) => {
-		const row = db
-			.prepare(
-				"SELECT 1 AS one FROM user_vaults WHERE user_id = ? AND vault_id = ?",
-			)
-			.get<{ one: number }>(redeemerUserId, vaultId);
+	const wasAlreadyMember = await storage.withMeta(async (conn) => {
+		const row = await conn.get<{ one: number }>(
+			"SELECT 1 AS one FROM user_vaults WHERE user_id = ? AND vault_id = ?",
+			redeemerUserId,
+			vaultId,
+		);
 		return !!row;
 	});
 	if (!wasAlreadyMember) {
-		const count = await storage.withMeta((db) => {
-			const row = db
-				.prepare("SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?")
-				.get<{ n: number }>(vaultId);
+		const count = await storage.withMeta(async (conn) => {
+			const row = await conn.get<{ n: number }>(
+				"SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?",
+				vaultId,
+			);
 			return row?.n ?? 0;
 		});
 		if (count >= MAX_USERS_PER_VAULT) {
 			throw new VaultFullError();
 		}
 	}
-	const redeemed = await storage.withVault(vaultId, (db) => {
-		const changes = db
-			.prepare(
-				"UPDATE invites SET redeemed_by = ? WHERE token_hash = ? AND redeemed_by IS NULL",
-			)
-			.run(redeemerUserId, tokenHash);
+	const redeemed = await storage.withVault(vaultId, async (conn) => {
+		const changes = await conn.run(
+			"UPDATE invites SET redeemed_by = ? WHERE vault_id = ? AND token_hash = ? AND redeemed_by IS NULL",
+			redeemerUserId,
+			vaultId,
+			tokenHash,
+		);
 		return changes > 0;
 	});
 	if (!redeemed) throw new Error("invite_already_redeemed");
 	if (!wasAlreadyMember) {
-		await storage.withMeta((db) => {
-			db.prepare(
+		await storage.withMeta(async (conn) => {
+			await conn.run(
 				"INSERT OR IGNORE INTO user_vaults (user_id, vault_id, role, added_at) VALUES (?, ?, 'member', ?)",
-			).run(redeemerUserId, vaultId, new Date().toISOString());
+				redeemerUserId,
+				vaultId,
+				new Date().toISOString(),
+			);
 		});
 	}
 	return vaultId;
