@@ -1,9 +1,8 @@
 import { PostgresEngine } from "./postgres.ts";
 import type { SqlConn } from "./sql.ts";
-import { SqlitePerVaultEngine } from "./sqlite_per_vault.ts";
-import { SqliteSingleEngine } from "./sqlite_single.ts";
+import { SqliteEngine } from "./sqlite.ts";
 
-export type DbEngineKind = "sqlite-per-vault" | "sqlite-single" | "postgres";
+export type DbEngineKind = "sqlite" | "postgres";
 
 export interface StorageEngine {
 	withMeta<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T>;
@@ -17,20 +16,15 @@ export type Storage = StorageEngine;
 
 export interface EngineConfig {
 	kind?: DbEngineKind;
-	metaPath?: string;
-	vaultsDir?: string;
-	singlePath?: string;
-	maxCachedHandles?: number;
+	sqlitePath?: string;
 	pgUrl?: string;
 }
 
 export function createEngine(config: EngineConfig = {}): StorageEngine {
-	const kind = config.kind ?? "sqlite-per-vault";
+	const kind = config.kind ?? "sqlite";
 	switch (kind) {
-		case "sqlite-per-vault":
-			return new SqlitePerVaultEngine(config);
-		case "sqlite-single":
-			return new SqliteSingleEngine(config);
+		case "sqlite":
+			return new SqliteEngine(config);
 		case "postgres":
 			return new PostgresEngine(config);
 		default:

@@ -6,14 +6,14 @@ import type { SqlConn } from "./sql.ts";
 import { SqliteConn } from "./sqlite_conn.ts";
 import { ensureDir, openSqlite } from "./sqlite_util.ts";
 
-const logger = Logger("db/sqlite-single");
+const logger = Logger("db/sqlite");
 
-export class SqliteSingleEngine implements StorageEngine {
+export class SqliteEngine implements StorageEngine {
 	private path: string;
 	private conn: SqliteConn | null = null;
 
 	constructor(config: EngineConfig = {}) {
-		this.path = config.singlePath ?? config.metaPath ?? MONEEEY_META_PATH;
+		this.path = config.sqlitePath ?? MONEEEY_META_PATH;
 	}
 
 	async withMeta<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T> {
@@ -47,7 +47,7 @@ export class SqliteSingleEngine implements StorageEngine {
 			try {
 				this.conn.close();
 			} catch (err) {
-				logger.warn("failed to close single handle on shutdown", { err });
+				logger.warn("failed to close sqlite handle on shutdown", { err });
 			}
 			this.conn = null;
 		}

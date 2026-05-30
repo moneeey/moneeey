@@ -9,11 +9,7 @@ let instance: StorageEngine | null = null;
 
 function resolveKind(): DbEngineKind {
 	const raw = MONEEEY_DB_ENGINE;
-	if (
-		raw === "sqlite-per-vault" ||
-		raw === "sqlite-single" ||
-		raw === "postgres"
-	) {
+	if (raw === "sqlite" || raw === "postgres") {
 		return raw;
 	}
 	throw new Error(`invalid MONEEEY_DB_ENGINE: ${raw}`);

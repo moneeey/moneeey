@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Moneeey is a personal budgeting app with E2E encryption. React+MobX+IndexedDB frontend, Deno+Oak backend backed by SQLite (one `.sqlite` file per vault under `/data/vaults/ab/cd/<id>.sqlite`, plus `meta.sqlite` for users/vaults/invites), Caddy reverse proxy. All orchestrated via podman-compose.
+Moneeey is a personal budgeting app with E2E encryption. React+MobX+IndexedDB frontend, Deno+Oak backend with a pluggable storage engine (default: a single SQLite file at `/data/meta.sqlite` holding all users/vaults/invites/documents, keyed by `vault_id`; optionally PostgreSQL via `MONEEEY_DB_ENGINE=postgres`), Caddy reverse proxy. All orchestrated via podman-compose.
 
 ## Commands
 
@@ -13,7 +13,7 @@ Moneeey is a personal budgeting app with E2E encryption. React+MobX+IndexedDB fr
 podman-compose up                    # Start everything (frontend :4270, backend :4269, caddy :4280)
 podman-compose down && podman-compose up  # Restart (required after yarn add/remove)
 ```
-Access at http://localhost:4280. Vault SQLite files live under `./docker/volume/backend_data/` on the host (bind-mounted to `/data` in the backend container). To inspect: `sqlite3 ./docker/volume/moneeey/meta.sqlite` or `sqlite3 ./docker/volume/moneeey/vaults/ab/cd/<id>.sqlite`. To back up a vault: `sqlite3 vault.sqlite ".backup target.sqlite"` (do not `cp` while the backend is running).
+Access at http://localhost:4280. The SQLite database lives under `./docker/volume/backend_data/` on the host (bind-mounted to `/data` in the backend container). To inspect: `sqlite3 ./docker/volume/backend_data/meta.sqlite`. To back up: `sqlite3 meta.sqlite ".backup target.sqlite"` (do not `cp` while the backend is running). For the Postgres engine, data lives in the `postgres` compose service.
 
 ### Frontend (working directory: frontend/)
 ```bash
@@ -55,7 +55,7 @@ yarn ci                              # Biome CI (read-only check)
 
 ### Stack
 - **Frontend**: React 18, MobX 6, raw IndexedDB (no PouchDB), Vite, TailwindCSS, TypeScript — PWA with service worker
-- **Backend**: Deno, Oak framework, `@db/sqlite` (FFI-backed libsqlite), JWT auth (jose), passkey/WebAuthn auth (@simplewebauthn). One SQLite file per vault under `/btech/moneeey/vaults/`, plus `meta.sqlite` for cross-vault tables.
+- **Backend**: Deno, Oak framework, JWT auth (jose), passkey/WebAuthn auth (@simplewebauthn). Pluggable storage via `StorageEngine` (`src/db/engine.ts`): default `sqlite` (`@db/sqlite` FFI, single file, all tables keyed by `vault_id`) or `postgres` (`deno-postgres`, pooled). Selected by `MONEEEY_DB_ENGINE`.
 - **Proxy**: Caddy routes `/api/*` → backend, `/` → frontend. No direct database route — every read/write flows through the backend.
 
 ### Frontend Data Flow

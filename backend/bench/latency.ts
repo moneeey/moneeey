@@ -63,7 +63,7 @@ if (import.meta.main) {
 	const flags = parse(Deno.args, {
 		string: ["file", "targets"],
 		default: {
-			file: "bench/compare-sqlite-per-vault.users.json",
+			file: "bench/compare-sqlite.users.json",
 			targets: "http://localhost:4280,http://localhost:4269",
 			count: 2000,
 			warmup: 200,

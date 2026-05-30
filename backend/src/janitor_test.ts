@@ -1,16 +1,9 @@
 import { TEST_DISPLAY_NAME_PREFIX } from "./data/ids.ts";
 import { makeTempStorage } from "./data/test_storage.ts";
 import { createUser } from "./data/users.ts";
-import { addMember, createVaultForUser } from "./data/vaults.ts";
-import type { SqlitePerVaultEngine } from "./db/storage.ts";
-import { fs } from "./deps.ts";
+import { addMember, createVaultForUser, userHasAccess } from "./data/vaults.ts";
 import { purgeStaleTestUsers } from "./janitor.ts";
 import { assert } from "./test.ts";
-
-const vaultFilePath = (
-	storage: Awaited<ReturnType<typeof makeTempStorage>>["storage"],
-	vaultId: string,
-) => (storage as SqlitePerVaultEngine).vaultPath(vaultId);
 
 const twoDaysAgo = () => new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
 
@@ -41,13 +34,12 @@ Deno.test(async function purgesTestUserPlusOwnedVault() {
 		const u = await createUser(t.storage, testName("old"));
 		const v = await seedVaultFor(t.storage, u.id);
 		await backdateUser(t.storage, u.id, twoDaysAgo());
-		const path = vaultFilePath(t.storage, v.id);
-		assert.assertEquals(fs.existsSync(path), true);
+		assert.assertEquals(await userHasAccess(t.storage, u.id, v.id), true);
 
 		const result = await purgeStaleTestUsers(t.storage);
 		assert.assertEquals(result.usersDeleted, 1);
 		assert.assertEquals(result.vaultsDeleted, 1);
-		assert.assertEquals(fs.existsSync(path), false);
+		assert.assertEquals(await userHasAccess(t.storage, u.id, v.id), false);
 
 		const remaining = await t.storage.withMeta(async (conn) => {
 			const row = await conn.get<{ n: number }>(
@@ -104,7 +96,7 @@ Deno.test(async function membershipsCascadeButSharedVaultSurvives() {
 		assert.assertEquals(result.vaultsDeleted, 0);
 
 		assert.assertEquals(
-			fs.existsSync(vaultFilePath(t.storage, vault.id)),
+			await userHasAccess(t.storage, owner.id, vault.id),
 			true,
 		);
 		const membersLeft = await t.storage.withMeta(async (conn) => {

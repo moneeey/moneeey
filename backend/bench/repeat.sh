@@ -8,7 +8,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 REPO=".."
 
-ENGINES="${ENGINES:-sqlite-per-vault sqlite-single postgres}"
+ENGINES="${ENGINES:-sqlite postgres}"
 COUNT="${COUNT:-400}"
 REPS="${REPS:-3}"
 TARGET="${TARGET:-http://localhost:4280}"
@@ -61,5 +61,5 @@ for engine in $ENGINES; do
 	done | tee "$RES/$engine.txt"
 done
 
-set_engine sqlite-per-vault
+set_engine sqlite
 echo "=== done; per-rep results in $RES ==="

@@ -10,7 +10,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."          # backend/
 REPO=".."                        # repo root (has docker-compose.yaml)
 
-ENGINES="${ENGINES:-sqlite-per-vault sqlite-single postgres}"
+ENGINES="${ENGINES:-sqlite postgres}"
 COUNT="${COUNT:-500}"
 TARGET="${TARGET:-http://localhost:4280}"
 CONCURRENCY="${CONCURRENCY:-8}"
@@ -86,5 +86,5 @@ for engine in $ENGINES; do
 		2>&1 | grep -E "db_op|push_duration|manifest|fetch" | tee "$RESULTS/server-$engine.txt"
 done
 
-set_engine sqlite-per-vault
+set_engine sqlite
 echo "=================== done; results in $RESULTS ==================="

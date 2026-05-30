@@ -10,15 +10,11 @@ export type TempStorage = {
 	cleanup: () => void;
 };
 
-export function makeTempStorage(
-	kind: DbEngineKind = "sqlite-per-vault",
-): TempStorage {
+export function makeTempStorage(kind: DbEngineKind = "sqlite"): TempStorage {
 	const root = Deno.makeTempDirSync({ prefix: "moneeey-data-test-" });
 	const storage = createEngine({
 		kind,
-		metaPath: `${root}/meta.sqlite`,
-		vaultsDir: `${root}/vaults`,
-		singlePath: `${root}/single.sqlite`,
+		sqlitePath: `${root}/moneeey.sqlite`,
 	});
 	return {
 		storage,

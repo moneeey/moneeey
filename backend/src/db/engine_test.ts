@@ -10,7 +10,7 @@ import {
 import { assert } from "../test.ts";
 import type { DbEngineKind } from "./engine.ts";
 
-const KINDS: DbEngineKind[] = ["sqlite-per-vault", "sqlite-single"];
+const KINDS: DbEngineKind[] = ["sqlite"];
 
 for (const kind of KINDS) {
 	Deno.test(`[${kind}] document round-trip`, async () => {
