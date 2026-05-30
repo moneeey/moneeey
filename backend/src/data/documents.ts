@@ -51,7 +51,7 @@ export async function getManifest(
 ): Promise<ManifestEntry[]> {
 	const start = performance.now();
 	try {
-		return await storage.withConn((conn) =>
+		return await storage.withRead((conn) =>
 			conn.query<ManifestEntry>(
 				"SELECT id, updated_at FROM documents WHERE vault_id = ?",
 				vaultId,
@@ -70,7 +70,7 @@ export async function getDocs(
 	if (ids.length === 0) return [];
 	const start = performance.now();
 	try {
-		return await storage.withConn(async (conn) => {
+		return await storage.withRead(async (conn) => {
 			const placeholders = ids.map(() => "?").join(",");
 			const rows = await conn.query<DocRow>(
 				`SELECT id, updated_at, deleted_at, data FROM documents WHERE vault_id = ? AND id IN (${placeholders})`,

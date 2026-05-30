@@ -153,6 +153,10 @@ export class PostgresEngine implements StorageEngine {
 		}
 	}
 
+	withRead<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T> {
+		return this.withConn(fn);
+	}
+
 	closeAll(): void {
 		if (this.pool) {
 			this.pool.end().catch((err) => logger.warn("pool end failed", { err }));

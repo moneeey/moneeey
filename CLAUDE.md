@@ -65,7 +65,7 @@ yarn ci                              # Biome CI (read-only check)
 - **SyncClient** (`shared/sync/SyncClient.ts`) owns the `/api/vault` WebSocket — sends `hello` + JWT, runs pull-on-ready, debounced batched push, processes inbound `changes` frames, reconnects with exponential backoff
 - **Persistence** (`shared/Persistence.ts`) wires MappedStore observers to encryption → outbox → SyncClient. Each MappedStore change triggers `commit(doc)` → encrypted via `encryption/codec.ts` → written to LocalStore + enqueued. Remote `changes` decrypt and feed watchers.
 - **Encryption**: AES-GCM body encryption, data key wrapped by PBKDF2-derived KEK from the user's passphrase. The wrapped key lives in a reserved doc with `_id="ENCRYPTION-META"` that syncs like any other doc so a second device can join with the same passphrase.
-- **Entity types**: ACCOUNT, TRANSACTION, BUDGET, CURRENCY, CONFIG — all extend IBaseEntity with `_id`/`updated` fields. The server-assigned monotonic `seq` per vault is the pull cursor + LWW tiebreak; there is no per-doc `_rev` chain anymore.
+- **Entity types**: ACCOUNT, TRANSACTION, BUDGET, CURRENCY, CONFIG — all extend IBaseEntity with `_id`/`updated` fields. Sync reconciles via a per-vault manifest of `(id, updated_at)`; conflicts are last-write-wins by `updated_at`. There is no per-doc `_rev` chain.
 - **Routing**: HashRouter with custom route registry in `frontend/src/routes/`
 
 ### Backend Structure

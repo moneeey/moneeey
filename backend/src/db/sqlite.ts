@@ -10,34 +10,48 @@ const logger = Logger("db/sqlite");
 
 export class SqliteEngine implements StorageEngine {
 	private path: string;
-	private conn: SqliteConn | null = null;
+	private writeConn: SqliteConn | null = null;
+	private readConn: SqliteConn | null = null;
 
 	constructor(config: EngineConfig = {}) {
 		this.path = config.sqlitePath ?? MONEEEY_SQLITE_PATH;
 	}
 
 	async withConn<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T> {
-		const conn = await this.ensureConn();
+		const conn = await this.ensureWrite();
 		return await conn.exclusive(fn);
 	}
 
+	async withRead<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T> {
+		return await fn(await this.ensureRead());
+	}
+
 	closeAll(): void {
-		if (this.conn) {
+		for (const conn of [this.writeConn, this.readConn]) {
+			if (!conn) continue;
 			try {
-				this.conn.close();
+				conn.close();
 			} catch (err) {
 				logger.warn("failed to close sqlite handle on shutdown", { err });
 			}
-			this.conn = null;
 		}
+		this.writeConn = null;
+		this.readConn = null;
 	}
 
-	private async ensureConn(): Promise<SqliteConn> {
-		if (this.conn) return this.conn;
+	private async ensureWrite(): Promise<SqliteConn> {
+		if (this.writeConn) return this.writeConn;
 		await ensureDir(this.path);
 		const db = openSqlite(this.path);
 		runMigrations(db, MIGRATIONS);
-		this.conn = new SqliteConn(db);
-		return this.conn;
+		this.writeConn = new SqliteConn(db);
+		return this.writeConn;
+	}
+
+	private async ensureRead(): Promise<SqliteConn> {
+		if (this.readConn) return this.readConn;
+		await this.ensureWrite();
+		this.readConn = new SqliteConn(openSqlite(this.path));
+		return this.readConn;
 	}
 }

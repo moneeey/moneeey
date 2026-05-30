@@ -104,7 +104,7 @@ export async function getVaultsByUser(
 	storage: Storage,
 	userId: string,
 ): Promise<VaultRecord[]> {
-	return await storage.withConn(async (conn) => {
+	return await storage.withRead(async (conn) => {
 		const rows = await conn.query<VaultRow>(
 			`SELECT v.id AS id, v.name AS name, v.created_at AS created_at
 				 FROM vaults v
@@ -121,7 +121,7 @@ export async function countMembers(
 	storage: Storage,
 	vaultId: string,
 ): Promise<number> {
-	return await storage.withConn(async (conn) => {
+	return await storage.withRead(async (conn) => {
 		const row = await conn.get<{ n: number }>(
 			"SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?",
 			vaultId,
@@ -170,7 +170,7 @@ export async function getMembership(
 	userId: string,
 	vaultId: string,
 ): Promise<Membership | null> {
-	return await storage.withConn(async (conn) => {
+	return await storage.withRead(async (conn) => {
 		const row = await conn.get<MembershipRow>(
 			"SELECT user_id, vault_id, role, added_at FROM user_vaults WHERE user_id = ? AND vault_id = ?",
 			userId,
@@ -194,7 +194,7 @@ export async function listVaultMembers(
 	storage: Storage,
 	vaultId: string,
 ): Promise<VaultMember[]> {
-	return await storage.withConn(async (conn) => {
+	return await storage.withRead(async (conn) => {
 		const rows = await conn.query<MembershipRow & { display_name: string }>(
 			`SELECT uv.user_id AS user_id, uv.vault_id AS vault_id, uv.role AS role,
 				        uv.added_at AS added_at, u.display_name AS display_name

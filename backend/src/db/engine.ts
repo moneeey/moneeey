@@ -6,6 +6,7 @@ export type DbEngineKind = "sqlite" | "postgres";
 
 export interface StorageEngine {
 	withConn<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T>;
+	withRead<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T>;
 	closeAll(): void;
 }
 
