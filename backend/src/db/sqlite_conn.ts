@@ -4,8 +4,7 @@ import { Mutex, type SqlConn } from "./sql.ts";
 type Bind = (string | number | bigint | boolean | null | Uint8Array)[];
 
 export class SqliteConn implements SqlConn {
-	readonly mutex = new Mutex();
-	inUse = 0;
+	private readonly mutex = new Mutex();
 
 	constructor(readonly db: Database) {}
 
@@ -47,13 +46,8 @@ export class SqliteConn implements SqlConn {
 		}
 	}
 
-	async exclusive<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T> {
-		this.inUse += 1;
-		try {
-			return await this.mutex.run(() => fn(this));
-		} finally {
-			this.inUse -= 1;
-		}
+	exclusive<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T> {
+		return this.mutex.run(() => fn(this));
 	}
 
 	close(): void {
