@@ -1,17 +1,14 @@
-import { Storage } from "../db/storage.ts";
+import { type StorageEngine, createEngine } from "../db/engine.ts";
 
 export type TempStorage = {
-	storage: Storage;
+	storage: StorageEngine;
 	root: string;
 	cleanup: () => void;
 };
 
 export function makeTempStorage(): TempStorage {
 	const root = Deno.makeTempDirSync({ prefix: "moneeey-data-test-" });
-	const storage = new Storage({
-		metaPath: `${root}/meta.sqlite`,
-		vaultsDir: `${root}/vaults`,
-	});
+	const storage = createEngine({ sqlitePath: `${root}/moneeey.sqlite` });
 	return {
 		storage,
 		root,

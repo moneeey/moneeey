@@ -1,4 +1,4 @@
-import type { Storage } from "../db/storage.ts";
+import type { Storage } from "../db/engine.ts";
 import { randomTokenHex, sha384 } from "./ids.ts";
 import type { InviteRecord } from "./types.ts";
 import { MAX_USERS_PER_VAULT, VaultFullError } from "./vaults.ts";
@@ -37,13 +37,14 @@ async function countActiveInvites(
 	ownerUserId: string,
 	nowIso: string,
 ): Promise<number> {
-	return await storage.withVault(vaultId, (db) => {
-		const row = db
-			.prepare(
-				`SELECT COUNT(*) AS n FROM invites
-				 WHERE owner_user_id = ? AND redeemed_by IS NULL AND expires_at > ?`,
-			)
-			.get<{ n: number }>(ownerUserId, nowIso);
+	return await storage.withRead(async (conn) => {
+		const row = await conn.get<{ n: number }>(
+			`SELECT COUNT(*) AS n FROM invites
+				 WHERE vault_id = ? AND owner_user_id = ? AND redeemed_by IS NULL AND expires_at > ?`,
+			vaultId,
+			ownerUserId,
+			nowIso,
+		);
 		return row?.n ?? 0;
 	});
 }
@@ -68,11 +69,16 @@ export async function createInvite(
 	const token = `${vaultId}${TOKEN_SEPARATOR}${secret}`;
 	const tokenHash = await sha384(token);
 	const expiresAt = new Date(now + INVITE_TTL_MS).toISOString();
-	await storage.withVault(vaultId, (db) => {
-		db.prepare(
-			`INSERT INTO invites (token_hash, owner_user_id, expires_at, redeemed_by, created_at)
-			 VALUES (?, ?, ?, NULL, ?)`,
-		).run(tokenHash, ownerUserId, expiresAt, nowIso);
+	await storage.withConn(async (conn) => {
+		await conn.run(
+			`INSERT INTO invites (vault_id, token_hash, owner_user_id, expires_at, redeemed_by, created_at)
+			 VALUES (?, ?, ?, ?, NULL, ?)`,
+			vaultId,
+			tokenHash,
+			ownerUserId,
+			expiresAt,
+			nowIso,
+		);
 	});
 	return token;
 }
@@ -84,12 +90,12 @@ export async function findInvite(
 	const parsed = parseToken(token);
 	if (!parsed) return null;
 	const tokenHash = await sha384(token);
-	const invite = await storage.withVault(parsed.vaultId, (db) => {
-		const row = db
-			.prepare(
-				"SELECT token_hash, owner_user_id, expires_at, redeemed_by, created_at FROM invites WHERE token_hash = ?",
-			)
-			.get<InviteRow>(tokenHash);
+	const invite = await storage.withRead(async (conn) => {
+		const row = await conn.get<InviteRow>(
+			"SELECT token_hash, owner_user_id, expires_at, redeemed_by, created_at FROM invites WHERE vault_id = ? AND token_hash = ?",
+			parsed.vaultId,
+			tokenHash,
+		);
 		return row ? toInvite(row, parsed.vaultId) : null;
 	});
 	if (!invite) return null;
@@ -105,42 +111,39 @@ export async function redeemInvite(
 ): Promise<string> {
 	const invite = await findInvite(storage, token);
 	if (!invite) throw new Error("invite_not_found");
-	const { vaultId } = invite;
-	const tokenHash = invite.tokenHash;
-	const wasAlreadyMember = await storage.withMeta((db) => {
-		const row = db
-			.prepare(
+	const { vaultId, tokenHash } = invite;
+	return await storage.withConn((conn) =>
+		conn.transaction(async (tx) => {
+			const wasAlreadyMember = !!(await tx.get<{ one: number }>(
 				"SELECT 1 AS one FROM user_vaults WHERE user_id = ? AND vault_id = ?",
-			)
-			.get<{ one: number }>(redeemerUserId, vaultId);
-		return !!row;
-	});
-	if (!wasAlreadyMember) {
-		const count = await storage.withMeta((db) => {
-			const row = db
-				.prepare("SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?")
-				.get<{ n: number }>(vaultId);
-			return row?.n ?? 0;
-		});
-		if (count >= MAX_USERS_PER_VAULT) {
-			throw new VaultFullError();
-		}
-	}
-	const redeemed = await storage.withVault(vaultId, (db) => {
-		const changes = db
-			.prepare(
-				"UPDATE invites SET redeemed_by = ? WHERE token_hash = ? AND redeemed_by IS NULL",
-			)
-			.run(redeemerUserId, tokenHash);
-		return changes > 0;
-	});
-	if (!redeemed) throw new Error("invite_already_redeemed");
-	if (!wasAlreadyMember) {
-		await storage.withMeta((db) => {
-			db.prepare(
-				"INSERT OR IGNORE INTO user_vaults (user_id, vault_id, role, added_at) VALUES (?, ?, 'member', ?)",
-			).run(redeemerUserId, vaultId, new Date().toISOString());
-		});
-	}
-	return vaultId;
+				redeemerUserId,
+				vaultId,
+			));
+			if (!wasAlreadyMember) {
+				const count = await tx.get<{ n: number }>(
+					"SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?",
+					vaultId,
+				);
+				if ((count?.n ?? 0) >= MAX_USERS_PER_VAULT) {
+					throw new VaultFullError();
+				}
+			}
+			const changes = await tx.run(
+				"UPDATE invites SET redeemed_by = ? WHERE vault_id = ? AND token_hash = ? AND redeemed_by IS NULL",
+				redeemerUserId,
+				vaultId,
+				tokenHash,
+			);
+			if (changes === 0) throw new Error("invite_already_redeemed");
+			if (!wasAlreadyMember) {
+				await tx.run(
+					"INSERT INTO user_vaults (user_id, vault_id, role, added_at) VALUES (?, ?, 'member', ?) ON CONFLICT DO NOTHING",
+					redeemerUserId,
+					vaultId,
+					new Date().toISOString(),
+				);
+			}
+			return vaultId;
+		}),
+	);
 }

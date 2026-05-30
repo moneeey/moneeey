@@ -7,7 +7,7 @@ import { Logger } from "./logger.ts";
 import { setupVaultSync } from "./sync/vault.ts";
 
 async function ensureMetaInitialized() {
-	await getStorage().withMeta(() => {});
+	await getStorage().withConn(() => Promise.resolve());
 }
 
 async function runDevJanitor() {

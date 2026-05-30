@@ -1,14 +1,10 @@
 import { Database } from "../deps.ts";
 import { assert } from "../test.ts";
-import {
-	META_MIGRATIONS,
-	VAULT_MIGRATIONS,
-	runMigrations,
-} from "./migrations.ts";
+import { MIGRATIONS, runMigrations } from "./migrations.ts";
 
-Deno.test(function metaMigrationsCreateExpectedTables() {
+Deno.test(function migrationsCreateExpectedTables() {
 	const db = new Database(":memory:");
-	const { applied } = runMigrations(db, META_MIGRATIONS);
+	const { applied } = runMigrations(db, MIGRATIONS);
 	assert.assertEquals(applied, ["0001_init"]);
 
 	const tables = db
@@ -16,6 +12,8 @@ Deno.test(function metaMigrationsCreateExpectedTables() {
 		.all<{ name: string }>()
 		.map((r: { name: string }) => r.name);
 	assert.assertEquals(tables, [
+		"documents",
+		"invites",
 		"passkeys",
 		"schema_migrations",
 		"user_vaults",
@@ -25,41 +23,33 @@ Deno.test(function metaMigrationsCreateExpectedTables() {
 	db.close();
 });
 
-Deno.test(function vaultMigrationsCreateDocumentsTable() {
+Deno.test(function migrationsCreateExpectedIndexes() {
 	const db = new Database(":memory:");
-	const { applied } = runMigrations(db, VAULT_MIGRATIONS);
-	assert.assertEquals(applied, ["0001_init"]);
-
-	const tables = db
-		.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-		.all<{ name: string }>()
-		.map((r: { name: string }) => r.name);
-	assert.assertEquals(tables, ["documents", "invites", "schema_migrations"]);
-
+	runMigrations(db, MIGRATIONS);
 	const indexes = db
 		.prepare(
 			"SELECT name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%' ORDER BY name",
 		)
 		.all<{ name: string }>()
 		.map((r: { name: string }) => r.name);
-	assert.assertEquals(indexes, []);
+	assert.assertEquals(indexes, ["passkeys_user_idx", "user_vaults_vault_idx"]);
 	db.close();
 });
 
 Deno.test(function runMigrationsIsIdempotent() {
 	const db = new Database(":memory:");
-	runMigrations(db, META_MIGRATIONS);
-	const second = runMigrations(db, META_MIGRATIONS);
+	runMigrations(db, MIGRATIONS);
+	const second = runMigrations(db, MIGRATIONS);
 	assert.assertEquals(second.applied, []);
 	db.close();
 });
 
 Deno.test(function runMigrationsAppliesOnlyNewOnes() {
 	const db = new Database(":memory:");
-	const first: typeof META_MIGRATIONS = [
+	const first: typeof MIGRATIONS = [
 		{ name: "0001_init", sql: "CREATE TABLE a (x INTEGER);" },
 	];
-	const second: typeof META_MIGRATIONS = [
+	const second: typeof MIGRATIONS = [
 		...first,
 		{ name: "0002_add_b", sql: "CREATE TABLE b (y INTEGER);" },
 	];

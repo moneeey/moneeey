@@ -1,8 +1,7 @@
 import { TEST_DISPLAY_NAME_PREFIX } from "./data/ids.ts";
 import { makeTempStorage } from "./data/test_storage.ts";
 import { createUser } from "./data/users.ts";
-import { addMember, createVaultForUser } from "./data/vaults.ts";
-import { fs } from "./deps.ts";
+import { addMember, createVaultForUser, userHasAccess } from "./data/vaults.ts";
 import { purgeStaleTestUsers } from "./janitor.ts";
 import { assert } from "./test.ts";
 
@@ -13,12 +12,13 @@ const backdateUser = async (
 	userId: string,
 	when: Date,
 ) => {
-	await storage.withMeta((db) => {
-		db.prepare("UPDATE users SET created_at = ? WHERE id = ?").run(
+	await storage.withConn((conn) =>
+		conn.run(
+			"UPDATE users SET created_at = ? WHERE id = ?",
 			when.toISOString(),
 			userId,
-		);
-	});
+		),
+	);
 };
 
 const testName = (suffix: string) => `${TEST_DISPLAY_NAME_PREFIX}${suffix}`;
@@ -34,20 +34,20 @@ Deno.test(async function purgesTestUserPlusOwnedVault() {
 		const u = await createUser(t.storage, testName("old"));
 		const v = await seedVaultFor(t.storage, u.id);
 		await backdateUser(t.storage, u.id, twoDaysAgo());
-		const path = t.storage.vaultPath(v.id);
-		assert.assertEquals(fs.existsSync(path), true);
+		assert.assertEquals(await userHasAccess(t.storage, u.id, v.id), true);
 
 		const result = await purgeStaleTestUsers(t.storage);
 		assert.assertEquals(result.usersDeleted, 1);
 		assert.assertEquals(result.vaultsDeleted, 1);
-		assert.assertEquals(fs.existsSync(path), false);
+		assert.assertEquals(await userHasAccess(t.storage, u.id, v.id), false);
 
-		const remaining = await t.storage.withMeta(
-			(db) =>
-				db
-					.prepare("SELECT COUNT(*) AS n FROM users WHERE id = ?")
-					.get<{ n: number }>(u.id)?.n,
-		);
+		const remaining = await t.storage.withConn(async (conn) => {
+			const row = await conn.get<{ n: number }>(
+				"SELECT COUNT(*) AS n FROM users WHERE id = ?",
+				u.id,
+			);
+			return row?.n;
+		});
 		assert.assertEquals(remaining, 0);
 	} finally {
 		t.cleanup();
@@ -95,13 +95,17 @@ Deno.test(async function membershipsCascadeButSharedVaultSurvives() {
 		assert.assertEquals(result.usersDeleted, 1);
 		assert.assertEquals(result.vaultsDeleted, 0);
 
-		assert.assertEquals(fs.existsSync(t.storage.vaultPath(vault.id)), true);
-		const membersLeft = await t.storage.withMeta(
-			(db) =>
-				db
-					.prepare("SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?")
-					.get<{ n: number }>(vault.id)?.n,
+		assert.assertEquals(
+			await userHasAccess(t.storage, owner.id, vault.id),
+			true,
 		);
+		const membersLeft = await t.storage.withConn(async (conn) => {
+			const row = await conn.get<{ n: number }>(
+				"SELECT COUNT(*) AS n FROM user_vaults WHERE vault_id = ?",
+				vault.id,
+			);
+			return row?.n;
+		});
 		assert.assertEquals(membersLeft, 1);
 	} finally {
 		t.cleanup();

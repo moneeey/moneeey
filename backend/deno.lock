@@ -11,7 +11,6 @@
     "jsr:@std/path@0.217": "0.217.0",
     "jsr:@std/path@1": "1.1.4",
     "jsr:@std/path@^1.1.4": "1.1.4",
-    "npm:@simplewebauthn/server@*": "13.3.0",
     "npm:@simplewebauthn/server@13": "13.3.0"
   },
   "jsr": {
