@@ -1,4 +1,4 @@
-import { jose } from "./src/deps.ts";
+import * as jose from "https://deno.land/x/jose@v4.14.4/index.ts";
 
 export const ALG = "RS512";
 
