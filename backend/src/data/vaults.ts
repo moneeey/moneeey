@@ -78,18 +78,6 @@ export async function createVaultForUser(
 			logger.warn("vault id collision, retrying", { id, attempt });
 			continue;
 		}
-		try {
-			await storage.createVaultStore(id);
-		} catch (err) {
-			logger.error("vault file creation failed, rolling back meta", {
-				id,
-				err,
-			});
-			await storage.withMeta(async (conn) => {
-				await conn.run("DELETE FROM vaults WHERE id = ?", id);
-			});
-			throw err;
-		}
 		return { id, name: safeName, createdAt };
 	}
 	throw new Error("failed to allocate vault id after retries");

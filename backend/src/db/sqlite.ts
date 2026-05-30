@@ -29,10 +29,6 @@ export class SqliteEngine implements StorageEngine {
 		return await conn.exclusive(fn);
 	}
 
-	createVaultStore(_vaultId: string): Promise<void> {
-		return Promise.resolve();
-	}
-
 	async deleteVaultStore(vaultId: string): Promise<void> {
 		await this.withMeta((conn) =>
 			conn.transaction(async (tx) => {
