@@ -1,5 +1,5 @@
 import { MONEEEY_DB_ENGINE } from "../config.ts";
-import type { Storage } from "../db/storage.ts";
+import type { Storage } from "../db/engine.ts";
 import { metrics } from "../metrics.ts";
 
 const observeDb = (op: string, start: number): void =>

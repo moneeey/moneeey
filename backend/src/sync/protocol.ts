@@ -7,7 +7,7 @@ import {
 	getManifest,
 } from "../data/documents.ts";
 import { userHasAccess } from "../data/vaults.ts";
-import type { Storage } from "../db/storage.ts";
+import type { Storage } from "../db/engine.ts";
 import { authJwt, sessionJwt } from "../jwt.ts";
 import { Logger } from "../logger.ts";
 import { metrics } from "../metrics.ts";

@@ -153,15 +153,6 @@ export class PostgresEngine implements StorageEngine {
 		}
 	}
 
-	async deleteVaultStore(vaultId: string): Promise<void> {
-		await this.withConn((conn) =>
-			conn.transaction(async (tx) => {
-				await tx.run("DELETE FROM documents WHERE vault_id = ?", vaultId);
-				await tx.run("DELETE FROM invites WHERE vault_id = ?", vaultId);
-			}),
-		);
-	}
-
 	closeAll(): void {
 		if (this.pool) {
 			this.pool.end().catch((err) => logger.warn("pool end failed", { err }));

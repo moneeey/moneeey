@@ -6,7 +6,6 @@ export type DbEngineKind = "sqlite" | "postgres";
 
 export interface StorageEngine {
 	withConn<T>(fn: (conn: SqlConn) => Promise<T>): Promise<T>;
-	deleteVaultStore(vaultId: string): Promise<void>;
 	closeAll(): void;
 }
 

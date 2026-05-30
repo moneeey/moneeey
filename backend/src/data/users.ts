@@ -1,4 +1,4 @@
-import type { Storage } from "../db/storage.ts";
+import type { Storage } from "../db/engine.ts";
 import { generateUserId } from "./ids.ts";
 import type { StoredPasskey, UserRecord } from "./types.ts";
 

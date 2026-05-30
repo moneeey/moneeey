@@ -1,6 +1,6 @@
 import { TEST_DISPLAY_NAME_PREFIX } from "./data/ids.ts";
 import { deleteVault } from "./data/vaults.ts";
-import type { Storage } from "./db/storage.ts";
+import type { Storage } from "./db/engine.ts";
 import { Logger } from "./logger.ts";
 
 const logger = Logger("janitor");

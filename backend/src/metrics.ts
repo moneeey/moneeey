@@ -184,16 +184,3 @@ const registry = [
 export function renderMetrics(): string {
 	return `${registry.map((m) => m.render()).join("\n\n")}\n`;
 }
-
-export async function timed<T>(
-	histogram: Histogram,
-	labels: Labels,
-	fn: () => Promise<T>,
-): Promise<T> {
-	const start = performance.now();
-	try {
-		return await fn();
-	} finally {
-		histogram.observe((performance.now() - start) / 1000, labels);
-	}
-}

@@ -1,4 +1,4 @@
-import type { Storage } from "../db/storage.ts";
+import type { Storage } from "../db/engine.ts";
 import { assert } from "../test.ts";
 import {
 	INVITE_QUOTA_PER_OWNER,

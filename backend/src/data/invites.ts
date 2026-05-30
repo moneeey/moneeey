@@ -1,4 +1,4 @@
-import type { Storage } from "../db/storage.ts";
+import type { Storage } from "../db/engine.ts";
 import { randomTokenHex, sha384 } from "./ids.ts";
 import type { InviteRecord } from "./types.ts";
 import { MAX_USERS_PER_VAULT, VaultFullError } from "./vaults.ts";

@@ -21,15 +21,6 @@ export class SqliteEngine implements StorageEngine {
 		return await conn.exclusive(fn);
 	}
 
-	async deleteVaultStore(vaultId: string): Promise<void> {
-		await this.withConn((conn) =>
-			conn.transaction(async (tx) => {
-				await tx.run("DELETE FROM documents WHERE vault_id = ?", vaultId);
-				await tx.run("DELETE FROM invites WHERE vault_id = ?", vaultId);
-			}),
-		);
-	}
-
 	closeAll(): void {
 		if (this.conn) {
 			try {

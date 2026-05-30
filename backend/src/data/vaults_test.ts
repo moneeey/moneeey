@@ -1,4 +1,4 @@
-import type { Storage } from "../db/storage.ts";
+import type { Storage } from "../db/engine.ts";
 import { assert } from "../test.ts";
 import { makeTempStorage } from "./test_storage.ts";
 import { createUser } from "./users.ts";

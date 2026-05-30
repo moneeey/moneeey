@@ -1,4 +1,4 @@
-import type { Storage } from "../db/storage.ts";
+import type { Storage } from "../db/engine.ts";
 import { Logger } from "../logger.ts";
 import { generateVaultId } from "./ids.ts";
 import type { Membership, VaultRecord } from "./types.ts";
@@ -298,8 +298,9 @@ export async function deleteVault(
 ): Promise<void> {
 	await storage.withConn((conn) =>
 		conn.transaction(async (tx) => {
+			await tx.run("DELETE FROM documents WHERE vault_id = ?", vaultId);
+			await tx.run("DELETE FROM invites WHERE vault_id = ?", vaultId);
 			await tx.run("DELETE FROM vaults WHERE id = ?", vaultId);
 		}),
 	);
-	await storage.deleteVaultStore(vaultId);
 }
