@@ -19,7 +19,7 @@
 		"@nivo/sankey": "^0.99.0",
 		"@nivo/sunburst": "^0.99.0",
 		"@simplewebauthn/browser": "^13.3.0",
-		"autoprefixer": "10.4.27",
+		"autoprefixer": "10.5.0",
 		"classnames": "2.5.1",
 		"date-fns": "3.6.0",
 		"lodash": "4.17.21",
