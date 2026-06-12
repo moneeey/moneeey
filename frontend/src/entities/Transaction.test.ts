@@ -5,8 +5,10 @@ import TagsStore from "../shared/Tags";
 import { AccountStore } from "./Account";
 import TransactionStore, {
 	type ITransaction,
+	isRestorableTransaction,
 	isTransaction,
 	mockTransaction,
+	transactionDeleteDeadline,
 } from "./Transaction";
 
 const mockMoneeeyStore = () => {
@@ -137,6 +139,44 @@ describe("TransactionStore", () => {
 		it("tracks oldest_dt", () => {
 			makeTx(store, { id: "t1", date: "1990-01-01" });
 			expect(store.oldest_dt.getFullYear()).toBe(1990);
+		});
+	});
+
+	describe("trash", () => {
+		it("sets delete deadline to local end-of-day plus three days", () => {
+			const deadline = new Date(
+				transactionDeleteDeadline(new Date(2026, 0, 1, 10, 30, 0, 0)),
+			);
+			expect(deadline.getFullYear()).toBe(2026);
+			expect(deadline.getMonth()).toBe(0);
+			expect(deadline.getDate()).toBe(4);
+			expect(deadline.getHours()).toBe(23);
+			expect(deadline.getMinutes()).toBe(59);
+			expect(deadline.getSeconds()).toBe(59);
+		});
+
+		it("hides deleted transactions from active views and exposes trash", () => {
+			const tx = makeTx(store, { id: "t1", from_value: 50, to_value: 50 });
+			store.deleteTransaction(tx);
+
+			expect(store.byUuid("t1")?.deleted_at).toBeTruthy();
+			expect(store.all.map((t) => t.id)).toEqual([]);
+			expect(store.trash.map((t) => t.id)).toEqual(["t1"]);
+			expect(isRestorableTransaction(store.byUuid("t1") as ITransaction)).toBe(
+				true,
+			);
+		});
+
+		it("restores a trashed transaction", () => {
+			const tx = makeTx(store, { id: "t1", from_value: 50, to_value: 50 });
+			store.deleteTransaction(tx);
+			const deleted = store.byUuid("t1") as ITransaction;
+
+			store.restoreTransaction(deleted);
+
+			expect(store.byUuid("t1")?.deleted_at).toBeNull();
+			expect(store.all.map((t) => t.id)).toEqual(["t1"]);
+			expect(store.trash).toEqual([]);
 		});
 	});
 
