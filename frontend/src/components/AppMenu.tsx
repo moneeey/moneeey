@@ -12,6 +12,7 @@ import {
 	LockClosedIcon,
 	UsersIcon,
 	WalletIcon,
+	TrashIcon,
 	WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { observer } from "mobx-react-lite";
@@ -33,6 +34,7 @@ import ImportRoute from "../routes/ImportRoute";
 import { PayeeSettingsRoute } from "../routes/PayeeSettingsRoute";
 import ReportsRoute from "../routes/ReportsRoute";
 import SettingsRoute from "../routes/SettingsRoute";
+import TrashRoute from "../routes/TrashRoute";
 import { NavigationModal } from "../shared/Navigation";
 import { Status } from "../shared/Persistence";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
@@ -68,6 +70,7 @@ const Menu = observer(
 			encryption,
 		} = useMoneeeyStore();
 		const { all: allTransactions } = transactions;
+		const trashCount = transactions.trash.length;
 
 		const allAccountsKey = allTransactions
 			.map(({ from_account, to_account }) => `${from_account}_${to_account}`)
@@ -236,6 +239,13 @@ const Menu = observer(
 								icon: <ArrowDownOnSquareStackIcon />,
 								label: Messages.menu.import,
 								...routeLink(ImportRoute.url()),
+							},
+							{
+								key: "trash",
+								icon: <TrashIcon />,
+								label: Messages.menu.trash(trashCount),
+								visible: trashCount > 0,
+								...routeLink(TrashRoute.url()),
 							},
 						],
 					},

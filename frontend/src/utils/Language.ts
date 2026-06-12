@@ -29,6 +29,13 @@ export default {
 			hi: "लेन-देन",
 			cn: "交易",
 		},
+		trash: {
+			en: (count: number) => `Trash (${count})`,
+			pt: (count: number) => `Lixeira (${count})`,
+			es: (count: number) => `Papelera (${count})`,
+			hi: (count: number) => `कचरा (${count})`,
+			cn: (count: number) => `回收站 (${count})`,
+		},
 		unassigned: {
 			en: (amount: number) => `Unassigned (${amount})`,
 			pt: (amount: number) => `Não atribuído (${amount})`,
@@ -599,6 +606,20 @@ export default {
 			es: "Eliminar",
 			hi: "हटाएं",
 			cn: "删除",
+		},
+		actions: {
+			en: "Actions",
+			pt: "Ações",
+			es: "Acciones",
+			hi: "कार्रवाइयाँ",
+			cn: "操作",
+		},
+		restore: {
+			en: "Restore",
+			pt: "Restaurar",
+			es: "Restaurar",
+			hi: "पुनर्स्थापित करें",
+			cn: "恢复",
 		},
 		currency: {
 			en: "Currency",
