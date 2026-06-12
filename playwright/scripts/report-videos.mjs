@@ -67,6 +67,8 @@ const html = `<!doctype html>
 		.controls { display: flex; gap: 0.5rem; align-items: center; padding: 1rem; border-top: 1px solid #374151; }
 		button { border: 0; border-radius: 0.5rem; padding: 0.55rem 0.8rem; background: #60a5fa; color: #0f172a; font-weight: 700; cursor: pointer; }
 		button:disabled { cursor: not-allowed; opacity: 0.45; }
+		label { display: flex; gap: 0.35rem; align-items: center; color: #d1d5db; }
+		select { border: 1px solid #4b5563; border-radius: 0.5rem; padding: 0.5rem; background: #111827; color: #f9fafb; }
 		#index { margin-left: auto; color: #d1d5db; font-variant-numeric: tabular-nums; }
 		aside { overflow: auto; max-height: calc(100vh - 2rem); }
 		ol { list-style: none; margin: 0; padding: 0.5rem; }
@@ -89,6 +91,14 @@ const html = `<!doctype html>
 			<div class="controls">
 				<button id="prev" type="button">Previous</button>
 				<button id="next" type="button">Next</button>
+				<label for="speed">Speed
+					<select id="speed">
+						<option value="0.25">0.25x</option>
+						<option value="0.5" selected>0.5x</option>
+						<option value="0.75">0.75x</option>
+						<option value="1">1x</option>
+					</select>
+				</label>
 				<span id="index"></span>
 			</div>
 		</section>
@@ -105,7 +115,9 @@ const html = `<!doctype html>
 		const empty = document.getElementById("empty");
 		const prev = document.getElementById("prev");
 		const next = document.getElementById("next");
+		const speed = document.getElementById("speed");
 		let current = 0;
+		let playbackRate = Number(speed.value);
 
 		function renderPlaylist() {
 			playlist.innerHTML = "";
@@ -127,6 +139,7 @@ const html = `<!doctype html>
 			current = Math.max(0, Math.min(i, videos.length - 1));
 			const video = videos[current];
 			player.src = video.src;
+			player.playbackRate = playbackRate;
 			title.textContent = video.title;
 			index.textContent = String(current + 1) + " / " + String(videos.length);
 			prev.disabled = current === 0;
@@ -136,6 +149,10 @@ const html = `<!doctype html>
 
 		prev.addEventListener("click", () => load(current - 1));
 		next.addEventListener("click", () => load(current + 1));
+		speed.addEventListener("change", () => {
+			playbackRate = Number(speed.value);
+			player.playbackRate = playbackRate;
+		});
 		player.addEventListener("ended", () => {
 			if (current < videos.length - 1) load(current + 1);
 		});
