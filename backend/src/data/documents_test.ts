@@ -5,6 +5,7 @@ import {
 	bulkUpsert,
 	getDocs,
 	getManifest,
+	purgeExpiredDocuments,
 } from "./documents.ts";
 import { makeTempStorage } from "./test_storage.ts";
 
@@ -14,7 +15,7 @@ const VAULT_B = "bbbbbbbbbbbbbbbbbbbbb";
 const doc = (
 	id: string,
 	updated_at: string,
-	data = "cipher",
+	data: string | null = "cipher",
 	deleted_at: string | null = null,
 ): IncomingDoc => ({ id, updated_at, deleted_at, data });
 
@@ -143,18 +144,60 @@ Deno.test(async function getDocsHandlesEmpty() {
 	}
 });
 
-Deno.test(async function tombstonesCarryDeletedAtTimestamp() {
+Deno.test(async function futureDeletedRowsKeepEncryptedData() {
 	const t = makeTempStorage();
 	try {
 		await bulkUpsert(t.storage, VAULT, [
 			doc("a", "2026-01-01T00:00:00.000Z", "cipher"),
 		]);
-		const deletedAt = "2026-01-02T00:00:00.000Z";
+		const deletedAt = "2999-01-02T00:00:00.000Z";
 		await bulkUpsert(t.storage, VAULT, [doc("a", deletedAt, "", deletedAt)]);
 		const all = await getDocs(t.storage, VAULT, ["a"]);
 		assert.assertEquals(all.length, 1);
 		assert.assertEquals(all[0].deleted_at, deletedAt);
 		assert.assertEquals(all[0].data, "");
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function expiredDeletedRowsPurgeDataAndBumpUpdatedAt() {
+	const t = makeTempStorage();
+	try {
+		const deletedAt = "2000-01-02T00:00:00.000Z";
+		await bulkUpsert(t.storage, VAULT, [
+			doc("a", "2000-01-01T00:00:00.000Z", "cipher", deletedAt),
+		]);
+		const all = await getDocs(t.storage, VAULT, ["a"]);
+		assert.assertEquals(all.length, 1);
+		assert.assertEquals(all[0].deleted_at, deletedAt);
+		assert.assertEquals(all[0].data, null);
+		assert.assert(all[0].updated_at > deletedAt);
+	} finally {
+		t.cleanup();
+	}
+});
+
+Deno.test(async function purgeExpiredDocumentsKeepsManifestEntry() {
+	const t = makeTempStorage();
+	try {
+		const deletedAt = "2000-01-02T00:00:00.000Z";
+		await t.storage.withConn((conn) =>
+			conn.run(
+				"INSERT INTO documents (vault_id, id, updated_at, deleted_at, data) VALUES (?, ?, ?, ?, ?)",
+				VAULT,
+				"a",
+				"2000-01-01T00:00:00.000Z",
+				deletedAt,
+				"cipher",
+			),
+		);
+		const purged = await purgeExpiredDocuments(t.storage, VAULT);
+		assert.assertEquals(purged, ["a"]);
+		const manifest = await getManifest(t.storage, VAULT);
+		assert.assertEquals(manifest.map((row) => row.id), ["a"]);
+		const all = await getDocs(t.storage, VAULT, ["a"]);
+		assert.assertEquals(all[0].data, null);
 	} finally {
 		t.cleanup();
 	}

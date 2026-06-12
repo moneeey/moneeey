@@ -8,14 +8,14 @@ export type IncomingDoc = {
 	id: string;
 	updated_at: string;
 	deleted_at: string | null;
-	data: string;
+	data: string | null;
 };
 
 export type DocRecord = {
 	id: string;
 	updated_at: string;
 	deleted_at: string | null;
-	data: string;
+	data: string | null;
 };
 
 export type ManifestEntry = {
@@ -31,8 +31,16 @@ type DocRow = {
 	id: string;
 	updated_at: string;
 	deleted_at: string | null;
-	data: string;
+	data: string | null;
 };
+
+const isExpiredDeletion = (deletedAt: string | null, now: string): boolean =>
+	deletedAt !== null && deletedAt <= now;
+
+const purgeDoc = (doc: IncomingDoc, now: string): IncomingDoc =>
+	isExpiredDeletion(doc.deleted_at, now)
+		? { ...doc, updated_at: now, data: null }
+		: doc;
 
 const toRecord = (row: DocRow): DocRecord => ({
 	id: row.id,
@@ -47,6 +55,7 @@ export async function getManifest(
 ): Promise<ManifestEntry[]> {
 	const start = performance.now();
 	try {
+		await purgeExpiredDocuments(storage, vaultId);
 		return await storage.withRead((conn) =>
 			conn.query<ManifestEntry>(
 				"SELECT id, updated_at FROM documents WHERE vault_id = ?",
@@ -66,6 +75,7 @@ export async function getDocs(
 	if (ids.length === 0) return [];
 	const start = performance.now();
 	try {
+		await purgeExpiredDocuments(storage, vaultId);
 		return await storage.withRead(async (conn) => {
 			const placeholders = ids.map(() => "?").join(",");
 			const rows = await conn.query<DocRow>(
@@ -88,10 +98,13 @@ export async function bulkUpsert(
 	if (docs.length === 0) return [];
 	const start = performance.now();
 	try {
+		await purgeExpiredDocuments(storage, vaultId);
+		const now = new Date().toISOString();
+		const preparedDocs = docs.map((incoming) => purgeDoc(incoming, now));
 		return await storage.withConn((conn) =>
 			conn.transaction(async (tx) => {
 				const results: UpsertResult[] = [];
-				for (const incoming of docs) {
+				for (const incoming of preparedDocs) {
 					const stored = await tx.get<{ updated_at: string }>(
 						"SELECT updated_at FROM documents WHERE vault_id = ? AND id = ?",
 						vaultId,
@@ -121,5 +134,34 @@ export async function bulkUpsert(
 		);
 	} finally {
 		observeDb("push", start);
+	}
+}
+
+export async function purgeExpiredDocuments(
+	storage: Storage,
+	vaultId: string,
+): Promise<string[]> {
+	const now = new Date().toISOString();
+	const start = performance.now();
+	try {
+		return await storage.withConn((conn) =>
+			conn.transaction(async (tx) => {
+				const expired = await tx.query<{ id: string }>(
+					"SELECT id FROM documents WHERE vault_id = ? AND deleted_at IS NOT NULL AND deleted_at <= ? AND data IS NOT NULL",
+					vaultId,
+					now,
+				);
+				if (expired.length === 0) return [];
+				await tx.run(
+					"UPDATE documents SET data = NULL, updated_at = ? WHERE vault_id = ? AND deleted_at IS NOT NULL AND deleted_at <= ? AND data IS NOT NULL",
+					now,
+					vaultId,
+					now,
+				);
+				return expired.map((row) => row.id);
+			}),
+		);
+	} finally {
+		observeDb("purge", start);
 	}
 }

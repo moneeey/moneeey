@@ -5,6 +5,7 @@ import {
 	bulkUpsert,
 	getDocs,
 	getManifest,
+	purgeExpiredDocuments,
 } from "../data/documents.ts";
 import { userHasAccess } from "../data/vaults.ts";
 import type { Storage } from "../db/engine.ts";
@@ -205,6 +206,7 @@ class ReadyHandler implements MessageHandler {
 	}
 
 	private async handleManifest(msg: ManifestMsg): Promise<void> {
+		await purgeExpiredDocuments(this.ctx.storage, this.vaultId);
 		if (!Array.isArray(msg.entries)) {
 			sendError(
 				this.ctx.peer,
@@ -257,6 +259,7 @@ class ReadyHandler implements MessageHandler {
 	}
 
 	private async handleFetch(msg: FetchMsg): Promise<void> {
+		await purgeExpiredDocuments(this.ctx.storage, this.vaultId);
 		if (!Array.isArray(msg.ids)) {
 			sendError(
 				this.ctx.peer,
@@ -290,6 +293,7 @@ class ReadyHandler implements MessageHandler {
 	}
 
 	private async handlePush(msg: PushMsg): Promise<void> {
+		await purgeExpiredDocuments(this.ctx.storage, this.vaultId);
 		const incoming = msg.docs;
 		if (!Array.isArray(incoming)) {
 			sendError(
@@ -319,7 +323,10 @@ class ReadyHandler implements MessageHandler {
 				);
 				return;
 			}
-			if (typeof d.data !== "string" || d.data.length > MAX_DATA_BYTES) {
+			if (
+				d.data !== null &&
+				(typeof d.data !== "string" || d.data.length > MAX_DATA_BYTES)
+			) {
 				sendError(
 					this.ctx.peer,
 					msg.request_id,
@@ -340,14 +347,11 @@ class ReadyHandler implements MessageHandler {
 		);
 		metrics.syncPushDocs.inc({}, acceptedIds.size);
 		if (acceptedIds.size === 0) return;
-		const broadcastDocs: DocRecord[] = incoming
-			.filter((d) => acceptedIds.has(d.id))
-			.map((d) => ({
-				id: d.id,
-				updated_at: d.updated_at,
-				deleted_at: d.deleted_at,
-				data: d.data,
-			}));
+		const broadcastDocs: DocRecord[] = await getDocs(
+			this.ctx.storage,
+			this.vaultId,
+			Array.from(acceptedIds),
+		);
 		this.ctx.hub.broadcast(
 			this.vaultId,
 			{ type: "changes", docs: broadcastDocs },
