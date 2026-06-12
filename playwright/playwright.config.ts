@@ -7,6 +7,8 @@ import { defineConfig, devices } from "@playwright/test";
 // require('dotenv').config();
 
 const isCI = !!process.env.CI;
+const video =
+	process.env.PW_VIDEO === "on" ? "on" : isCI ? "off" : "retain-on-failure";
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -31,7 +33,7 @@ export default defineConfig({
 		/* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
 		trace: isCI ? "off" : "on-first-retry",
 
-		video: isCI ? "off" : "retain-on-failure",
+		video,
 	},
 
 	/* Configure projects for major browsers */

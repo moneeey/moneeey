@@ -14,7 +14,7 @@
 		"test": "playwright test",
 		"test-ff": "playwright test --project firefox --reporter list",
 		"test-cr": "playwright test --project chromium --reporter list",
-		"test-videos": "playwright test --video=on && yarn generate-video-report",
+		"test-videos": "PW_VIDEO=on playwright test && yarn generate-video-report",
 		"generate-video-report": "node scripts/report-videos.mjs",
 		"test-perf": "PERF_LOG=1 playwright test --reporter=list",
 		"debug-ff": "playwright test --headed --timeout 0 --project firefox",
