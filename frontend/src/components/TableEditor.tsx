@@ -19,6 +19,7 @@ export type { CompactCell, CompactLayout };
 
 interface TableEditorProps<T extends IBaseEntity> extends WithDataTestId {
 	store: MappedStore<T>;
+	rows?: T[];
 	schema: FieldDef<T>[];
 	schemaFilter?: (row: T) => boolean;
 	factory: (id?: string) => T;
@@ -31,6 +32,7 @@ export default observer(
 		schema,
 		schemaFilter,
 		store,
+		rows,
 		factory,
 		creatable,
 		testId,
@@ -40,7 +42,7 @@ export default observer(
 			store.getUuid(store.factory()),
 		);
 
-		const storeRows = store.all;
+		const storeRows = rows ?? store.all;
 
 		const entities = useMemo(
 			() =>
