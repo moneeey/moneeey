@@ -5,7 +5,7 @@ import { MIGRATIONS, runMigrations } from "./migrations.ts";
 Deno.test(function migrationsCreateExpectedTables() {
 	const db = new Database(":memory:");
 	const { applied } = runMigrations(db, MIGRATIONS);
-	assert.assertEquals(applied, ["0001_init"]);
+	assert.assertEquals(applied, ["0001_init", "0002_nullable_document_data"]);
 
 	const tables = db
 		.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
