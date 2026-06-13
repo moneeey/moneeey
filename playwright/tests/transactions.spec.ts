@@ -117,20 +117,6 @@ test("Transactions — delete, inspect, and restore transactions from trash", as
 
 	await page.getByTestId("transactionDelete").nth(1).click();
 	await expect(page.getByText("Trash (1)")).toBeVisible({ timeout: 15_000 });
-	await OpenMenuItem(page, "Trash (1)");
-	await Input(page, "editorMemo", undefined, 0).toHaveValue("trash me");
-
-	await page.getByTestId("transactionRestore").first().click();
-	await expect(page.getByTestId("trashEmpty")).toBeVisible();
-	await OpenMenuItem(page, "BRL MoneeeyCard");
-	await expect(async () => {
-		const memos = await page
-			.getByTestId("editorMemo")
-			.evaluateAll((inputs) =>
-				inputs.map((input) => (input as HTMLInputElement).value),
-			);
-		expect(memos).toContain("trash me");
-	}).toPass({ timeout: 10_000 });
 
 	await OpenMenuItem(page, "All transactions");
 	const newTransactionIndex =
@@ -165,14 +151,47 @@ test("Transactions — delete, inspect, and restore transactions from trash", as
 		})
 		.getByTestId("transactionDelete")
 		.click();
-	await OpenMenuItem(page, "Trash (1)");
-	await Input(page, "editorMemo", undefined, 0).toHaveValue("multi trash");
-	await expect(page.getByTestId("editorAmount")).toHaveCount(2);
-	await Input(page, "editorAmount", undefined, 0).toHaveValue("250");
-	await Input(page, "editorAmount", undefined, 1).toHaveValue("0,005");
+
+	await OpenMenuItem(page, "Trash (2)");
+	const standaloneTrashRow = page.getByTestId("trashTable-compactRow").filter({
+		has: page.locator('input[data-testid="editorMemo"][value="trash me"]'),
+	});
+	await expect(standaloneTrashRow).toBeVisible();
+	await Input(page, "editorMemo", standaloneTrashRow).toHaveValue("trash me");
+	await expect(standaloneTrashRow.getByTestId("editorAmount")).toHaveCount(1);
+	await Input(page, "editorAmount", standaloneTrashRow).toHaveValue("42");
+
+	const multiCurrencyTrashRow = page
+		.getByTestId("trashTable-compactRow")
+		.filter({
+			has: page.locator('input[data-testid="editorMemo"][value="multi trash"]'),
+		});
+	await expect(multiCurrencyTrashRow).toBeVisible();
+	await Input(page, "editorMemo", multiCurrencyTrashRow).toHaveValue(
+		"multi trash",
+	);
+	await expect(multiCurrencyTrashRow.getByTestId("editorAmount")).toHaveCount(
+		2,
+	);
+	await Input(page, "editorAmount", multiCurrencyTrashRow, 0).toHaveValue(
+		"250",
+	);
+	await Input(page, "editorAmount", multiCurrencyTrashRow, 1).toHaveValue(
+		"0,005",
+	);
 
 	await page.getByTestId("transactionRestore").first().click();
+	await page.getByTestId("transactionRestore").first().click();
 	await expect(page.getByTestId("trashEmpty")).toBeVisible();
+	await OpenMenuItem(page, "BRL MoneeeyCard");
+	await expect(async () => {
+		const memos = await page
+			.getByTestId("editorMemo")
+			.evaluateAll((inputs) =>
+				inputs.map((input) => (input as HTMLInputElement).value),
+			);
+		expect(memos).toContain("trash me");
+	}).toPass({ timeout: 10_000 });
 });
 
 test("Transactions — swapping direction flips from/to accounts", async ({
