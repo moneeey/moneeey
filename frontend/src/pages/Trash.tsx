@@ -69,7 +69,7 @@ const Trash = observer(() => {
 			}),
 		},
 		{
-			title: Messages.transactions.amount,
+			title: Messages.transactions.from_amount,
 			width: 120,
 			readOnly: true,
 			validate: () => ({ valid: true }),
@@ -79,6 +79,21 @@ const Trash = observer(() => {
 						accounts.byUuid(from_account)?.currency_uuid || "",
 					),
 					amount: from_value,
+				}),
+				delta: () => ({}),
+			}),
+		},
+		{
+			title: Messages.transactions.to_amount,
+			width: 120,
+			readOnly: true,
+			validate: () => ({ valid: true }),
+			...CurrencyAmountField<ITransaction>({
+				read: ({ to_account, to_value }) => ({
+					currency: currencies.byUuid(
+						accounts.byUuid(to_account)?.currency_uuid || "",
+					),
+					amount: to_value,
 				}),
 				delta: () => ({}),
 			}),
@@ -104,7 +119,10 @@ const Trash = observer(() => {
 		[
 			{ title: Messages.transactions.from_account, flex: 2 },
 			{ title: Messages.transactions.to_account, flex: 2 },
-			{ title: Messages.transactions.amount, align: "right" },
+		],
+		[
+			{ title: Messages.transactions.from_amount, align: "right" },
+			{ title: Messages.transactions.to_amount, align: "right" },
 		],
 		[{ title: Messages.util.actions }],
 	];
