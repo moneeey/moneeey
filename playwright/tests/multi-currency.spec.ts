@@ -2,29 +2,52 @@ import {
 	BudgetRow,
 	Input,
 	OpenMenuItem,
-	Select,
 	budgetEditorSave,
 	clickMenuByTestId,
+	defaultSeedAccounts,
+	seedTestEnvironment,
 	test,
-	updateOnAllTransactions,
 } from "../helpers";
 
 test("Multi-currency transactions in both directions with budget tracking", async ({
-	wizardPage: page,
+	seededPage: page,
 }) => {
 	// Firefox CI needs extra headroom for react-select + row-remount cascades.
 	test.setTimeout(90_000);
 
-	// Same-currency row first so multi-currency amount indices are predictable.
+	await seedTestEnvironment(page, {
+		accounts: [
+			...defaultSeedAccounts,
+			{ id: "test-payee-gas-station", name: "Gas Station", kind: "PAYEE" },
+		],
+		transactions: [
+			{
+				id: "test-transaction-gas-station",
+				from: "Banco Moneeey",
+				to: "Gas Station",
+				amount: 200,
+			},
+			{
+				id: "test-transaction-brl-btc",
+				from: "Banco Moneeey",
+				to: "Bitcoinss",
+				fromValue: 0,
+				toValue: 0,
+			},
+			{
+				id: "test-transaction-btc-brl",
+				from: "Bitcoinss",
+				to: "MoneeeyCard",
+				fromValue: 0,
+				toValue: 0,
+			},
+		],
+	});
+
+	// Same-currency row first keeps multi-currency amount indices predictable.
 	await clickMenuByTestId(page, "appMenu_subitems_transactions_all");
-	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Gas Station", "200");
 
 	// === Direction 1: BRL → BTC ===
-	// Row 4 is the new empty row. Setting accounts with different currencies
-	// makes the amount column render two side-by-side editorAmount inputs.
-	await Select(page, "editorFrom", 4).chooseOrCreate("Banco Moneeey");
-	await Select(page, "editorTo", 4).chooseOrCreate("Bitcoinss");
-
 	// editorAmount indices: 0,1,2 = 3 initial balances, 3 = Gas Station (single)
 	// Row 4 has two amount inputs: index 4 = BRL from, index 5 = BTC to
 	await Input(page, "editorAmount", undefined, 4).change("100");
@@ -40,9 +63,6 @@ test("Multi-currency transactions in both directions with budget tracking", asyn
 
 	// === Direction 2: BTC → BRL ===
 	await clickMenuByTestId(page, "appMenu_subitems_transactions_all");
-	await Select(page, "editorFrom", 5).chooseOrCreate("Bitcoinss");
-	await Select(page, "editorTo", 5).chooseOrCreate("MoneeeyCard");
-
 	// Row 5 amount indices: index 6 = BTC from, index 7 = BRL to
 	// (Row 4 consumed two amount indices because it's multi-currency)
 	await Input(page, "editorAmount", undefined, 6).change("0,05000000", "0,05");

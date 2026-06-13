@@ -2,13 +2,13 @@ import {
 	BudgetRow,
 	Input,
 	OpenMenuItem,
-	Select,
 	budgetEditorSave,
 	clickMenuByTestId,
+	defaultSeedAccounts,
 	expect,
 	retrieveRowsData,
+	seedTestEnvironment,
 	test,
-	updateOnAllTransactions,
 } from "../helpers";
 
 const SETTINGS_MENU_TESTID = "appMenu_subitems_settings_settings_general";
@@ -162,10 +162,22 @@ test("Compact density — persistence, active ring, and table structure across v
 });
 
 test("Compact budget — rows allocate, used and remaining stay in sync", async ({
-	wizardPage: page,
+	seededPage: page,
 }) => {
-	await OpenMenuItem(page, "All transactions");
-	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Cafe", "30");
+	await seedTestEnvironment(page, {
+		accounts: [
+			...defaultSeedAccounts,
+			{ id: "test-payee-cafe", name: "Cafe", kind: "PAYEE" },
+		],
+		transactions: [
+			{
+				id: "test-transaction-cafe",
+				from: "Banco Moneeey",
+				to: "Cafe",
+				amount: 30,
+			},
+		],
+	});
 
 	await setDensity(page, "compact");
 	await OpenMenuItem(page, "Budget");
@@ -184,17 +196,22 @@ test("Compact budget — rows allocate, used and remaining stay in sync", async 
 });
 
 test("Compact multi-currency — from and to amounts edit independently", async ({
-	wizardPage: page,
+	seededPage: page,
 }) => {
 	// Firefox CI needs extra headroom for react-select + row-remount cascades.
 	test.setTimeout(90_000);
 
-	// Pick accounts with different currencies while still in full mode so the
-	// editor* selects resolve; afterwards we switch to compact where the
-	// TransactionAmountField splits into editorFrom_amount and editorTo_amount.
-	await OpenMenuItem(page, "All transactions");
-	await Select(page, "editorFrom", 3).chooseOrCreate("Banco Moneeey"); // BRL
-	await Select(page, "editorTo", 3).chooseOrCreate("Bitcoinss"); // BTC
+	await seedTestEnvironment(page, {
+		transactions: [
+			{
+				id: "test-transaction-compact-brl-btc",
+				from: "Banco Moneeey",
+				to: "Bitcoinss",
+				fromValue: 0,
+				toValue: 0,
+			},
+		],
+	});
 
 	await setDensity(page, "compact");
 	await OpenMenuItem(page, "All transactions");

@@ -12,7 +12,6 @@ import {
 	setDateField,
 	test,
 	updateOnAccountTransactions,
-	updateOnAllTransactions,
 } from "../helpers";
 import {
 	defaultTransactionAccounts,
@@ -115,39 +114,40 @@ test("Transactions — create on MoneeeyCard, verify views, and edit-date reorde
 });
 
 test("Transactions — delete, inspect, and restore transactions from trash", async ({
-	transactionsPage: page,
+	seededPage: page,
 }) => {
-	await page.getByText("BRL MoneeeyCard").click();
-	await updateOnAccountTransactions(page, 6, "Groceries", "-42", "trash me");
+	await seedTestEnvironment(page, {
+		accounts: [
+			...defaultTransactionAccounts,
+			{ id: "test-payee-groceries", name: "Groceries", kind: "PAYEE" },
+		],
+		transactions: [
+			...defaultTransactions,
+			{
+				id: "test-transaction-trash-me",
+				from: "MoneeeyCard",
+				to: "Groceries",
+				amount: 42,
+				memo: "trash me",
+			},
+			{
+				id: "test-transaction-multi-trash",
+				from: "Banco Moneeey",
+				to: "Bitcoinss",
+				fromValue: 250,
+				toValue: 0.005,
+				memo: "multi trash",
+			},
+		],
+	});
 
+	await page.getByText("BRL MoneeeyCard").click();
 	await page.getByTestId("transactionDelete").nth(6).click();
 	await expect(page.getByText("Trash (1)")).toBeVisible({ timeout: 15_000 });
-
-	await OpenMenuItem(page, "All transactions");
-	const newTransactionIndex =
-		(await page.getByTestId("editorMemo").count()) - 1;
-	await updateOnAllTransactions(
-		page,
-		newTransactionIndex,
-		"Banco Moneeey",
-		"Bitcoinss",
-		undefined,
-		undefined,
-		"multi trash",
-	);
 
 	await clickMenuByTestId(page, SETTINGS_MENU_TESTID);
 	await page.getByTestId("tableDensitySwitcher_compact").click();
 	await OpenMenuItem(page, "All transactions");
-
-	await Input(page, "editorFrom_amount", undefined, newTransactionIndex).change(
-		"250",
-		"250",
-	);
-	await Input(page, "editorTo_amount", undefined, newTransactionIndex).change(
-		"0,00500000",
-		"0,005",
-	);
 
 	await page
 		.getByTestId("transactionTable-compactRow")

@@ -5,20 +5,47 @@ import {
 	OpenMenuItem,
 	Select,
 	budgetEditorSave,
+	defaultSeedAccounts,
 	expect,
 	retrieveRowsData,
+	seedTestEnvironment,
 	test,
-	updateOnAllTransactions,
 	withBudgetEditor,
 } from "../helpers";
 
+async function seedBudgetTransactions(
+	page: import("@playwright/test").Page,
+	transactions: { id: string; from: string; to: string; amount: number }[],
+) {
+	await seedTestEnvironment(page, {
+		accounts: [
+			...defaultSeedAccounts,
+			{ id: "test-payee-gas-station", name: "Gas Station", kind: "PAYEE" },
+			{ id: "test-payee-bakery", name: "Bakery", kind: "PAYEE" },
+		],
+		transactions,
+	});
+}
+
 test("Budget lifecycle — create, allocate, open editor, view archived toggle", async ({
-	wizardPage: page,
+	seededPage: page,
 }) => {
-	// Add transactions for budget testing
+	await seedBudgetTransactions(page, [
+		{
+			id: "test-transaction-gas-station",
+			from: "Banco Moneeey",
+			to: "Gas Station",
+			amount: 100,
+		},
+		{
+			id: "test-transaction-bakery",
+			from: "Banco Moneeey",
+			to: "Bakery",
+			amount: 50,
+		},
+	]);
+
 	await OpenMenuItem(page, "All transactions");
-	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Gas Station", "100");
-	await updateOnAllTransactions(page, 4, "Banco Moneeey", "Bakery", "50");
 
 	// Verify the transactions are correct before checking budgets
 	const today = formatDate(new Date());
@@ -66,11 +93,22 @@ test("Budget lifecycle — create, allocate, open editor, view archived toggle",
 });
 
 test("Budget — zero-allocation persists, tag swap recalculates used, archive shows indicator", async ({
-	wizardPage: page,
+	seededPage: page,
 }) => {
-	await OpenMenuItem(page, "All transactions");
-	await updateOnAllTransactions(page, 3, "Banco Moneeey", "Bakery", "100");
-	await updateOnAllTransactions(page, 4, "Banco Moneeey", "Gas Station", "42");
+	await seedBudgetTransactions(page, [
+		{
+			id: "test-transaction-bakery",
+			from: "Banco Moneeey",
+			to: "Bakery",
+			amount: 100,
+		},
+		{
+			id: "test-transaction-gas-station",
+			from: "Banco Moneeey",
+			to: "Gas Station",
+			amount: 42,
+		},
+	]);
 
 	await OpenMenuItem(page, "Budget");
 	await budgetEditorSave(page, "Food", "Bakery");
