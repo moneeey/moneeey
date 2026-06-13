@@ -1,7 +1,8 @@
+import { ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import { observer } from "mobx-react-lite";
 
 import TableEditor, { type CompactLayout } from "../components/TableEditor";
-import { SecondaryButton } from "../components/base/Button";
+import { LinkButton } from "../components/base/Button";
 import AccountField from "../components/editor/AccountField";
 import DateField from "../components/editor/DateField";
 import type { FieldDef } from "../components/editor/FieldDef";
@@ -94,14 +95,15 @@ const Trash = observer(() => {
 			validate: () => ({ valid: true }),
 			sorter: () => 0,
 			render: ({ entity }) => (
-				<SecondaryButton
+				<LinkButton
 					compact
 					testId="transactionRestore"
-					className="text-xs"
+					title={Messages.util.restore}
+					className="flex h-5 w-5 items-center justify-center rounded text-positive no-underline hover:bg-background-500 hover:text-positive/80"
 					onClick={() => transactions.restoreTransaction(entity)}
 				>
-					{Messages.util.restore}
-				</SecondaryButton>
+					<ArrowUturnLeftIcon className="h-4 w-4" />
+				</LinkButton>
 			),
 		},
 	];
