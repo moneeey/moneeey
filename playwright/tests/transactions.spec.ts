@@ -105,6 +105,23 @@ test("Transactions — create on MoneeeyCard, verify views, and edit-date reorde
 	});
 });
 
+test("Transactions — delete and restore standalone transaction from trash", async ({
+	wizardPage: page,
+}) => {
+	await page.getByText("BRL MoneeeyCard").click();
+	await updateOnAccountTransactions(page, 1, "Groceries", "-42", "trash me");
+
+	await page.getByTestId("transactionDelete").nth(1).click();
+	await expect(page.getByText("Trash (1)")).toBeVisible();
+	await OpenMenuItem(page, "Trash (1)");
+	await Input(page, "editorMemo", undefined, 0).toHaveValue("trash me");
+
+	await page.getByTestId("transactionRestore").first().click();
+	await expect(page.getByTestId("trashEmpty")).toBeVisible();
+	await OpenMenuItem(page, "BRL MoneeeyCard");
+	await Input(page, "editorMemo", undefined, 1).toHaveValue("trash me");
+});
+
 test("Transactions — swapping direction flips from/to accounts", async ({
 	wizardPage: page,
 }) => {
