@@ -14,7 +14,7 @@ export type LocalDoc = {
 	id: string;
 	updated_at: string;
 	deleted_at: string | null;
-	data: string;
+	data: string | null;
 };
 
 export type ManifestEntry = {
@@ -125,6 +125,7 @@ export class LocalStore implements MetaStore {
 	async getEncryptionMeta(): Promise<MetaDoc | null> {
 		const row = await this.get(ENCRYPTION_META_DOC_ID);
 		if (!row) return null;
+		if (row.data === null) return null;
 		try {
 			return JSON.parse(row.data) as MetaDoc;
 		} catch {

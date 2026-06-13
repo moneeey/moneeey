@@ -135,7 +135,7 @@ export type EncryptedRecord = {
 	id: string;
 	updated_at: string;
 	deleted_at: string | null;
-	data: string;
+	data: string | null;
 };
 
 export const encryptEntity = async (
@@ -160,10 +160,11 @@ export const decryptEntity = async <T extends PlainEntity = PlainEntity>(
 		id: string;
 		updated_at: string;
 		deleted_at: string | null;
-		data: string;
+		data: string | null;
 	},
 	dataKey: CryptoKey,
 ): Promise<T> => {
+	if (record.data === null) throw new Error("cannot decrypt purged tombstone");
 	const bodyJson = await decryptString(record.data, dataKey);
 	const body = JSON.parse(bodyJson) as Record<string, unknown>;
 	return {

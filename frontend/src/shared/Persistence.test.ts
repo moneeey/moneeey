@@ -55,8 +55,9 @@ describe("PersistenceStore", () => {
 			const rows = await store.allDocs();
 			const doc = rows.find((r) => r.id === "ACCOUNT-e1");
 			expect(doc).toBeDefined();
-			expect(doc?.data.length).toBeGreaterThan(0);
-			expect(doc?.data).not.toContain("Alice");
+			if (!doc?.data) throw new Error("Expected encrypted document data");
+			expect(doc.data.length).toBeGreaterThan(0);
+			expect(doc.data).not.toContain("Alice");
 		} finally {
 			await store.destroy();
 		}

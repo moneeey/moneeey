@@ -128,7 +128,7 @@ export default class PersistenceStore {
 	async fetchAllDocs(): Promise<PersistedEntity[]> {
 		await this.localStore.open();
 		const records = (await this.localStore.allDocs()).filter(
-			(r) => r.id !== ENCRYPTION_META_DOC_ID,
+			(r) => r.id !== ENCRYPTION_META_DOC_ID && r.data !== null,
 		);
 		if (!this.dataKey) return [];
 		const key = this.dataKey;
@@ -283,6 +283,7 @@ export default class PersistenceStore {
 					if (!dataKey) return;
 					for (const record of docs) {
 						if (record.id === ENCRYPTION_META_DOC_ID) continue;
+						if (record.data === null) continue;
 						try {
 							const decoded = (await decryptEntity<PlainEntity>(
 								record,

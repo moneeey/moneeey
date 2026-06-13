@@ -12,6 +12,7 @@ import MappedStore from "../shared/MappedStore";
 import type MoneeeyStore from "../shared/MoneeeyStore";
 import {
 	type TDate,
+	type TDateTime,
 	compareDates,
 	currentDate,
 	currentDateTime,
@@ -26,6 +27,8 @@ import type { AccountStore, TAccountUUID } from "./Account";
 export type TTransactionUUID = string;
 
 export interface ITransaction extends IBaseEntity {
+	split_group_id?: string;
+	split_group_index?: number;
 	date: TDate;
 	from_account: TAccountUUID;
 	to_account: TAccountUUID;
@@ -34,6 +37,25 @@ export interface ITransaction extends IBaseEntity {
 	memo: string;
 	import_data?: string;
 }
+
+const nowIso = () => new Date().toISOString();
+
+export const transactionDeleteDeadline = (
+	from: Date = new Date(),
+): TDateTime => {
+	const deadline = new Date(from);
+	deadline.setDate(deadline.getDate() + 3);
+	deadline.setHours(23, 59, 59, 999);
+	return deadline.toISOString();
+};
+
+export const isActiveTransaction = (transaction: ITransaction): boolean =>
+	!transaction.deleted_at;
+
+export const isRestorableTransaction = (
+	transaction: ITransaction,
+	now: TDateTime = nowIso(),
+): boolean => Boolean(transaction.deleted_at && transaction.deleted_at > now);
 
 export default class TransactionStore extends MappedStore<ITransaction> {
 	oldest_dt: Date = new Date();
@@ -60,6 +82,7 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 		});
 		makeObservable(this, {
 			sorted: computed,
+			trash: computed,
 			oldest_dt: observable,
 			newest_dt: observable,
 			runningBalanceVersion: computed,
@@ -69,6 +92,21 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 
 	get runningBalanceVersion() {
 		return this.runningBalance.version;
+	}
+
+	get allIncludingDeleted() {
+		return Array.from(this.itemsByUuid.values());
+	}
+
+	get all() {
+		return this.allIncludingDeleted.filter(isActiveTransaction);
+	}
+
+	get trash() {
+		const now = nowIso();
+		return this.sortTransactions(
+			this.allIncludingDeleted.filter((t) => isRestorableTransaction(t, now)),
+		);
 	}
 
 	updateRunningBalance = debounce(() => {
@@ -101,6 +139,25 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 			}
 			this.updateRunningBalance();
 		}
+	}
+
+	deleteTransaction(transaction: ITransaction) {
+		this.merge({ ...transaction, deleted_at: transactionDeleteDeadline() });
+	}
+
+	restoreTransaction(transaction: ITransaction) {
+		const activeGroupDate = transaction.split_group_id
+			? this.all.find(
+					(t) =>
+						t.id !== transaction.id &&
+						t.split_group_id === transaction.split_group_id,
+				)?.date
+			: undefined;
+		this.merge({
+			...transaction,
+			date: activeGroupDate ?? transaction.date,
+			deleted_at: null,
+		});
 	}
 
 	sortTransactions(transactions: ITransaction[]): ITransaction[] {
