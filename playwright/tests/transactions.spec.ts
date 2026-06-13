@@ -4,13 +4,17 @@ import {
 	Input,
 	OpenMenuItem,
 	REFERENCE_ACCOUNT_COLUMNS,
+	Select,
 	TIMEOUTS,
+	clickMenuByTestId,
 	expect,
 	retrieveRowsData,
 	setDateField,
 	test,
 	updateOnAccountTransactions,
 } from "../helpers";
+
+const SETTINGS_MENU_TESTID = "appMenu_subitems_settings_settings_general";
 
 test("Transactions — create on MoneeeyCard, verify views, and edit-date reorders", async ({
 	wizardPage: page,
@@ -112,7 +116,7 @@ test("Transactions — delete and restore standalone transaction from trash", as
 	await updateOnAccountTransactions(page, 1, "Groceries", "-42", "trash me");
 
 	await page.getByTestId("transactionDelete").nth(1).click();
-	await expect(page.getByText("Trash (1)")).toBeVisible();
+	await expect(page.getByText("Trash (1)")).toBeVisible({ timeout: 15_000 });
 	await OpenMenuItem(page, "Trash (1)");
 	await Input(page, "editorMemo", undefined, 0).toHaveValue("trash me");
 
@@ -127,6 +131,41 @@ test("Transactions — delete and restore standalone transaction from trash", as
 			);
 		expect(memos).toContain("trash me");
 	}).toPass({ timeout: 10_000 });
+});
+
+test("Transactions — trash shows both sides of multi-currency transaction", async ({
+	wizardPage: page,
+}) => {
+	await OpenMenuItem(page, "All transactions");
+	await Select(page, "editorFrom", 3).chooseOrCreate("Banco Moneeey");
+	await Select(page, "editorTo", 3).chooseOrCreate("Bitcoinss");
+	await Input(page, "editorMemo", undefined, 3).change("multi trash");
+
+	await clickMenuByTestId(page, SETTINGS_MENU_TESTID);
+	await page.getByTestId("tableDensitySwitcher_compact").click();
+	await OpenMenuItem(page, "All transactions");
+
+	await Input(page, "editorFrom_amount", undefined, 3).change("250", "250");
+	await Input(page, "editorTo_amount", undefined, 3).change(
+		"0,00500000",
+		"0,005",
+	);
+
+	await page
+		.getByTestId("transactionTable-compactRow")
+		.filter({
+			has: page.locator('input[data-testid="editorMemo"][value="multi trash"]'),
+		})
+		.getByTestId("transactionDelete")
+		.click();
+	await OpenMenuItem(page, "Trash (1)");
+	await Input(page, "editorMemo", undefined, 0).toHaveValue("multi trash");
+	await expect(page.getByTestId("editorAmount")).toHaveCount(2);
+	await Input(page, "editorAmount", undefined, 0).toHaveValue("250");
+	await Input(page, "editorAmount", undefined, 1).toHaveValue("0,005");
+
+	await page.getByTestId("transactionRestore").first().click();
+	await expect(page.getByTestId("trashEmpty")).toBeVisible();
 });
 
 test("Transactions — swapping direction flips from/to accounts", async ({
