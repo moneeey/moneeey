@@ -530,7 +530,7 @@ export default function EncryptionGate({ store, onUnlocked }: Props) {
 						}}
 					/>
 				)}
-				<button type="submit" hidden />
+				<SecondaryButton type="submit" hidden />
 			</form>
 			{error && (
 				<p className="text-sm text-danger-300" data-testid="encryptionError">

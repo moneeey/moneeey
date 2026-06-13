@@ -74,10 +74,10 @@ const Navbar = (props: NavbarProps & WithDataTestId) => {
 	return (
 		<>
 			{props.expanded && (
-				<button
-					type="button"
+				<LinkButton
+					compact
 					aria-label="Close menu"
-					className="lg:hidden fixed inset-0 z-30 bg-black/50"
+					className="fixed inset-0 z-30 bg-black/50 no-underline lg:hidden"
 					onClick={props.onCollapse}
 				/>
 			)}

@@ -23,6 +23,7 @@ import type { ReactNode } from "react";
 import useTableDensity from "../utils/useTableDensity";
 import type { WithDataTestId } from "./base/Common";
 import Icon from "./base/Icon";
+import { Input } from "./base/Input";
 import { FieldVisibility } from "./editor/FieldDef";
 
 const VirtualizedGrid =
@@ -482,16 +483,13 @@ const RowLineRuler = ({
 			className="pointer-events-none invisible absolute flex items-center gap-2"
 			style={{ left: -9999, top: -9999, width: 200 }}
 		>
-			<div className="flex focus-within:ring-1 focus-within:ring-inset">
-				<div className="grow">
-					<input
-						readOnly
-						tabIndex={-1}
-						value="Mp"
-						className="w-full color-inherit bg-transparent outline-none"
-					/>
-				</div>
-			</div>
+			<Input
+				testId="rowLineRuler"
+				readOnly
+				value="Mp"
+				placeholder=""
+				onChange={() => {}}
+			/>
 			<div className="mn-select">
 				<div className="mn-select__control">
 					<div className="mn-select__value-container">

@@ -1,3 +1,5 @@
+import { LinkButton } from "../../components/base/Button";
+
 import { colorForKey } from "./nivoTheme";
 
 interface ChartLegendProps {
@@ -23,14 +25,14 @@ const ChartLegend = ({
 				const isDimmed = dimmedSeries?.has(s) ?? false;
 				const color = colorMap?.[s] ?? colorForKey(s);
 				return (
-					<button
-						type="button"
+					<LinkButton
+						compact
 						key={s}
 						onClick={() => onToggle(s)}
-						className={`inline-flex items-center gap-1.5 rounded-full bg-background-900 px-2.5 py-1 text-xs transition hover:bg-background-700 ${
+						className={`inline-flex items-center gap-1.5 rounded-full bg-background-900 px-2.5 py-1 text-xs no-underline transition hover:bg-background-700 ${
 							isHidden ? "opacity-40" : ""
 						} ${isDimmed ? "border border-dashed border-foreground/30" : ""}`}
-						data-testid={`legendChip_${s}`}
+						testId={`legendChip_${s}`}
 					>
 						<span
 							className="inline-block h-2.5 w-2.5 rounded-sm"
@@ -44,7 +46,7 @@ const ChartLegend = ({
 						>
 							{s}
 						</span>
-					</button>
+					</LinkButton>
 				);
 			})}
 		</div>
