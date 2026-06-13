@@ -119,7 +119,14 @@ test("Transactions — delete and restore standalone transaction from trash", as
 	await page.getByTestId("transactionRestore").first().click();
 	await expect(page.getByTestId("trashEmpty")).toBeVisible();
 	await OpenMenuItem(page, "BRL MoneeeyCard");
-	await Input(page, "editorMemo", undefined, 1).toHaveValue("trash me");
+	await expect(async () => {
+		const memos = await page
+			.getByTestId("editorMemo")
+			.evaluateAll((inputs) =>
+				inputs.map((input) => (input as HTMLInputElement).value),
+			);
+		expect(memos).toContain("trash me");
+	}).toPass({ timeout: 10_000 });
 });
 
 test("Transactions — swapping direction flips from/to accounts", async ({

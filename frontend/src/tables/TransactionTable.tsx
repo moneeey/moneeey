@@ -326,17 +326,18 @@ export default observer(
 							muted: true,
 							align: "right",
 						},
+						{ title: Messages.util.actions },
 					],
 					[
 						{ title: Messages.transactions.account, flex: 2 },
 						{ title: Messages.transactions.amount, align: "right" },
 					],
-					[{ title: Messages.util.actions }],
 				]
 			: [
 					[
 						{ title: Messages.util.date, muted: true },
 						{ title: Messages.transactions.memo, muted: true },
+						{ title: Messages.util.actions },
 					],
 					[
 						{
@@ -360,7 +361,6 @@ export default observer(
 							align: "right",
 						},
 					],
-					[{ title: Messages.util.actions }],
 				];
 
 		return (

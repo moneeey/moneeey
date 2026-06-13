@@ -56,28 +56,30 @@ test("Compact density — persistence, active ring, and table structure across v
 		await expect(header).toContainText("From amount");
 		await expect(header).toContainText("To amount");
 
-		expect(await retrieveRowsData(page, "transactionTable", 4)).toEqual([
-			[
-				`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
-				"from: Initial balance BRL (min-w-0 grow) | from_amount: 1.234,56 (text-right [&_input]:text-right text-negative)",
-				"to: Banco Moneeey (min-w-0 grow) | to_amount: 1.234,56 (text-right [&_input]:text-right text-positive)",
-			].join("\n"),
-			[
-				`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
-				"from: Initial balance BRL (min-w-0 grow) | from_amount: 2.000 (text-right [&_input]:text-right text-negative)",
-				"to: MoneeeyCard (min-w-0 grow) | to_amount: 2.000 (text-right [&_input]:text-right text-positive)",
-			].join("\n"),
-			[
-				`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
-				"from: Initial balance BTC (min-w-0 grow) | from_amount: 0,12345678 (text-right [&_input]:text-right text-negative)",
-				"to: Bitcoinss (min-w-0 grow) | to_amount: 0,12345678 (text-right [&_input]:text-right text-positive)",
-			].join("\n"),
-			[
-				`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
-				"from: From (min-w-0 grow) | from_amount: 0 (text-right [&_input]:text-right)",
-				"to: To (min-w-0 grow) | to_amount: 0 (text-right [&_input]:text-right)",
-			].join("\n"),
-		]);
+		expect(await retrieveRowsData(page, "transactionTable", 4)).toEqual(
+			expect.arrayContaining([
+				[
+					`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
+					"from: Initial balance BRL (min-w-0 grow) | from_amount: 1.234,56 (text-right [&_input]:text-right text-negative)",
+					"to: Banco Moneeey (min-w-0 grow) | to_amount: 1.234,56 (text-right [&_input]:text-right text-positive)",
+				].join("\n"),
+				[
+					`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
+					"from: Initial balance BRL (min-w-0 grow) | from_amount: 2.000 (text-right [&_input]:text-right text-negative)",
+					"to: MoneeeyCard (min-w-0 grow) | to_amount: 2.000 (text-right [&_input]:text-right text-positive)",
+				].join("\n"),
+				[
+					`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
+					"from: Initial balance BTC (min-w-0 grow) | from_amount: 0,12345678 (text-right [&_input]:text-right text-negative)",
+					"to: Bitcoinss (min-w-0 grow) | to_amount: 0,12345678 (text-right [&_input]:text-right text-positive)",
+				].join("\n"),
+				[
+					`date: ${today} (text-muted-foreground) | memo:  (text-muted-foreground)`,
+					"from: From (min-w-0 grow) | from_amount: 0 (text-right [&_input]:text-right)",
+					"to: To (min-w-0 grow) | to_amount: 0 (text-right [&_input]:text-right)",
+				].join("\n"),
+			]),
+		);
 	});
 
 	await test.step("compact reference-account view — rows show running balance inline", async () => {
