@@ -57,11 +57,6 @@ export const isRestorableTransaction = (
 	now: TDateTime = nowIso(),
 ): boolean => Boolean(transaction.deleted_at && transaction.deleted_at > now);
 
-export const isExpiredDeletedTransaction = (
-	transaction: ITransaction,
-	now: TDateTime = nowIso(),
-): boolean => Boolean(transaction.deleted_at && transaction.deleted_at <= now);
-
 export default class TransactionStore extends MappedStore<ITransaction> {
 	oldest_dt: Date = new Date();
 
@@ -88,7 +83,6 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 		makeObservable(this, {
 			sorted: computed,
 			trash: computed,
-			expiredDeleted: computed,
 			oldest_dt: observable,
 			newest_dt: observable,
 			runningBalanceVersion: computed,
@@ -112,13 +106,6 @@ export default class TransactionStore extends MappedStore<ITransaction> {
 		const now = nowIso();
 		return this.sortTransactions(
 			this.allIncludingDeleted.filter((t) => isRestorableTransaction(t, now)),
-		);
-	}
-
-	get expiredDeleted() {
-		const now = nowIso();
-		return this.allIncludingDeleted.filter((t) =>
-			isExpiredDeletedTransaction(t, now),
 		);
 	}
 

@@ -21,33 +21,6 @@ const Trash = observer(() => {
 		currencies.byUuid(accounts.byUuid(accountUuid)?.currency_uuid) ??
 		currencies.byUuid(config.main.default_currency);
 
-	const amountRead = ({
-		from_account,
-		from_value,
-		to_account,
-		to_value,
-	}: ITransaction) => ({
-		from: {
-			currency: currencyForAccount(from_account),
-			amount: from_value,
-		},
-		to: {
-			currency: currencyForAccount(to_account),
-			amount: to_value,
-		},
-	});
-
-	const amountDelta = ({
-		from,
-		to,
-	}: {
-		from: { amount: number; currency?: ICurrency };
-		to: { amount: number; currency?: ICurrency };
-	}): Partial<ITransaction> => ({
-		from_value: Math.abs(from.amount),
-		to_value: Math.abs(to.amount),
-	});
-
 	const schema: FieldDef<ITransaction>[] = [
 		{
 			title: Messages.util.date,
@@ -89,8 +62,20 @@ const Trash = observer(() => {
 			readOnly: true,
 			validate: () => ({ valid: true }),
 			...TransactionAmountField<ITransaction>({
-				read: amountRead,
-				delta: amountDelta,
+				read: ({ from_account, from_value, to_account, to_value }) => ({
+					from: {
+						currency: currencyForAccount(from_account),
+						amount: from_value,
+					},
+					to: {
+						currency: currencyForAccount(to_account),
+						amount: to_value,
+					},
+				}),
+				delta: ({ from, to }) => ({
+					from_value: Math.abs(from.amount),
+					to_value: Math.abs(to.amount),
+				}),
 			}),
 		},
 		{
