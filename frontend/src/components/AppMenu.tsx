@@ -10,9 +10,9 @@ import {
 	CurrencyDollarIcon,
 	EnvelopeIcon,
 	LockClosedIcon,
+	TrashIcon,
 	UsersIcon,
 	WalletIcon,
-	TrashIcon,
 	WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { observer } from "mobx-react-lite";

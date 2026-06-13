@@ -10,7 +10,9 @@ const Trash = observer(() => {
 
 	return (
 		<section className="flex grow flex-col gap-3 bg-background-800 p-2 md:p-4">
-			<h2 className="text-lg font-semibold">{Messages.menu.trash(rows.length)}</h2>
+			<h2 className="text-lg font-semibold">
+				{Messages.menu.trash(rows.length)}
+			</h2>
 			{rows.length === 0 ? (
 				<section
 					data-testid="trashEmpty"
@@ -25,9 +27,15 @@ const Trash = observer(() => {
 							<tr>
 								<th className="px-2 py-1">Split</th>
 								<th className="px-2 py-1">{Messages.util.date}</th>
-								<th className="px-2 py-1">{Messages.transactions.from_account}</th>
-								<th className="px-2 py-1">{Messages.transactions.to_account}</th>
-								<th className="px-2 py-1 text-right">{Messages.transactions.amount}</th>
+								<th className="px-2 py-1">
+									{Messages.transactions.from_account}
+								</th>
+								<th className="px-2 py-1">
+									{Messages.transactions.to_account}
+								</th>
+								<th className="px-2 py-1 text-right">
+									{Messages.transactions.amount}
+								</th>
 								<th className="px-2 py-1">{Messages.transactions.memo}</th>
 								<th className="px-2 py-1">{Messages.util.actions}</th>
 							</tr>
