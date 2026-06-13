@@ -1,6 +1,7 @@
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 
+import { LinkButton } from "../../components/base/Button";
 import type { ITransaction } from "../../entities/Transaction";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
 import useMessages from "../../utils/Messages";
@@ -48,14 +49,14 @@ const DrillDownPanel = observer(
 							{periodLabel ?? info.period} · {info.series}
 						</span>
 					</div>
-					<button
-						type="button"
+					<LinkButton
+						compact
 						onClick={onClose}
-						data-testid="drillDownClose"
-						className="rounded bg-background-800 px-2 py-1 text-sm hover:bg-background-700"
+						testId="drillDownClose"
+						className="rounded bg-background-800 px-2 py-1 text-sm no-underline hover:bg-background-700"
 					>
 						{Messages.util.close}
-					</button>
+					</LinkButton>
 				</header>
 
 				{rows.length === 0 ? (

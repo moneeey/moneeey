@@ -1,6 +1,7 @@
 import { observer } from "mobx-react-lite";
 import { useMemo, useState } from "react";
 
+import { LinkButton } from "../../components/base/Button";
 import { AccountKind } from "../../entities/Account";
 import type { ITransaction } from "../../entities/Transaction";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
@@ -170,23 +171,23 @@ const TagExplorerReport = observer(() => {
 				data-testid="tagExplorerBreadcrumbs"
 				className="flex flex-wrap items-center gap-1 text-sm"
 			>
-				<button
-					type="button"
+				<LinkButton
+					compact
 					onClick={() => setScope(null)}
-					className="rounded px-2 py-1 hover:bg-background-700"
+					className="rounded px-2 py-1 no-underline hover:bg-background-700"
 				>
 					{Messages.util.all}
-				</button>
+				</LinkButton>
 				{breadcrumbs.map((crumb) => (
 					<span key={crumb.path} className="flex items-center gap-1">
 						<span className="opacity-50">›</span>
-						<button
-							type="button"
+						<LinkButton
+							compact
 							onClick={() => setScope(crumb.path)}
-							className="rounded px-2 py-1 hover:bg-background-700"
+							className="rounded px-2 py-1 no-underline hover:bg-background-700"
 						>
 							{crumb.label}
-						</button>
+						</LinkButton>
 					</span>
 				))}
 			</nav>

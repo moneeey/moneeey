@@ -2,6 +2,7 @@ import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 
 import DatePicker from "../../components/base/DatePicker";
+import { CheckboxInput } from "../../components/base/Input";
 import Select from "../../components/base/Select";
 import type { IAccount, TAccountUUID } from "../../entities/Account";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
@@ -278,12 +279,11 @@ const AccountToggle = ({
 				: "border-background-700 bg-background-800 text-foreground/70 hover:bg-background-700"
 		}`}
 	>
-		<input
-			data-testid={`accountVisible_${account.id}`}
-			type="checkbox"
+		<CheckboxInput
+			testId={`accountVisible_${account.id}`}
 			className="m-0 h-3 w-3"
 			checked={selected}
-			onChange={onToggle}
+			onChange={() => onToggle()}
 		/>
 		{account.name}
 	</label>

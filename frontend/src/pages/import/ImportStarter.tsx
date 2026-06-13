@@ -2,6 +2,7 @@ import { head, isEmpty, last } from "lodash";
 import { observer } from "mobx-react-lite";
 import { type Dispatch, useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { FileInput } from "../../components/base/Input";
 import Select from "../../components/base/Select";
 import { VerticalSpace } from "../../components/base/Space";
 import { TextSubtitle, TextTitle } from "../../components/base/Text";
@@ -50,7 +51,7 @@ const FileUploader = ({ onFile, error }: FileUploaderProps) => {
 		},
 	});
 
-	const inputProps = { ...getInputProps(), "data-testid": "importFile" };
+	const inputProps = getInputProps();
 
 	return (
 		<>
@@ -59,7 +60,7 @@ const FileUploader = ({ onFile, error }: FileUploaderProps) => {
 				onClick={inputProps.onClick}
 				{...getRootProps()}
 			>
-				<input {...inputProps} />
+				<FileInput testId="importFile" {...inputProps} />
 				<p>
 					<strong>{error}</strong>
 				</p>
