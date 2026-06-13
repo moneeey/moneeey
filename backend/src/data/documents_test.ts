@@ -195,7 +195,10 @@ Deno.test(async function purgeExpiredDocumentsKeepsManifestEntry() {
 		const purged = await purgeExpiredDocuments(t.storage, VAULT);
 		assert.assertEquals(purged, ["a"]);
 		const manifest = await getManifest(t.storage, VAULT);
-		assert.assertEquals(manifest.map((row) => row.id), ["a"]);
+		assert.assertEquals(
+			manifest.map((row) => row.id),
+			["a"],
+		);
 		const all = await getDocs(t.storage, VAULT, ["a"]);
 		assert.assertEquals(all[0].data, null);
 	} finally {
