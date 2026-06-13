@@ -5,17 +5,30 @@ import {
 	OpenMenuItem,
 	Select,
 	clickMenuByTestId,
+	defaultSeedAccounts,
 	expect,
 	retrieveRowsData,
+	seedTestEnvironment,
 	test,
-	updateOnAccountTransactions,
 } from "../helpers";
 
 const ACCOUNTS_MENU_TESTID = "appMenu_subitems_settings_settings_accounts";
 
 test("Account settings — rename, archive, merge", async ({
-	wizardPage: page,
+	seededPage: page,
 }) => {
+	await seedTestEnvironment(page, {
+		accounts: defaultSeedAccounts,
+		transactions: [
+			{
+				id: "test-transaction-merge-target",
+				from: "Banco Moneeey",
+				to: "MoneeeyCard",
+				amount: 500,
+			},
+		],
+	});
+
 	// Navigate to Settings > Accounts (by testId to avoid "Include accounts:" text clash)
 	await clickMenuByTestId(page, ACCOUNTS_MENU_TESTID);
 
@@ -43,10 +56,6 @@ test("Account settings — rename, archive, merge", async ({
 	// Archive Bitcoinss via the Archived checkbox
 	await page.getByTestId("editorArchived").nth(1).click();
 	await expect(sidebar.getByText("BTC Bitcoinss")).not.toBeVisible();
-
-	// Add a transaction on Banco Principal to test merge reassignment
-	await sidebar.getByText("BRL Banco Principal").click();
-	await updateOnAccountTransactions(page, 1, "MoneeeyCard", "-500");
 
 	// Merge Banco Principal → MoneeeyCard
 	await clickMenuByTestId(page, ACCOUNTS_MENU_TESTID);

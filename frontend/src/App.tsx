@@ -17,6 +17,7 @@ import type { UnlockResult } from "./components/tour/EncryptionGate";
 import MoneeeyStore from "./shared/MoneeeyStore";
 import { LocalStore } from "./shared/storage/LocalStore";
 import { getTabLocalStoreName } from "./shared/storage/tabVault";
+import { moneeeySetupTestEnvironment } from "./shared/testEnvironment";
 import useMoneeeyStore, {
 	MoneeeyStoreProvider,
 } from "./shared/useMoneeeyStore";
@@ -96,7 +97,7 @@ const AppContent = observer(() => {
 });
 
 const AppBoot = observer(() => {
-	const { currentLanguage } = useLanguageSwitcher();
+	const { currentLanguage, selectLanguage } = useLanguageSwitcher();
 	const [moneeeyStore, setMoneeeyStore] = useState<MoneeeyStore | null>(null);
 	const [localStoreReady, setLocalStoreReady] = useState(false);
 	const localStore = useMemo(() => new LocalStore(getTabLocalStoreName()), []);
@@ -110,6 +111,20 @@ const AppBoot = observer(() => {
 			cancelled = true;
 		};
 	}, [localStore]);
+
+	useEffect(() => {
+		if (!import.meta.env.DEV) return;
+		window.moneeeySetupTestEnvironment = (options) =>
+			moneeeySetupTestEnvironment({
+				...options,
+				localStore,
+				selectLanguage,
+				setMoneeeyStore,
+			});
+		return () => {
+			window.moneeeySetupTestEnvironment = undefined;
+		};
+	}, [localStore, selectLanguage]);
 
 	const onUnlocked = useCallback(
 		async ({ dataKey, syncConfig }: UnlockResult) => {

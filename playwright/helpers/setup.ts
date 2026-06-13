@@ -21,7 +21,12 @@ export async function resetAppState(page: Page) {
 			if (db.name?.startsWith("moneeey")) names.add(db.name);
 		}
 		for (const name of names) {
-			window.indexedDB.deleteDatabase(name);
+			await new Promise<void>((resolve, reject) => {
+				const request = window.indexedDB.deleteDatabase(name);
+				request.onsuccess = () => resolve();
+				request.onerror = () => reject(request.error);
+				request.onblocked = () => resolve();
+			});
 		}
 	});
 }

@@ -114,6 +114,11 @@ export class LocalStore implements MetaStore {
 		await clearStore(this.requireDb(), STORE_DOCUMENTS);
 	}
 
+	async clearAll(): Promise<void> {
+		await clearStore(this.requireDb(), STORE_DOCUMENTS);
+		await clearStore(this.requireDb(), STORE_META);
+	}
+
 	async getVaultId(): Promise<string | undefined> {
 		return await getValue<string>(this.requireDb(), STORE_META, META_VAULT_ID);
 	}

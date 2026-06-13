@@ -24,7 +24,6 @@ import {
 	BACKEND_REACHABLE,
 	addAccountFromSettings,
 	createFirstAccount,
-	dismissLandingTour,
 	landThroughLanguage,
 	openAccountSettings,
 	pickDefaultCurrencyBRL,
@@ -153,10 +152,12 @@ test.describe("passkey cross-context sync", () => {
 			).toHaveCount(0);
 			await pageB.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
 			await pageB.getByRole("button", { name: "Unlock" }).click();
-			await dismissLandingTour(pageB);
 
-			const hashAfter = await pageB.evaluate(() => window.location.hash);
-			expect(hashAfter).not.toMatch(/^#\/invite\//);
+			await expect
+				.poll(() => pageB.evaluate(() => window.location.hash), {
+					timeout: 15_000,
+				})
+				.not.toMatch(/^#\/invite\//);
 
 			await openAccountSettings(pageB);
 			await expect(pageB.getByText(accountFromA)).toBeVisible({
@@ -224,7 +225,6 @@ test.describe("passkey cross-context sync", () => {
 			).toHaveCount(0);
 			await pageB.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
 			await pageB.getByRole("button", { name: "Unlock" }).click();
-			await dismissLandingTour(pageB);
 
 			await openAccountSettings(pageB);
 			await expect(pageB.getByText(accountFromA)).toBeVisible({
@@ -313,7 +313,6 @@ test.describe("vault membership management", () => {
 			});
 			await pageB.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
 			await pageB.getByRole("button", { name: "Unlock" }).click();
-			await dismissLandingTour(pageB);
 
 			await openSyncSettings(pageA);
 			await expect(pageA.getByTestId("membersSection")).toBeVisible({
@@ -436,7 +435,6 @@ test.describe("vault membership management", () => {
 			});
 			await pageB.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
 			await pageB.getByRole("button", { name: "Unlock" }).click();
-			await dismissLandingTour(pageB);
 
 			await openSyncSettings(pageA);
 			await expect(pageA.getByTestId(`member-row-${emailB}`)).toBeVisible({

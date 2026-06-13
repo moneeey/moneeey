@@ -8,11 +8,15 @@ import {
 	clickMenuByTestId,
 	expect,
 	retrieveRowsData,
+	seedTestEnvironment,
 	setDateField,
 	test,
 	updateOnAccountTransactions,
-	updateOnAllTransactions,
 } from "../helpers";
+import {
+	defaultTransactionAccounts,
+	defaultTransactions,
+} from "../helpers/wizard";
 
 const SETTINGS_MENU_TESTID = "appMenu_subitems_settings_settings_general";
 
@@ -110,39 +114,40 @@ test("Transactions — create on MoneeeyCard, verify views, and edit-date reorde
 });
 
 test("Transactions — delete, inspect, and restore transactions from trash", async ({
-	wizardPage: page,
+	seededPage: page,
 }) => {
+	await seedTestEnvironment(page, {
+		accounts: [
+			...defaultTransactionAccounts,
+			{ id: "test-payee-groceries", name: "Groceries", kind: "PAYEE" },
+		],
+		transactions: [
+			...defaultTransactions,
+			{
+				id: "test-transaction-trash-me",
+				from: "MoneeeyCard",
+				to: "Groceries",
+				amount: 42,
+				memo: "trash me",
+			},
+			{
+				id: "test-transaction-multi-trash",
+				from: "Banco Moneeey",
+				to: "Bitcoinss",
+				fromValue: 250,
+				toValue: 0.005,
+				memo: "multi trash",
+			},
+		],
+	});
+
 	await page.getByText("BRL MoneeeyCard").click();
-	await updateOnAccountTransactions(page, 1, "Groceries", "-42", "trash me");
-
-	await page.getByTestId("transactionDelete").nth(1).click();
+	await page.getByTestId("transactionDelete").nth(6).click();
 	await expect(page.getByText("Trash (1)")).toBeVisible({ timeout: 15_000 });
-
-	await OpenMenuItem(page, "All transactions");
-	const newTransactionIndex =
-		(await page.getByTestId("editorMemo").count()) - 1;
-	await updateOnAllTransactions(
-		page,
-		newTransactionIndex,
-		"Banco Moneeey",
-		"Bitcoinss",
-		undefined,
-		undefined,
-		"multi trash",
-	);
 
 	await clickMenuByTestId(page, SETTINGS_MENU_TESTID);
 	await page.getByTestId("tableDensitySwitcher_compact").click();
 	await OpenMenuItem(page, "All transactions");
-
-	await Input(page, "editorFrom_amount", undefined, newTransactionIndex).change(
-		"250",
-		"250",
-	);
-	await Input(page, "editorTo_amount", undefined, newTransactionIndex).change(
-		"0,00500000",
-		"0,005",
-	);
 
 	await page
 		.getByTestId("transactionTable-compactRow")
@@ -195,27 +200,17 @@ test("Transactions — delete, inspect, and restore transactions from trash", as
 });
 
 test("Transactions — swapping direction flips from/to accounts", async ({
-	wizardPage: page,
+	seededPage: page,
 }) => {
+	await seedTestEnvironment(page, {
+		accounts: defaultTransactionAccounts,
+		transactions: [
+			{ ...defaultTransactions[0], memo: "Salary" },
+			defaultTransactions[1],
+			{ ...defaultTransactions[2], amount: 128.12, memo: "Dinner" },
+		],
+	});
 	await page.getByText("BRL MoneeeyCard").click();
-
-	// Add initial transactions
-	await updateOnAccountTransactions(
-		page,
-		1,
-		"Banco Moneeey",
-		"3000",
-		"Salary",
-		"3.000",
-	);
-	await updateOnAccountTransactions(page, 2, "Bakery123", "-60", "pao");
-	await updateOnAccountTransactions(
-		page,
-		3,
-		"Ristorant88",
-		"-128,12",
-		"Dinner",
-	);
 
 	// Wait for running balance to be updated
 	await Input(page, "editorRunning", undefined, 3).toHaveValue("4.811,88");
