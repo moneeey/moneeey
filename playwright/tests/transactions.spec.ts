@@ -4,7 +4,6 @@ import {
 	Input,
 	OpenMenuItem,
 	REFERENCE_ACCOUNT_COLUMNS,
-	Select,
 	TIMEOUTS,
 	clickMenuByTestId,
 	expect,
@@ -12,6 +11,7 @@ import {
 	setDateField,
 	test,
 	updateOnAccountTransactions,
+	updateOnAllTransactions,
 } from "../helpers";
 
 const SETTINGS_MENU_TESTID = "appMenu_subitems_settings_settings_general";
@@ -121,13 +121,13 @@ test("Transactions — delete, inspect, and restore transactions from trash", as
 	await OpenMenuItem(page, "All transactions");
 	const newTransactionIndex =
 		(await page.getByTestId("editorMemo").count()) - 1;
-	await Select(page, "editorFrom", newTransactionIndex).chooseOrCreate(
+	await updateOnAllTransactions(
+		page,
+		newTransactionIndex,
 		"Banco Moneeey",
-	);
-	await Select(page, "editorTo", newTransactionIndex).chooseOrCreate(
 		"Bitcoinss",
-	);
-	await Input(page, "editorMemo", undefined, newTransactionIndex).change(
+		undefined,
+		undefined,
 		"multi trash",
 	);
 
