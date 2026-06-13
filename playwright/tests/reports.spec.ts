@@ -44,7 +44,7 @@ const REPORT_TABS = [
 
 test.describe("Reports", () => {
 	test("each report tab renders a chart with seeded data", async ({
-		wizardPage: page,
+		transactionsPage: page,
 	}) => {
 		const sink = trackConsole(page);
 		await OpenMenuItem(page, "Reports");
@@ -66,7 +66,7 @@ test.describe("Reports", () => {
 	});
 
 	test("date range preset switch reflects in URL and re-renders chart", async ({
-		wizardPage: page,
+		transactionsPage: page,
 	}) => {
 		const sink = trackConsole(page);
 		await OpenMenuItem(page, "Reports");
@@ -80,7 +80,7 @@ test.describe("Reports", () => {
 	});
 
 	test("period selector changes bucket granularity without crash", async ({
-		wizardPage: page,
+		transactionsPage: page,
 	}) => {
 		const sink = trackConsole(page);
 		await OpenMenuItem(page, "Reports");
@@ -94,7 +94,7 @@ test.describe("Reports", () => {
 	});
 
 	test("legend chip toggles a series without crash", async ({
-		wizardPage: page,
+		transactionsPage: page,
 	}) => {
 		const sink = trackConsole(page);
 		await OpenMenuItem(page, "Reports");
@@ -116,7 +116,7 @@ test.describe("Reports", () => {
 	});
 
 	test("clicking a bar opens an inline drill-down with transactions", async ({
-		wizardPage: page,
+		transactionsPage: page,
 	}) => {
 		const sink = trackConsole(page);
 		await OpenMenuItem(page, "Reports");
@@ -141,7 +141,7 @@ test.describe("Reports", () => {
 	});
 
 	test("compare-to overlay adds ghost series and dimmed legend chips", async ({
-		wizardPage: page,
+		transactionsPage: page,
 	}) => {
 		const sink = trackConsole(page);
 		await OpenMenuItem(page, "Reports");
@@ -170,7 +170,7 @@ test.describe("Reports", () => {
 	});
 
 	test("tag depth selector on Tag expenses survives a round-trip", async ({
-		wizardPage: page,
+		transactionsPage: page,
 	}) => {
 		const sink = trackConsole(page);
 		await OpenMenuItem(page, "Reports");

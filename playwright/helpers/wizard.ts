@@ -4,6 +4,124 @@ import { Input, Select } from "./page-objects";
 
 export const E2E_PASSPHRASE = "playwright-test-pass-123";
 
+type SeedAccount = {
+	id?: string;
+	name: string;
+	currency?: string;
+	kind?: "CHECKING" | "INVESTMENT" | "SAVINGS" | "CREDIT_CARD" | "PAYEE";
+	initialBalance?: number;
+};
+
+type SeedTransaction = {
+	id?: string;
+	from: string;
+	to: string;
+	amount?: number;
+	fromValue?: number;
+	toValue?: number;
+	date?: string;
+	memo?: string;
+};
+
+type SeedTestEnvironmentOptions = {
+	passphrase?: string;
+	accounts?: SeedAccount[];
+	transactions?: SeedTransaction[];
+	skipTour?: boolean;
+};
+
+type TestEnvironmentWindow = Window & {
+	moneeeySetupTestEnvironment?: (
+		options?: SeedTestEnvironmentOptions,
+	) => Promise<void>;
+};
+
+export const defaultSeedAccounts: SeedAccount[] = [
+	{
+		id: "test-account-01-banco",
+		name: "Banco Moneeey",
+		currency: "BRL",
+		initialBalance: 1234.56,
+	},
+	{
+		id: "test-account-02-card",
+		name: "MoneeeyCard",
+		currency: "BRL",
+		initialBalance: 2000,
+	},
+	{
+		id: "test-account-03-bitcoin",
+		name: "Bitcoinss",
+		currency: "BTC",
+		initialBalance: 0.12345678,
+	},
+];
+
+export const defaultTransactionAccounts: SeedAccount[] = [
+	...defaultSeedAccounts,
+	{ id: "test-payee-bakery", name: "Bakery123", kind: "PAYEE" },
+	{ id: "test-payee-ristorant", name: "Ristorant88", kind: "PAYEE" },
+	{ id: "test-payee-playxbox", name: "Playxbox421", kind: "PAYEE" },
+	{ id: "test-payee-cashback", name: "Cashbazk", kind: "PAYEE" },
+];
+
+export const defaultTransactions: SeedTransaction[] = [
+	{
+		id: "test-transaction-card-income",
+		from: "Banco Moneeey",
+		to: "MoneeeyCard",
+		amount: 3000,
+	},
+	{
+		id: "test-transaction-card-bakery",
+		from: "MoneeeyCard",
+		to: "Bakery123",
+		amount: 60,
+		memo: "pao",
+	},
+	{
+		id: "test-transaction-card-dinner",
+		from: "MoneeeyCard",
+		to: "Ristorant88",
+		amount: 128,
+	},
+	{
+		id: "test-transaction-card-playxbox",
+		from: "MoneeeyCard",
+		to: "Playxbox421",
+		amount: 7213.21,
+	},
+	{
+		id: "test-transaction-card-cashback",
+		from: "Cashbazk",
+		to: "MoneeeyCard",
+		amount: 69.42,
+		memo: "cashback",
+	},
+];
+
+export async function seedTestEnvironment(
+	page: Page,
+	options: SeedTestEnvironmentOptions = {},
+) {
+	await page.goto("/#/dashboard");
+	await page.waitForFunction(
+		() =>
+			typeof (window as TestEnvironmentWindow).moneeeySetupTestEnvironment ===
+			"function",
+	);
+	await page.evaluate(
+		async (setupOptions) => {
+			const setup = (window as TestEnvironmentWindow)
+				.moneeeySetupTestEnvironment;
+			if (!setup) throw new Error("moneeeySetupTestEnvironment unavailable");
+			await setup(setupOptions);
+		},
+		{ passphrase: E2E_PASSPHRASE, ...options },
+	);
+	await expect(page.getByText("Dashboard")).toBeVisible();
+}
+
 export async function completeEncryptionSetup(
 	page: Page,
 	passphrase: string = E2E_PASSPHRASE,

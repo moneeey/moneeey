@@ -1,17 +1,22 @@
 import { type Page, test as base } from "@playwright/test";
-import { closeTourModal } from "./page-objects";
 import { step } from "./perf";
 import { resetAppState } from "./setup";
-import { completeLandingWizard } from "./wizard";
+import {
+	defaultTransactionAccounts,
+	defaultTransactions,
+	seedTestEnvironment,
+} from "./wizard";
 
 /**
  * - `seededPage`: fresh app at `/` with storage wiped. Use for tests that
  *   exercise the landing wizard itself (tour.spec.ts).
- * - `wizardPage`: post-wizard Dashboard — reset + wizard + close tour modal.
+ * - `wizardPage`: post-wizard Dashboard — reset + frontend test seed.
+ * - `transactionsPage`: `wizardPage` plus a stable set of transaction rows.
  */
 type MoneeeyFixtures = {
 	seededPage: Page;
 	wizardPage: Page;
+	transactionsPage: Page;
 };
 
 export const test = base.extend<MoneeeyFixtures>({
@@ -21,8 +26,17 @@ export const test = base.extend<MoneeeyFixtures>({
 	},
 	wizardPage: async ({ page }, use) => {
 		await step("reset app state", () => resetAppState(page));
-		await step("complete landing wizard", () => completeLandingWizard(page));
-		await step("close tour modal", () => closeTourModal(page));
+		await step("seed test environment", () => seedTestEnvironment(page));
+		await use(page);
+	},
+	transactionsPage: async ({ page }, use) => {
+		await step("reset app state", () => resetAppState(page));
+		await step("seed transaction test environment", () =>
+			seedTestEnvironment(page, {
+				accounts: defaultTransactionAccounts,
+				transactions: defaultTransactions,
+			}),
+		);
 		await use(page);
 	},
 });
