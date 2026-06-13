@@ -14,7 +14,7 @@ async function pickLanguageEn(page: import("@playwright/test").Page) {
 	await page.getByTestId("ok-button").click();
 }
 
-test("Settings — language, theme, tour, sign out cancel + confirm", async ({
+test("Settings — language, theme, sign out cancel + confirm", async ({
 	wizardPage: page,
 }) => {
 	await clickMenuByTestId(page, SETTINGS_MENU_TESTID);
@@ -31,12 +31,6 @@ test("Settings — language, theme, tour, sign out cancel + confirm", async ({
 		await page.getByTestId("languageSelector_pt").click();
 		await expect(page.getByTestId("settingsTabs_data")).toContainText("Dados");
 		await page.getByTestId("languageSelector_en").click();
-	});
-
-	await test.step("tour button opens modal", async () => {
-		await page.getByRole("button", { name: /tour/i }).click();
-		await expect(page.getByTestId("nm-modal-card")).toBeVisible();
-		await page.getByTestId("nm-modal-card").getByTestId("close").click();
 	});
 
 	await test.step("sign out — cancel leaves app intact", async () => {

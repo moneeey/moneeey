@@ -23,7 +23,6 @@ import {
 import {
 	BACKEND_REACHABLE,
 	createFirstAccount,
-	dismissLandingTour,
 	landThroughLanguage,
 	pickDefaultCurrencyBRL,
 	signupViaPasskey,
@@ -120,7 +119,6 @@ test.describe("PWA offline", () => {
 			).toHaveCount(0);
 			await pageA.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
 			await pageA.getByRole("button", { name: "Unlock" }).click();
-			await dismissLandingTour(pageA);
 
 			await waitForSyncStatus(pageA, "offline");
 
@@ -161,7 +159,6 @@ test.describe("PWA offline", () => {
 			).toHaveCount(0);
 			await pageB.getByTestId("encryptionPassphrase").fill(E2E_PASSPHRASE);
 			await pageB.getByRole("button", { name: "Unlock" }).click();
-			await dismissLandingTour(pageB);
 			await waitForSyncStatus(pageB, "online");
 
 			await OpenMenuItem(pageB, `BRL ${accountName}`);

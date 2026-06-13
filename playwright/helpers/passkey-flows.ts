@@ -4,6 +4,7 @@ import { E2E_PASSPHRASE } from "./wizard";
 
 export async function landThroughLanguage(page: Page) {
 	await page.getByTestId("languageSelector_en").click();
+	await page.evaluate(() => window.localStorage.setItem("landing", "true"));
 	await page.getByTestId("ok-button").click();
 }
 
@@ -37,7 +38,6 @@ export async function createFirstAccount(page: Page, name: string) {
 		timeout: 5_000,
 	});
 	await page.getByTestId("save-and-close").click();
-	await dismissLandingTour(page);
 }
 
 export async function dismissLandingTour(page: Page) {
