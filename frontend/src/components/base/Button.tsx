@@ -1,5 +1,5 @@
 import { omit } from "lodash";
-import type { ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import { type TMessages, WithMessages } from "../../utils/Messages";
 import { slugify } from "../../utils/Utils";
@@ -9,14 +9,18 @@ import Space from "./Space";
 
 type ButtonType = "primary" | "secondary" | "link" | "danger";
 
-type ButtonProps = Partial<WithDataTestId> & {
-	onClick: () => void;
-	title?: string;
-	children?: string | ReactNode | ReactNode[];
-	className?: string;
-	disabled?: boolean;
-	compact?: boolean;
-};
+type ButtonProps = Partial<WithDataTestId> &
+	Omit<
+		ButtonHTMLAttributes<HTMLButtonElement>,
+		"children" | "className" | "onClick" | "title" | "type"
+	> & {
+		onClick?: () => void;
+		type?: "button" | "submit" | "reset";
+		title?: string;
+		children?: string | ReactNode | ReactNode[];
+		className?: string;
+		compact?: boolean;
+	};
 
 type WithButtonKind = {
 	kind: ButtonType;
@@ -33,9 +37,9 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind) =>
 	function BaseButton(props: ButtonProps) {
 		return (
 			<button
-				type="button"
 				{...omit(base, ["testId", "compact"])}
 				{...omit(props, ["testId", "compact"])}
+				type={props.type || base.type || "button"}
 				data-testid={props.testId || base.testId}
 				disabled={props.disabled}
 				className={`flex whitespace-nowrap rounded ${props.compact ? "" : "p-1"} outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 ${styles[kind]} ${

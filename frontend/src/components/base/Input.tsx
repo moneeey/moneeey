@@ -1,4 +1,9 @@
-import { type ReactNode, useEffect, useState } from "react";
+import {
+	type InputHTMLAttributes,
+	type ReactNode,
+	useEffect,
+	useState,
+} from "react";
 import { NumericFormat } from "react-number-format";
 
 import type { ClassNameType } from "../../utils/Utils";
@@ -123,6 +128,40 @@ const Input = ({
 		),
 	});
 };
+
+export type CheckboxInputProps = WithDataTestId & {
+	checked: boolean;
+	onChange: (checked: boolean) => void;
+	className?: string;
+	disabled?: boolean;
+	readOnly?: boolean;
+};
+
+export const CheckboxInput = ({
+	checked,
+	onChange,
+	className,
+	disabled,
+	readOnly,
+	testId,
+}: CheckboxInputProps) => (
+	<input
+		data-testid={testId}
+		type="checkbox"
+		className={className}
+		checked={checked}
+		disabled={disabled === true || readOnly === true}
+		readOnly={readOnly}
+		onChange={({ target: { checked: newValue } }) => onChange(newValue)}
+	/>
+);
+
+type FileInputProps = Partial<WithDataTestId> &
+	InputHTMLAttributes<HTMLInputElement>;
+
+export const FileInput = ({ testId, ...props }: FileInputProps) => (
+	<input {...props} data-testid={testId} type="file" />
+);
 
 export type InputNumberProps = InputProps<number> & {
 	thousandSeparator: string;
