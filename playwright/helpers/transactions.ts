@@ -7,15 +7,21 @@ export async function updateOnAllTransactions(
 	index: number,
 	fromAccountName: string,
 	toAccountName: string,
-	amount: string,
+	amount?: string,
 	expectedAmount?: string,
+	memo?: string,
 ) {
 	await Select(page, "editorFrom", index).chooseOrCreate(fromAccountName);
 	await Select(page, "editorTo", index).chooseOrCreate(toAccountName);
-	await Input(page, "editorAmount", undefined, index).change(
-		amount,
-		expectedAmount ?? amount,
-	);
+	if (amount) {
+		await Input(page, "editorAmount", undefined, index).change(
+			amount,
+			expectedAmount ?? amount,
+		);
+	}
+	if (memo) {
+		await Input(page, "editorMemo", undefined, index).change(memo);
+	}
 }
 
 /** Fills a row in a reference-account view (counterpart + amount + optional memo). */

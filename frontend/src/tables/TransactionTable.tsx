@@ -1,15 +1,20 @@
-import { ArrowDownIcon, ArrowUpIcon } from "@heroicons/react/24/outline";
+import {
+	ArrowDownIcon,
+	ArrowUpIcon,
+	TrashIcon,
+} from "@heroicons/react/24/outline";
 import { isEmpty } from "lodash";
 import { observer } from "mobx-react-lite";
 
 import AccountField from "../components/editor/AccountField";
 import CurrencyAmountField from "../components/editor/CurrencyAmountField";
 import DateField from "../components/editor/DateField";
-import { FieldVisibility } from "../components/editor/FieldDef";
+import { type FieldDef, FieldVisibility } from "../components/editor/FieldDef";
 import MemoField from "../components/editor/MemoField";
 import TransactionAmountField from "../components/editor/TransactionAmountField";
 
 import TableEditor, { type CompactLayout } from "../components/TableEditor";
+import { LinkButton } from "../components/base/Button";
 import type { TAccountUUID } from "../entities/Account";
 import type { ICurrency } from "../entities/Currency";
 import type TransactionStore from "../entities/Transaction";
@@ -143,6 +148,27 @@ export default observer(
 				: referenceAccount === to_account
 					? "text-positive"
 					: "";
+		};
+
+		const actionsField: FieldDef<ITransaction> = {
+			title: Messages.util.actions,
+			width: 52,
+			validate: () => ({ valid: true }),
+			sorter: () => 0,
+			render: ({ entity }) =>
+				transactions.byUuid(entity.id) ? (
+					<LinkButton
+						compact
+						testId="transactionDelete"
+						title={Messages.util.delete}
+						className="flex h-5 w-5 items-center justify-center rounded text-danger-300 no-underline hover:bg-background-500 hover:text-danger-200"
+						onClick={() => transactions.deleteTransaction(entity)}
+					>
+						<TrashIcon className="h-4 w-4" />
+					</LinkButton>
+				) : (
+					<></>
+				),
 		};
 
 		const schema = [
@@ -284,6 +310,7 @@ export default observer(
 					delta: (memo) => ({ memo }),
 				}),
 			},
+			actionsField,
 		];
 
 		const arrowDown = <ArrowDownIcon className="h-4 w-4 text-negative" />;
@@ -299,6 +326,7 @@ export default observer(
 							muted: true,
 							align: "right",
 						},
+						{ title: Messages.util.actions },
 					],
 					[
 						{ title: Messages.transactions.account, flex: 2 },
@@ -309,6 +337,7 @@ export default observer(
 					[
 						{ title: Messages.util.date, muted: true },
 						{ title: Messages.transactions.memo, muted: true },
+						{ title: Messages.util.actions },
 					],
 					[
 						{
