@@ -109,7 +109,7 @@ test("Transactions — create on MoneeeyCard, verify views, and edit-date reorde
 	});
 });
 
-test("Transactions — delete and restore standalone transaction from trash", async ({
+test("Transactions — delete, inspect, and restore transactions from trash", async ({
 	wizardPage: page,
 }) => {
 	await page.getByText("BRL MoneeeyCard").click();
@@ -131,22 +131,29 @@ test("Transactions — delete and restore standalone transaction from trash", as
 			);
 		expect(memos).toContain("trash me");
 	}).toPass({ timeout: 10_000 });
-});
 
-test("Transactions — trash shows both sides of multi-currency transaction", async ({
-	wizardPage: page,
-}) => {
 	await OpenMenuItem(page, "All transactions");
-	await Select(page, "editorFrom", 3).chooseOrCreate("Banco Moneeey");
-	await Select(page, "editorTo", 3).chooseOrCreate("Bitcoinss");
-	await Input(page, "editorMemo", undefined, 3).change("multi trash");
+	const newTransactionIndex =
+		(await page.getByTestId("editorMemo").count()) - 1;
+	await Select(page, "editorFrom", newTransactionIndex).chooseOrCreate(
+		"Banco Moneeey",
+	);
+	await Select(page, "editorTo", newTransactionIndex).chooseOrCreate(
+		"Bitcoinss",
+	);
+	await Input(page, "editorMemo", undefined, newTransactionIndex).change(
+		"multi trash",
+	);
 
 	await clickMenuByTestId(page, SETTINGS_MENU_TESTID);
 	await page.getByTestId("tableDensitySwitcher_compact").click();
 	await OpenMenuItem(page, "All transactions");
 
-	await Input(page, "editorFrom_amount", undefined, 3).change("250", "250");
-	await Input(page, "editorTo_amount", undefined, 3).change(
+	await Input(page, "editorFrom_amount", undefined, newTransactionIndex).change(
+		"250",
+		"250",
+	);
+	await Input(page, "editorTo_amount", undefined, newTransactionIndex).change(
 		"0,00500000",
 		"0,005",
 	);
