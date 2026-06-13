@@ -59,6 +59,25 @@ export const MIGRATIONS: Migration[] = [
 			);
 		`,
 	},
+	{
+		name: "0002_nullable_document_data",
+		sql: `
+			CREATE TABLE documents_new (
+				vault_id      TEXT NOT NULL,
+				id            TEXT NOT NULL,
+				updated_at    TEXT NOT NULL,
+				deleted_at    TEXT,
+				data          TEXT,
+				PRIMARY KEY (vault_id, id)
+			);
+
+			INSERT INTO documents_new (vault_id, id, updated_at, deleted_at, data)
+			SELECT vault_id, id, updated_at, deleted_at, data FROM documents;
+
+			DROP TABLE documents;
+			ALTER TABLE documents_new RENAME TO documents;
+		`,
+	},
 ];
 
 export function runMigrations(

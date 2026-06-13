@@ -35,14 +35,14 @@ Deno.test(async function documentUpsertUpdateAndStaleRejection() {
 			{
 				id: "d1",
 				updated_at: "2026-06-01",
-				deleted_at: "2026-06-01",
+				deleted_at: "2999-06-01",
 				data: "y",
 			},
 		]);
 		assert.assertEquals(updated[0].status, "accepted");
 		const doc = (await getDocs(t.storage, vault.id, ["d1"]))[0];
 		assert.assertEquals(doc.data, "y");
-		assert.assertEquals(doc.deleted_at, "2026-06-01");
+		assert.assertEquals(doc.deleted_at, "2999-06-01");
 
 		const stale = await bulkUpsert(t.storage, vault.id, [
 			{ id: "d1", updated_at: "2025-01-01", deleted_at: null, data: "old" },
