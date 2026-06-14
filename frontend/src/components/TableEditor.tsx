@@ -117,16 +117,14 @@ export default observer(
 		);
 
 		return (
-			<section className="h-full grow flex flex-col min-h-0">
-				<VirtualTable
-					testId={testId}
-					key={testId}
-					columns={columns}
-					rows={entities}
-					isNewEntity={isNewEntity}
-					compactLayout={compactLayout}
-				/>
-			</section>
+			<VirtualTable
+				testId={testId}
+				key={testId}
+				columns={columns}
+				rows={entities}
+				isNewEntity={isNewEntity}
+				compactLayout={compactLayout}
+			/>
 		);
 	},
 );
