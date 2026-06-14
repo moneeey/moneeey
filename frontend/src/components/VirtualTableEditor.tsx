@@ -1,6 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import {
-	type ComponentType,
+	type CSSProperties,
 	type Dispatch,
 	type KeyboardEvent,
 	type Ref,
@@ -12,10 +12,11 @@ import {
 } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import {
-	type FixedSizeListProps,
-	FixedSizeList as GenericFixedSizeList,
-	VariableSizeGrid as GenericVirtualizedGrid,
-	type VariableSizeGridProps,
+	type CellComponentProps,
+	List as FixedSizeList,
+	type GridImperativeAPI,
+	type RowComponentProps,
+	Grid as VirtualizedGrid,
 } from "react-window";
 
 import { observer } from "mobx-react-lite";
@@ -26,13 +27,8 @@ import Icon from "./base/Icon";
 import { Input } from "./base/Input";
 import { FieldVisibility } from "./editor/FieldDef";
 
-const VirtualizedGrid =
-	GenericVirtualizedGrid as unknown as ComponentType<VariableSizeGridProps>;
-
-const FixedSizeList =
-	GenericFixedSizeList as unknown as ComponentType<FixedSizeListProps>;
-
 const SCROLLBAR_WIDTH = 24;
+const OVERSCAN_ROW_COUNT = 10;
 // Fallback until the first DOM measurement resolves.
 const ROW_LINE_HEIGHT_FALLBACK = 24;
 const COMPACT_HEADER_VERTICAL_PADDING = 8;
@@ -86,10 +82,38 @@ type GridRenderCell = {
 	rowIndex: number;
 	column: ColumnDef;
 	row: Row;
-	style: object;
+	style: CSSProperties;
 	setSort: Dispatch<SetStateAction<SortColumn>>;
 	sort: SortColumn;
 };
+
+type VirtualGridCellProps = {
+	rows: Row[];
+	columns: ColumnDef[];
+	setSort: Dispatch<SetStateAction<SortColumn>>;
+	sort: SortColumn;
+	RenderCell: (props: GridRenderCell) => JSX.Element;
+};
+
+const VirtualGridCell = ({
+	columnIndex,
+	rowIndex,
+	style,
+	rows,
+	columns,
+	sort,
+	setSort,
+	RenderCell,
+}: CellComponentProps<VirtualGridCellProps>) => (
+	<RenderCell
+		style={style}
+		column={columns[columnIndex]}
+		rowIndex={rowIndex}
+		row={rows[rowIndex]}
+		sort={sort}
+		setSort={setSort}
+	/>
+);
 
 const SortIcon = ({ order }: { order?: "descend" | "ascend" }) => {
 	if (order === "ascend") {
@@ -157,13 +181,8 @@ const SortableHeaderText = ({
 	);
 };
 
-type ScrollData = {
-	scrollLeft: number;
-	scrollTop: number;
-};
-
 const VirtualGrid = ({
-	outerRef,
+	gridRef,
 	className,
 	gridHeight,
 	rowHeight,
@@ -172,48 +191,31 @@ const VirtualGrid = ({
 	columns,
 	sort,
 	setSort,
-	setScroll,
 	RenderCell,
 }: {
-	outerRef?: Ref<HTMLDivElement>;
+	gridRef?: Ref<GridImperativeAPI>;
 	className: string;
 	gridHeight: number;
 	rowHeight: number;
 	width: number;
 	rows: Row[];
 	columns: ColumnDef[];
-	setScroll?: (scrollData: ScrollData) => void;
 	setSort: Dispatch<SetStateAction<SortColumn>>;
 	sort: SortColumn;
 	RenderCell: (props: GridRenderCell) => JSX.Element;
 }) => (
 	<VirtualizedGrid
 		className={className}
-		height={gridHeight}
-		width={width}
+		style={{ height: gridHeight, width }}
 		rowCount={rows.length}
 		columnCount={columns.length}
-		rowHeight={() => rowHeight}
+		rowHeight={rowHeight}
 		columnWidth={(index: number) => columns[index].width}
-		outerRef={outerRef}
-		onScroll={({ scrollLeft, scrollTop }) =>
-			setScroll?.({ scrollLeft, scrollTop })
-		}
-		itemKey={({ columnIndex, rowIndex }) =>
-			`${rows[rowIndex]?.entityId ?? rowIndex}-${columnIndex}`
-		}
-	>
-		{({ columnIndex, rowIndex, style }) => (
-			<RenderCell
-				style={style}
-				column={columns[columnIndex]}
-				rowIndex={rowIndex}
-				row={rows[rowIndex]}
-				sort={sort}
-				setSort={setSort}
-			/>
-		)}
-	</VirtualizedGrid>
+		gridRef={gridRef}
+		overscanCount={OVERSCAN_ROW_COUNT}
+		cellComponent={VirtualGridCell}
+		cellProps={{ rows, columns, sort, setSort, RenderCell }}
+	/>
 );
 
 const HeaderCell = ({ column, style, sort, setSort }: GridRenderCell) => (
@@ -272,7 +274,8 @@ const VirtualTableGrid = ({
 	setSort: Dispatch<SetStateAction<SortColumn>>;
 	sort: SortColumn;
 } & WithDataTestId) => {
-	const headerRef = useRef<HTMLDivElement>(null);
+	const headerRef = useRef<GridImperativeAPI | null>(null);
+	const bodyRef = useRef<GridImperativeAPI | null>(null);
 	const calculatedColumns = useMemo(() => {
 		const totalWidth = columns.reduce((total, cur) => total + cur.width, 0);
 
@@ -292,12 +295,24 @@ const VirtualTableGrid = ({
 		columns: calculatedColumns,
 	};
 
+	useLayoutEffect(() => {
+		const body = bodyRef.current?.element;
+		const header = headerRef.current?.element;
+		if (!body || !header) return;
+
+		const syncHeaderScroll = () => {
+			header.scrollLeft = body.scrollLeft;
+		};
+		body.addEventListener("scroll", syncHeaderScroll, { passive: true });
+		return () => body.removeEventListener("scroll", syncHeaderScroll);
+	}, []);
+
 	return (
 		<>
 			<VirtualGrid
 				className={`!overflow-hidden bg-background-700 px-2 ${testId}-header`}
 				gridHeight={rowHeight}
-				outerRef={headerRef}
+				gridRef={headerRef}
 				{...common}
 				rows={[{ entityId: "Header" }]}
 				RenderCell={HeaderCell}
@@ -305,10 +320,8 @@ const VirtualTableGrid = ({
 			<VirtualGrid
 				className={`bg-background-800 px-2 pb-2 ${testId}-body`}
 				gridHeight={height - rowHeight}
+				gridRef={bodyRef}
 				{...common}
-				setScroll={({ scrollLeft }) => {
-					headerRef?.current?.scrollTo(scrollLeft, 0);
-				}}
 				rows={rows}
 				RenderCell={ContentCell}
 			/>
@@ -377,23 +390,21 @@ const CompactRowLine = ({
 
 const CompactContentCell = observer(
 	({
-		row,
-		rowIndex,
+		index,
 		style,
+		rows,
 		compactLayout,
 		columnsByTitle,
 		testId,
-	}: {
-		row: Row | undefined;
-		rowIndex: number;
-		style: object;
+	}: RowComponentProps<{
+		rows: Row[];
 		compactLayout: CompactLayout;
 		columnsByTitle: Map<string, ColumnDef>;
 		testId?: string;
-	}) => {
+	}>) => {
+		const row = rows[index];
 		if (!row) return <div style={style} />;
-		const bgColor =
-			rowIndex % 2 === 0 ? "bg-background-800" : "bg-background-600";
+		const bgColor = index % 2 === 0 ? "bg-background-800" : "bg-background-600";
 		return (
 			<div
 				style={style}
@@ -405,7 +416,7 @@ const CompactContentCell = observer(
 						key={`line_${lineIdx}_${row.entityId}`}
 						line={line}
 						row={row}
-						rowIndex={rowIndex}
+						rowIndex={index}
 						columnsByTitle={columnsByTitle}
 						testId={testId}
 					/>
@@ -550,23 +561,13 @@ const CompactVirtualTableGrid = ({
 			</div>
 			<FixedSizeList
 				className={`bg-background-800 pb-2 ${testId}-body`}
-				height={height - headerHeight}
-				width={width}
-				itemCount={rows.length}
-				itemSize={rowHeight}
-				itemKey={(index) => rows[index]?.entityId ?? String(index)}
-			>
-				{({ index, style }) => (
-					<CompactContentCell
-						row={rows[index]}
-						rowIndex={index}
-						style={style}
-						compactLayout={compactLayout}
-						columnsByTitle={columnsByTitle}
-						testId={testId}
-					/>
-				)}
-			</FixedSizeList>
+				style={{ height: height - headerHeight, width }}
+				rowCount={rows.length}
+				rowHeight={rowHeight}
+				overscanCount={OVERSCAN_ROW_COUNT}
+				rowComponent={CompactContentCell}
+				rowProps={{ rows, compactLayout, columnsByTitle, testId }}
+			/>
 		</>
 	);
 };
