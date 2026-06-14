@@ -2,7 +2,6 @@ import { head, isEmpty, last } from "lodash";
 import { observer } from "mobx-react-lite";
 import { type Dispatch, useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { FileInput } from "../../components/base/Input";
 import Select from "../../components/base/Select";
 import { VerticalSpace } from "../../components/base/Space";
 import { TextSubtitle, TextTitle } from "../../components/base/Text";
@@ -40,7 +39,7 @@ const FileUploader = ({ onFile, error }: FileUploaderProps) => {
 
 	const disabled = Boolean(error);
 
-	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+	const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
 		onDrop,
 		disabled,
 		multiple: true,
@@ -51,16 +50,17 @@ const FileUploader = ({ onFile, error }: FileUploaderProps) => {
 		},
 	});
 
-	const inputProps = getInputProps();
+	const rootProps = getRootProps();
+	const { onClick: _unusedOnClick, ...rootPropsWithoutClick } = rootProps;
 
 	return (
 		<>
 			<div
-				className={`importArea${disabled ? "Disabled" : "Enabled"}`}
-				onClick={inputProps.onClick}
-				{...getRootProps()}
+				className={`importArea${disabled ? "Disabled" : "Enabled"} relative`}
+				onClick={open}
+				{...rootPropsWithoutClick}
 			>
-				<FileInput testId="importFile" {...inputProps} />
+				<input data-testid="importFile" type="file" {...getInputProps()} />
 				<p>
 					<strong>{error}</strong>
 				</p>

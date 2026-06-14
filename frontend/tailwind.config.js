@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 
-import colors from "tailwindcss/colors";
+import colors from "tailwindcss/colors.js";
 
 const bgShade = (n) => `rgb(var(--bg-${n}) / <alpha-value>)`;
 

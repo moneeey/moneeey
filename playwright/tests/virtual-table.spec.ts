@@ -60,6 +60,12 @@ test("Virtual table renders a window of rows and scrolls to far transactions", a
 	await OpenMenuItem(page, "All transactions");
 	await expect(page.locator(".transactionTable-body")).toBeVisible();
 
+	await expect
+		.poll(async () =>
+			page.locator(".transactionTable-body").evaluate((el) => el.clientHeight),
+		)
+		.toBeGreaterThan(50);
+
 	await expect.poll(() => renderedDesktopRowCount(page)).toBeGreaterThan(0);
 	expect(await renderedDesktopRowCount(page)).toBeLessThan(VIRTUAL_ROW_COUNT);
 	await expect(

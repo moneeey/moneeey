@@ -8,7 +8,10 @@
 .mn-select__indicator,
 .mn-select__indicators,
 .mn-select__indicator-separator {
-  @apply m-0 border-0 bg-transparent p-0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
 
   line-height: 1.5em !important;
   height: 1.5em !important;
@@ -17,21 +20,21 @@
 }
 
 .mn-select__indicator {
-  @apply p-0.5;
+  padding: 0.125rem;
 }
 
 .mn-select__menu-portal,
 .mn-select__menu,
 .mn-select__menu-list {
-  @apply bg-background-400;
+  background-color: rgb(var(--bg-400));
 }
 
 .mn-select__option--is-focused {
-  @apply bg-background-500;
+  background-color: rgb(var(--bg-500));
 }
 
 .mn-select__single-value {
-  @apply z-10;
+  z-index: 10;
 }
 
 .mn-select__menu-portal {
@@ -46,9 +49,9 @@
 }
 
 .mn-select-changed .mn-select__single-value {
-  @apply text-orange-200;
+  color: #fed7aa;
 }
 
 .mn-select-new .mn-select__single-value {
-  @apply text-green-200;
+  color: #bbf7d0;
 }

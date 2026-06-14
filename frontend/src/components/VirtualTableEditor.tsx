@@ -10,7 +10,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import AutoSizer from "react-virtualized-auto-sizer";
 import {
 	type CellComponentProps,
 	List as FixedSizeList,
@@ -572,6 +571,45 @@ const CompactVirtualTableGrid = ({
 	);
 };
 
+function useParentDimensions(ref: React.RefObject<HTMLDivElement | null>): {
+	width: number;
+	height: number;
+} {
+	const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+	useLayoutEffect(() => {
+		const el = ref.current;
+		if (!el) return;
+
+		const parent = el.parentNode as HTMLElement | null;
+		if (!parent) return;
+
+		const measure = () => {
+			const style = window.getComputedStyle(parent);
+			const paddingLeft = Number.parseFloat(style.paddingLeft || "0");
+			const paddingRight = Number.parseFloat(style.paddingRight || "0");
+			const paddingTop = Number.parseFloat(style.paddingTop || "0");
+			const paddingBottom = Number.parseFloat(style.paddingBottom || "0");
+			const rect = parent.getBoundingClientRect();
+			const height = rect.height - paddingTop - paddingBottom;
+			const width = rect.width - paddingLeft - paddingRight;
+			setDimensions((d) =>
+				d.width === width && d.height === height ? d : { width, height },
+			);
+		};
+
+		// Sync measure on mount (this is inside useLayoutEffect so the
+		// parent already has its final laid-out size).
+		measure();
+
+		const ro = new ResizeObserver(() => measure());
+		ro.observe(parent);
+		return () => ro.disconnect();
+	}, [ref]);
+
+	return dimensions;
+}
+
 const VirtualTable = function VirtualTableRenderer({
 	columns,
 	rows,
@@ -581,6 +619,8 @@ const VirtualTable = function VirtualTableRenderer({
 }: VirtualTableProps & WithDataTestId) {
 	const density = useTableDensity();
 	const isCompact = density === "compact";
+	const wrapperRef = useRef<HTMLDivElement>(null);
+	const { width, height } = useParentDimensions(wrapperRef);
 
 	const desktopColumns = useMemo(
 		() =>
@@ -624,40 +664,38 @@ const VirtualTable = function VirtualTableRenderer({
 	);
 
 	return (
-		<>
+		<div ref={wrapperRef} className="h-full">
 			<RowLineRuler onMeasure={setLineHeight} />
-			<AutoSizer>
-				{({ width, height }: { width: number; height: number }) =>
-					isCompact ? (
-						<CompactVirtualTableGrid
-							key={`compact_${width}_${height}`}
-							testId={testId}
-							width={width}
-							height={height}
-							rows={sortedRows}
-							lineHeight={lineHeight}
-							rowHeight={compactRowHeight}
-							compactLayout={resolvedCompactLayout}
-							sort={sort}
-							setSort={setSort}
-							columns={columns}
-						/>
-					) : (
-						<VirtualTableGrid
-							key={`${width}_${height}`}
-							testId={testId}
-							width={width}
-							height={height}
-							rowHeight={lineHeight}
-							columns={desktopColumns}
-							rows={sortedRows}
-							setSort={setSort}
-							sort={sort}
-						/>
-					)
-				}
-			</AutoSizer>
-		</>
+			{width > 0 && height > 0 ? (
+				isCompact ? (
+					<CompactVirtualTableGrid
+						key={`compact_${width}_${height}`}
+						testId={testId}
+						width={width}
+						height={height}
+						rows={sortedRows}
+						lineHeight={lineHeight}
+						rowHeight={compactRowHeight}
+						compactLayout={resolvedCompactLayout}
+						sort={sort}
+						setSort={setSort}
+						columns={columns}
+					/>
+				) : (
+					<VirtualTableGrid
+						key={`${width}_${height}`}
+						testId={testId}
+						width={width}
+						height={height}
+						rowHeight={lineHeight}
+						columns={desktopColumns}
+						rows={sortedRows}
+						setSort={setSort}
+						sort={sort}
+					/>
+				)
+			) : null}
+		</div>
 	);
 };
 
