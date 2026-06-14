@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import colors from "tailwindcss/colors";
 
 const cssVar = (name: string, fallback = "0 0 0"): string => {
 	if (typeof document === "undefined") return `rgb(${fallback})`;
@@ -51,23 +50,23 @@ export const useNivoTheme = () => {
 };
 
 export const REPORT_PALETTE: readonly string[] = [
-	colors.emerald[400],
-	colors.cyan[400],
-	colors.yellow[400],
-	colors.orange[400],
-	colors.violet[400],
-	colors.teal[400],
-	colors.blue[400],
-	colors.green[400],
-	colors.fuchsia[400],
-	colors.lime[400],
-	colors.pink[400],
-	colors.purple[400],
-	colors.sky[400],
-	colors.red[400],
-	colors.amber[400],
-	colors.indigo[400],
-	colors.rose[400],
+	"#34d399",
+	"#22d3ee",
+	"#facc15",
+	"#fb923c",
+	"#a78bfa",
+	"#2dd4bf",
+	"#60a5fa",
+	"#4ade80",
+	"#e879f9",
+	"#a3e635",
+	"#f472b6",
+	"#c084fc",
+	"#38bdf8",
+	"#f87171",
+	"#fbbf24",
+	"#818cf8",
+	"#fb7185",
 ];
 
 export const colorForKey = (key: string, palette = REPORT_PALETTE): string => {
@@ -79,9 +78,9 @@ export const colorForKey = (key: string, palette = REPORT_PALETTE): string => {
 };
 
 export const SIGN_PALETTE = {
-	positive: colors.emerald[400],
-	negative: colors.rose[400],
-	neutral: colors.slate[400],
+	positive: "#34d399",
+	negative: "#fb7185",
+	neutral: "#94a3b8",
 } as const;
 
 export const fadeColor = (color: string, alpha: number): string => {
