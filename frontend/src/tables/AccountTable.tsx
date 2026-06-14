@@ -125,19 +125,15 @@ const AccountTable = observer(
 		];
 
 		return (
-			<>
-				<div className="h-full grow" key={`accountTable${kind}`}>
-					<TableEditor<IAccount>
-						key={`accountTable${kind}`}
-						testId={`accountTable${kind}`}
-						store={accounts}
-						schemaFilter={schemaFilter}
-						factory={(id?: string) => ({ ...accounts.factory(id), kind })}
-						schema={schema}
-						compactLayout={compactLayout}
-					/>
-				</div>
-			</>
+			<TableEditor<IAccount>
+				key={`accountTable${kind}`}
+				testId={`accountTable${kind}`}
+				store={accounts}
+				schemaFilter={schemaFilter}
+				factory={(id?: string) => ({ ...accounts.factory(id), kind })}
+				schema={schema}
+				compactLayout={compactLayout}
+			/>
 		);
 	},
 );
