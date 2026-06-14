@@ -1,3 +1,4 @@
+import { formatDate } from "../../frontend/src/utils/Date";
 import {
 	BudgetRow,
 	Input,
@@ -24,7 +25,7 @@ async function setDensity(
 test("Compact density — persistence, active ring, and table structure across views", async ({
 	wizardPage: page,
 }) => {
-	const today = new Date().toISOString().slice(0, 10);
+	const today = formatDate(new Date());
 
 	await test.step("picking compact persists and shows active ring, and round-trips to full", async () => {
 		await setDensity(page, "compact");
