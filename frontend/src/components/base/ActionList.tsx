@@ -4,28 +4,34 @@ import type { WithDataTestId } from "./Common";
 export interface ActionListItemProps extends Partial<WithDataTestId> {
 	title: ReactNode;
 	subtitle?: ReactNode;
+	description?: ReactNode;
 	badge?: ReactNode;
 	icon?: ReactNode;
 	actions?: ReactNode;
 	isCurrent?: boolean;
+	selected?: boolean;
 	className?: string;
 }
 
 export function ActionListItem({
 	title,
 	subtitle,
+	description,
 	badge,
 	icon,
 	actions,
 	isCurrent,
+	selected,
 	className = "",
 	testId,
 }: ActionListItemProps) {
+	const activeCurrent = isCurrent || selected;
+	const activeSubtitle = subtitle || description;
 	return (
 		<li
 			data-testid={testId}
 			className={`flex items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 transition-all duration-150 ${
-				isCurrent
+				activeCurrent
 					? "border-primary-500/80 bg-background-800 shadow-xs ring-1 ring-primary-500/30"
 					: "border-background-700/60 bg-background-900/90 hover:border-background-700 hover:bg-background-800/50"
 			} ${className}`}
@@ -39,8 +45,10 @@ export function ActionListItem({
 						</span>
 						{badge}
 					</div>
-					{subtitle && (
-						<div className="text-xs text-muted mt-0.5 truncate">{subtitle}</div>
+					{activeSubtitle && (
+						<div className="text-xs text-muted mt-0.5 truncate">
+							{activeSubtitle}
+						</div>
 					)}
 				</div>
 			</div>

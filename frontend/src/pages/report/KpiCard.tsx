@@ -24,13 +24,15 @@ const KpiCard = ({
 }: KpiCardProps) => (
 	<div
 		data-testid={testId}
-		className="flex flex-col gap-1 rounded-md bg-background-900 p-3 md:p-4"
+		className="flex flex-col gap-1.5 rounded-xl border border-background-700/60 bg-background-900 p-4 shadow-xs"
 	>
-		<span className="text-xs uppercase tracking-wide opacity-60">{label}</span>
-		<span className={`text-2xl font-semibold ${toneStyles[tone]}`}>
+		<span className="text-xs uppercase tracking-wider text-muted font-medium">
+			{label}
+		</span>
+		<span className={`text-2xl font-bold tracking-tight ${toneStyles[tone]}`}>
 			{value}
 		</span>
-		{hint && <span className="text-xs opacity-70">{hint}</span>}
+		{hint && <span className="text-xs text-muted/80">{hint}</span>}
 	</div>
 );
 

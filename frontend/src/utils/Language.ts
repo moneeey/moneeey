@@ -1210,6 +1210,48 @@ export default {
 			hi: "हाल की लेन-देन",
 			cn: "最近交易",
 		},
+		quick_actions: {
+			en: "Quick actions",
+			pt: "Ações rápidas",
+			es: "Acciones rápidas",
+			hi: "त्वरित कार्रवाई",
+			cn: "快捷操作",
+		},
+		new_transaction: {
+			en: "New transaction",
+			pt: "Nova transação",
+			es: "Nueva transacción",
+			hi: "नया लेन-देन",
+			cn: "新建交易",
+		},
+		view_all: {
+			en: "View all",
+			pt: "Ver tudo",
+			es: "Ver todo",
+			hi: "सभी देखें",
+			cn: "查看全部",
+		},
+		total_accounts: {
+			en: "Accounts",
+			pt: "Contas",
+			es: "Cuentas",
+			hi: "खाते",
+			cn: "账户",
+		},
+		total_transactions: {
+			en: "Transactions",
+			pt: "Transações",
+			es: "Transacciones",
+			hi: "लेन-देन",
+			cn: "交易",
+		},
+		active_currencies: {
+			en: "Currencies",
+			pt: "Moedas",
+			es: "Monedas",
+			hi: "मुद्राएं",
+			cn: "币种",
+		},
 	},
 
 	reports: {

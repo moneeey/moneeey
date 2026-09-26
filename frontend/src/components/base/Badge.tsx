@@ -13,6 +13,7 @@ export type BadgeSize = "sm" | "md";
 export interface BadgeProps extends Partial<WithDataTestId> {
 	children: ReactNode;
 	tone?: BadgeTone;
+	variant?: BadgeTone;
 	size?: BadgeSize;
 	className?: string;
 }
@@ -33,15 +34,18 @@ const sizeStyles: Record<BadgeSize, string> = {
 
 export default function Badge({
 	children,
-	tone = "neutral",
+	tone,
+	variant,
 	size = "sm",
 	className = "",
 	testId,
 }: BadgeProps) {
+	const activeTone = variant || tone || "neutral";
+
 	return (
 		<span
 			data-testid={testId}
-			className={`inline-flex items-center font-medium rounded-full border ${toneStyles[tone]} ${sizeStyles[size]} ${className}`}
+			className={`inline-flex items-center font-medium rounded-full border ${toneStyles[activeTone]} ${sizeStyles[size]} ${className}`}
 		>
 			{children}
 		</span>
