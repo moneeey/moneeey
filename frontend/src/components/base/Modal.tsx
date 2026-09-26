@@ -47,7 +47,7 @@ const Modal = observer(
 
 		if (!visible) return null;
 
-		const Content = () => (
+		const content = (
 			<Card
 				header={
 					<div className="flex items-center justify-between pb-2 border-b border-background-700/50">
@@ -85,7 +85,7 @@ const Modal = observer(
 						className || ""
 					}`}
 				>
-					<Content />
+					{content}
 				</article>
 			);
 		}
@@ -97,9 +97,7 @@ const Modal = observer(
 				}`}
 			>
 				<MinimalBasicScreen>
-					<div className="w-full text-left">
-						<Content />
-					</div>
+					<div className="w-full text-left">{content}</div>
 				</MinimalBasicScreen>
 			</article>
 		);

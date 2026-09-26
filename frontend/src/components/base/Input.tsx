@@ -41,6 +41,7 @@ type InputContainerProps = {
 	input: ReactNode;
 	baseClassname?: string;
 	containerArea?: boolean;
+	blur?: boolean;
 } & WithDataTestId;
 
 export const InputContainer = ({
@@ -51,11 +52,13 @@ export const InputContainer = ({
 	input,
 	readOnly,
 	containerArea,
+	blur,
 	testId,
 }: InputContainerProps) => {
 	return (
 		<div
 			data-testid={`inputContainer${testId}`}
+			data-privacy-blur={blur ? "true" : undefined}
 			className={`${baseClassname || OuterShellClzz} focus-within:ring-1 focus-within:ring-inset ${
 				isError
 					? "border border-red-400 focus-within:ring-red-400"
@@ -63,6 +66,7 @@ export const InputContainer = ({
 			}
       ${readOnly ? "opacity-85" : ""}
       ${containerArea ? "bg-background-900 rounded-md p-2" : ""}
+      ${blur ? "select-none filter blur-xs" : ""}
 `}
 		>
 			{prefix}
@@ -167,6 +171,8 @@ export type InputNumberProps = InputProps<number> & {
 	thousandSeparator: string;
 	decimalSeparator: string;
 	decimalScale: number;
+	autoFocus?: boolean;
+	blur?: boolean;
 };
 
 const InputNumber = ({
@@ -184,6 +190,9 @@ const InputNumber = ({
 	thousandSeparator,
 	decimalSeparator,
 	decimalScale,
+	autoFocus,
+	immediate,
+	blur,
 }: InputNumberProps) => {
 	const [currentFloatValue, setCurrentFloatValue] = useState<number>(value);
 
@@ -198,15 +207,21 @@ const InputNumber = ({
 		readOnly,
 		testId,
 		containerArea,
+		blur,
 		input: (
 			<NumericFormat
+				autoFocus={autoFocus}
 				data-testid={testId}
+				data-privacy-blur={blur !== undefined ? "true" : undefined}
 				className={`${BaseInputClzz} font-mono ${className || ""}`}
 				value={currentFloatValue}
 				onValueChange={({ floatValue }) => {
 					// 0 is a valid value; explicit nullish check instead of `&&`.
 					if (floatValue !== undefined && floatValue !== value) {
 						setCurrentFloatValue(floatValue);
+						if (immediate) {
+							onChange(floatValue);
+						}
 					}
 				}}
 				onBlur={() => {
@@ -264,8 +279,9 @@ const TextArea = ({
 		),
 	});
 
-type CheckboxProps = InputProps<boolean> & {
+type CheckboxProps = Omit<InputProps<boolean>, "placeholder"> & {
 	children: string | ReactNode;
+	placeholder?: string;
 };
 
 const Checkbox = ({

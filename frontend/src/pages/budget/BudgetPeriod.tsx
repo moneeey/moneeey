@@ -42,13 +42,17 @@ const BudgetPeriods = observer(
 			? budget.ids.length
 			: budget.all.filter((b) => !b.archived).length;
 		const rowEm = density === "compact" ? 4 : 1.6;
-		const heightEm = Math.min(48, 6 + rowEm * budgetAmount);
+		const minHeightEm = density === "compact" ? 22 : 18;
+		const heightEm = Math.max(
+			minHeightEm,
+			Math.min(48, 8 + rowEm * budgetAmount),
+		);
 
 		return (
 			<div className="flex flex-row flex-wrap gap-4 shrink-0">
 				{map(MONTH_OFFSETS, (offset) => (
 					<div
-						className="grow w-full lg:w-[26em] lg:max-w-[calc(50%-0.5rem)] pb-4 shrink-0"
+						className="grow w-full lg:w-[28em] lg:max-w-[calc(50%-0.5rem)] mb-4 shrink-0"
 						style={{ height: `${heightEm}em` }}
 						key={`budgetPeriod_${viewArchived}_${formatDate(
 							startOfMonthOffset(startingDate, offset),

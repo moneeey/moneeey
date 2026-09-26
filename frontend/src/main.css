@@ -138,4 +138,18 @@
     animation: blink 1s infinite;
     border: 2px solid transparent;
   }
+
+  .blur-xs {
+    filter: blur(4px);
+  }
+
+  .privacy-blur {
+    filter: blur(4px);
+    user-select: none;
+  }
+
+  [data-privacy-mode="true"] [data-privacy-blur] {
+    filter: blur(4px);
+    user-select: none;
+  }
 }

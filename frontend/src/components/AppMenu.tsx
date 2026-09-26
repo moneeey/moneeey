@@ -9,6 +9,8 @@ import {
 	Cog6ToothIcon,
 	CurrencyDollarIcon,
 	EnvelopeIcon,
+	EyeIcon,
+	EyeSlashIcon,
 	LockClosedIcon,
 	TrashIcon,
 	UsersIcon,
@@ -23,6 +25,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import usePrivacyMode, { togglePrivacyMode } from "../utils/usePrivacyMode";
 
 import type { IAccount } from "../entities/Account";
 import AccountRoute from "../routes/AccountRoute";
@@ -69,6 +72,7 @@ const Menu = observer(
 			transactions,
 			encryption,
 		} = useMoneeeyStore();
+		const privacy = usePrivacyMode();
 		const { all: allTransactions } = transactions;
 		const trashCount = transactions.trash.length;
 
@@ -116,7 +120,7 @@ const Menu = observer(
 
 		return (
 			<Navbar
-				key={`${allAccountsKey}@@${allRunningBalances}`}
+				key={`${allAccountsKey}@@${allRunningBalances}@@${privacy}`}
 				className="px-2"
 				testId="appMenu"
 				expanded={expanded}
@@ -208,13 +212,23 @@ const Menu = observer(
 									icon: <WalletIcon />,
 									customLabel: (
 										<TextNormal
-											title={Messages.menu.balance(
-												runningBalances.get(acct.id) || "loading",
-											)}
+											title={
+												privacy
+													? undefined
+													: Messages.menu.balance(
+															runningBalances.get(acct.id) || "loading",
+														)
+											}
 										>
 											<TextSecondary>{getAccountCurrency(acct)}</TextSecondary>{" "}
 											{acct.name}{" "}
-											<span className="text-muted text-xs">
+											<span
+												data-testid="accountRunningBalance"
+												data-privacy-blur="true"
+												className={`text-muted text-xs ${
+													privacy ? "select-none filter blur-xs" : ""
+												}`}
+											>
 												{runningBalances.get(acct.id)}
 											</span>
 										</TextNormal>
@@ -298,9 +312,10 @@ const Header = observer(
 	}) => {
 		const Messages = useMessages();
 		const toggleMenu = () => setExpanded((value) => !value);
+		const privacy = usePrivacyMode();
 
 		return (
-			<header className="sticky left-0 right-0 top-0 z-50 h-12 bg-background-800 flex flex-row items-center">
+			<header className="sticky left-0 right-0 top-0 z-50 h-12 bg-background-800 flex flex-row items-center justify-between">
 				<div
 					data-expanded={expanded}
 					data-testid="toggleMenu"
@@ -319,6 +334,32 @@ const Header = observer(
 							{Messages.menu.title}
 						</div>
 					</TextTitle>
+				</div>
+				<div className="flex flex-row items-center pr-3">
+					<button
+						type="button"
+						data-testid="privacyModeToggle"
+						onClick={togglePrivacyMode}
+						title={
+							privacy
+								? Messages.menu.privacy_mode_disable
+								: Messages.menu.privacy_mode_enable
+						}
+						aria-label={
+							privacy
+								? Messages.menu.privacy_mode_disable
+								: Messages.menu.privacy_mode_enable
+						}
+						className="p-1.5 rounded hover:bg-background-700 text-foreground transition-colors cursor-pointer"
+					>
+						<Icon size="md">
+							{privacy ? (
+								<EyeSlashIcon className="w-5 h-5" />
+							) : (
+								<EyeIcon className="w-5 h-5" />
+							)}
+						</Icon>
+					</button>
 				</div>
 			</header>
 		);

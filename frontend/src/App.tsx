@@ -22,6 +22,7 @@ import useMoneeeyStore, {
 	MoneeeyStoreProvider,
 } from "./shared/useMoneeeyStore";
 
+import GlobalHotkeys from "./components/GlobalHotkeys";
 import { TagsHighlightProvider } from "./components/Tags";
 import Modals from "./components/modal/Modals";
 import MoneeeyTourProvider from "./components/tour/Tour";
@@ -87,6 +88,7 @@ const AppContent = observer(() => {
 	return (
 		<MoneeeyTourProvider>
 			<TagsHighlightProvider>
+				<GlobalHotkeys />
 				<AppLoaded />
 				<Navigator />
 				<Modals />

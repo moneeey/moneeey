@@ -2,6 +2,7 @@ import { observer } from "mobx-react-lite";
 
 import type { CurrencyAmount } from "../../entities/Currency";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
+import usePrivacyMode from "../../utils/usePrivacyMode";
 
 import { InputNumber } from "../base/Input";
 
@@ -29,9 +30,12 @@ export default function <TEntity>({
 			}: FieldRenderProps<TEntity>) => {
 				const { amount, currency } = read(entity);
 				const defaultCurrency = currencies.byUuid(config.main.default_currency);
+				const privacy = usePrivacyMode();
 
 				return (
 					<InputNumber
+						className={privacy ? "select-none filter blur-xs" : ""}
+						blur={privacy}
 						testId={`editor${field.title.replace(" ", "_")}`}
 						readOnly={readOnlyForFieldAndEntity(field, entity)}
 						placeholder={field.title}

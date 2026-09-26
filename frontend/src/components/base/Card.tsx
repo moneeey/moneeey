@@ -37,13 +37,17 @@ const Card = ({
 	padding = "md",
 }: CardProps) => (
 	<article
-		className={`rounded-xl transition-all duration-150 ${variantStyles[variant]} ${paddingStyles[padding]} ${className}`}
+		className={`rounded-xl transition-all duration-150 flex flex-col ${variantStyles[variant]} ${paddingStyles[padding]} ${className}`}
 		data-testid={testId}
 	>
-		{header && <header className="mb-3">{header}</header>}
-		<div className="h-full">{children}</div>
+		{header && (
+			<header className={`shrink-0 ${padding === "none" ? "" : "mb-3"}`}>
+				{header}
+			</header>
+		)}
+		<div className="flex-1 min-h-0 min-w-0">{children}</div>
 		{footer && (
-			<footer className="mt-4 pt-3 border-t border-background-700/40">
+			<footer className="mt-4 pt-3 border-t border-background-700/40 shrink-0">
 				{footer}
 			</footer>
 		)}

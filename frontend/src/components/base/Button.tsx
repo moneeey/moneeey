@@ -35,6 +35,10 @@ const styles: Record<ButtonType, string> = {
 
 const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind) =>
 	function BaseButton(props: ButtonProps) {
+		const kindStyle =
+			kind === "link" && props.className?.includes("no-underline")
+				? styles[kind].replace(/\bunderline\b/, "")
+				: styles[kind];
 		return (
 			<button
 				{...omit(base, ["testId", "compact"])}
@@ -42,7 +46,7 @@ const Button = ({ kind, ...base }: Partial<ButtonProps> & WithButtonKind) =>
 				type={props.type || base.type || "button"}
 				data-testid={props.testId || base.testId}
 				disabled={props.disabled}
-				className={`flex whitespace-nowrap rounded ${props.compact ? "" : "p-1"} outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 ${styles[kind]} ${
+				className={`flex whitespace-nowrap rounded ${props.compact ? "" : "p-1"} outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 ${kindStyle} ${
 					props.className || ""
 				} ${props.disabled ? "opacity-20 hover:opacity-25" : ""}`}
 			>

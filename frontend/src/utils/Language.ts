@@ -155,6 +155,27 @@ export default {
 			hi: "डेटा",
 			cn: "数据",
 		},
+		privacy_mode: {
+			en: "Privacy mode",
+			pt: "Modo de privacidade",
+			es: "Modo de privacidad",
+			hi: "गोपनीयता मोड",
+			cn: "隐私模式",
+		},
+		privacy_mode_enable: {
+			en: "Enable privacy mode",
+			pt: "Ativar modo de privacidade",
+			es: "Activar modo de privacidad",
+			hi: "गोपनीयता मोड सक्षम करें",
+			cn: "启用隐私模式",
+		},
+		privacy_mode_disable: {
+			en: "Disable privacy mode",
+			pt: "Desativar modo de privacidade",
+			es: "Desactivar modo de privacidad",
+			hi: "गोपनीयता मोड अक्षम करें",
+			cn: "禁用隐私模式",
+		},
 		signout: {
 			en: "Sign out",
 			pt: "Sair",
@@ -705,6 +726,13 @@ export default {
 			hi: "सहेजें",
 			cn: "保存",
 		},
+		add: {
+			en: "Add",
+			pt: "Adicionar",
+			es: "Añadir",
+			hi: "जोड़ें",
+			cn: "添加",
+		},
 		clear: {
 			en: "Clear",
 			pt: "Limpar",
@@ -912,6 +940,27 @@ export default {
 			es: "Automático",
 			hi: "स्वचालित",
 			cn: "自动",
+		},
+		privacy_mode: {
+			en: "Privacy mode",
+			pt: "Modo de privacidade",
+			es: "Modo de privacidad",
+			hi: "गोपनीयता मोड",
+			cn: "隐私模式",
+		},
+		privacy_mode_enabled: {
+			en: "Hidden",
+			pt: "Oculto",
+			es: "Oculto",
+			hi: "छिपा हुआ",
+			cn: "隐藏",
+		},
+		privacy_mode_disabled: {
+			en: "Visible",
+			pt: "Visível",
+			es: "Visible",
+			hi: "दिखाई देने वाला",
+			cn: "可见",
 		},
 	},
 	budget: {
@@ -1200,6 +1249,13 @@ export default {
 			es: "Saldo actual",
 			hi: "चल रही शेष राशि",
 			cn: "运行余额",
+		},
+		save_and_add_another: {
+			en: "Save & add another",
+			pt: "Salvar e adicionar outro",
+			es: "Guardar y añadir otro",
+			hi: "सहेजें और दूसरा जोड़ें",
+			cn: "保存并添加另一个",
 		},
 	},
 	dashboard: {
