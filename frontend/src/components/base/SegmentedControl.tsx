@@ -52,7 +52,7 @@ export default function SegmentedControl<T extends string>({
 						onClick={() => onChange(option.value)}
 						className={`relative flex items-center justify-center gap-1.5 rounded-lg font-medium transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${itemSizeClasses} ${
 							isSelected
-								? "bg-background-700 text-foreground shadow-xs ring-1 ring-background-600/40"
+								? "bg-background-700 text-foreground shadow-xs ring-4 ring-secondary-500/50"
 								: "text-muted hover:text-foreground hover:bg-background-800/60"
 						}`}
 					>
