@@ -12,6 +12,7 @@ import {
 	type ITransaction,
 	isActiveTransaction,
 } from "../entities/Transaction";
+import { NavigationModal } from "../shared/Navigation";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import TransactionTable from "../tables/TransactionTable";
 import useMessages from "../utils/Messages";
@@ -26,7 +27,8 @@ const QuickActionBar = observer(() => {
 		<div className="flex flex-wrap items-center gap-2">
 			<button
 				type="button"
-				onClick={() => navigation.navigate("/transactions")}
+				data-testid="dashboardNewTxBtn"
+				onClick={() => navigation.openModal(NavigationModal.NEW_TRANSACTION)}
 				className="inline-flex items-center gap-2 rounded-xl bg-primary-600 hover:bg-primary-500 px-4 py-2 text-sm font-semibold text-white shadow-xs transition-colors"
 			>
 				<Icon size="sm">

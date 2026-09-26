@@ -705,6 +705,13 @@ export default {
 			hi: "सहेजें",
 			cn: "保存",
 		},
+		add: {
+			en: "Add",
+			pt: "Adicionar",
+			es: "Añadir",
+			hi: "जोड़ें",
+			cn: "添加",
+		},
 		clear: {
 			en: "Clear",
 			pt: "Limpar",
@@ -1200,6 +1207,13 @@ export default {
 			es: "Saldo actual",
 			hi: "चल रही शेष राशि",
 			cn: "运行余额",
+		},
+		save_and_add_another: {
+			en: "Save & add another",
+			pt: "Salvar e adicionar outro",
+			es: "Guardar y añadir otro",
+			hi: "सहेजें और दूसरा जोड़ें",
+			cn: "保存并添加另一个",
 		},
 	},
 	dashboard: {

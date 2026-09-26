@@ -14,6 +14,7 @@ export enum NavigationModal {
 	MERGE_ACCOUNTS = "MERGE_ACCOUNTS",
 	ADD_ACCOUNT = "ADD_ACCOUNT",
 	SIGN_OUT = "SIGN_OUT",
+	NEW_TRANSACTION = "NEW_TRANSACTION",
 }
 
 type NotificationType = StatusType;

@@ -167,6 +167,7 @@ export type InputNumberProps = InputProps<number> & {
 	thousandSeparator: string;
 	decimalSeparator: string;
 	decimalScale: number;
+	autoFocus?: boolean;
 };
 
 const InputNumber = ({
@@ -184,6 +185,8 @@ const InputNumber = ({
 	thousandSeparator,
 	decimalSeparator,
 	decimalScale,
+	autoFocus,
+	immediate,
 }: InputNumberProps) => {
 	const [currentFloatValue, setCurrentFloatValue] = useState<number>(value);
 
@@ -200,6 +203,7 @@ const InputNumber = ({
 		containerArea,
 		input: (
 			<NumericFormat
+				autoFocus={autoFocus}
 				data-testid={testId}
 				className={`${BaseInputClzz} font-mono ${className || ""}`}
 				value={currentFloatValue}
@@ -207,6 +211,9 @@ const InputNumber = ({
 					// 0 is a valid value; explicit nullish check instead of `&&`.
 					if (floatValue !== undefined && floatValue !== value) {
 						setCurrentFloatValue(floatValue);
+						if (immediate) {
+							onChange(floatValue);
+						}
 					}
 				}}
 				onBlur={() => {
@@ -264,8 +271,9 @@ const TextArea = ({
 		),
 	});
 
-type CheckboxProps = InputProps<boolean> & {
+type CheckboxProps = Omit<InputProps<boolean>, "placeholder"> & {
 	children: string | ReactNode;
+	placeholder?: string;
 };
 
 const Checkbox = ({
