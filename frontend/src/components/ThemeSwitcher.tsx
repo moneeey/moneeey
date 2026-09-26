@@ -3,9 +3,10 @@ import {
 	MoonIcon,
 	SunIcon,
 } from "@heroicons/react/24/outline";
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useMessages from "../utils/Messages";
 import { StorageKind, getStorage, setStorage } from "../utils/Utils";
+import SegmentedControl from "./base/SegmentedControl";
 
 type ThemeMode = "auto" | "light" | "dark";
 
@@ -44,35 +45,36 @@ export default function ThemeSwitcher() {
 		return () => mql.removeEventListener("change", handler);
 	}, [mode]);
 
-	const ThemeOption = ({
-		icon,
-		value,
-	}: { icon: ReactNode; value: ThemeMode }) => {
-		const isActive = mode === value;
-		return (
-			<i
-				data-testid={`themeSwitcher_${value}`}
-				className={`inline-block h-6 w-6 rounded-xl hover:ring-4 ring-secondary-500 ${
-					isActive ? "ring-4" : ""
-				}`}
-				onClick={() => selectMode(value)}
-				onKeyDown={() => selectMode(value)}
-			>
-				{icon}
-			</i>
-		);
-	};
-
 	const Messages = useMessages();
 
 	return (
-		<div className="flex flex-col justify-center items-center gap-2">
-			<p>{Messages.settings.select_theme}</p>
-			<div className="flex flex-row justify-center gap-4">
-				<ThemeOption icon={<SunIcon />} value="light" />
-				<ThemeOption icon={<ComputerDesktopIcon />} value="auto" />
-				<ThemeOption icon={<MoonIcon />} value="dark" />
-			</div>
+		<div className="flex flex-col items-center gap-1.5">
+			<span className="text-xs uppercase tracking-wider text-muted font-medium">
+				{Messages.settings.select_theme}
+			</span>
+			<SegmentedControl
+				testId="themeSwitcher"
+				value={mode}
+				onChange={selectMode}
+				size="sm"
+				options={[
+					{
+						value: "light",
+						icon: <SunIcon className="w-4 h-4" />,
+						label: Messages.settings.theme_light,
+					},
+					{
+						value: "auto",
+						icon: <ComputerDesktopIcon className="w-4 h-4" />,
+						label: Messages.settings.theme_auto,
+					},
+					{
+						value: "dark",
+						icon: <MoonIcon className="w-4 h-4" />,
+						label: Messages.settings.theme_dark,
+					},
+				]}
+			/>
 		</div>
 	);
 }

@@ -1,6 +1,6 @@
-import { XCircleIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { observer } from "mobx-react-lite";
-import type { ReactElement, ReactNode } from "react";
+import { type ReactElement, type ReactNode, useCallback } from "react";
 
 import type { NavigationModal } from "../../shared/Navigation";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
@@ -34,59 +34,86 @@ const Modal = observer(
 	}: ModalProps) => {
 		const { navigation } = useMoneeeyStore();
 
-		const onCloseFn = () => {
+		const onCloseFn = useCallback(() => {
 			if (onClose) {
 				onClose();
 			} else {
 				navigation.closeModal();
 			}
-		};
+		}, [onClose, navigation]);
 
 		const visible =
 			isOpen === true || (modalId && navigation.modal === modalId);
 
-		if (!visible) return <div />;
+		if (!visible) return null;
 
 		const Content = () => (
 			<Card
 				header={
-					<div className="flex justify-between align-middle">
-						<TextTitle testId="nm-modal-title">{title}</TextTitle>
-						<Icon
-							className="cursor-pointer hover:opacity-75"
+					<div className="flex items-center justify-between pb-2 border-b border-background-700/50">
+						<TextTitle
+							testId="nm-modal-title"
+							className="text-lg font-semibold"
+						>
+							{title}
+						</TextTitle>
+						<button
+							type="button"
+							aria-label="Close modal"
+							className="rounded-lg p-1 text-muted hover:text-foreground hover:bg-background-700/50 transition-colors"
 							onClick={onCloseFn}
 						>
-							<XCircleIcon />
-						</Icon>
+							<Icon size="md">
+								<XMarkIcon className="w-5 h-5" />
+							</Icon>
+						</button>
 					</div>
 				}
 				testId="nm-modal-card"
 				footer={footer}
+				variant="elevated"
+				padding="md"
 			>
-				{children}
+				<div className="pt-2">{children}</div>
 			</Card>
 		);
 
 		if (!fullScreen) {
 			return (
-				<article
-					className={`fixed bottom-0 left-0 right-0 z-50 rounded-lg rounded-b-none bg-background-600
-      p-4 shadow-xl md:bottom-0 md:left-20 md:right-auto md:top-auto md:mx-auto md:rounded-b-lg ${
-				className || ""
-			}`}
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-fade-in"
+					onClick={(e) => {
+						if (e.target === e.currentTarget) {
+							onCloseFn();
+						}
+					}}
+					onKeyDown={(e) => {
+						if (e.target === e.currentTarget && e.key === "Escape") {
+							onCloseFn();
+						}
+					}}
 				>
-					<Content />
-				</article>
+					<div
+						className={`relative w-full max-w-lg rounded-2xl shadow-2xl animate-fade-in-up ${
+							className || ""
+						}`}
+					>
+						<Content />
+					</div>
+				</div>
 			);
 		}
+
 		return (
 			<article
-				className={`absolute top-0 bottom-0 left-0 right-0 z-50 bg-background-600 ${
+				className={`fixed inset-0 z-50 bg-background-900 overflow-y-auto ${
 					className || ""
 				}`}
 			>
 				<MinimalBasicScreen>
-					<Content />
+					<div className="w-full text-left">
+						<Content />
+					</div>
 				</MinimalBasicScreen>
 			</article>
 		);

@@ -65,7 +65,8 @@ export default {
 			},
 		},
 		fontFamily: {
-			sans: "'PTSerif', Georgia, 'Times New Roman', serif",
+			sans: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+			serif: "'PTSerif', Georgia, 'Times New Roman', serif",
 			mono: "'PTMono', 'Courier New', Courier, monospace",
 		},
 	},
