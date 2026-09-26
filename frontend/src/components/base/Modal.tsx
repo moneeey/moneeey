@@ -80,27 +80,13 @@ const Modal = observer(
 
 		if (!fullScreen) {
 			return (
-				<div
-					className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-fade-in"
-					onClick={(e) => {
-						if (e.target === e.currentTarget) {
-							onCloseFn();
-						}
-					}}
-					onKeyDown={(e) => {
-						if (e.target === e.currentTarget && e.key === "Escape") {
-							onCloseFn();
-						}
-					}}
+				<article
+					className={`fixed bottom-4 left-4 right-4 md:right-auto md:left-24 md:bottom-6 z-50 max-w-lg shadow-2xl animate-fade-in-up ${
+						className || ""
+					}`}
 				>
-					<div
-						className={`relative w-full max-w-lg rounded-2xl shadow-2xl animate-fade-in-up ${
-							className || ""
-						}`}
-					>
-						<Content />
-					</div>
-				</div>
+					<Content />
+				</article>
 			);
 		}
 
