@@ -88,18 +88,21 @@ const DashboardKpis = observer(() => {
 				value={activeAccounts.length}
 				hint={`${accounts.allPayees.length} ${Messages.menu.payees.toLowerCase()}`}
 				tone="neutral"
+				monetary={false}
 			/>
 			<KpiCard
 				testId="dashboardKpiTransactions"
 				label={Messages.dashboard.total_transactions}
 				value={activeTransactions.length}
 				tone="neutral"
+				monetary={false}
 			/>
 			<KpiCard
 				testId="dashboardKpiCurrencies"
 				label={Messages.dashboard.active_currencies}
 				value={uniqueCurrencies.size || currencies.all.length}
 				tone="info"
+				monetary={false}
 			/>
 		</KpiGrid>
 	);

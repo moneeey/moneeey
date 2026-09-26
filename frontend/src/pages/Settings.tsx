@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import LanguageSelector from "../components/LanguageSelector";
 import Loading from "../components/Loading";
+import PrivacyModeSwitcher from "../components/PrivacyModeSwitcher";
 import TableDensitySwitcher from "../components/TableDensitySwitcher";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import {
@@ -244,6 +245,7 @@ export default function Settings() {
 				<LanguageSelector />
 				<TableDensitySwitcher />
 				<ThemeSwitcher />
+				<PrivacyModeSwitcher />
 			</div>
 			<Tabs
 				testId="settingsTabs"

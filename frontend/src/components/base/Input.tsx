@@ -41,6 +41,7 @@ type InputContainerProps = {
 	input: ReactNode;
 	baseClassname?: string;
 	containerArea?: boolean;
+	blur?: boolean;
 } & WithDataTestId;
 
 export const InputContainer = ({
@@ -51,11 +52,13 @@ export const InputContainer = ({
 	input,
 	readOnly,
 	containerArea,
+	blur,
 	testId,
 }: InputContainerProps) => {
 	return (
 		<div
 			data-testid={`inputContainer${testId}`}
+			data-privacy-blur={blur ? "true" : undefined}
 			className={`${baseClassname || OuterShellClzz} focus-within:ring-1 focus-within:ring-inset ${
 				isError
 					? "border border-red-400 focus-within:ring-red-400"
@@ -63,6 +66,7 @@ export const InputContainer = ({
 			}
       ${readOnly ? "opacity-85" : ""}
       ${containerArea ? "bg-background-900 rounded-md p-2" : ""}
+      ${blur ? "select-none filter blur-xs" : ""}
 `}
 		>
 			{prefix}
@@ -168,6 +172,7 @@ export type InputNumberProps = InputProps<number> & {
 	decimalSeparator: string;
 	decimalScale: number;
 	autoFocus?: boolean;
+	blur?: boolean;
 };
 
 const InputNumber = ({
@@ -187,6 +192,7 @@ const InputNumber = ({
 	decimalScale,
 	autoFocus,
 	immediate,
+	blur,
 }: InputNumberProps) => {
 	const [currentFloatValue, setCurrentFloatValue] = useState<number>(value);
 
@@ -201,10 +207,12 @@ const InputNumber = ({
 		readOnly,
 		testId,
 		containerArea,
+		blur,
 		input: (
 			<NumericFormat
 				autoFocus={autoFocus}
 				data-testid={testId}
+				data-privacy-blur={blur !== undefined ? "true" : undefined}
 				className={`${BaseInputClzz} font-mono ${className || ""}`}
 				value={currentFloatValue}
 				onValueChange={({ floatValue }) => {

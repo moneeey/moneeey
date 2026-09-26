@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import usePrivacyMode from "../../utils/usePrivacyMode";
 
 interface KpiCardProps {
 	label: string;
@@ -6,6 +7,7 @@ interface KpiCardProps {
 	hint?: ReactNode;
 	tone?: "neutral" | "positive" | "negative" | "info";
 	testId?: string;
+	monetary?: boolean;
 }
 
 const toneStyles: Record<NonNullable<KpiCardProps["tone"]>, string> = {
@@ -21,20 +23,40 @@ const KpiCard = ({
 	hint,
 	tone = "neutral",
 	testId,
-}: KpiCardProps) => (
-	<div
-		data-testid={testId}
-		className="flex flex-col gap-1.5 rounded-xl border border-background-700/60 bg-background-900 p-4 shadow-xs"
-	>
-		<span className="text-xs uppercase tracking-wider text-muted font-medium">
-			{label}
-		</span>
-		<span className={`text-2xl font-bold tracking-tight ${toneStyles[tone]}`}>
-			{value}
-		</span>
-		{hint && <span className="text-xs text-muted/80">{hint}</span>}
-	</div>
-);
+	monetary = true,
+}: KpiCardProps) => {
+	const privacy = usePrivacyMode();
+	const shouldBlur = privacy && monetary;
+
+	return (
+		<div
+			data-testid={testId}
+			className="flex flex-col gap-1.5 rounded-xl border border-background-700/60 bg-background-900 p-4 shadow-xs"
+		>
+			<span className="text-xs uppercase tracking-wider text-muted font-medium">
+				{label}
+			</span>
+			<span
+				data-privacy-blur={monetary ? "true" : undefined}
+				className={`text-2xl font-bold tracking-tight ${toneStyles[tone]} ${
+					shouldBlur ? "select-none filter blur-xs" : ""
+				}`}
+			>
+				{value}
+			</span>
+			{hint && (
+				<span
+					data-privacy-blur={monetary ? "true" : undefined}
+					className={`text-xs text-muted/80 ${
+						shouldBlur ? "select-none filter blur-xs" : ""
+					}`}
+				>
+					{hint}
+				</span>
+			)}
+		</div>
+	);
+};
 
 interface KpiGridProps {
 	children: ReactNode;

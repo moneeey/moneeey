@@ -2,6 +2,7 @@ import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
 import { NavigationModal } from "../shared/Navigation";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
+import { togglePrivacyMode } from "../utils/usePrivacyMode";
 
 export const isEditableElement = (el: Element | null): boolean => {
 	if (!el) return false;
@@ -30,6 +31,18 @@ const GlobalHotkeys = observer(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			const active = document.activeElement;
 			const isEditing = isEditableElement(active);
+
+			// Privacy Mode: Cmd+Shift+P / Ctrl+Shift+P
+			if (
+				(e.metaKey || e.ctrlKey) &&
+				e.shiftKey &&
+				!e.altKey &&
+				e.key.toLowerCase() === "p"
+			) {
+				e.preventDefault();
+				togglePrivacyMode();
+				return;
+			}
 
 			// Command Palette: Cmd+K / Ctrl+K
 			if (
