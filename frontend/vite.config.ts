@@ -1,9 +1,17 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { createLogger, defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+
+const logger = createLogger();
+const originalLoggerError = logger.error.bind(logger);
+logger.error = (msg, options) => {
+	if (msg.includes("ECONNREFUSED") || msg.includes("http proxy error")) return;
+	originalLoggerError(msg, options);
+};
 
 // https://vitejs.dev/config/
 export default defineConfig({
+	customLogger: logger,
 	server: {
 		port: 4270,
 		host: "0.0.0.0",
@@ -12,6 +20,14 @@ export default defineConfig({
 				target: process.env.VITE_API_TARGET || "http://localhost:4269",
 				changeOrigin: true,
 				ws: true,
+				configure: (proxy) => {
+					proxy.on("error", (err, _req, res) => {
+						if ("writeHead" in res && !res.headersSent) {
+							res.writeHead(502, { "Content-Type": "application/json" });
+							res.end(JSON.stringify({ error: "backend_unavailable" }));
+						}
+					});
+				},
 			},
 		},
 	},

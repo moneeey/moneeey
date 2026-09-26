@@ -258,6 +258,7 @@ export default class PersistenceStore {
 			},
 			{ state: {}, chunkSize: 100, chunkThrottle: 50 },
 		);
+		await this.flush();
 	}
 
 	async sync(remote: SyncConfig): Promise<void> {
