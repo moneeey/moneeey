@@ -12,6 +12,7 @@ import {
 	type ITransaction,
 	isActiveTransaction,
 } from "../entities/Transaction";
+import { AccountSettingsRoute } from "../routes/AccountSettingsRoute";
 import { NavigationModal } from "../shared/Navigation";
 import useMoneeeyStore from "../shared/useMoneeeyStore";
 import TransactionTable from "../tables/TransactionTable";
@@ -38,7 +39,7 @@ const QuickActionBar = observer(() => {
 			</button>
 			<button
 				type="button"
-				onClick={() => navigation.navigate("/accounts")}
+				onClick={() => navigation.navigate(AccountSettingsRoute.url())}
 				className="inline-flex items-center gap-2 rounded-xl border border-background-700/80 bg-background-800/80 hover:bg-background-700/80 px-3.5 py-2 text-sm font-medium text-foreground transition-colors"
 			>
 				<Icon size="sm">
