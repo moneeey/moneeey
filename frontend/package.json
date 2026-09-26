@@ -22,7 +22,7 @@
 		"@simplewebauthn/browser": "^13.3.0",
 		"autoprefixer": "10.5.2",
 		"classnames": "2.5.1",
-		"date-fns": "3.6.0",
+		"date-fns": "4.4.0",
 		"lodash": "4.17.21",
 		"mobx": "6.16.1",
 		"mobx-react-lite": "4.0.7",
