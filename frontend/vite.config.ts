@@ -45,7 +45,7 @@ export default defineConfig({
 			},
 			workbox: {
 				maximumFileSizeToCacheInBytes: 32 * 1024 * 1024,
-				globPatterns: ["**/*.{js,css,html,ico,png,svg,ttf}"],
+				globPatterns: ["**/*.{js,css,html,ico,png,svg,ttf,woff2}"],
 				navigateFallbackDenylist: [/^\/(api|db)\//],
 				runtimeCaching: [
 					{
@@ -63,7 +63,7 @@ export default defineConfig({
 					},
 				],
 			},
-			includeAssets: ["**/*.{js,css,html,ico,png,svg,ttf}"],
+			includeAssets: ["**/*.{js,css,html,ico,png,svg,ttf,woff2}"],
 			manifest: {
 				name: "Moneeey",
 				short_name: "Moneeey",
