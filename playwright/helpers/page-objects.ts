@@ -2,10 +2,14 @@ import { type Locator, type Page, expect } from "@playwright/test";
 import { TIMEOUTS } from "./perf";
 
 /** Wraps a React-Select dropdown by testId. */
-export function Select(page: Page, testId: string, index = 0) {
+export function Select(page: Page | Locator, testId: string, index = 0) {
 	const select = () => page.getByTestId(testId).nth(index);
+	const getPage = () =>
+		"page" in page && typeof (page as Locator).page === "function"
+			? (page as Locator).page()
+			: (page as Page);
 	const input = () => select().locator(".mn-select__input");
-	const menuList = () => page.locator(".mn-select__menu-list");
+	const menuList = () => getPage().locator(".mn-select__menu-list");
 
 	const waitForClosed = async () =>
 		await expect(menuList()).toBeHidden({ timeout: 5000 });
