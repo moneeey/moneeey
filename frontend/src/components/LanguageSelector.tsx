@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import useMessages, {
 	type LanguageCode,
 	useLanguageSwitcher,
@@ -10,6 +9,7 @@ import {
 	IconSpain,
 	IconUSA,
 } from "./base/Icon";
+import SegmentedControl from "./base/SegmentedControl";
 
 type LanguageSelectorProps = {
 	onSelect?: (language: LanguageCode) => void;
@@ -18,40 +18,57 @@ type LanguageSelectorProps = {
 export default function LanguageSelector({ onSelect }: LanguageSelectorProps) {
 	const Messages = useMessages();
 	const { currentLanguage, selectLanguage } = useLanguageSwitcher();
-	const LangSelect = ({
-		icon,
-		language,
-	}: { icon: ReactNode; language: LanguageCode }) => {
-		const isCurrentLanguage = currentLanguage === language;
-		const setCurrentLanguage = () => {
-			if (onSelect) {
-				return onSelect(language);
-			}
-			selectLanguage(language);
-		};
-		return (
-			<i
-				data-testid={`languageSelector_${language}`}
-				className={`inline-block h-6 w-6 rounded-xl hover:ring-4 ring-secondary-500 ${
-					isCurrentLanguage ? "ring-4" : ""
-				}`}
-				onClick={setCurrentLanguage}
-				onKeyDown={setCurrentLanguage}
-			>
-				{icon}
-			</i>
-		);
+
+	const handleSelect = (lang: LanguageCode) => {
+		if (onSelect) {
+			return onSelect(lang);
+		}
+		selectLanguage(lang);
 	};
+
+	const options = [
+		{
+			value: "en" as const,
+			icon: <IconUSA />,
+			label: "EN",
+			testId: "languageSelector_en",
+		},
+		{
+			value: "cn" as const,
+			icon: <IconChina />,
+			label: "中文",
+			testId: "languageSelector_cn",
+		},
+		{
+			value: "hi" as const,
+			icon: <IconIndia />,
+			label: "हिंदी",
+			testId: "languageSelector_hi",
+		},
+		{
+			value: "es" as const,
+			icon: <IconSpain />,
+			label: "ES",
+			testId: "languageSelector_es",
+		},
+		{
+			value: "pt" as const,
+			icon: <IconBrazil />,
+			label: "PT",
+			testId: "languageSelector_pt",
+		},
+	];
+
 	return (
 		<div className="flex flex-col justify-center items-center gap-2">
-			<p>{Messages.settings.select_language}</p>
-			<div className="flex flex-row justify-center gap-4">
-				<LangSelect icon={<IconUSA />} language="en" />
-				<LangSelect icon={<IconChina />} language="cn" />
-				<LangSelect icon={<IconIndia />} language="hi" />
-				<LangSelect icon={<IconSpain />} language="es" />
-				<LangSelect icon={<IconBrazil />} language="pt" />
-			</div>
+			<p className="text-sm font-medium text-muted">
+				{Messages.settings.select_language}
+			</p>
+			<SegmentedControl
+				options={options}
+				value={currentLanguage}
+				onChange={handleSelect}
+			/>
 		</div>
 	);
 }

@@ -864,6 +864,27 @@ export default {
 			hi: "थीम चुनें",
 			cn: "选择主题",
 		},
+		theme_light: {
+			en: "Light",
+			pt: "Claro",
+			es: "Claro",
+			hi: "हल्का",
+			cn: "浅色",
+		},
+		theme_auto: {
+			en: "Auto",
+			pt: "Automático",
+			es: "Automático",
+			hi: "स्वचालित",
+			cn: "自动",
+		},
+		theme_dark: {
+			en: "Dark",
+			pt: "Escuro",
+			es: "Oscuro",
+			hi: "गहरा",
+			cn: "深色",
+		},
 		select_table_density: {
 			en: "Table layout",
 			pt: "Layout da tabela",
