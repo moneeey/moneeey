@@ -2,6 +2,8 @@ import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 
 import { Status } from "../components/Status";
+import ActionList, { ActionListItem } from "../components/base/ActionList";
+import Badge from "../components/base/Badge";
 import {
 	DeleteButton,
 	LinkButton,
@@ -45,46 +47,45 @@ const MemberRow = ({
 }) => {
 	const Messages = useMessages();
 	return (
-		<li
-			data-testid={`member-row-${member.displayName}`}
-			className="flex items-center justify-between gap-2 rounded border border-background-700 bg-background-900 p-2"
-		>
-			<div className="flex flex-col">
-				<span className="text-sm font-medium">
-					{member.displayName}
+		<ActionListItem
+			testId={`member-row-${member.displayName}`}
+			title={
+				<div className="flex items-center gap-2">
+					<span className="text-sm font-semibold">{member.displayName}</span>
 					{isYou && (
-						<span className="ml-2 text-xs opacity-60">
-							({Messages.sync.you_label})
-						</span>
+						<Badge variant="info" size="sm">
+							{Messages.sync.you_label}
+						</Badge>
 					)}
-				</span>
-				<span className="text-xs opacity-70">
-					{formatRole(member.role, Messages)}
-				</span>
-			</div>
-			{youAreOwner && !isYou && (
-				<div className="flex gap-2">
-					{member.role === "member" && (
-						<>
-							<SecondaryButton
-								testId={`transfer-${member.displayName}`}
-								onClick={onTransfer}
-								title={Messages.sync.member_transfer}
-								disabled={busy}
-								compact
-							/>
-							<DeleteButton
-								testId={`kick-${member.displayName}`}
-								onClick={onKick}
-								disabled={busy}
-							>
-								<span className="px-1">{Messages.sync.member_kick}</span>
-							</DeleteButton>
-						</>
-					)}
+					<Badge
+						variant={member.role === "owner" ? "warning" : "neutral"}
+						size="sm"
+					>
+						{formatRole(member.role, Messages)}
+					</Badge>
 				</div>
-			)}
-		</li>
+			}
+			actions={
+				youAreOwner && !isYou && member.role === "member" ? (
+					<div className="flex items-center gap-2">
+						<SecondaryButton
+							testId={`transfer-${member.displayName}`}
+							onClick={onTransfer}
+							title={Messages.sync.member_transfer}
+							disabled={busy}
+							compact
+						/>
+						<DeleteButton
+							testId={`kick-${member.displayName}`}
+							onClick={onKick}
+							disabled={busy}
+						>
+							<span className="px-1">{Messages.sync.member_kick}</span>
+						</DeleteButton>
+					</div>
+				) : undefined
+			}
+		/>
 	);
 };
 
@@ -152,7 +153,7 @@ export const MembersSection = observer(() => {
 			<p className="text-sm opacity-80">{Messages.sync.members_description}</p>
 			{error && <Status type="error">{error}</Status>}
 			{data ? (
-				<ul className="flex flex-col gap-2">
+				<ActionList>
 					{data.members.map((m) => (
 						<MemberRow
 							key={m.userId}
@@ -176,7 +177,7 @@ export const MembersSection = observer(() => {
 							}
 						/>
 					))}
-				</ul>
+				</ActionList>
 			) : (
 				!error && <p className="text-sm opacity-70">{Messages.util.loading}</p>
 			)}

@@ -2,11 +2,14 @@ import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 
 import { Status } from "../components/Status";
+import ActionList, { ActionListItem } from "../components/base/ActionList";
+import Badge from "../components/base/Badge";
 import {
 	DeleteButton,
 	OkButton,
 	SecondaryButton,
 } from "../components/base/Button";
+import Card from "../components/base/Card";
 import { Input } from "../components/base/Input";
 import Space, { VerticalSpace } from "../components/base/Space";
 import {
@@ -110,7 +113,7 @@ export const VaultSwitcherSection = observer(() => {
 	const totalVaults = vaults?.length ?? 0;
 
 	return (
-		<section className="rounded-lg border border-background-700 bg-background-900 p-4">
+		<Card variant="outlined" padding="lg">
 			<VerticalSpace testId="vaultSwitcherSection">
 				<h3 className="text-base font-semibold">
 					{Messages.sync.vault_switcher_title}
@@ -120,20 +123,19 @@ export const VaultSwitcherSection = observer(() => {
 				</p>
 				{error && <Status type="error">{error}</Status>}
 				{vaults && (
-					<ul className="flex flex-col gap-2">
+					<ActionList>
 						{vaults.map((v) => {
 							const isCurrent = v.vaultId === management.vaultId;
 							const isRenaming = renaming === v.vaultId;
 							const canDelete =
 								v.role === "owner" && !isCurrent && totalVaults > 1;
 							return (
-								<li
+								<ActionListItem
 									key={v.vaultId}
-									data-testid={`vault-${v.vaultId}`}
-									className={`flex items-baseline justify-between gap-2 rounded border px-3 py-2 ${isCurrent ? "border-primary-500 bg-background-800" : "border-background-700 bg-background-900"}`}
-								>
-									<div className="flex flex-col flex-1 min-w-0">
-										{isRenaming ? (
+									testId={`vault-${v.vaultId}`}
+									selected={isCurrent}
+									title={
+										isRenaming ? (
 											<Input
 												testId={`vault-rename-input-${v.vaultId}`}
 												value={renameValue}
@@ -143,80 +145,87 @@ export const VaultSwitcherSection = observer(() => {
 												immediate
 											/>
 										) : (
-											<span
-												className="text-sm font-medium"
-												data-testid={`vault-name-${v.vaultId}`}
-											>
-												{v.name}
-											</span>
-										)}
-										<span className="text-xs opacity-70">
-											{v.role === "owner"
-												? Messages.sync.role_owner
-												: Messages.sync.role_member}
-											{" · "}
+											<div className="flex items-center gap-2">
+												<span
+													className="text-sm font-semibold"
+													data-testid={`vault-name-${v.vaultId}`}
+												>
+													{v.name}
+												</span>
+												{isCurrent && (
+													<Badge variant="primary" size="sm">
+														{Messages.sync.vault_switcher_current}
+													</Badge>
+												)}
+												<Badge
+													variant={v.role === "owner" ? "warning" : "neutral"}
+													size="sm"
+												>
+													{v.role === "owner"
+														? Messages.sync.role_owner
+														: Messages.sync.role_member}
+												</Badge>
+											</div>
+										)
+									}
+									description={
+										<span className="text-xs text-muted">
 											{Messages.sync.vault_switcher_created}:{" "}
 											{formatDate(v.createdAt)}
-											{isCurrent && (
-												<>
-													{" · "}
-													<span className="text-primary-400">
-														{Messages.sync.vault_switcher_current}
-													</span>
-												</>
-											)}
 										</span>
-									</div>
-									<Space>
-										{v.role === "owner" &&
-											(isRenaming ? (
-												<>
+									}
+									actions={
+										<Space>
+											{v.role === "owner" &&
+												(isRenaming ? (
+													<>
+														<SecondaryButton
+															onClick={() => {
+																setRenaming(null);
+																setRenameValue("");
+															}}
+															title={Messages.util.cancel}
+															disabled={busy}
+														/>
+														<OkButton
+															testId={`vault-rename-save-${v.vaultId}`}
+															onClick={() => onSaveRename(v.vaultId)}
+															title={Messages.util.save}
+															disabled={busy || renameValue.trim().length === 0}
+														/>
+													</>
+												) : (
 													<SecondaryButton
+														testId={`vault-rename-${v.vaultId}`}
 														onClick={() => {
-															setRenaming(null);
-															setRenameValue("");
+															setRenaming(v.vaultId);
+															setRenameValue(v.name);
 														}}
-														title={Messages.util.cancel}
-														disabled={busy}
+														title={Messages.sync.vault_rename}
 													/>
-													<OkButton
-														testId={`vault-rename-save-${v.vaultId}`}
-														onClick={() => onSaveRename(v.vaultId)}
-														title={Messages.util.save}
-														disabled={busy || renameValue.trim().length === 0}
-													/>
-												</>
-											) : (
-												<SecondaryButton
-													testId={`vault-rename-${v.vaultId}`}
-													onClick={() => {
-														setRenaming(v.vaultId);
-														setRenameValue(v.name);
-													}}
-													title={Messages.sync.vault_rename}
+												))}
+											{canDelete && !isRenaming && (
+												<DeleteButton
+													testId={`vault-delete-${v.vaultId}`}
+													onClick={() => setConfirmDelete(v)}
+													disabled={busy}
+												>
+													{Messages.util.delete}
+												</DeleteButton>
+											)}
+											{!isCurrent && !isRenaming && (
+												<OkButton
+													testId={`select-vault-${v.vaultId}`}
+													onClick={() => selectVaultForTabAndReload(v.vaultId)}
+													title={Messages.sync.vault_switcher_use}
 												/>
-											))}
-										{canDelete && !isRenaming && (
-											<DeleteButton
-												testId={`vault-delete-${v.vaultId}`}
-												onClick={() => setConfirmDelete(v)}
-												disabled={busy}
-											>
-												{Messages.util.delete}
-											</DeleteButton>
-										)}
-										{!isCurrent && !isRenaming && (
-											<OkButton
-												testId={`select-vault-${v.vaultId}`}
-												onClick={() => selectVaultForTabAndReload(v.vaultId)}
-												title={Messages.sync.vault_switcher_use}
-											/>
-										)}
-									</Space>
-								</li>
+											)}
+										</Space>
+									}
+								/>
 							);
 						})}
-					</ul>
+					</ActionList>
 				)}
 				{creating ? (
 					<Space>
@@ -257,11 +266,13 @@ export const VaultSwitcherSection = observer(() => {
 				{confirmDelete && (
 					<VerticalSpace
 						testId="confirm-vault-delete"
-						className="rounded border border-danger-700 bg-background-900"
+						className="rounded-xl border border-danger-700/60 bg-danger-950/20 p-4"
 					>
-						<p className="text-sm">
+						<p className="text-sm font-medium">
 							{Messages.sync.vault_delete_confirm}{" "}
-							<span className="font-mono">{confirmDelete.name}</span>
+							<span className="font-mono text-foreground font-semibold">
+								{confirmDelete.name}
+							</span>
 						</p>
 						<Space>
 							<SecondaryButton
@@ -280,6 +291,6 @@ export const VaultSwitcherSection = observer(() => {
 					</VerticalSpace>
 				)}
 			</VerticalSpace>
-		</section>
+		</Card>
 	);
 });

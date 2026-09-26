@@ -1,11 +1,6 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { observer } from "mobx-react-lite";
-import {
-	type ReactElement,
-	type ReactNode,
-	useCallback,
-	useEffect,
-} from "react";
+import { type ReactElement, type ReactNode, useCallback } from "react";
 
 import type { NavigationModal } from "../../shared/Navigation";
 import useMoneeeyStore from "../../shared/useMoneeeyStore";
@@ -49,17 +44,6 @@ const Modal = observer(
 
 		const visible =
 			isOpen === true || (modalId && navigation.modal === modalId);
-
-		useEffect(() => {
-			if (!visible) return;
-			const handleKeyDown = (e: KeyboardEvent) => {
-				if (e.key === "Escape") {
-					onCloseFn();
-				}
-			};
-			window.addEventListener("keydown", handleKeyDown);
-			return () => window.removeEventListener("keydown", handleKeyDown);
-		}, [visible, onCloseFn]);
 
 		if (!visible) return null;
 
