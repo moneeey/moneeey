@@ -59,7 +59,9 @@ test("Currency settings — view, edit existing currency, and add new currency",
 	const modal = page.getByTestId("nm-modal-card");
 	const currencySelect = Select(modal, "editorCurrency");
 	const options = await currencySelect.options();
-	expect(options.some((opt) => opt.includes("Monero") || opt.includes("XMR"))).toBe(true);
+	expect(
+		options.some((opt) => opt.includes("Monero") || opt.includes("XMR")),
+	).toBe(true);
 
 	// Close the dropdown and the modal
 	await page.keyboard.press("Escape");

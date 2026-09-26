@@ -33,13 +33,18 @@ test("Payee settings — view, rename payee, and verify transaction reflection",
 	await clickMenuByTestId(page, PAYEES_MENU_TESTID);
 
 	// Payee table renders Bakery123 at index 0
-	await expect(page.getByTestId("editorName").first()).toHaveValue("Bakery123", {
-		timeout: 10_000,
-	});
+	await expect(page.getByTestId("editorName").first()).toHaveValue(
+		"Bakery123",
+		{
+			timeout: 10_000,
+		},
+	);
 
 	// Rename "Bakery123" → "Artisan Bakery"
 	await Input(page, "editorName", undefined, 0).change("Artisan Bakery");
-	await expect(page.getByTestId("editorName").first()).toHaveValue("Artisan Bakery");
+	await expect(page.getByTestId("editorName").first()).toHaveValue(
+		"Artisan Bakery",
+	);
 
 	// Verify the renamed payee reflects in All Transactions
 	await OpenMenuItem(page, "All transactions");
