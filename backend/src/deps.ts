@@ -3,19 +3,17 @@ import {
 	generateRegistrationOptions,
 	verifyAuthenticationResponse,
 	verifyRegistrationResponse,
-} from "npm:@simplewebauthn/server@^13.0.0";
+} from "@simplewebauthn/server";
 import type {
 	AuthenticationResponseJSON,
 	AuthenticatorTransportFuture,
 	RegistrationResponseJSON,
-} from "npm:@simplewebauthn/server@^13.0.0";
-import { Database } from "jsr:@db/sqlite@0.12";
-import * as dotenv from "https://deno.land/std@0.195.0/dotenv/mod.ts";
-import * as fs from "https://deno.land/std@0.195.0/fs/mod.ts";
-import * as jose from "https://deno.land/x/jose@v4.14.4/index.ts";
-import * as oak from "https://deno.land/x/oak@v12.6.0/mod.ts";
+} from "@simplewebauthn/server";
+import Database from "better-sqlite3";
+import * as dotenv from "dotenv";
+import * as jose from "jose";
 
-export { Database, dotenv, fs, jose, oak };
+export { Database, dotenv, jose };
 export {
 	generateAuthenticationOptions,
 	generateRegistrationOptions,

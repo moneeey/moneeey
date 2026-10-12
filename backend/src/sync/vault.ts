@@ -1,5 +1,5 @@
+import type { Application } from "express";
 import { getStorage } from "../data/storage_singleton.ts";
-import { oak } from "../deps.ts";
 import { Logger } from "../logger.ts";
 import { metrics } from "../metrics.ts";
 import { type PeerSink, VaultHub } from "./hub.ts";
@@ -9,14 +9,12 @@ const logger = Logger("sync/vault");
 
 const hub = new VaultHub();
 
-export function setupVaultSync(router: oak.Router) {
-	router.get("/vault", async (ctx) => {
-		if (!ctx.isUpgradable) {
-			ctx.response.status = oak.Status.UpgradeRequired;
-			ctx.response.body = JSON.stringify({ error: "websocket required" });
-			return;
-		}
-		const ws = ctx.upgrade();
+export function setupVaultSync(app: Application) {
+	app.get("/api/vault", (_req, res) => {
+		res.status(426).json({ error: "websocket required" });
+	});
+
+	app.ws("/api/vault", (ws) => {
 		const peer: PeerSink = {
 			send: (message) => {
 				try {
@@ -42,13 +40,13 @@ export function setupVaultSync(router: oak.Router) {
 			metrics.wsConnections.dec();
 			protocol.handleClose();
 		};
-		ws.onmessage = (event) => {
-			protocol.handleMessage(String(event.data));
-		};
-		ws.onclose = onClosed;
-		ws.onerror = (event) => {
+		ws.on("message", (data) => {
+			protocol.handleMessage(String(data));
+		});
+		ws.on("close", onClosed);
+		ws.on("error", (event) => {
 			logger.warn("ws error", { event });
 			onClosed();
-		};
+		});
 	});
 }

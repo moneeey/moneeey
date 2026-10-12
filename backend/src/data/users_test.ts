@@ -1,4 +1,4 @@
-import { assert } from "../test.ts";
+import { assert, test } from "../test.ts";
 import { makeTempStorage } from "./test_storage.ts";
 import type { StoredPasskey } from "./types.ts";
 import {
@@ -17,7 +17,7 @@ const samplePasskey = (id = "cred-1"): Omit<StoredPasskey, "userId"> => ({
 	createdAt: new Date().toISOString(),
 });
 
-Deno.test(async function createUserPersistsAndReturnsRecord() {
+test(async function createUserPersistsAndReturnsRecord() {
 	const t = makeTempStorage();
 	try {
 		const created = await createUser(t.storage, "Alice");
@@ -32,7 +32,7 @@ Deno.test(async function createUserPersistsAndReturnsRecord() {
 	}
 });
 
-Deno.test(async function getUserByIdReturnsNullWhenMissing() {
+test(async function getUserByIdReturnsNullWhenMissing() {
 	const t = makeTempStorage();
 	try {
 		assert.assertEquals(await getUserById(t.storage, "u-nope"), null);
@@ -41,7 +41,7 @@ Deno.test(async function getUserByIdReturnsNullWhenMissing() {
 	}
 });
 
-Deno.test(async function addPasskeyPersistsAndLooksUpByCredential() {
+test(async function addPasskeyPersistsAndLooksUpByCredential() {
 	const t = makeTempStorage();
 	try {
 		const user = await createUser(t.storage, "Bob");
@@ -56,7 +56,7 @@ Deno.test(async function addPasskeyPersistsAndLooksUpByCredential() {
 	}
 });
 
-Deno.test(async function getUserByCredentialIdReturnsNullForUnknown() {
+test(async function getUserByCredentialIdReturnsNullForUnknown() {
 	const t = makeTempStorage();
 	try {
 		assert.assertEquals(
@@ -68,7 +68,7 @@ Deno.test(async function getUserByCredentialIdReturnsNullForUnknown() {
 	}
 });
 
-Deno.test(async function updatePasskeyCounterPersists() {
+test(async function updatePasskeyCounterPersists() {
 	const t = makeTempStorage();
 	try {
 		const user = await createUser(t.storage, "Dan");
@@ -81,7 +81,7 @@ Deno.test(async function updatePasskeyCounterPersists() {
 	}
 });
 
-Deno.test(async function updatePasskeyCounterRejectsUnknownCredential() {
+test(async function updatePasskeyCounterRejectsUnknownCredential() {
 	const t = makeTempStorage();
 	try {
 		await assert.assertRejects(() =>

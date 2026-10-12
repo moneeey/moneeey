@@ -1,18 +1,18 @@
+import express from "express";
 import { setupMembership } from "./auth_membership.ts";
 import { setupPasskey } from "./auth_passkey.ts";
 import { setupSession } from "./auth_session.ts";
-import { oak } from "./deps.ts";
 
-export function setupAuth(_app: oak.Application, router: oak.Router) {
-	const authRouter = new oak.Router();
+export function setupAuth(app: express.Express) {
+	const authRouter = express.Router();
 
-	authRouter.get("/", ({ response }) => {
-		response.body = JSON.stringify({ hello: "Welcome to Moneeey AuthAPI" });
+	authRouter.get("/", (_req, res) => {
+		res.json({ hello: "Welcome to Moneeey AuthAPI" });
 	});
 
 	setupPasskey(authRouter);
 	setupSession(authRouter);
 	setupMembership(authRouter);
 
-	router.use("/api/auth", authRouter.routes(), authRouter.allowedMethods());
+	app.use("/api/auth", authRouter);
 }

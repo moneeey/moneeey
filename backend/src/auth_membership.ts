@@ -1,3 +1,4 @@
+import type express from "express";
 import { authenticateAndRespond } from "./auth_session.ts";
 import { getStorage } from "./data/storage_singleton.ts";
 import { getUserById } from "./data/users.ts";
@@ -15,7 +16,6 @@ import {
 	renameVault,
 	transferOwnership,
 } from "./data/vaults.ts";
-import { oak } from "./deps.ts";
 import { authJwt } from "./jwt.ts";
 import { Logger } from "./logger.ts";
 
@@ -23,8 +23,8 @@ const logger = Logger("auth_membership");
 
 type AuthedUser = { userId: string };
 
-async function readAuthed(ctx: oak.Context): Promise<AuthedUser | null> {
-	const authToken = await ctx.cookies.get("authToken");
+async function readAuthed(req: express.Request): Promise<AuthedUser | null> {
+	const authToken = req.cookies.authToken;
 	if (!authToken) return null;
 	try {
 		const validated = await authJwt.validate(authToken);
@@ -36,18 +36,14 @@ async function readAuthed(ctx: oak.Context): Promise<AuthedUser | null> {
 	}
 }
 
-function respond(ctx: oak.Context, status: oak.Status, body: object) {
-	ctx.response.body = JSON.stringify(body);
-	ctx.response.status = status;
+function respond(res: express.Response, status: number, body: object) {
+	res.status(status).json(body);
 }
 
-async function getBodyJson(ctx: oak.Context): Promise<Record<string, unknown>> {
-	try {
-		const value = await ctx.request.body({ type: "json" }).value;
-		return (value ?? {}) as Record<string, unknown>;
-	} catch {
-		return {};
-	}
+async function getBodyJson(
+	req: express.Request,
+): Promise<Record<string, unknown>> {
+	return (req.body ?? {}) as Record<string, unknown>;
 }
 
 const MAX_VAULT_NAME_LENGTH = 64;
@@ -81,12 +77,12 @@ export const authMembershipInternals = {
 	authenticateAndRespond,
 };
 
-export function setupMembership(authRouter: oak.Router) {
-	authRouter.post("/vaults/list", async (ctx) => {
+export function setupMembership(authRouter: express.Router) {
+	authRouter.post("/vaults/list", async (req, res) => {
 		try {
-			const authed = await authMembershipInternals.readAuthed(ctx);
+			const authed = await authMembershipInternals.readAuthed(req);
 			if (!authed) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
 			const storage = getStorage();
@@ -109,23 +105,21 @@ export function setupMembership(authRouter: oak.Router) {
 					};
 				}),
 			);
-			respond(ctx, oak.Status.OK, { vaults: enriched });
+			respond(res, 200, { vaults: enriched });
 		} catch (err) {
 			logger.error("vaults/list error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/vault/create", async (ctx) => {
+	authRouter.post("/vault/create", async (req, res) => {
 		try {
-			const authed = await authMembershipInternals.readAuthed(ctx);
+			const authed = await authMembershipInternals.readAuthed(req);
 			if (!authed) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
-			const body = await getBodyJson(ctx);
+			const body = await getBodyJson(req);
 			const storage = getStorage();
 			let name = parseVaultName(body.name);
 			if (!name) {
@@ -140,30 +134,28 @@ export function setupMembership(authRouter: oak.Router) {
 				authed.userId,
 				name,
 			);
-			respond(ctx, oak.Status.OK, {
+			respond(res, 200, {
 				vaultId: vault.id,
 				name: vault.name,
 				createdAt: vault.createdAt,
 			});
 		} catch (err) {
 			logger.error("vault/create error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/vault/delete", async (ctx) => {
+	authRouter.post("/vault/delete", async (req, res) => {
 		try {
-			const authed = await authMembershipInternals.readAuthed(ctx);
+			const authed = await authMembershipInternals.readAuthed(req);
 			if (!authed) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
-			const body = await getBodyJson(ctx);
+			const body = await getBodyJson(req);
 			const vaultId = typeof body.vaultId === "string" ? body.vaultId : "";
 			if (!vaultId) {
-				respond(ctx, oak.Status.BadRequest, { error: "missing vaultId" });
+				respond(res, 400, { error: "missing vaultId" });
 				return;
 			}
 			const storage = getStorage();
@@ -173,7 +165,7 @@ export function setupMembership(authRouter: oak.Router) {
 				vaultId,
 			);
 			if (!membership || membership.role !== "owner") {
-				respond(ctx, oak.Status.Forbidden, { error: "not owner" });
+				respond(res, 403, { error: "not owner" });
 				return;
 			}
 			const ownVaults = await authMembershipInternals.getVaultsByUser(
@@ -181,30 +173,28 @@ export function setupMembership(authRouter: oak.Router) {
 				authed.userId,
 			);
 			if (ownVaults.length <= 1) {
-				respond(ctx, oak.Status.BadRequest, { error: "last_vault" });
+				respond(res, 400, { error: "last_vault" });
 				return;
 			}
 			await authMembershipInternals.deleteVault(storage, vaultId);
-			respond(ctx, oak.Status.OK, { deleted: true });
+			respond(res, 200, { deleted: true });
 		} catch (err) {
 			logger.error("vault/delete error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/vault/select", async (ctx) => {
+	authRouter.post("/vault/select", async (req, res) => {
 		try {
-			const authed = await authMembershipInternals.readAuthed(ctx);
+			const authed = await authMembershipInternals.readAuthed(req);
 			if (!authed) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
-			const body = await getBodyJson(ctx);
+			const body = await getBodyJson(req);
 			const vaultId = typeof body.vaultId === "string" ? body.vaultId : "";
 			if (!vaultId) {
-				respond(ctx, oak.Status.BadRequest, { error: "missing vaultId" });
+				respond(res, 400, { error: "missing vaultId" });
 				return;
 			}
 			const membership = await authMembershipInternals.getMembership(
@@ -213,38 +203,34 @@ export function setupMembership(authRouter: oak.Router) {
 				vaultId,
 			);
 			if (!membership) {
-				respond(ctx, oak.Status.Forbidden, { error: "not a member" });
+				respond(res, 403, { error: "not a member" });
 				return;
 			}
 			const result = await authMembershipInternals.authenticateAndRespond(
-				ctx,
+				res,
 				"passkey",
 				authed.userId,
 				vaultId,
 			);
-			respond(ctx, oak.Status.OK, result);
+			respond(res, 200, result);
 		} catch (err) {
 			logger.error("vault/select error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/vault/rename", async (ctx) => {
+	authRouter.post("/vault/rename", async (req, res) => {
 		try {
-			const authed = await authMembershipInternals.readAuthed(ctx);
+			const authed = await authMembershipInternals.readAuthed(req);
 			if (!authed) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
-			const body = await getBodyJson(ctx);
+			const body = await getBodyJson(req);
 			const vaultId = typeof body.vaultId === "string" ? body.vaultId : "";
 			const rawName = typeof body.name === "string" ? body.name : "";
 			if (!vaultId || rawName.trim().length === 0) {
-				respond(ctx, oak.Status.BadRequest, {
-					error: "missing vaultId or name",
-				});
+				respond(res, 400, { error: "missing vaultId or name" });
 				return;
 			}
 			const storage = getStorage();
@@ -254,30 +240,28 @@ export function setupMembership(authRouter: oak.Router) {
 				vaultId,
 			);
 			if (!caller || caller.role !== "owner") {
-				respond(ctx, oak.Status.Forbidden, { error: "not owner" });
+				respond(res, 403, { error: "not owner" });
 				return;
 			}
 			await authMembershipInternals.renameVault(storage, vaultId, rawName);
-			respond(ctx, oak.Status.OK, { renamed: true });
+			respond(res, 200, { renamed: true });
 		} catch (err) {
 			logger.error("vault/rename error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/vault/members", async (ctx) => {
+	authRouter.post("/vault/members", async (req, res) => {
 		try {
-			const authed = await authMembershipInternals.readAuthed(ctx);
+			const authed = await authMembershipInternals.readAuthed(req);
 			if (!authed) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
-			const body = await getBodyJson(ctx);
+			const body = await getBodyJson(req);
 			const vaultId = typeof body.vaultId === "string" ? body.vaultId : "";
 			if (!vaultId) {
-				respond(ctx, oak.Status.BadRequest, { error: "missing vaultId" });
+				respond(res, 400, { error: "missing vaultId" });
 				return;
 			}
 			const storage = getStorage();
@@ -287,14 +271,14 @@ export function setupMembership(authRouter: oak.Router) {
 				vaultId,
 			);
 			if (!membership) {
-				respond(ctx, oak.Status.Forbidden, { error: "not a member" });
+				respond(res, 403, { error: "not a member" });
 				return;
 			}
 			const members = await authMembershipInternals.listVaultMembers(
 				storage,
 				vaultId,
 			);
-			respond(ctx, oak.Status.OK, {
+			respond(res, 200, {
 				members: members.map((m) => ({
 					userId: m.userId,
 					displayName: m.displayName,
@@ -306,26 +290,22 @@ export function setupMembership(authRouter: oak.Router) {
 			});
 		} catch (err) {
 			logger.error("vault/members error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/vault/kick", async (ctx) => {
+	authRouter.post("/vault/kick", async (req, res) => {
 		try {
-			const authed = await authMembershipInternals.readAuthed(ctx);
+			const authed = await authMembershipInternals.readAuthed(req);
 			if (!authed) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
-			const body = await getBodyJson(ctx);
+			const body = await getBodyJson(req);
 			const vaultId = typeof body.vaultId === "string" ? body.vaultId : "";
 			const targetUserId = typeof body.userId === "string" ? body.userId : "";
 			if (!vaultId || !targetUserId) {
-				respond(ctx, oak.Status.BadRequest, {
-					error: "missing vaultId or userId",
-				});
+				respond(res, 400, { error: "missing vaultId or userId" });
 				return;
 			}
 			const storage = getStorage();
@@ -335,11 +315,11 @@ export function setupMembership(authRouter: oak.Router) {
 				vaultId,
 			);
 			if (!caller || caller.role !== "owner") {
-				respond(ctx, oak.Status.Forbidden, { error: "not owner" });
+				respond(res, 403, { error: "not owner" });
 				return;
 			}
 			if (targetUserId === authed.userId) {
-				respond(ctx, oak.Status.BadRequest, { error: "cannot kick self" });
+				respond(res, 400, { error: "cannot kick self" });
 				return;
 			}
 			try {
@@ -350,36 +330,30 @@ export function setupMembership(authRouter: oak.Router) {
 				);
 			} catch (err) {
 				if (err instanceof CannotRemoveOwnerError) {
-					respond(ctx, oak.Status.BadRequest, {
-						error: "cannot_remove_owner",
-					});
+					respond(res, 400, { error: "cannot_remove_owner" });
 					return;
 				}
 				throw err;
 			}
-			respond(ctx, oak.Status.OK, { removed: true });
+			respond(res, 200, { removed: true });
 		} catch (err) {
 			logger.error("vault/kick error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/vault/transfer", async (ctx) => {
+	authRouter.post("/vault/transfer", async (req, res) => {
 		try {
-			const authed = await authMembershipInternals.readAuthed(ctx);
+			const authed = await authMembershipInternals.readAuthed(req);
 			if (!authed) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
-			const body = await getBodyJson(ctx);
+			const body = await getBodyJson(req);
 			const vaultId = typeof body.vaultId === "string" ? body.vaultId : "";
 			const targetUserId = typeof body.userId === "string" ? body.userId : "";
 			if (!vaultId || !targetUserId) {
-				respond(ctx, oak.Status.BadRequest, {
-					error: "missing vaultId or userId",
-				});
+				respond(res, 400, { error: "missing vaultId or userId" });
 				return;
 			}
 			const storage = getStorage();
@@ -392,23 +366,19 @@ export function setupMembership(authRouter: oak.Router) {
 				);
 			} catch (err) {
 				if (err instanceof NotOwnerError) {
-					respond(ctx, oak.Status.Forbidden, { error: "not owner" });
+					respond(res, 403, { error: "not owner" });
 					return;
 				}
 				if (err instanceof TargetNotMemberError) {
-					respond(ctx, oak.Status.BadRequest, {
-						error: "target_not_member",
-					});
+					respond(res, 400, { error: "target_not_member" });
 					return;
 				}
 				throw err;
 			}
-			respond(ctx, oak.Status.OK, { transferred: true });
+			respond(res, 200, { transferred: true });
 		} catch (err) {
 			logger.error("vault/transfer error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 }

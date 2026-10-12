@@ -1,4 +1,5 @@
-import { fs, dotenv } from "./deps.ts";
+import { existsSync, readFileSync } from "node:fs";
+import { dotenv } from "./deps.ts";
 
 const ENV_FILES = [
 	"/run/secret/prod.env",
@@ -9,12 +10,12 @@ const ENV_FILES = [
 
 const loadEnvFile = (envPath?: string) => {
 	if (envPath) {
-		return dotenv.loadSync({ envPath });
+		return dotenv.parse(readFileSync(envPath));
 	}
 	return null;
 };
 
-const env = loadEnvFile(ENV_FILES.find((fileName) => fs.existsSync(fileName)));
+const env = loadEnvFile(ENV_FILES.find((fileName) => existsSync(fileName)));
 
 if (!env) {
 	throw new Error(`Could not load env file, tried ${ENV_FILES.join(" || ")}`);

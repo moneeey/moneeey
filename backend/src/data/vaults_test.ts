@@ -1,5 +1,5 @@
 import type { Storage } from "../db/engine.ts";
-import { assert } from "../test.ts";
+import { assert, test } from "../test.ts";
 import { makeTempStorage } from "./test_storage.ts";
 import { createUser } from "./users.ts";
 import {
@@ -34,14 +34,14 @@ const newVault = async (
 	name = "Test vault",
 ) => createVaultForUser(storage, userId, name);
 
-Deno.test(async function defaultVaultNameForFormatsNicely() {
+test(async function defaultVaultNameForFormatsNicely() {
 	assert.assertEquals(defaultVaultNameFor("Alice"), "Alice's vault");
 	assert.assertEquals(defaultVaultNameFor("  Bob  "), "Bob's vault");
 	assert.assertEquals(defaultVaultNameFor(""), DEFAULT_VAULT_NAME);
 	assert.assertEquals(defaultVaultNameFor("   "), DEFAULT_VAULT_NAME);
 });
 
-Deno.test(async function createVaultForUserCreatesRowMembershipAndFile() {
+test(async function createVaultForUserCreatesRowMembershipAndFile() {
 	const t = makeTempStorage();
 	try {
 		const userId = await seedUser(t.storage, "Alice");
@@ -56,7 +56,7 @@ Deno.test(async function createVaultForUserCreatesRowMembershipAndFile() {
 	}
 });
 
-Deno.test(async function createVaultFallsBackToDefaultNameWhenBlank() {
+test(async function createVaultFallsBackToDefaultNameWhenBlank() {
 	const t = makeTempStorage();
 	try {
 		const userId = await seedUser(t.storage, "Alice");
@@ -67,7 +67,7 @@ Deno.test(async function createVaultFallsBackToDefaultNameWhenBlank() {
 	}
 });
 
-Deno.test(async function renameVaultUpdatesName() {
+test(async function renameVaultUpdatesName() {
 	const t = makeTempStorage();
 	try {
 		const userId = await seedUser(t.storage, "Alice");
@@ -80,7 +80,7 @@ Deno.test(async function renameVaultUpdatesName() {
 	}
 });
 
-Deno.test(async function renameVaultRejectsEmpty() {
+test(async function renameVaultRejectsEmpty() {
 	const t = makeTempStorage();
 	try {
 		const userId = await seedUser(t.storage, "Alice");
@@ -95,7 +95,7 @@ Deno.test(async function renameVaultRejectsEmpty() {
 	}
 });
 
-Deno.test(async function getVaultsByUserReturnsAllOwnedAndShared() {
+test(async function getVaultsByUserReturnsAllOwnedAndShared() {
 	const t = makeTempStorage();
 	try {
 		const userA = await seedUser(t.storage, "A");
@@ -110,7 +110,7 @@ Deno.test(async function getVaultsByUserReturnsAllOwnedAndShared() {
 	}
 });
 
-Deno.test(async function userHasAccessReflectsMembership() {
+test(async function userHasAccessReflectsMembership() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -125,7 +125,7 @@ Deno.test(async function userHasAccessReflectsMembership() {
 	}
 });
 
-Deno.test(async function addMemberIsIdempotent() {
+test(async function addMemberIsIdempotent() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -140,7 +140,7 @@ Deno.test(async function addMemberIsIdempotent() {
 	}
 });
 
-Deno.test(async function deleteVaultRemovesRowsAndFile() {
+test(async function deleteVaultRemovesRowsAndFile() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -153,7 +153,7 @@ Deno.test(async function deleteVaultRemovesRowsAndFile() {
 	}
 });
 
-Deno.test(async function addMemberRejectsBeyondCap() {
+test(async function addMemberRejectsBeyondCap() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -180,7 +180,7 @@ Deno.test(async function addMemberRejectsBeyondCap() {
 	}
 });
 
-Deno.test(async function addMemberAtCapStillAllowsExistingMemberRetry() {
+test(async function addMemberAtCapStillAllowsExistingMemberRetry() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -199,7 +199,7 @@ Deno.test(async function addMemberAtCapStillAllowsExistingMemberRetry() {
 	}
 });
 
-Deno.test(async function listVaultMembersReturnsOwnerFirstThenMembers() {
+test(async function listVaultMembersReturnsOwnerFirstThenMembers() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -227,7 +227,7 @@ Deno.test(async function listVaultMembersReturnsOwnerFirstThenMembers() {
 	}
 });
 
-Deno.test(async function removeMemberRemovesMemberRow() {
+test(async function removeMemberRemovesMemberRow() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -243,7 +243,7 @@ Deno.test(async function removeMemberRemovesMemberRow() {
 	}
 });
 
-Deno.test(async function removeMemberRefusesToRemoveOwner() {
+test(async function removeMemberRefusesToRemoveOwner() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -258,7 +258,7 @@ Deno.test(async function removeMemberRefusesToRemoveOwner() {
 	}
 });
 
-Deno.test(async function removeMemberIsIdempotentForUnknownUser() {
+test(async function removeMemberIsIdempotentForUnknownUser() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -270,7 +270,7 @@ Deno.test(async function removeMemberIsIdempotentForUnknownUser() {
 	}
 });
 
-Deno.test(async function transferOwnershipSwapsRoles() {
+test(async function transferOwnershipSwapsRoles() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -287,7 +287,7 @@ Deno.test(async function transferOwnershipSwapsRoles() {
 	}
 });
 
-Deno.test(async function transferOwnershipRejectsNonOwnerCaller() {
+test(async function transferOwnershipRejectsNonOwnerCaller() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -305,7 +305,7 @@ Deno.test(async function transferOwnershipRejectsNonOwnerCaller() {
 	}
 });
 
-Deno.test(async function transferOwnershipRejectsWhenTargetNotMember() {
+test(async function transferOwnershipRejectsWhenTargetNotMember() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -322,7 +322,7 @@ Deno.test(async function transferOwnershipRejectsWhenTargetNotMember() {
 	}
 });
 
-Deno.test(async function transferOwnershipNoopWhenSelf() {
+test(async function transferOwnershipNoopWhenSelf() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -335,7 +335,7 @@ Deno.test(async function transferOwnershipNoopWhenSelf() {
 	}
 });
 
-Deno.test(async function deleteVaultIsIdempotent() {
+test(async function deleteVaultIsIdempotent() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");

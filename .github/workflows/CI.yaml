@@ -36,13 +36,13 @@ jobs:
           node-version: "22.14"
           cache: yarn
 
-      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
-        with:
-          deno-version: v2.7
-
       - name: Install frontend
         run: yarn install --immutable
         working-directory: frontend
+
+      - name: Install backend
+        run: yarn install --immutable
+        working-directory: backend
 
       - name: Install playwright deps
         run: yarn install --immutable
@@ -68,7 +68,7 @@ jobs:
             -e "s|MONEEEY_SQLITE_PATH=.*|MONEEEY_SQLITE_PATH=/tmp/moneeey-data/moneeey.sqlite|" \
             -e "s|APP_URL=.*|APP_URL=http://localhost:4270|" \
             env.example > env
-          nohup deno run --allow-read --allow-write --allow-env --allow-net --allow-ffi --allow-import main.ts > /tmp/backend.log 2>&1 &
+          nohup yarn start > /tmp/backend.log 2>&1 &
           echo $! > /tmp/backend.pid
 
       - name: Wait for backend
@@ -109,22 +109,15 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          deno-version: v2.7
+          node-version: "22.14"
+          cache: yarn
 
-      - name: Cache Deno dependencies
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: ~/.cache/deno
-          key: deno-${{ runner.os }}-${{ hashFiles('backend/deno.lock', 'backend/deno.jsonc') }}
-          restore-keys: |
-            deno-${{ runner.os }}-
-
-      - run: deno cache main.ts
+      - run: yarn install --immutable
         name: Install
 
-      - run: deno task test
+      - run: yarn test
         name: Test
 
   LINT:

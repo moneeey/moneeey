@@ -1,7 +1,7 @@
 import { metrics, renderMetrics } from "./metrics.ts";
-import { assert } from "./test.ts";
+import { assert, test } from "./test.ts";
 
-Deno.test(function countersGaugesHistogramsRender() {
+test(function countersGaugesHistogramsRender() {
 	metrics.wsMessages.inc({ type: "push" });
 	metrics.wsMessages.inc({ type: "push" });
 	metrics.wsConnections.set(7);
@@ -20,7 +20,7 @@ Deno.test(function countersGaugesHistogramsRender() {
 	has('moneeey_db_op_duration_seconds_bucket{le="+Inf",op="push"} 1');
 });
 
-Deno.test(function labelValuesAreEscaped() {
+test(function labelValuesAreEscaped() {
 	metrics.wsMessages.inc({ type: 'a"b\\c' });
 	const out = renderMetrics();
 	assert.assertEquals(out.includes('type="a\\"b\\\\c"'), true);

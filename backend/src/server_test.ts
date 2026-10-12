@@ -4,11 +4,12 @@ import {
 	assert,
 	assertResponse,
 	runServerRequest,
+	test,
 	withSpying,
 	withSpyingLogger,
 } from "./test.ts";
 
-Deno.test(async function root() {
+test(async function root() {
 	const { resp } = await runServerRequest("GET", "/");
 
 	assertResponse(resp, 200, {
@@ -16,7 +17,7 @@ Deno.test(async function root() {
 	});
 });
 
-Deno.test(async function apiRoot() {
+test(async function apiRoot() {
 	const { resp } = await runServerRequest("GET", "/api");
 
 	assertResponse(resp, 200, {
@@ -24,10 +25,9 @@ Deno.test(async function apiRoot() {
 	});
 });
 
-Deno.test(async function appError() {
+test(async function appError() {
 	await withSpyingLogger((logger) => {
-		const app = createServer();
-		app.dispatchEvent(new Event("error"));
+		serverInternals.handleError(new Error("boom"));
 		assert.assertEquals(
 			logger.args.map(([level, message]) => [level, message]),
 			[["error", "[createServer] application error"]],
@@ -35,7 +35,7 @@ Deno.test(async function appError() {
 	});
 });
 
-Deno.test(async function runTheServer() {
+test(async function runTheServer() {
 	await withSpying({
 		object: serverInternals,
 		method: "ensureMetaInitialized",
@@ -51,13 +51,7 @@ Deno.test(async function runTheServer() {
 						await withSpying({
 							object: app,
 							method: "listen",
-							expect: [
-								[
-									{
-										port: 4269,
-									},
-								],
-							],
+							expect: [[4269]],
 							action: async (stub) => {
 								stub.resolves(true);
 								await runServer(app);
@@ -74,7 +68,7 @@ Deno.test(async function runTheServer() {
 	});
 });
 
-Deno.test(async function loggerEmit() {
+test(async function loggerEmit() {
 	withSpying({
 		object: console,
 		method: "info",

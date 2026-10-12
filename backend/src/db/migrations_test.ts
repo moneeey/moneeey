@@ -1,16 +1,16 @@
 import { Database } from "../deps.ts";
-import { assert } from "../test.ts";
+import { assert, test } from "../test.ts";
 import { MIGRATIONS, runMigrations } from "./migrations.ts";
 
-Deno.test(function migrationsCreateExpectedTables() {
+test(function migrationsCreateExpectedTables() {
 	const db = new Database(":memory:");
 	const { applied } = runMigrations(db, MIGRATIONS);
 	assert.assertEquals(applied, ["0001_init", "0002_nullable_document_data"]);
 
 	const tables = db
 		.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-		.all<{ name: string }>()
-		.map((r: { name: string }) => r.name);
+		.all()
+		.map((r) => (r as { name: string }).name);
 	assert.assertEquals(tables, [
 		"documents",
 		"invites",
@@ -23,20 +23,20 @@ Deno.test(function migrationsCreateExpectedTables() {
 	db.close();
 });
 
-Deno.test(function migrationsCreateExpectedIndexes() {
+test(function migrationsCreateExpectedIndexes() {
 	const db = new Database(":memory:");
 	runMigrations(db, MIGRATIONS);
 	const indexes = db
 		.prepare(
 			"SELECT name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%' ORDER BY name",
 		)
-		.all<{ name: string }>()
-		.map((r: { name: string }) => r.name);
+		.all()
+		.map((r) => (r as { name: string }).name);
 	assert.assertEquals(indexes, ["passkeys_user_idx", "user_vaults_vault_idx"]);
 	db.close();
 });
 
-Deno.test(function runMigrationsIsIdempotent() {
+test(function runMigrationsIsIdempotent() {
 	const db = new Database(":memory:");
 	runMigrations(db, MIGRATIONS);
 	const second = runMigrations(db, MIGRATIONS);
@@ -44,7 +44,7 @@ Deno.test(function runMigrationsIsIdempotent() {
 	db.close();
 });
 
-Deno.test(function runMigrationsAppliesOnlyNewOnes() {
+test(function runMigrationsAppliesOnlyNewOnes() {
 	const db = new Database(":memory:");
 	const first: typeof MIGRATIONS = [
 		{ name: "0001_init", sql: "CREATE TABLE a (x INTEGER);" },
@@ -58,13 +58,13 @@ Deno.test(function runMigrationsAppliesOnlyNewOnes() {
 
 	const tables = db
 		.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-		.all<{ name: string }>()
-		.map((r: { name: string }) => r.name);
+		.all()
+		.map((r) => (r as { name: string }).name);
 	assert.assertEquals(tables, ["a", "b", "schema_migrations"]);
 	db.close();
 });
 
-Deno.test(function runMigrationsRollsBackOnFailure() {
+test(function runMigrationsRollsBackOnFailure() {
 	const db = new Database(":memory:");
 	runMigrations(db, [
 		{ name: "0001_init", sql: "CREATE TABLE a (x INTEGER);" },
@@ -80,13 +80,13 @@ Deno.test(function runMigrationsRollsBackOnFailure() {
 	);
 	const tables = db
 		.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-		.all<{ name: string }>()
-		.map((r: { name: string }) => r.name);
+		.all()
+		.map((r) => (r as { name: string }).name);
 	assert.assertEquals(tables, ["a", "schema_migrations"]);
 	const applied = db
 		.prepare("SELECT name FROM schema_migrations ORDER BY name")
-		.all<{ name: string }>()
-		.map((r: { name: string }) => r.name);
+		.all()
+		.map((r) => (r as { name: string }).name);
 	assert.assertEquals(applied, ["0001_init"]);
 	db.close();
 });

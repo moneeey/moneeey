@@ -3,10 +3,11 @@ import {
 	assert,
 	assertResponse,
 	runServerRequest,
+	test,
 	withSpying,
 } from "./test.ts";
 
-Deno.test(async function passkeyRegisterOptionsRejectsEmptyDisplayName() {
+test(async function passkeyRegisterOptionsRejectsEmptyDisplayName() {
 	const { resp } = await runServerRequest(
 		"POST",
 		"/api/auth/passkey/register/options",
@@ -15,7 +16,7 @@ Deno.test(async function passkeyRegisterOptionsRejectsEmptyDisplayName() {
 	assertResponse(resp, 400, { error: "bad display name" });
 });
 
-Deno.test(async function passkeyRegisterOptionsRejectsTooLong() {
+test(async function passkeyRegisterOptionsRejectsTooLong() {
 	const { resp } = await runServerRequest(
 		"POST",
 		"/api/auth/passkey/register/options",
@@ -24,7 +25,7 @@ Deno.test(async function passkeyRegisterOptionsRejectsTooLong() {
 	assertResponse(resp, 400, { error: "bad display name" });
 });
 
-Deno.test(async function passkeyRegisterOptionsSuccess() {
+test(async function passkeyRegisterOptionsSuccess() {
 	await withSpying({
 		object: authPasskeyInternals,
 		method: "generateRegistrationOptions",
@@ -44,7 +45,7 @@ Deno.test(async function passkeyRegisterOptionsSuccess() {
 	});
 });
 
-Deno.test(async function passkeyLoginOptionsReturnsDiscoverableChallenge() {
+test(async function passkeyLoginOptionsReturnsDiscoverableChallenge() {
 	await withSpying({
 		object: authPasskeyInternals,
 		method: "generateAuthenticationOptions",
@@ -63,7 +64,7 @@ Deno.test(async function passkeyLoginOptionsReturnsDiscoverableChallenge() {
 	});
 });
 
-Deno.test(async function passkeyRegisterVerifyMissingFlowToken() {
+test(async function passkeyRegisterVerifyMissingFlowToken() {
 	const { resp } = await runServerRequest(
 		"POST",
 		"/api/auth/passkey/register/verify",
@@ -72,7 +73,7 @@ Deno.test(async function passkeyRegisterVerifyMissingFlowToken() {
 	assertResponse(resp, 500, { error: "internal server error" });
 });
 
-Deno.test(async function passkeyInviteCreateNotAuthenticated() {
+test(async function passkeyInviteCreateNotAuthenticated() {
 	const { resp } = await runServerRequest(
 		"POST",
 		"/api/auth/passkey/invite/create",
@@ -81,7 +82,7 @@ Deno.test(async function passkeyInviteCreateNotAuthenticated() {
 	assertResponse(resp, 401, { error: "not authenticated" });
 });
 
-Deno.test(async function passkeyInviteInfoNotFound() {
+test(async function passkeyInviteInfoNotFound() {
 	await withSpying({
 		object: authPasskeyInternals,
 		method: "findInvite",
@@ -97,7 +98,7 @@ Deno.test(async function passkeyInviteInfoNotFound() {
 	});
 });
 
-Deno.test(async function passkeyInviteAcceptNotAuthenticated() {
+test(async function passkeyInviteAcceptNotAuthenticated() {
 	const { resp } = await runServerRequest(
 		"POST",
 		"/api/auth/passkey/invite/accept",
@@ -106,7 +107,7 @@ Deno.test(async function passkeyInviteAcceptNotAuthenticated() {
 	assertResponse(resp, 401, { error: "not authenticated" });
 });
 
-Deno.test(async function passkeyInviteInfoSuccess() {
+test(async function passkeyInviteInfoSuccess() {
 	await withSpying({
 		object: authPasskeyInternals,
 		method: "findInvite",
@@ -129,7 +130,7 @@ Deno.test(async function passkeyInviteInfoSuccess() {
 	});
 });
 
-Deno.test(async function passkeyLoginVerifyCredentialNotFound() {
+test(async function passkeyLoginVerifyCredentialNotFound() {
 	await withSpying({
 		object: authPasskeyInternals,
 		method: "getUserByCredentialId",

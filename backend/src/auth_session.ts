@@ -1,3 +1,4 @@
+import type express from "express";
 import { getStorage } from "./data/storage_singleton.ts";
 import { getUserById } from "./data/users.ts";
 import {
@@ -5,7 +6,6 @@ import {
 	defaultVaultNameFor,
 	getVaultsByUser,
 } from "./data/vaults.ts";
-import { oak } from "./deps.ts";
 import { authJwt, sessionJwt } from "./jwt.ts";
 import { Logger } from "./logger.ts";
 
@@ -34,7 +34,7 @@ export const authSessionInternals = {
 };
 
 export async function setAuthCookie(
-	ctx: oak.Context,
+	res: express.Response,
 	strategy: string,
 	userId: string,
 ): Promise<string> {
@@ -43,17 +43,17 @@ export async function setAuthCookie(
 		{ strategy, userId },
 		AUTH_COOKIE_TTL,
 	);
-	ctx.cookies.set("authToken", authToken, { httpOnly: true });
+	res.cookie("authToken", authToken, { httpOnly: true });
 	return authToken;
 }
 
 export async function authenticateAndRespond(
-	ctx: oak.Context,
+	res: express.Response,
 	strategy: string,
 	userId: string,
 	vaultId: string,
 ): Promise<{ authenticated: true; vaultId: string; sessionToken: string }> {
-	await setAuthCookie(ctx, strategy, userId);
+	await setAuthCookie(res, strategy, userId);
 	const sessionToken = await sessionJwt.generate(
 		userId,
 		{ vaultId, userId },
@@ -74,36 +74,31 @@ async function loadSession({ strategy, userId }: UserId) {
 	return { authenticated: true as const, vaultId, sessionToken };
 }
 
-export function setupSession(authRouter: oak.Router) {
-	authRouter.post("/session", async (ctx: oak.Context) => {
+export function setupSession(authRouter: express.Router) {
+	authRouter.post("/session", async (req, res) => {
 		try {
-			const authToken = await ctx.cookies.get("authToken");
+			const authToken = req.cookies.authToken;
 			if (!authToken || authToken.length === 0) {
-				ctx.response.body = JSON.stringify({ authenticated: false });
-				ctx.response.status = oak.Status.Unauthorized;
+				res.status(401).json({ authenticated: false });
 				return;
 			}
 			const validated = await authJwt.validate(authToken);
 			const strategy = String(validated.payload.strategy || "");
 			const userId = String(validated.payload.userId || "");
-			ctx.response.body = JSON.stringify(
-				await loadSession({ strategy, userId }),
-			);
+			res.json(await loadSession({ strategy, userId }));
 		} catch (err) {
 			logger.error("/session error", { err });
-			ctx.response.body = JSON.stringify({ error: "ops" });
-			ctx.response.status = oak.Status.BadRequest;
+			res.status(400).json({ error: "ops" });
 		}
 	});
 
-	authRouter.post("/logout", (ctx: oak.Context) => {
+	authRouter.post("/logout", (_req, res) => {
 		try {
-			ctx.cookies.delete("authToken");
-			ctx.response.body = JSON.stringify({ authenticated: false });
+			res.clearCookie("authToken");
+			res.json({ authenticated: false });
 		} catch (err) {
 			logger.error("/logout error", { err });
-			ctx.response.body = JSON.stringify({ error: "ops" });
-			ctx.response.status = oak.Status.BadRequest;
+			res.status(400).json({ error: "ops" });
 		}
 	});
 }

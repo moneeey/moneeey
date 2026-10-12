@@ -1,6 +1,6 @@
-import { assertResponse, runServerRequest } from "./test.ts";
+import { assertResponse, runServerRequest, test } from "./test.ts";
 
-Deno.test(async function apiAuth() {
+test(async function apiAuth() {
 	const { resp } = await runServerRequest("GET", "/api/auth");
 
 	assertResponse(resp, 200, {

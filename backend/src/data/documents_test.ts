@@ -1,4 +1,4 @@
-import { assert } from "../test.ts";
+import { assert, test } from "../test.ts";
 import {
 	type DocRecord,
 	type IncomingDoc,
@@ -19,7 +19,7 @@ const doc = (
 	deleted_at: string | null = null,
 ): IncomingDoc => ({ id, updated_at, deleted_at, data });
 
-Deno.test(async function bulkUpsertAcceptsAllNew() {
+test(async function bulkUpsertAcceptsAllNew() {
 	const t = makeTempStorage();
 	try {
 		const result = await bulkUpsert(t.storage, VAULT, [
@@ -36,7 +36,7 @@ Deno.test(async function bulkUpsertAcceptsAllNew() {
 	}
 });
 
-Deno.test(async function bulkUpsertHandlesEmptyList() {
+test(async function bulkUpsertHandlesEmptyList() {
 	const t = makeTempStorage();
 	try {
 		assert.assertEquals(await bulkUpsert(t.storage, VAULT, []), []);
@@ -45,7 +45,7 @@ Deno.test(async function bulkUpsertHandlesEmptyList() {
 	}
 });
 
-Deno.test(async function lwwRejectsStaleIncoming() {
+test(async function lwwRejectsStaleIncoming() {
 	const t = makeTempStorage();
 	try {
 		await bulkUpsert(t.storage, VAULT, [
@@ -68,7 +68,7 @@ Deno.test(async function lwwRejectsStaleIncoming() {
 	}
 });
 
-Deno.test(async function lwwAcceptsNewerIncoming() {
+test(async function lwwAcceptsNewerIncoming() {
 	const t = makeTempStorage();
 	try {
 		await bulkUpsert(t.storage, VAULT, [
@@ -86,7 +86,7 @@ Deno.test(async function lwwAcceptsNewerIncoming() {
 	}
 });
 
-Deno.test(async function lwwTieGoesToIncoming() {
+test(async function lwwTieGoesToIncoming() {
 	const t = makeTempStorage();
 	try {
 		const sameTs = "2026-01-01T00:00:00.000Z";
@@ -102,7 +102,7 @@ Deno.test(async function lwwTieGoesToIncoming() {
 	}
 });
 
-Deno.test(async function manifestReturnsIdAndUpdatedAt() {
+test(async function manifestReturnsIdAndUpdatedAt() {
 	const t = makeTempStorage();
 	try {
 		await bulkUpsert(t.storage, VAULT, [
@@ -119,7 +119,7 @@ Deno.test(async function manifestReturnsIdAndUpdatedAt() {
 	}
 });
 
-Deno.test(async function getDocsReturnsRequestedIds() {
+test(async function getDocsReturnsRequestedIds() {
 	const t = makeTempStorage();
 	try {
 		await bulkUpsert(t.storage, VAULT, [
@@ -135,7 +135,7 @@ Deno.test(async function getDocsReturnsRequestedIds() {
 	}
 });
 
-Deno.test(async function getDocsHandlesEmpty() {
+test(async function getDocsHandlesEmpty() {
 	const t = makeTempStorage();
 	try {
 		assert.assertEquals(await getDocs(t.storage, VAULT, []), []);
@@ -144,7 +144,7 @@ Deno.test(async function getDocsHandlesEmpty() {
 	}
 });
 
-Deno.test(async function futureDeletedRowsKeepEncryptedData() {
+test(async function futureDeletedRowsKeepEncryptedData() {
 	const t = makeTempStorage();
 	try {
 		await bulkUpsert(t.storage, VAULT, [
@@ -161,7 +161,7 @@ Deno.test(async function futureDeletedRowsKeepEncryptedData() {
 	}
 });
 
-Deno.test(async function expiredDeletedRowsPurgeDataAndBumpUpdatedAt() {
+test(async function expiredDeletedRowsPurgeDataAndBumpUpdatedAt() {
 	const t = makeTempStorage();
 	try {
 		const deletedAt = "2000-01-02T00:00:00.000Z";
@@ -178,7 +178,7 @@ Deno.test(async function expiredDeletedRowsPurgeDataAndBumpUpdatedAt() {
 	}
 });
 
-Deno.test(async function purgeExpiredDocumentsKeepsManifestEntry() {
+test(async function purgeExpiredDocumentsKeepsManifestEntry() {
 	const t = makeTempStorage();
 	try {
 		const deletedAt = "2000-01-02T00:00:00.000Z";
@@ -206,7 +206,7 @@ Deno.test(async function purgeExpiredDocumentsKeepsManifestEntry() {
 	}
 });
 
-Deno.test(async function nonTombstoneRowsHaveNullDeletedAt() {
+test(async function nonTombstoneRowsHaveNullDeletedAt() {
 	const t = makeTempStorage();
 	try {
 		await bulkUpsert(t.storage, VAULT, [doc("a", "2026-01-01T00:00:00.000Z")]);
@@ -217,7 +217,7 @@ Deno.test(async function nonTombstoneRowsHaveNullDeletedAt() {
 	}
 });
 
-Deno.test(async function vaultsAreIsolatedByFile() {
+test(async function vaultsAreIsolatedByFile() {
 	const t = makeTempStorage();
 	try {
 		await bulkUpsert(t.storage, VAULT, [
@@ -241,7 +241,7 @@ Deno.test(async function vaultsAreIsolatedByFile() {
 	}
 });
 
-Deno.test(async function manifestStartsEmpty() {
+test(async function manifestStartsEmpty() {
 	const t = makeTempStorage();
 	try {
 		assert.assertEquals(await getManifest(t.storage, VAULT), []);
@@ -250,7 +250,7 @@ Deno.test(async function manifestStartsEmpty() {
 	}
 });
 
-Deno.test(async function staleAndAcceptedMixInOneBatch() {
+test(async function staleAndAcceptedMixInOneBatch() {
 	const t = makeTempStorage();
 	try {
 		await bulkUpsert(t.storage, VAULT, [

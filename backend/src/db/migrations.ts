@@ -81,7 +81,7 @@ export const MIGRATIONS: Migration[] = [
 ];
 
 export function runMigrations(
-	db: Database,
+	db: Database.Database,
 	migrations: Migration[],
 ): { applied: string[] } {
 	db.exec(`
@@ -90,9 +90,9 @@ export function runMigrations(
 			applied_at TEXT NOT NULL
 		);
 	`);
-	const rows = db
-		.prepare("SELECT name FROM schema_migrations")
-		.all<{ name: string }>();
+	const rows = db.prepare("SELECT name FROM schema_migrations").all() as {
+		name: string;
+	}[];
 	const existing = new Set(rows.map((r: { name: string }) => r.name));
 	const applied: string[] = [];
 	const now = new Date().toISOString();

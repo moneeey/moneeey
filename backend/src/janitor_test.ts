@@ -3,7 +3,7 @@ import { makeTempStorage } from "./data/test_storage.ts";
 import { createUser } from "./data/users.ts";
 import { addMember, createVaultForUser, userHasAccess } from "./data/vaults.ts";
 import { purgeStaleTestUsers } from "./janitor.ts";
-import { assert } from "./test.ts";
+import { assert, test } from "./test.ts";
 
 const twoDaysAgo = () => new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
 
@@ -28,7 +28,7 @@ const seedVaultFor = async (
 	userId: string,
 ) => createVaultForUser(storage, userId, "Test vault");
 
-Deno.test(async function purgesTestUserPlusOwnedVault() {
+test(async function purgesTestUserPlusOwnedVault() {
 	const t = makeTempStorage();
 	try {
 		const u = await createUser(t.storage, testName("old"));
@@ -54,7 +54,7 @@ Deno.test(async function purgesTestUserPlusOwnedVault() {
 	}
 });
 
-Deno.test(async function leavesNonTestUsersAlone() {
+test(async function leavesNonTestUsersAlone() {
 	const t = makeTempStorage();
 	try {
 		const real = await createUser(t.storage, "Alice");
@@ -69,7 +69,7 @@ Deno.test(async function leavesNonTestUsersAlone() {
 	}
 });
 
-Deno.test(async function leavesRecentTestUsersAlone() {
+test(async function leavesRecentTestUsersAlone() {
 	const t = makeTempStorage();
 	try {
 		const u = await createUser(t.storage, testName("fresh"));
@@ -82,7 +82,7 @@ Deno.test(async function leavesRecentTestUsersAlone() {
 	}
 });
 
-Deno.test(async function membershipsCascadeButSharedVaultSurvives() {
+test(async function membershipsCascadeButSharedVaultSurvives() {
 	const t = makeTempStorage();
 	try {
 		const owner = await createUser(t.storage, "Owner");

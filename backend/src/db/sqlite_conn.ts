@@ -6,7 +6,7 @@ type Bind = (string | number | bigint | boolean | null | Uint8Array)[];
 export class SqliteConn implements SqlConn {
 	private readonly mutex = new Mutex();
 
-	constructor(readonly db: Database) {}
+	constructor(readonly db: Database.Database) {}
 
 	query<T>(sql: string, ...params: unknown[]): Promise<T[]> {
 		return Promise.resolve(
@@ -22,7 +22,9 @@ export class SqliteConn implements SqlConn {
 	}
 
 	run(sql: string, ...params: unknown[]): Promise<number> {
-		return Promise.resolve(this.db.prepare(sql).run(...(params as Bind)));
+		return Promise.resolve(
+			this.db.prepare(sql).run(...(params as Bind)).changes,
+		);
 	}
 
 	exec(sql: string): Promise<void> {

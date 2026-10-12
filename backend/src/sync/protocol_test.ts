@@ -2,7 +2,7 @@ import { makeTempStorage } from "../data/test_storage.ts";
 import { createUser } from "../data/users.ts";
 import { createVaultForUser } from "../data/vaults.ts";
 import { sessionJwt } from "../jwt.ts";
-import { assert } from "../test.ts";
+import { assert, test } from "../test.ts";
 import { type PeerSink, VaultHub } from "./hub.ts";
 import {
 	CLOSE_FORBIDDEN,
@@ -37,7 +37,7 @@ const setupVault = async () => {
 	return { t, user, vault, hub };
 };
 
-Deno.test(async function helloWithValidTokenSendsReady() {
+test(async function helloWithValidTokenSendsReady() {
 	const { t, user, vault, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -53,7 +53,7 @@ Deno.test(async function helloWithValidTokenSendsReady() {
 	}
 });
 
-Deno.test(async function helloWithInvalidTokenCloses4401() {
+test(async function helloWithInvalidTokenCloses4401() {
 	const { t, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -67,7 +67,7 @@ Deno.test(async function helloWithInvalidTokenCloses4401() {
 	}
 });
 
-Deno.test(async function helloWithNonMemberCloses4403() {
+test(async function helloWithNonMemberCloses4403() {
 	const { t, vault, hub } = await setupVault();
 	try {
 		const stranger = await createUser(t.storage, "Bob");
@@ -81,7 +81,7 @@ Deno.test(async function helloWithNonMemberCloses4403() {
 	}
 });
 
-Deno.test(async function manifestBeforeHelloRespondsError() {
+test(async function manifestBeforeHelloRespondsError() {
 	const { t, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -97,7 +97,7 @@ Deno.test(async function manifestBeforeHelloRespondsError() {
 	}
 });
 
-Deno.test(async function pushAcceptedBroadcastsChangesToOtherPeers() {
+test(async function pushAcceptedBroadcastsChangesToOtherPeers() {
 	const { t, user, vault, hub } = await setupVault();
 	try {
 		const peerA = new FakePeer();
@@ -146,7 +146,7 @@ Deno.test(async function pushAcceptedBroadcastsChangesToOtherPeers() {
 	}
 });
 
-Deno.test(async function manifestComputesPullAndPushIds() {
+test(async function manifestComputesPullAndPushIds() {
 	const { t, user, vault, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -203,7 +203,7 @@ Deno.test(async function manifestComputesPullAndPushIds() {
 	}
 });
 
-Deno.test(async function fetchReturnsRequestedDocs() {
+test(async function fetchReturnsRequestedDocs() {
 	const { t, user, vault, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -245,7 +245,7 @@ Deno.test(async function fetchReturnsRequestedDocs() {
 	}
 });
 
-Deno.test(async function pingRespondsPongAfterHello() {
+test(async function pingRespondsPongAfterHello() {
 	const { t, user, vault, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -259,7 +259,7 @@ Deno.test(async function pingRespondsPongAfterHello() {
 	}
 });
 
-Deno.test(async function pingBeforeHelloRespondsError() {
+test(async function pingBeforeHelloRespondsError() {
 	const { t, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -272,7 +272,7 @@ Deno.test(async function pingBeforeHelloRespondsError() {
 	}
 });
 
-Deno.test(async function helloTwiceRespondsError() {
+test(async function helloTwiceRespondsError() {
 	const { t, user, vault, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -288,7 +288,7 @@ Deno.test(async function helloTwiceRespondsError() {
 	}
 });
 
-Deno.test(async function closeDeregistersPeer() {
+test(async function closeDeregistersPeer() {
 	const { t, user, vault, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -303,7 +303,7 @@ Deno.test(async function closeDeregistersPeer() {
 	}
 });
 
-Deno.test(async function staleIncomingNotBroadcast() {
+test(async function staleIncomingNotBroadcast() {
 	const { t, user, vault, hub } = await setupVault();
 	try {
 		const peerA = new FakePeer();
@@ -349,7 +349,7 @@ Deno.test(async function staleIncomingNotBroadcast() {
 	}
 });
 
-Deno.test(async function pushBeforeHelloRespondsError() {
+test(async function pushBeforeHelloRespondsError() {
 	const { t, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();
@@ -363,7 +363,7 @@ Deno.test(async function pushBeforeHelloRespondsError() {
 	}
 });
 
-Deno.test(async function malformedJsonReturnsError() {
+test(async function malformedJsonReturnsError() {
 	const { t, hub } = await setupVault();
 	try {
 		const peer = new FakePeer();

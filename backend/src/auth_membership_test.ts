@@ -8,6 +8,7 @@ import {
 	assert,
 	assertResponse,
 	runServerRequest,
+	test,
 	withSpying,
 } from "./test.ts";
 
@@ -24,7 +25,7 @@ const stubAuthed = (
 		},
 	});
 
-Deno.test(async function vaultsListRequiresAuth() {
+test(async function vaultsListRequiresAuth() {
 	await stubAuthed(null, async () => {
 		const { resp } = await runServerRequest(
 			"POST",
@@ -35,7 +36,7 @@ Deno.test(async function vaultsListRequiresAuth() {
 	});
 });
 
-Deno.test(async function vaultsListReturnsVaultsWithRoles() {
+test(async function vaultsListReturnsVaultsWithRoles() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -89,7 +90,7 @@ Deno.test(async function vaultsListReturnsVaultsWithRoles() {
 	});
 });
 
-Deno.test(async function vaultSelectRequiresMembership() {
+test(async function vaultSelectRequiresMembership() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -107,7 +108,7 @@ Deno.test(async function vaultSelectRequiresMembership() {
 	});
 });
 
-Deno.test(async function vaultSelectRejectsMissingVaultId() {
+test(async function vaultSelectRejectsMissingVaultId() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		const { resp } = await runServerRequest(
 			"POST",
@@ -118,7 +119,7 @@ Deno.test(async function vaultSelectRejectsMissingVaultId() {
 	});
 });
 
-Deno.test(async function vaultSelectIssuesSessionToken() {
+test(async function vaultSelectIssuesSessionToken() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -156,7 +157,7 @@ Deno.test(async function vaultSelectIssuesSessionToken() {
 	});
 });
 
-Deno.test(async function vaultRenameRequiresOwner() {
+test(async function vaultRenameRequiresOwner() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -179,7 +180,7 @@ Deno.test(async function vaultRenameRequiresOwner() {
 	});
 });
 
-Deno.test(async function vaultRenameSucceedsForOwner() {
+test(async function vaultRenameSucceedsForOwner() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -209,7 +210,7 @@ Deno.test(async function vaultRenameSucceedsForOwner() {
 	});
 });
 
-Deno.test(async function vaultMembersRequiresMembership() {
+test(async function vaultMembersRequiresMembership() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -227,7 +228,7 @@ Deno.test(async function vaultMembersRequiresMembership() {
 	});
 });
 
-Deno.test(async function vaultMembersReturnsList() {
+test(async function vaultMembersReturnsList() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -278,7 +279,7 @@ Deno.test(async function vaultMembersReturnsList() {
 	});
 });
 
-Deno.test(async function vaultKickRequiresOwner() {
+test(async function vaultKickRequiresOwner() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -301,7 +302,7 @@ Deno.test(async function vaultKickRequiresOwner() {
 	});
 });
 
-Deno.test(async function vaultKickRefusesSelf() {
+test(async function vaultKickRefusesSelf() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -324,7 +325,7 @@ Deno.test(async function vaultKickRefusesSelf() {
 	});
 });
 
-Deno.test(async function vaultKickRemovesMember() {
+test(async function vaultKickRemovesMember() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -354,7 +355,7 @@ Deno.test(async function vaultKickRemovesMember() {
 	});
 });
 
-Deno.test(async function vaultKickReportsCannotRemoveOwner() {
+test(async function vaultKickReportsCannotRemoveOwner() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -384,7 +385,7 @@ Deno.test(async function vaultKickReportsCannotRemoveOwner() {
 	});
 });
 
-Deno.test(async function vaultTransferRejectsNonOwner() {
+test(async function vaultTransferRejectsNonOwner() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -402,7 +403,7 @@ Deno.test(async function vaultTransferRejectsNonOwner() {
 	});
 });
 
-Deno.test(async function vaultTransferRejectsTargetNotMember() {
+test(async function vaultTransferRejectsTargetNotMember() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -420,7 +421,7 @@ Deno.test(async function vaultTransferRejectsTargetNotMember() {
 	});
 });
 
-Deno.test(async function vaultTransferSuccess() {
+test(async function vaultTransferSuccess() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -438,7 +439,7 @@ Deno.test(async function vaultTransferSuccess() {
 	});
 });
 
-Deno.test(async function vaultCreateRequiresAuth() {
+test(async function vaultCreateRequiresAuth() {
 	await stubAuthed(null, async () => {
 		const { resp } = await runServerRequest("POST", "/api/auth/vault/create", {
 			name: "x",
@@ -447,7 +448,7 @@ Deno.test(async function vaultCreateRequiresAuth() {
 	});
 });
 
-Deno.test(async function vaultCreateUsesProvidedName() {
+test(async function vaultCreateUsesProvidedName() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -475,7 +476,7 @@ Deno.test(async function vaultCreateUsesProvidedName() {
 	});
 });
 
-Deno.test(async function vaultCreateFallsBackToDisplayName() {
+test(async function vaultCreateFallsBackToDisplayName() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -514,7 +515,7 @@ Deno.test(async function vaultCreateFallsBackToDisplayName() {
 	});
 });
 
-Deno.test(async function vaultDeleteRequiresAuth() {
+test(async function vaultDeleteRequiresAuth() {
 	await stubAuthed(null, async () => {
 		const { resp } = await runServerRequest("POST", "/api/auth/vault/delete", {
 			vaultId: "v1",
@@ -523,7 +524,7 @@ Deno.test(async function vaultDeleteRequiresAuth() {
 	});
 });
 
-Deno.test(async function vaultDeleteRejectsMissingVaultId() {
+test(async function vaultDeleteRejectsMissingVaultId() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		const { resp } = await runServerRequest(
 			"POST",
@@ -534,7 +535,7 @@ Deno.test(async function vaultDeleteRejectsMissingVaultId() {
 	});
 });
 
-Deno.test(async function vaultDeleteRejectsNonOwner() {
+test(async function vaultDeleteRejectsNonOwner() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -557,7 +558,7 @@ Deno.test(async function vaultDeleteRejectsNonOwner() {
 	});
 });
 
-Deno.test(async function vaultDeleteRejectsLastVault() {
+test(async function vaultDeleteRejectsLastVault() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,
@@ -589,7 +590,7 @@ Deno.test(async function vaultDeleteRejectsLastVault() {
 	});
 });
 
-Deno.test(async function vaultDeleteSucceedsWhenAnotherVaultRemains() {
+test(async function vaultDeleteSucceedsWhenAnotherVaultRemains() {
 	await stubAuthed({ userId: "u1" }, async () => {
 		await withSpying({
 			object: authMembershipInternals,

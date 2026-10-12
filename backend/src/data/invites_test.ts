@@ -1,5 +1,5 @@
 import type { Storage } from "../db/engine.ts";
-import { assert } from "../test.ts";
+import { assert, test } from "../test.ts";
 import {
 	INVITE_QUOTA_PER_OWNER,
 	createInvite,
@@ -23,7 +23,7 @@ const seedUser = async (storage: Storage, displayName: string) => {
 const newVault = async (storage: Storage, userId: string) =>
 	createVaultForUser(storage, userId, "Test vault");
 
-Deno.test(async function createInviteAndFindRoundTrip() {
+test(async function createInviteAndFindRoundTrip() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -39,7 +39,7 @@ Deno.test(async function createInviteAndFindRoundTrip() {
 	}
 });
 
-Deno.test(async function findInviteReturnsNullForUnknownToken() {
+test(async function findInviteReturnsNullForUnknownToken() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -53,7 +53,7 @@ Deno.test(async function findInviteReturnsNullForUnknownToken() {
 	}
 });
 
-Deno.test(async function findInviteReturnsNullForBadTokenFormat() {
+test(async function findInviteReturnsNullForBadTokenFormat() {
 	const t = makeTempStorage();
 	try {
 		assert.assertEquals(await findInvite(t.storage, "noseparator"), null);
@@ -64,7 +64,7 @@ Deno.test(async function findInviteReturnsNullForBadTokenFormat() {
 	}
 });
 
-Deno.test(async function redeemInviteAddsMembership() {
+test(async function redeemInviteAddsMembership() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -86,7 +86,7 @@ Deno.test(async function redeemInviteAddsMembership() {
 	}
 });
 
-Deno.test(async function redeemInviteCannotBeUsedTwice() {
+test(async function redeemInviteCannotBeUsedTwice() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -105,7 +105,7 @@ Deno.test(async function redeemInviteCannotBeUsedTwice() {
 	}
 });
 
-Deno.test(async function createInviteEnforcesQuota() {
+test(async function createInviteEnforcesQuota() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -123,7 +123,7 @@ Deno.test(async function createInviteEnforcesQuota() {
 	}
 });
 
-Deno.test(async function redeemInviteRejectsWhenVaultIsFull() {
+test(async function redeemInviteRejectsWhenVaultIsFull() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");
@@ -146,7 +146,7 @@ Deno.test(async function redeemInviteRejectsWhenVaultIsFull() {
 	}
 });
 
-Deno.test(async function findInviteRejectsExpired() {
+test(async function findInviteRejectsExpired() {
 	const t = makeTempStorage();
 	try {
 		const owner = await seedUser(t.storage, "Owner");

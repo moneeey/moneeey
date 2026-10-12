@@ -21,7 +21,7 @@ podman-compose up
 
 Open the app at <http://localhost:4280>.
 
-The Caddy container listens on `4280`, proxies `/api/*` to the Deno backend, and
+The Caddy container listens on `4280`, proxies `/api/*` to the Node backend, and
 proxies everything else to the Vite frontend dev server. The backend reads
 `backend/env.example` through `/run/secret/dev.env` in the compose stack and uses
 `docker/volume/backend_data/moneeey.sqlite` for local SQLite data.
@@ -57,10 +57,10 @@ Backend commands:
 
 ```bash
 cd backend
-deno task dev
-deno task test
-deno task test:watch
-deno task test:coverage
+yarn install --immutable
+yarn dev
+yarn test
+yarn typecheck
 ```
 
 Playwright commands:
@@ -74,7 +74,7 @@ yarn test-ff
 ```
 
 Playwright starts the Vite frontend dev server. Start the backend separately,
-for example with `podman-compose up` or `deno task dev`, when tests need `/api`.
+for example with `podman-compose up` or `yarn dev`, when tests need `/api`.
 
 ## Architecture
 
@@ -82,7 +82,7 @@ for example with `podman-compose up` or `deno task dev`, when tests need `/api`.
   IndexedDB. `frontend/src/main.tsx` boots the app, `frontend/src/App.tsx` wires
   routing and unlock flow, and `frontend/src/shared/MoneeeyStore.ts` owns the
   central MobX stores.
-- `backend/`: Deno 2.7 and Oak. `backend/main.ts` starts
+- `backend/`: Node and Express. `backend/main.ts` starts
   `backend/src/server.ts`, SQLite access lives under `backend/src/db/`, and
   migrations are declared in `backend/src/db/migrations.ts`.
 - `docker/`: Caddy exposes the local app on port `4280` and routes `/api/*` to

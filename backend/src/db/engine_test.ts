@@ -10,9 +10,9 @@ import {
 	deleteVault,
 	userHasAccess,
 } from "../data/vaults.ts";
-import { assert } from "../test.ts";
+import { assert, test } from "../test.ts";
 
-Deno.test(async function documentUpsertUpdateAndStaleRejection() {
+test(async function documentUpsertUpdateAndStaleRejection() {
 	const t = makeTempStorage();
 	try {
 		const alice = await createUser(t.storage, "Alice");
@@ -57,7 +57,7 @@ Deno.test(async function documentUpsertUpdateAndStaleRejection() {
 	}
 });
 
-Deno.test(async function vaultsAreIsolated() {
+test(async function vaultsAreIsolated() {
 	const t = makeTempStorage();
 	try {
 		const alice = await createUser(t.storage, "Alice");
@@ -86,7 +86,7 @@ Deno.test(async function vaultsAreIsolated() {
 	}
 });
 
-Deno.test(async function inviteRoundTripAndVaultDeletion() {
+test(async function inviteRoundTripAndVaultDeletion() {
 	const t = makeTempStorage();
 	try {
 		const owner = await createUser(t.storage, "Owner");
@@ -121,7 +121,7 @@ Deno.test(async function inviteRoundTripAndVaultDeletion() {
 	}
 });
 
-Deno.test(async function membershipCapIsEnforced() {
+test(async function membershipCapIsEnforced() {
 	const t = makeTempStorage();
 	try {
 		const owner = await createUser(t.storage, "Owner");

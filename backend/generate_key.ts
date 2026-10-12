@@ -1,8 +1,12 @@
-import * as jose from "https://deno.land/x/jose@v4.14.4/index.ts";
+import { pathToFileURL } from "node:url";
+import * as jose from "jose";
 
 export const ALG = "RS512";
 
-if (import.meta.main) {
+if (
+	process.argv[1] &&
+	import.meta.url === pathToFileURL(process.argv[1]).href
+) {
 	const { privateKey, publicKey } = await jose.generateKeyPair(ALG, {
 		extractable: true,
 	});

@@ -1,3 +1,4 @@
+import type express from "express";
 import {
 	authenticateAndRespond,
 	resolvePrimaryVaultId,
@@ -30,7 +31,6 @@ import {
 import {
 	generateAuthenticationOptions,
 	generateRegistrationOptions,
-	oak,
 	verifyAuthenticationResponse,
 	verifyRegistrationResponse,
 } from "./deps.ts";
@@ -107,8 +107,8 @@ export const authPasskeyInternals = {
 	authenticateAndRespond,
 };
 
-const getBodyJson = async (ctx: oak.Context) => {
-	return await ctx.request.body({ type: "json" }).value;
+const getBodyJson = async (req: express.Request) => {
+	return (req.body ?? {}) as Record<string, unknown>;
 };
 
 const parseDisplayName = (raw: unknown): string | null => {
@@ -119,9 +119,8 @@ const parseDisplayName = (raw: unknown): string | null => {
 	return trimmed;
 };
 
-function respond(ctx: oak.Context, status: oak.Status, body: object) {
-	ctx.response.body = JSON.stringify(body);
-	ctx.response.status = status;
+function respond(res: express.Response, status: number, body: object) {
+	res.status(status).json(body);
 }
 
 async function makeFlowToken(
@@ -163,13 +162,13 @@ function credentialToStored(
 	};
 }
 
-export function setupPasskey(authRouter: oak.Router) {
-	authRouter.post("/passkey/register/options", async (ctx) => {
+export function setupPasskey(authRouter: express.Router) {
+	authRouter.post("/passkey/register/options", async (req, res) => {
 		try {
-			const { displayName: rawName } = await getBodyJson(ctx);
+			const { displayName: rawName } = await getBodyJson(req);
 			const displayName = parseDisplayName(rawName);
 			if (!displayName) {
-				respond(ctx, oak.Status.BadRequest, { error: "bad display name" });
+				respond(res, 400, { error: "bad display name" });
 				return;
 			}
 
@@ -186,24 +185,22 @@ export function setupPasskey(authRouter: oak.Router) {
 			});
 
 			const flowToken = await makeFlowToken(options.challenge, { displayName });
-			respond(ctx, oak.Status.OK, { options, flowToken });
+			respond(res, 200, { options, flowToken });
 		} catch (err) {
 			logger.error("register/options error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/passkey/register/verify", async (ctx) => {
+	authRouter.post("/passkey/register/verify", async (req, res) => {
 		try {
-			const { credential, flowToken } = await getBodyJson(ctx);
+			const { credential, flowToken } = await getBodyJson(req);
 
 			const { challenge: expectedChallenge, claims } =
 				await readFlowToken(flowToken);
 			const displayName = parseDisplayName(claims.displayName);
 			if (!displayName) {
-				respond(ctx, oak.Status.BadRequest, { error: "bad display name" });
+				respond(res, 400, { error: "bad display name" });
 				return;
 			}
 			const verification =
@@ -215,7 +212,7 @@ export function setupPasskey(authRouter: oak.Router) {
 				});
 
 			if (!verification.verified || !verification.registrationInfo) {
-				respond(ctx, oak.Status.BadRequest, { error: "verification failed" });
+				respond(res, 400, { error: "verification failed" });
 				return;
 			}
 
@@ -231,21 +228,19 @@ export function setupPasskey(authRouter: oak.Router) {
 					stored,
 				);
 			const result = await authPasskeyInternals.authenticateAndRespond(
-				ctx,
+				res,
 				"passkey",
 				user.id,
 				vaultId,
 			);
-			respond(ctx, oak.Status.OK, result);
+			respond(res, 200, result);
 		} catch (err) {
 			logger.error("register/verify error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/passkey/login/options", async (ctx) => {
+	authRouter.post("/passkey/login/options", async (_req, res) => {
 		try {
 			const options = await authPasskeyInternals.generateAuthenticationOptions({
 				rpID: WEBAUTHN_RP_ID,
@@ -253,18 +248,16 @@ export function setupPasskey(authRouter: oak.Router) {
 			});
 
 			const flowToken = await makeFlowToken(options.challenge);
-			respond(ctx, oak.Status.OK, { options, flowToken });
+			respond(res, 200, { options, flowToken });
 		} catch (err) {
 			logger.error("login/options error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/passkey/login/verify", async (ctx) => {
+	authRouter.post("/passkey/login/verify", async (req, res) => {
 		try {
-			const { credential, flowToken } = await getBodyJson(ctx);
+			const { credential, flowToken } = await getBodyJson(req);
 
 			const { challenge: expectedChallenge } = await readFlowToken(flowToken);
 			const authResponse = credential as AuthenticationResponseJSON;
@@ -272,7 +265,7 @@ export function setupPasskey(authRouter: oak.Router) {
 				authResponse.id,
 			);
 			if (!lookup) {
-				respond(ctx, oak.Status.BadRequest, { error: "credential not found" });
+				respond(res, 400, { error: "credential not found" });
 				return;
 			}
 			const { user, passkey } = lookup;
@@ -296,7 +289,7 @@ export function setupPasskey(authRouter: oak.Router) {
 				});
 
 			if (!verification.verified) {
-				respond(ctx, oak.Status.BadRequest, { error: "verification failed" });
+				respond(res, 400, { error: "verification failed" });
 				return;
 			}
 
@@ -308,31 +301,29 @@ export function setupPasskey(authRouter: oak.Router) {
 			const vaultId = await authPasskeyInternals.resolvePrimaryVaultId(user.id);
 
 			const result = await authPasskeyInternals.authenticateAndRespond(
-				ctx,
+				res,
 				"passkey",
 				user.id,
 				vaultId,
 			);
-			respond(ctx, oak.Status.OK, result);
+			respond(res, 200, result);
 		} catch (err) {
 			logger.error("login/verify error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/passkey/invite/create", async (ctx) => {
+	authRouter.post("/passkey/invite/create", async (req, res) => {
 		try {
-			const authToken = await ctx.cookies.get("authToken");
+			const authToken = req.cookies.authToken;
 			if (!authToken) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
 			const validated = await authJwt.validate(authToken);
 			const userId = String(validated.payload.userId || "");
 			if (!userId) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
 
@@ -340,40 +331,36 @@ export function setupPasskey(authRouter: oak.Router) {
 				const { token } =
 					await authPasskeyInternals.createInviteForOwner(userId);
 				const inviteUrl = `${APP_URL}/#/invite/${token}`;
-				respond(ctx, oak.Status.OK, { inviteUrl, token });
+				respond(res, 200, { inviteUrl, token });
 			} catch (err) {
 				if ((err as Error).message === "invite_quota_exceeded") {
-					respond(ctx, oak.Status.TooManyRequests, {
-						error: "invite_quota_exceeded",
-					});
+					respond(res, 429, { error: "invite_quota_exceeded" });
 					return;
 				}
 				throw err;
 			}
 		} catch (err) {
 			logger.error("invite/create error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/passkey/invite/accept", async (ctx) => {
+	authRouter.post("/passkey/invite/accept", async (req, res) => {
 		try {
-			const authToken = await ctx.cookies.get("authToken");
+			const authToken = req.cookies.authToken;
 			if (!authToken) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
 			const validated = await authJwt.validate(authToken);
 			const userId = String(validated.payload.userId || "");
 			if (!userId) {
-				respond(ctx, oak.Status.Unauthorized, { error: "not authenticated" });
+				respond(res, 401, { error: "not authenticated" });
 				return;
 			}
-			const { token } = await getBodyJson(ctx);
+			const { token } = await getBodyJson(req);
 			if (typeof token !== "string" || token.length === 0) {
-				respond(ctx, oak.Status.BadRequest, { error: "missing token" });
+				respond(res, 400, { error: "missing token" });
 				return;
 			}
 			try {
@@ -381,62 +368,56 @@ export function setupPasskey(authRouter: oak.Router) {
 					userId,
 					token,
 				);
-				respond(ctx, oak.Status.OK, { vaultId });
+				respond(res, 200, { vaultId });
 			} catch (err) {
 				const msg = (err as Error).message;
 				if (msg === "invite_not_found") {
-					respond(ctx, oak.Status.NotFound, { error: "invite not found" });
+					respond(res, 404, { error: "invite not found" });
 					return;
 				}
 				if (msg === "invite_already_redeemed") {
-					respond(ctx, oak.Status.Conflict, {
-						error: "invite_already_redeemed",
-					});
+					respond(res, 409, { error: "invite_already_redeemed" });
 					return;
 				}
 				if (err instanceof VaultFullError) {
-					respond(ctx, oak.Status.Conflict, { error: "vault_full" });
+					respond(res, 409, { error: "vault_full" });
 					return;
 				}
 				throw err;
 			}
 		} catch (err) {
 			logger.error("invite/accept error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/passkey/invite/info", async (ctx) => {
+	authRouter.post("/passkey/invite/info", async (req, res) => {
 		try {
-			const { token } = await getBodyJson(ctx);
-			const found = await authPasskeyInternals.findInvite(token);
+			const { token } = await getBodyJson(req);
+			const found = await authPasskeyInternals.findInvite(token as string);
 			if (!found) {
-				respond(ctx, oak.Status.NotFound, { error: "invite not found" });
+				respond(res, 404, { error: "invite not found" });
 				return;
 			}
-			respond(ctx, oak.Status.OK, { valid: true });
+			respond(res, 200, { valid: true });
 		} catch (err) {
 			logger.error("invite/info error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/passkey/invite/register/options", async (ctx) => {
+	authRouter.post("/passkey/invite/register/options", async (req, res) => {
 		try {
-			const { token, displayName: rawName } = await getBodyJson(ctx);
+			const { token, displayName: rawName } = await getBodyJson(req);
 			const displayName = parseDisplayName(rawName);
 			if (!displayName) {
-				respond(ctx, oak.Status.BadRequest, { error: "bad display name" });
+				respond(res, 400, { error: "bad display name" });
 				return;
 			}
 
-			const found = await authPasskeyInternals.findInvite(token);
+			const found = await authPasskeyInternals.findInvite(token as string);
 			if (!found) {
-				respond(ctx, oak.Status.NotFound, { error: "invite not found" });
+				respond(res, 404, { error: "invite not found" });
 				return;
 			}
 
@@ -453,32 +434,30 @@ export function setupPasskey(authRouter: oak.Router) {
 			});
 
 			const flowToken = await makeFlowToken(options.challenge, {
-				inviteToken: token,
+				inviteToken: token as string,
 				displayName,
 			});
-			respond(ctx, oak.Status.OK, { options, flowToken });
+			respond(res, 200, { options, flowToken });
 		} catch (err) {
 			logger.error("invite/register/options error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 
-	authRouter.post("/passkey/invite/register/verify", async (ctx) => {
+	authRouter.post("/passkey/invite/register/verify", async (req, res) => {
 		try {
-			const { credential, flowToken } = await getBodyJson(ctx);
+			const { credential, flowToken } = await getBodyJson(req);
 
 			const { challenge: expectedChallenge, claims } =
 				await readFlowToken(flowToken);
 			const inviteToken = claims.inviteToken;
 			if (typeof inviteToken !== "string" || inviteToken.length === 0) {
-				respond(ctx, oak.Status.BadRequest, { error: "no invite token" });
+				respond(res, 400, { error: "no invite token" });
 				return;
 			}
 			const displayName = parseDisplayName(claims.displayName);
 			if (!displayName) {
-				respond(ctx, oak.Status.BadRequest, { error: "bad display name" });
+				respond(res, 400, { error: "bad display name" });
 				return;
 			}
 
@@ -491,7 +470,7 @@ export function setupPasskey(authRouter: oak.Router) {
 				});
 
 			if (!verification.verified || !verification.registrationInfo) {
-				respond(ctx, oak.Status.BadRequest, { error: "verification failed" });
+				respond(res, 400, { error: "verification failed" });
 				return;
 			}
 
@@ -516,34 +495,30 @@ export function setupPasskey(authRouter: oak.Router) {
 			} catch (err) {
 				const msg = (err as Error).message;
 				if (msg === "invite_already_redeemed") {
-					respond(ctx, oak.Status.Conflict, {
-						error: "invite_already_redeemed",
-					});
+					respond(res, 409, { error: "invite_already_redeemed" });
 					return;
 				}
 				if (msg === "invite_not_found") {
-					respond(ctx, oak.Status.NotFound, { error: "invite not found" });
+					respond(res, 404, { error: "invite not found" });
 					return;
 				}
 				if (err instanceof VaultFullError) {
-					respond(ctx, oak.Status.Conflict, { error: "vault_full" });
+					respond(res, 409, { error: "vault_full" });
 					return;
 				}
 				throw err;
 			}
 
 			const result = await authPasskeyInternals.authenticateAndRespond(
-				ctx,
+				res,
 				"passkey",
 				user.id,
 				vaultId,
 			);
-			respond(ctx, oak.Status.OK, result);
+			respond(res, 200, result);
 		} catch (err) {
 			logger.error("invite/register/verify error", { err });
-			respond(ctx, oak.Status.InternalServerError, {
-				error: "internal server error",
-			});
+			respond(res, 500, { error: "internal server error" });
 		}
 	});
 }

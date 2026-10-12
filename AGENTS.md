@@ -3,7 +3,7 @@
 ## Repo Shape
 - Moneeey is split into independent root, `frontend/`, `backend/`, and `playwright/` toolchains; there is no package-manager workspace tying them together.
 - Frontend: React 18 + MobX + raw IndexedDB, entrypoint `frontend/src/main.tsx`, app wiring in `frontend/src/App.tsx`, central store in `frontend/src/shared/MoneeeyStore.ts`.
-- Backend: Deno + Oak, entrypoint `backend/main.ts -> src/server.ts`, SQLite storage through `src/db/engine.ts`, migrations in the single `MIGRATIONS` array in `src/db/migrations.ts`.
+- Backend: Node + Express, entrypoint `backend/main.ts -> src/server.ts`, SQLite storage through `src/db/engine.ts`, migrations in the single `MIGRATIONS` array in `src/db/migrations.ts`.
 - Sync data plane is WebSocket-only at `/api/vault`; Caddy routes `/api/*` to backend and `/` to frontend.
 - Local container DB is `docker/volume/backend_data/moneeey.sqlite`, bind-mounted as `/data/moneeey.sqlite`; use SQLite `.backup`, not `cp`, while the backend is running.
 
@@ -15,15 +15,15 @@
 - Root format: `yarn fmt`.
 - Frontend setup/build/test from `frontend/`: `yarn install --immutable`, `yarn build`, `yarn test`, `yarn lint`.
 - Single frontend Jest test: `TZ=America/Sao_Paulo npx jest src/path/File.test.ts` from `frontend/`.
-- Backend dev/test from `backend/`: `deno task dev`, `deno task test`, `deno task test:watch`, `deno task test:coverage`.
-- Single backend test: `deno test --allow-read --allow-write --allow-env --allow-net --allow-ffi --allow-import src/path/file_test.ts` from `backend/`.
+- Backend dev/test from `backend/`: `yarn install --immutable`, `yarn dev`, `yarn test`, `yarn typecheck`.
+- Single backend test: `npx tsx --test src/path/file_test.ts` from `backend/`.
 - Playwright from `playwright/`: `yarn test`, `yarn test-cr`, `yarn test-ff`, `yarn ui`, `yarn debug-cr`.
 
 ## Test Gotchas
 - Frontend Jest is Node, not jsdom; mock browser globals on `globalThis` and keep `TZ=America/Sao_Paulo`.
 - Frontend unit tests live under `frontend/src` next to source as `*.test.ts`.
-- Backend tests are `*_test.ts` and use Deno permissions from `deno task test`.
-- Playwright config starts the Vite frontend dev server, but not the backend; run `podman-compose up` or `deno task dev` when E2E coverage needs `/api`.
+- Backend tests are `*_test.ts` run via `tsx --test` through `yarn test`.
+- Playwright config starts the Vite frontend dev server, but not the backend; run `podman-compose up` or `yarn dev` when E2E coverage needs `/api`.
 - Local Playwright `baseURL` is `http://localhost:4280`; CI uses `http://localhost:4270` and starts backend separately.
 - Passkey/WebAuthn E2E helpers use Chromium CDP virtual authenticators; passkey tests must skip non-Chromium projects.
 
@@ -44,6 +44,6 @@
 - Prefer `testId` props on base components for E2E targeting.
 
 ## CI / Versions
-- CI uses Node `22.14` and Deno `2.7`.
-- CI jobs cover frontend Jest, backend Deno tests, Biome read-only check, root `yarn lint`, and Playwright sharded across Chromium/Firefox.
+- CI uses Node `22.14`.
+- CI jobs cover frontend Jest, backend Node tests, Biome read-only check, root `yarn lint`, and Playwright sharded across Chromium/Firefox.
 - Commit messages follow `semantic-commit-messages.md`: `<type>(<scope>): <subject>` with `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`.

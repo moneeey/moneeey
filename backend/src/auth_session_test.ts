@@ -3,9 +3,9 @@ import { setStorageForTest } from "./data/storage_singleton.ts";
 import { makeTempStorage } from "./data/test_storage.ts";
 import { createUser } from "./data/users.ts";
 import { createVaultForUser, getVaultsByUser } from "./data/vaults.ts";
-import { assert } from "./test.ts";
+import { assert, test } from "./test.ts";
 
-Deno.test(async function resolvePrimaryVaultIdReturnsExistingVault() {
+test(async function resolvePrimaryVaultIdReturnsExistingVault() {
 	const t = makeTempStorage();
 	setStorageForTest(t.storage);
 	try {
@@ -19,7 +19,7 @@ Deno.test(async function resolvePrimaryVaultIdReturnsExistingVault() {
 	}
 });
 
-Deno.test(async function resolvePrimaryVaultIdCreatesVaultIfMissing() {
+test(async function resolvePrimaryVaultIdCreatesVaultIfMissing() {
 	const t = makeTempStorage();
 	setStorageForTest(t.storage);
 	try {

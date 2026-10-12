@@ -1,8 +1,7 @@
-FROM denoland/deno:2.7.11
+FROM node:22.14-bookworm
 WORKDIR /app
-USER deno
 ADD . .
-RUN deno cache main.ts
+RUN yarn install --immutable
 
 LABEL org.opencontainers.image.description=moneeey-backend
 LABEL org.opencontainers.image.title=moneeey-backend
@@ -10,4 +9,4 @@ LABEL org.opencontainers.image.title=moneeey-backend
 EXPOSE 4369
 ENV PORT 4369
 
-CMD ["task", "dev"]
+CMD ["yarn", "dev"]
