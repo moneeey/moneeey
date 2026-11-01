@@ -16,7 +16,7 @@
 		"dotenv": "^16.4.5",
 		"express": "^4.21.2",
 		"express-ws": "^5.0.2",
-		"jose": "^5.9.6",
+		"jose": "^6.2.14",
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {
